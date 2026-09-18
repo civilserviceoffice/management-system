@@ -197,7 +197,7 @@ body.sidebar-collapsed .sidebar__footer::after { content:"©"; display:block; fo
 .btn--primary:hover { background:linear-gradient(135deg, #073d75, #0b5cab); }
 .btn--sm { height:42px; padding:0 16px; font-size:13px; border-radius:11px; }
 
-.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:20px; margin-bottom:28px; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:20px; margin-bottom:28px; }
 .stat { position:relative; background:#fff; border:1px solid var(--border);
   border-radius:var(--r-lg); padding:24px; box-shadow:var(--sh-sm);
   overflow:hidden; transition:box-shadow .2s, transform .2s; }
@@ -210,6 +210,7 @@ body.sidebar-collapsed .sidebar__footer::after { content:"©"; display:block; fo
 .stat--red     { --c1:linear-gradient(90deg, #dc2626, #e74c5c); --ic:#fef3f2; --ifc:#b42318; }
 .stat--purple  { --c1:linear-gradient(90deg, #6d28d9, #a78bfa); --ic:#f0eaff; --ifc:#5b21b6; }
 .stat--teal    { --c1:linear-gradient(90deg, #0e7490, #4dd4c4); --ic:#e0f5f7; --ifc:#0e7490; }
+.stat--violet  { --c1:linear-gradient(90deg, #7c3aed, #a78bfa); --ic:#f0eaff; --ifc:#6d28d9; }
 .stat__head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; }
 .stat__label { font-size:13px; color:var(--muted); font-weight:600; }
 .stat__icon { width:46px; height:46px; border-radius:14px; background:var(--ic); color:var(--ifc);
@@ -221,10 +222,6 @@ body.sidebar-collapsed .sidebar__footer::after { content:"©"; display:block; fo
   background-size:200% 100%; animation:shimmer 1.4s infinite;
   border-radius:8px; width:60%; }
 @keyframes shimmer { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
-.stat__delta { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700;
-  margin-top:12px; padding:4px 10px; border-radius:var(--r-full); }
-.stat__delta--up { color:#067647; background:#ecfdf3; }
-.stat__delta--flat { color:var(--text-soft); background:var(--border-soft); }
 
 .grid-2 { display:grid; grid-template-columns:1.7fr 1fr; gap:22px; margin-bottom:24px; }
 @media (max-width:1100px) { .grid-2 { grid-template-columns:1fr; } }
@@ -256,6 +253,7 @@ body.sidebar-collapsed .sidebar__footer::after { content:"©"; display:block; fo
 .tag--red { background:#fef3f2; color:#b42318; }
 .tag--gold { background:#fdf5e0; color:#b8860b; }
 .tag--blue { background:#eaf3fc; color:#0b5cab; }
+.tag--violet { background:#f0eaff; color:#5b21b6; }
 .tag--gray { background:var(--border-soft); color:var(--text-soft); }
 .chart { height:250px; display:flex; align-items:flex-end; gap:14px; padding:20px 0 32px; }
 .chart__bar { flex:1; min-height:10px;
@@ -457,6 +455,27 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 /* ============================================================
+   BUILT-IN REGIONS (matches offices.html)
+   ============================================================ */
+const REGIONS = [
+  { code: "01", en: "Tigray",                 am: "ትግራይ" },
+  { code: "02", en: "Afar",                   am: "አፋር" },
+  { code: "03", en: "Amhara",                 am: "አማራ" },
+  { code: "04", en: "Oromia",                 am: "ኦሮሚያ" },
+  { code: "05", en: "Somali",                 am: "ሶማሌ" },
+  { code: "06", en: "Benishangul-Gumuz",      am: "ቤንሻንጉል-ጉሙዝ" },
+  { code: "07", en: "South Nations (SNNPR)",  am: "ደቡብ ብሔሮች" },
+  { code: "08", en: "Gambella",               am: "ጋምቤላ" },
+  { code: "09", en: "Harari",                 am: "ሐረሪ" },
+  { code: "10", en: "Sidama",                 am: "ሲዳማ" },
+  { code: "11", en: "South West Ethiopia",    am: "ደቡብ ምዕራብ ኢትዮጵያ" },
+  { code: "12", en: "Dire Dawa",              am: "ድሬ ዳዋ" },
+  { code: "13", en: "Addis Ababa",            am: "አዲስ አበባ" },
+  { code: "14", en: "Central Ethiopia",       am: "መካከለኛው ኢትዮጵያ" },
+  { code: "15", en: "South Ethiopia",         am: "ደቡብ ኢትዮጵያ" }
+];
+
+/* ============================================================
    GUARD
    ============================================================ */
 const INDEX_URL = "../index.html";
@@ -496,15 +515,26 @@ document.addEventListener("click", async (e) => {
 /* ============================================================
    STATE
    ============================================================ */
-let S = null; // session: { uid, role, name, email, officeId, clusterId, employeeId, empId }
-let chartData = null;
+let S = null;
+let customRegions = [];   // user-added regions from Firestore
 
 /* ============================================================
-   SCOPE HELPERS — the heart of role-based access
-   --------------------------------------------------
-   Every query passes through scopeCol() so a user can never
-   fetch documents outside their scope. Rules enforce the same
-   thing server-side.
+   REGION HELPERS — merge built-in + custom
+   ============================================================ */
+function allRegions() {
+  const map = new Map();
+  REGIONS.forEach(r => map.set(r.code, { ...r, builtin: true }));
+  customRegions.forEach(r => map.set(r.code, { ...r, builtin: false }));
+  return Array.from(map.values()).sort((a, b) => String(a.code).localeCompare(String(b.code)));
+}
+const regionLabel = (code) => {
+  const r = allRegions().find(x => x.code === code);
+  return r ? r.code + " — " + r.en : (code || "—");
+};
+const regionName = (code) => allRegions().find(x => x.code === code)?.en || (code || "");
+
+/* ============================================================
+   SCOPE HELPERS
    ============================================================ */
 function scopeCol(colName, baseQuery = collection(db, colName)) {
   const r = S.role;
@@ -512,12 +542,8 @@ function scopeCol(colName, baseQuery = collection(db, colName)) {
   if (r === "admin")      return query(baseQuery, where("clusterId", "==", S.clusterId));
   if (r === "manager")    return query(baseQuery, where("managerId", "==", S.uid));
   if (r === "employee")   return query(baseQuery, where("empId", "==", S.empId));
-  // fail closed
   return query(baseQuery, where("__nonexistent__", "==", true));
 }
-
-/* For collections that don't have clusterId/managerId fields,
-   fall back to officeId or empId */
 function scopeColBy(colName, field) {
   const base = collection(db, colName);
   const r = S.role;
@@ -534,16 +560,16 @@ function scopeColBy(colName, field) {
 }
 
 /* ============================================================
-   SIDEBAR
+   ICONS
    ============================================================ */
 const ICONS = {
   grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
   building:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01"/>',
   clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
   calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
   wallet:'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',
-  briefcase:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
   target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
   book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
   chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
@@ -553,9 +579,13 @@ const ICONS = {
   check:'<polyline points="20 6 9 17 4 12"/>',
   dollar:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
   inbox:'<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
-  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  pin:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'
 };
 
+/* ============================================================
+   NAV
+   ============================================================ */
 const NAV = [
   { section:"Overview", items:[
     { key:"dashboard", label:"Dashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
@@ -586,6 +616,9 @@ const hasAccess = (item, role) => item.roles.includes("*") || item.roles.include
 const escapeHtml = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g,
   (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
+/* ============================================================
+   SIDEBAR / USER / BADGE
+   ============================================================ */
 function renderSidebar() {
   const nav = document.getElementById("sidebar-nav");
   nav.innerHTML = "";
@@ -620,38 +653,52 @@ function renderUser() {
 function renderScopeBadge() {
   const host = document.getElementById("scope-badge");
   if (!host) return;
-  const map = {
-    super_admin: { class:"scope-badge--super", label:"Full system access", icon:ICONS.lock },
-    admin:       { class:"",                   label:"Scoped to: " + (S.clusterName || "your cluster"), icon:ICONS.shield },
-    manager:     { class:"scope-badge--manager", label:"Scoped to: your team (" + (S.teamSize || "—") + " reports)", icon:ICONS.users },
-    employee:    { class:"scope-badge--employee", label:"Scoped to: your own records", icon:ICONS.user }
-  };
-  const conf = map[S.role] || map.employee;
-  host.innerHTML = `<span class="scope-badge ${conf.class}">
-    <svg viewBox="0 0 24 24">${conf.icon}</svg>
-    ${escapeHtml(conf.label)}
+
+  let badge = null;
+
+  if (S.role === "super_admin") {
+    badge = {
+      class:"scope-badge--super",
+      label:"Full system access — " + allRegions().length + " regions",
+      icon:ICONS.lock
+    };
+  } else if (S.role === "admin") {
+    const regionTxt = S.regionCode
+      ? " · " + regionLabel(S.regionCode)
+      : (S.clusterName ? " · " + S.clusterName : "");
+    badge = {
+      class:"",
+      label:"Cluster admin" + regionTxt,
+      icon:ICONS.shield
+    };
+  } else if (S.role === "manager") {
+    badge = {
+      class:"scope-badge--manager",
+      label:"Scoped to: your team (" + (S.teamSize || "—") + " reports)",
+      icon:ICONS.users
+    };
+  } else {
+    const regionTxt = S.regionCode ? " · " + regionName(S.regionCode) : "";
+    badge = {
+      class:"scope-badge--employee",
+      label:"Scoped to: your own records" + regionTxt,
+      icon:ICONS.user
+    };
+  }
+
+  host.innerHTML = `<span class="scope-badge ${badge.class}">
+    <svg viewBox="0 0 24 24">${badge.icon}</svg>
+    ${escapeHtml(badge.label)}
   </span>`;
 }
 
 /* ============================================================
-   STATS CARDS — one per role
+   STATS CARDS — per role
    ============================================================ */
-function renderStatsSkeleton() {
-  const cards = cardDefs();
-  document.getElementById("stats").innerHTML = cards.map((c) => `
-    <div class="stat stat--${c.color}">
-      <div class="stat__head">
-        <div class="stat__label">${c.label}</div>
-        <div class="stat__icon"><svg viewBox="0 0 24 24">${ICONS[c.icon]}</svg></div>
-      </div>
-      <div class="stat__value loading" id="${c.id}">&nbsp;</div>
-    </div>
-  `).join("");
-}
-
 function cardDefs() {
   if (S.role === "super_admin") {
     return [
+      { id:"s-regions",  label:"Regions",              icon:"pin",      color:"violet" },
       { id:"s-offices",  label:"Governmental Offices", icon:"building", color:"blue" },
       { id:"s-clusters", label:"Clusters",              icon:"grid",     color:"purple" },
       { id:"s-admins",   label:"Administrators",        icon:"shield",   color:"gold" },
@@ -676,13 +723,25 @@ function cardDefs() {
       { id:"s-pending",  label:"Pending Approvals",    icon:"clock",    color:"red" }
     ];
   }
-  // employee
   return [
     { id:"s-attend",   label:"My Attendance (this month)", icon:"check",    color:"green" },
     { id:"s-leave",    label:"My Leave Requests",          icon:"calendar", color:"gold" },
     { id:"s-pending",  label:"My Pending Requests",        icon:"clock",    color:"red" },
     { id:"s-pay",      label:"My Latest Payslip",          icon:"dollar",   color:"teal" }
   ];
+}
+
+function renderStatsSkeleton() {
+  const cards = cardDefs();
+  document.getElementById("stats").innerHTML = cards.map((c) => `
+    <div class="stat stat--${c.color}">
+      <div class="stat__head">
+        <div class="stat__label">${c.label}</div>
+        <div class="stat__icon"><svg viewBox="0 0 24 24">${ICONS[c.icon]}</svg></div>
+      </div>
+      <div class="stat__value loading" id="${c.id}">&nbsp;</div>
+    </div>
+  `).join("");
 }
 
 function setStat(id, value) {
@@ -693,7 +752,7 @@ function setStat(id, value) {
 }
 
 /* ============================================================
-   LOADERS
+   DATE HELPERS
    ============================================================ */
 function today() { return new Date().toISOString().slice(0,10); }
 function thisMonth() { return new Date().toISOString().slice(0,7); }
@@ -708,8 +767,13 @@ async function count(colQuery) {
   }
 }
 
+/* ============================================================
+   LOAD STATS — includes regions for super admin
+   ============================================================ */
 async function loadStats() {
   if (S.role === "super_admin") {
+    // Regions: built-in + custom (custom already cached in customRegions)
+    setStat("s-regions",  allRegions().length);
     setStat("s-offices",  await count(collection(db, "offices")));
     setStat("s-clusters", await count(collection(db, "clusters")));
     setStat("s-admins",   await count(query(collection(db, "users"), where("role", "==", "admin"))));
@@ -769,7 +833,6 @@ async function loadStats() {
     return;
   }
 
-  // employee
   const m = thisMonth();
   setStat("s-attend",   await count(query(
     collection(db, "attendance", m, "records"),
@@ -792,7 +855,7 @@ async function loadStats() {
 }
 
 /* ============================================================
-   CHART — scoped by role
+   CHART
    ============================================================ */
 async function loadChart() {
   const chart = document.getElementById("chart");
@@ -847,24 +910,25 @@ async function loadChart() {
 }
 
 /* ============================================================
-   ACTIVITY — scoped
+   ACTIVITY — now includes region name per employee
    ============================================================ */
 async function loadActivity() {
   const host = document.getElementById("activity");
   const events = [];
 
   if (S.role === "super_admin" || S.role === "admin") {
-    // Recent employees
     try {
       const q = S.role === "admin"
         ? query(collection(db, "employees"), where("clusterId","==",S.clusterId), orderBy("createdAt","desc"), limit(4))
-        : query(collection(db, "employees"), orderBy("createdAt","desc"), limit(4));
+        : query(collection(db, "employees"), orderBy("createdAt","desc"), limit(6));
       const snap = await getDocs(q);
       snap.forEach((d) => {
         const e = d.data();
+        const rName = e.regionName || regionName(e.regionCode);
+        const regionSuffix = rName ? " · " + rName : "";
         events.push({
           name: [e.firstName, e.lastName].filter(Boolean).join(" ") || e.email || "Employee",
-          action: "joined the office",
+          action: "joined the office" + regionSuffix,
           at: e.createdAt
         });
       });
@@ -911,7 +975,7 @@ async function loadActivity() {
 }
 
 /* ============================================================
-   PENDING — scoped
+   PENDING
    ============================================================ */
 async function loadPending() {
   const host = document.getElementById("pending");
@@ -965,7 +1029,7 @@ async function loadPending() {
 }
 
 /* ============================================================
-   QUICK ACTIONS — one set per role
+   QUICK ACTIONS
    ============================================================ */
 function renderQuickActions() {
   const host = document.getElementById("quick-actions");
@@ -990,7 +1054,7 @@ function renderQuickActions() {
     actions.push({ label:"My Attendance",    icon:"check",    href:"attendance.html" });
     actions.push({ label:"Request Leave",    icon:"calendar", href:"leave.html" });
     actions.push({ label:"My Payslip",       icon:"dollar",   href:"payroll.html" });
-    actions.push({ label:"My Profile",       icon:"users",    href:"profile.html" });
+    actions.push({ label:"My Profile",       icon:"user",     href:"profile.html" });
   }
 
   host.innerHTML = actions.map((a) => `
@@ -1002,7 +1066,7 @@ function renderQuickActions() {
 }
 
 /* ============================================================
-   HEADER BUTTONS — one set per role
+   HEADER BUTTONS
    ============================================================ */
 function renderHeadActions() {
   const host = document.getElementById("head-actions");
@@ -1060,6 +1124,20 @@ try {
 } catch (e) {}
 
 /* ============================================================
+   LOAD REGIONS — merge built-in + custom from Firestore
+   ============================================================ */
+async function loadRegions() {
+  try {
+    const snap = await getDocs(collection(db, "regions"));
+    customRegions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    console.log("[regions] loaded", customRegions.length, "custom regions");
+  } catch (e) {
+    console.warn("[regions]", e.code, e.message);
+    customRegions = [];
+  }
+}
+
+/* ============================================================
    BOOT
    ============================================================ */
 onAuthStateChanged(auth, async (user) => {
@@ -1075,12 +1153,19 @@ onAuthStateChanged(auth, async (user) => {
     console.warn("[boot]", err.code, err.message);
   }
 
-  // Build session — for admins we also need clusterName
+  // Pull custom regions before anything else so scope badge and stats see them
+  await loadRegions();
+
+  // Get cluster + region context
   let clusterName = null;
+  let clusterRegionCode = null;
   if (userDoc?.clusterId) {
     try {
       const cs = await getDoc(doc(db, "clusters", userDoc.clusterId));
-      if (cs.exists()) clusterName = cs.data().name;
+      if (cs.exists()) {
+        clusterName = cs.data().name;
+        clusterRegionCode = cs.data().regionCode || null;
+      }
     } catch (e) {}
   }
 
@@ -1103,11 +1188,12 @@ onAuthStateChanged(auth, async (user) => {
     officeId: userDoc?.officeId || "",
     clusterId: userDoc?.clusterId || "",
     clusterName,
+    regionCode: clusterRegionCode || userDoc?.region || null,
     employeeId: userDoc?.employeeId || "",
     empId: userDoc?.empId || "",
     teamSize
   };
-  console.log("[dashboard] scope:", S);
+  console.log("[dashboard] scope:", S, "| regions available:", allRegions().length);
 
   GUARD_PASSED = true;
 
