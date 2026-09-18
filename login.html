@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Civil Service Management Information System</title>
+<link rel="icon" type="image/png" href="images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script type="importmap">
+{
+  "imports": {
+    "firebase/app":       "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js",
+    "firebase/auth":      "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js"
+  }
+}
+</script>
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --primary:#0b5cab;
+  --primary-dark:#073d75;
+  --secondary:#0e7490;
+  --accent:#19a974;
+  --text:#172033;
+  --text-soft:#344054;
+  --muted:#6b7280;
+  --muted-light:#98a2b3;
+  --border:#e5e7eb;
+  --border-soft:#eef1f5;
+  --white:#ffffff;
+  --danger:#dc2626;
+  --bg:#f4f7fb;
+}
+
+html, body { height:100%; }
+body {
+  min-height:100vh;
+  font-family:"Inter","Noto Sans Ethiopic",sans-serif;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(11,92,171,.12), transparent 30%),
+    radial-gradient(circle at 90% 80%, rgba(25,169,116,.12), transparent 30%),
+    var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+body.ethiopic { font-family:"Noto Sans Ethiopic","Inter",sans-serif; }
+
+.background-shape {
+  position:fixed; border-radius:50%;
+  filter:blur(2px); pointer-events:none; z-index:0;
+}
+.shape-one {
+  width:360px; height:360px;
+  background:rgba(11,92,171,.08);
+  top:-120px; left:-120px;
+}
+.shape-two {
+  width:300px; height:300px;
+  background:rgba(25,169,116,.08);
+  bottom:-100px; right:-80px;
+}
+
+.page {
+  position:relative; z-index:1;
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding:30px;
+}
+
+.login-container {
+  width:min(1120px,100%);
+  min-height:690px;
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(255,255,255,.8);
+  border-radius:30px;
+  overflow:hidden;
+  box-shadow:
+    0 30px 80px rgba(20,40,70,.15),
+    0 10px 30px rgba(20,40,70,.06);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+
+.welcome-panel {
+  position:relative;
+  padding:55px;
+  display:flex; flex-direction:column; justify-content:space-between;
+  overflow:hidden; color:#fff;
+  background:linear-gradient(145deg, #073d75 0%, #0b5cab 48%, #0e7490 100%);
+}
+.welcome-panel::before {
+  content:""; position:absolute;
+  width:450px; height:450px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.13);
+  right:-220px; top:-150px;
+}
+.welcome-panel::after {
+  content:""; position:absolute;
+  width:320px; height:320px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.10);
+  left:-170px; bottom:-150px;
+}
+.panel-content, .panel-footer {
+  position:relative; z-index:2;
+}
+
+.brand { display:flex; align-items:center; gap:18px; }
+.brand-logo {
+  width:76px; height:76px; padding:8px;
+  border-radius:20px;
+  background:rgba(255,255,255,.97);
+  box-shadow:0 12px 30px rgba(0,0,0,.18);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.brand-logo img {
+  width:100%; height:100%;
+  object-fit:contain; border-radius:12px;
+  display:block;
+}
+.brand-text h2 {
+  font-size:20px; font-weight:800; letter-spacing:-.3px;
+}
+.brand-text p {
+  margin-top:5px; font-size:12px;
+  opacity:.78; line-height:1.5;
+}
+
+.welcome-content { margin-top:95px; max-width:520px; }
+.welcome-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 13px; border-radius:999px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+  font-size:12px; font-weight:600;
+  margin-bottom:24px;
+}
+.status-dot {
+  width:7px; height:7px; background:#58e6a7;
+  border-radius:50%; box-shadow:0 0 12px #58e6a7;
+}
+.welcome-content h1 {
+  font-size:clamp(38px,4vw,56px);
+  line-height:1.08; letter-spacing:-2px; font-weight:800;
+}
+.welcome-content h1 span {
+  display:block; color:#b9f2dc;
+}
+.welcome-content p {
+  margin-top:24px; max-width:470px;
+  color:rgba(255,255,255,.78);
+  line-height:1.8; font-size:15px;
+}
+
+.features {
+  margin-top:35px; display:flex; flex-wrap:wrap; gap:10px;
+}
+.feature {
+  display:flex; align-items:center; gap:8px;
+  padding:9px 13px; border-radius:12px;
+  background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.12);
+  font-size:12px; color:rgba(255,255,255,.9);
+}
+.feature-icon { font-size:14px; }
+
+.panel-footer {
+  font-size:11px; color:rgba(255,255,255,.55);
+}
+
+.login-panel {
+  padding:55px 60px;
+  display:flex; flex-direction:column; justify-content:center;
+  background:#fff;
+}
+.login-header { margin-bottom:30px; }
+.login-header h2 {
+  font-size:31px; font-weight:800;
+  letter-spacing:-1px; color:#162033;
+}
+.login-header p {
+  margin-top:9px; font-size:14px;
+  color:var(--muted); line-height:1.6;
+}
+
+.language-switcher {
+  display:flex; gap:7px; margin-bottom:24px;
+}
+.language-btn {
+  border:1px solid var(--border);
+  background:#f8fafc;
+  color:#667085;
+  padding:7px 13px;
+  border-radius:9px;
+  font-size:12px; font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  font-family:inherit;
+}
+.language-btn:hover { border-color:#b9c7d9; }
+.language-btn.active {
+  background:#eaf3fc;
+  color:var(--primary);
+  border-color:#bdd7f2;
+}
+
+.form-group { margin-bottom:20px; }
+.form-label {
+  display:block; margin-bottom:9px;
+  font-size:13px; font-weight:700; color:var(--text-soft);
+}
+.input-wrapper { position:relative; }
+.input-icon {
+  position:absolute; left:16px; top:50%;
+  transform:translateY(-50%);
+  color:var(--muted-light); font-size:17px;
+  pointer-events:none;
+}
+.form-input {
+  width:100%; height:54px;
+  padding:0 48px;
+  border:1px solid #d9dee7;
+  border-radius:13px;
+  outline:none;
+  font-family:inherit;
+  font-size:14px;
+  color:var(--text);
+  background:#fbfcfe;
+  transition:all .2s;
+}
+.form-input:focus {
+  background:#fff;
+  border-color:#70a8d9;
+  box-shadow:0 0 0 4px rgba(11,92,171,.08);
+}
+.form-input::placeholder { color:#a5adba; }
+.form-input[aria-invalid="true"] {
+  border-color:#f0a5ab;
+  box-shadow:0 0 0 4px rgba(220,38,38,.06);
+}
+
+.password-toggle {
+  position:absolute; right:15px; top:50%;
+  transform:translateY(-50%);
+  border:none; background:none;
+  cursor:pointer; color:var(--muted-light);
+  font-size:17px; padding:4px;
+  border-radius:6px;
+  transition:background .15s;
+}
+.password-toggle:hover { background:#f0f4f9; color:var(--text-soft); }
+
+.form-options {
+  display:flex; align-items:center; justify-content:space-between;
+  margin:3px 0 24px; gap:15px;
+}
+.remember {
+  display:flex; align-items:center; gap:8px;
+  font-size:12px; color:#667085;
+  cursor:pointer; user-select:none;
+}
+.remember input {
+  width:15px; height:15px;
+  accent-color:var(--primary);
+  cursor:pointer;
+}
+.forgot {
+  border:none; background:none;
+  color:var(--primary);
+  font-size:12px; font-weight:700;
+  cursor:pointer; font-family:inherit;
+}
+.forgot:hover { text-decoration:underline; }
+
+.login-button {
+  width:100%; height:55px;
+  border:none; border-radius:13px;
+  background:linear-gradient(135deg, #0b5cab, #0e7490);
+  color:#fff;
+  font-family:inherit;
+  font-size:14px; font-weight:800;
+  cursor:pointer;
+  box-shadow:0 12px 24px rgba(11,92,171,.20);
+  transition:all .25s;
+  display:flex; align-items:center; justify-content:center;
+  gap:10px;
+}
+.login-button:hover {
+  transform:translateY(-1px);
+  box-shadow:0 16px 30px rgba(11,92,171,.25);
+}
+.login-button:active { transform:translateY(0); }
+.login-button:disabled {
+  opacity:.75; cursor:wait; transform:none;
+}
+
+.btn-spinner {
+  width:16px; height:16px;
+  border:2px solid rgba(255,255,255,.4);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin .65s linear infinite;
+  display:none;
+}
+.login-button.loading .btn-spinner { display:block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.message {
+  display:none;
+  margin-top:16px;
+  padding:12px 14px;
+  border-radius:10px;
+  font-size:12px;
+  line-height:1.5;
+  animation:fadeIn .2s ease;
+}
+@keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+.message.error {
+  display:block;
+  color:#b42318;
+  background:#fef3f2;
+  border:1px solid #fecdca;
+}
+.message.success {
+  display:block;
+  color:#067647;
+  background:#ecfdf3;
+  border:1px solid #abefc6;
+}
+.message.info {
+  display:block;
+  color:#0b5cab;
+  background:#eaf3fc;
+  border:1px solid #bdd7f2;
+}
+
+.security-note {
+  display:flex; align-items:center; gap:8px;
+  margin-top:22px;
+  color:var(--muted-light);
+  font-size:11px; line-height:1.5;
+}
+.security-icon { font-size:15px; }
+
+@media (max-width:900px) {
+  .login-container {
+    grid-template-columns:1fr;
+    min-height:auto;
+  }
+  .welcome-panel { min-height:400px; padding:35px; }
+  .welcome-content { margin-top:50px; }
+  .welcome-content h1 { font-size:38px; letter-spacing:-1.4px; }
+  .login-panel { padding:45px 35px; }
+}
+@media (max-width:600px) {
+  .page { padding:14px; }
+  .login-container { border-radius:22px; }
+  .welcome-panel { padding:28px 24px; min-height:360px; }
+  .brand-logo { width:60px; height:60px; border-radius:16px; }
+  .brand-text h2 { font-size:17px; }
+  .welcome-content { margin-top:40px; }
+  .welcome-content h1 { font-size:32px; letter-spacing:-1.2px; }
+  .welcome-content p { font-size:13px; margin-top:16px; }
+  .features { margin-top:22px; }
+  .login-panel { padding:35px 24px; }
+  .login-header h2 { font-size:26px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="background-shape shape-one"></div>
+<div class="background-shape shape-two"></div>
+
+<main class="page">
+  <section class="login-container">
+
+    <div class="welcome-panel">
+      <div class="panel-content">
+        <div class="brand">
+          <div class="brand-logo">
+            <img src="images/logo.png" alt="Civil Service Logo"
+                 onerror="this.parentElement.innerHTML='<span style=&quot;color:#0b5cab;font-weight:800;font-size:22px&quot;>CS</span>'">
+          </div>
+          <div class="brand-text">
+            <h2 data-i18n="brandTitle">Civil Service</h2>
+            <p data-i18n="brandSubtitle">Management Information System</p>
+          </div>
+        </div>
+
+        <div class="welcome-content">
+          <div class="welcome-badge">
+            <span class="status-dot"></span>
+            <span data-i18n="secureSystem">Secure Government System</span>
+          </div>
+
+          <h1>
+            <span data-i18n="welcome">Welcome to</span>
+            <span data-i18n="systemName">Civil Service</span>
+          </h1>
+
+          <p data-i18n="description">
+            A modern digital platform designed to manage employees, attendance,
+            leave, performance, payroll, recruitment and other civil service
+            operations efficiently and securely.
+          </p>
+
+          <div class="features">
+            <div class="feature"><span class="feature-icon">🔐</span><span data-i18n="secure">Secure</span></div>
+            <div class="feature"><span class="feature-icon">⚡</span><span data-i18n="efficient">Efficient</span></div>
+            <div class="feature"><span class="feature-icon">📊</span><span data-i18n="analytics">Analytics</span></div>
+            <div class="feature"><span class="feature-icon">🌐</span><span data-i18n="multilingual">Multilingual</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-footer">
+        © 2026 <span data-i18n="footer">Civil Service Management Information System</span>
+        <br>Designed by : Eng. Abdi Furgasa
+      </div>
+    </div>
+
+    <div class="login-panel">
+      <div class="login-header">
+        <h2 data-i18n="loginTitle">Sign in</h2>
+        <p data-i18n="loginSubtitle">Enter your credentials to access your account.</p>
+      </div>
+
+      <div class="language-switcher">
+        <button type="button" class="language-btn active" data-lang="en">EN</button>
+        <button type="button" class="language-btn" data-lang="am">አማ</button>
+        <button type="button" class="language-btn" data-lang="om">OM</button>
+      </div>
+
+      <form id="loginForm" novalidate autocomplete="on">
+        <div class="form-group">
+          <label class="form-label" for="email" data-i18n="username">Email / Employee ID</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input id="email" class="form-input" type="text"
+                   autocomplete="username" autocapitalize="none"
+                   autocorrect="off" spellcheck="false"
+                   placeholder="Enter your email or employee ID"
+                   data-placeholder="emailPlaceholder" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password" data-i18n="password">Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input id="password" class="form-input" type="password"
+                   autocomplete="current-password"
+                   placeholder="Enter your password"
+                   data-placeholder="passwordPlaceholder" required>
+            <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password">👁</button>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label class="remember">
+            <input type="checkbox" id="rememberMe" checked>
+            <span data-i18n="remember">Remember me</span>
+          </label>
+          <button type="button" class="forgot" id="forgotPassword" data-i18n="forgot">Forgot password?</button>
+        </div>
+
+        <button type="submit" class="login-button" id="loginButton">
+          <span class="btn-spinner"></span>
+          <span class="btn-label" data-i18n="login">Sign In</span>
+        </button>
+
+        <div id="message" class="message"></div>
+
+        <div class="security-note">
+          <span class="security-icon">🛡️</span>
+          <span data-i18n="security">Your account is protected by secure authentication.</span>
+        </div>
+      </form>
+    </div>
+
+  </section>
+</main>
+
+<script type="module">
+import { initializeApp } from "firebase/app";
+import {
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  setPersistence, browserLocalPersistence, browserSessionPersistence,
+  sendPasswordResetEmail
+} from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+
+const app = initializeApp({
+  apiKey: "AIzaSyASE2f6DVivrH7koQXAFZeOrj6Wng45Uq4",
+  authDomain: "civil-service-system-f2d46.firebaseapp.com",
+  projectId: "civil-service-system-f2d46",
+  storageBucket: "civil-service-system-f2d46.firebasestorage.app",
+  messagingSenderId: "12482599055",
+  appId: "1:12482599055:web:4daa6a56cc9674c15cf8fa"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* Wipe any stale session on the login page */
+try { sessionStorage.clear(); } catch (e) {}
+
+const translations = {
+  en: {
+    brandTitle:"Civil Service", brandSubtitle:"Management Information System",
+    secureSystem:"Secure Government System",
+    welcome:"Welcome to", systemName:"Civil Service",
+    description:"A modern digital platform designed to manage employees, attendance, leave, performance, payroll, recruitment and other civil service operations efficiently and securely.",
+    secure:"Secure", efficient:"Efficient", analytics:"Analytics", multilingual:"Multilingual",
+    footer:"Civil Service Management Information System",
+    loginTitle:"Sign in", loginSubtitle:"Enter your credentials to access your account.",
+    username:"Email / Employee ID", emailPlaceholder:"Enter your email or employee ID",
+    password:"Password", passwordPlaceholder:"Enter your password",
+    remember:"Remember me", forgot:"Forgot password?",
+    login:"Sign In", security:"Your account is protected by secure authentication.",
+    loggingIn:"Signing in…",
+    required:"Please enter your email/employee ID and password.",
+    invalid:"Invalid login credentials.",
+    networkError:"Network error. Check your connection.",
+    tooMany:"Too many attempts. Please wait a moment.",
+    success:"Login successful. Redirecting…",
+    resetSent:"Password reset link sent. Check your email.",
+    resetNeedsEmail:"Enter your email first, then tap “Forgot password”.",
+    resetFail:"Could not send reset email. Check the address and try again.",
+    sessionExpired:"Your session has expired. Please sign in again."
+  },
+  am: {
+    brandTitle:"የሲቪል ሰርቪስ", brandSubtitle:"የአስተዳደር መረጃ ስርዓት",
+    secureSystem:"የተጠበቀ የመንግስት ስርዓት",
+    welcome:"እንኳን ወደ", systemName:"ሲቪል ሰርቪስ በደህና መጡ",
+    description:"ሰራተኞችን፣ የመገኘት መረጃን፣ ዕረፍትን፣ የስራ አፈፃፀምን፣ ደመወዝን፣ ቅጥርን እና ሌሎች የሲቪል ሰርቪስ ስራዎችን በቀላሉና በደህና ለማስተዳደር የተዘጋጀ ዘመናዊ ዲጂታል መድረክ።",
+    secure:"የተጠበቀ", efficient:"ቀልጣፋ", analytics:"ትንታኔ", multilingual:"ብዙ ቋንቋ",
+    footer:"የሲቪል ሰርቪስ አስተዳደር መረጃ ስርዓት",
+    loginTitle:"ይግቡ", loginSubtitle:"መለያዎን ለመጠቀም የመግቢያ መረጃዎን ያስገቡ።",
+    username:"ኢሜይል / የሰራተኛ መለያ", emailPlaceholder:"ኢሜይል ወይም የሰራተኛ መለያ ያስገቡ",
+    password:"የይለፍ ቃል", passwordPlaceholder:"የይለፍ ቃልዎን ያስገቡ",
+    remember:"አስታውሰኝ", forgot:"የይለፍ ቃል ረሱ?",
+    login:"ግባ", security:"መለያዎ በደህንነት ማረጋገጫ የተጠበቀ ነው።",
+    loggingIn:"በመግባት ላይ…",
+    required:"እባክዎ ኢሜይል/የሰራተኛ መለያ እና የይለፍ ቃል ያስገቡ።",
+    invalid:"የመግቢያ መረጃው ትክክል አይደለም።",
+    networkError:"የአውታረ መረብ ስህተት። ግንኙነትዎን ያረጋግጡ።",
+    tooMany:"ብዙ ሙከራዎች። እባክዎ ቆይተው ይሞክሩ።",
+    success:"በተሳካ ሁኔታ ገብተዋል። በመቀጠል ላይ…",
+    resetSent:"የይለፍ ቃል ማስተካከያ ሊንክ ተልኳል። ኢሜይልዎን ይመልከቱ።",
+    resetNeedsEmail:"መጀመሪያ ኢሜይልዎን ያስገቡ፣ ከዚያ “የይለፍ ቃል ረሱ?” ይጫኑ።",
+    resetFail:"ማስተካከያ ኢሜይል መላክ አልተቻለም። አድራሻውን ያረጋግጡ።",
+    sessionExpired:"ክፍለ ጊዜዎ አልቋል። እባክዎ እንደገና ይግቡ።"
+  },
+  om: {
+    brandTitle:"Tajaajila Siivilii", brandSubtitle:"Sirna Odeeffannoo Bulchiinsaa",
+    secureSystem:"Sirna Mootummaa Eegamaa",
+    welcome:"Baga Nagaan Gara", systemName:"Tajaajila Siivilii Dhuftan",
+    description:"Sirna dijitaalaa ammayyaa hojjettoota, argama, boqonnaa, raawwii hojii, mindaa, qacarrii fi hojiiwwan biroo tajaajila siivilii haala gahumsaa fi nageenya qabuun bulchuuf qophaa'e.",
+    secure:"Eegamaa", efficient:"Bu'a qabeessa", analytics:"Xiinxala", multilingual:"Afaanota Hedduu",
+    footer:"Sirna Odeeffannoo Bulchiinsa Tajaajila Siivilii",
+    loginTitle:"Seeni", loginSubtitle:"Herrega kee argachuuf odeeffannoo seensaa kee galchi.",
+    username:"Imeelii / Lakkoofsa Hojjetaa", emailPlaceholder:"Imeelii ykn lakkoofsa hojjetaa galchi",
+    password:"Jecha Darbii", passwordPlaceholder:"Jecha darbii kee galchi",
+    remember:"Na yaadadhu", forgot:"Jecha darbii dagatte?",
+    login:"Seeni", security:"Herregni kee sirna mirkaneessa nageenyaatiin eegamaadha.",
+    loggingIn:"Seenaa jira…",
+    required:"Maaloo imeelii/lakkoofsa hojjetaa fi jecha darbii galchi.",
+    invalid:"Odeeffannoon seensaa sirrii miti.",
+    networkError:"Dogoggora neetwoorkii. Walqunnamtii kee mirkaneessi.",
+    tooMany:"Yaaliin baay'ee. Maaloo xiqqoo eegi.",
+    success:"Milkaa'inaan seenteetta. Ce'aa jira…",
+    resetSent:"Liinkii jijjiirraa jecha darbii ergameera. Imeelii kee ilaali.",
+    resetNeedsEmail:"Dura imeelii kee galchi, sana booda “Jecha darbii dagatte?” tuqi.",
+    resetFail:"Imeelii haaromsaa erguu hin danda'amne. Teessoo mirkaneessi.",
+    sessionExpired:"Yeroon kee dhumateera. Maaloo irra deebi'ii seeni."
+  }
+};
+
+const SUPPORTED = ["en","am","om"];
+const FALLBACK = "en";
+const LANG_KEY = "language";
+let currentLanguage = "en";
+
+function t(key) {
+  return translations[currentLanguage]?.[key] ?? translations[FALLBACK][key] ?? key;
+}
+
+function applyLanguage(lang) {
+  if (!SUPPORTED.includes(lang)) lang = FALLBACK;
+  currentLanguage = lang;
+  try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+  document.documentElement.lang = lang;
+  document.body.classList.toggle("ethiopic", lang === "am" || lang === "om");
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const val = translations[lang]?.[el.dataset.i18n];
+    if (typeof val === "string") el.textContent = val;
+  });
+  document.querySelectorAll("[data-placeholder]").forEach(el => {
+    const val = translations[lang]?.[el.dataset.placeholder];
+    if (typeof val === "string") el.placeholder = val;
+  });
+  document.querySelectorAll(".language-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === lang);
+  });
+
+  const loginBtn = document.getElementById("loginButton");
+  if (loginBtn && !loginBtn.classList.contains("loading")) {
+    loginBtn.querySelector(".btn-label").textContent = t("login");
+  }
+}
+
+const form        = document.getElementById("loginForm");
+const emailEl     = document.getElementById("email");
+const passEl      = document.getElementById("password");
+const rememberEl  = document.getElementById("rememberMe");
+const loginBtn    = document.getElementById("loginButton");
+const btnLabel    = loginBtn.querySelector(".btn-label");
+const messageEl   = document.getElementById("message");
+const togglePw    = document.getElementById("togglePassword");
+const forgotBtn   = document.getElementById("forgotPassword");
+
+function showMessage(text, type = "error") {
+  messageEl.textContent = text;
+  messageEl.className = "message " + type;
+}
+function clearMessage() {
+  messageEl.textContent = "";
+  messageEl.className = "message";
+}
+function setLoading(on) {
+  loginBtn.disabled = on;
+  loginBtn.classList.toggle("loading", on);
+  btnLabel.textContent = on ? t("loggingIn") : t("login");
+}
+function markInvalid(el, invalid) {
+  if (invalid) el.setAttribute("aria-invalid", "true");
+  else el.removeAttribute("aria-invalid");
+}
+
+try {
+  const reason = sessionStorage.getItem("__redirectReason");
+  if (reason === "expired") {
+    sessionStorage.removeItem("__redirectReason");
+    setTimeout(() => showMessage(t("sessionExpired"), "error"), 100);
+  }
+} catch (e) {}
+
+document.querySelectorAll(".language-btn").forEach(btn => {
+  btn.addEventListener("click", () => applyLanguage(btn.dataset.lang));
+});
+
+togglePw.addEventListener("click", () => {
+  const showing = passEl.type === "text";
+  passEl.type = showing ? "password" : "text";
+  togglePw.textContent = showing ? "👁" : "🙈";
+});
+
+forgotBtn.addEventListener("click", async () => {
+  clearMessage();
+  const email = emailEl.value.trim();
+  if (!email) { showMessage(t("resetNeedsEmail"), "info"); emailEl.focus(); return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showMessage(t("resetSent"), "success");
+  } catch (err) {
+    console.warn("[forgot]", err.code, err.message);
+    showMessage(t("resetFail"), "error");
+  }
+});
+
+const AUTH_ERROR_MAP = {
+  "auth/invalid-email":          "invalid",
+  "auth/wrong-password":         "invalid",
+  "auth/user-not-found":         "invalid",
+  "auth/invalid-credential":     "invalid",
+  "auth/too-many-requests":      "tooMany",
+  "auth/network-request-failed": "networkError",
+  "auth/user-disabled":          "invalid"
+};
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  clearMessage();
+
+  const email = emailEl.value.trim();
+  const password = passEl.value;
+  let hasError = false;
+
+  if (!email)    { markInvalid(emailEl, true); hasError = true; } else { markInvalid(emailEl, false); }
+  if (!password) { markInvalid(passEl, true);  hasError = true; } else { markInvalid(passEl, false); }
+
+  if (hasError) {
+    showMessage(t("required"), "error");
+    (!email ? emailEl : passEl).focus();
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    await setPersistence(
+      auth,
+      rememberEl.checked ? browserLocalPersistence : browserSessionPersistence
+    );
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+
+    let profile = null;
+    try {
+      const snap = await getDoc(doc(db, "users", cred.user.uid));
+      if (snap.exists()) profile = snap.data();
+    } catch (err) {
+      console.warn("[login] profile read failed:", err.code || err.message);
+    }
+
+    if (profile && profile.active === false) {
+      await signOut(auth);
+      showMessage(t("invalid"), "error");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      sessionStorage.setItem("loggedIn", "true");
+      sessionStorage.setItem("uid", cred.user.uid);
+      sessionStorage.setItem("role", profile?.role || "employee");
+      sessionStorage.setItem("email", email);
+      sessionStorage.setItem("name", profile?.name || email.split("@")[0]);
+      sessionStorage.setItem("officeId", profile?.officeId || "");
+    } catch (e) {}
+
+    showMessage(t("success"), "success");
+    setTimeout(() => { window.location.href = "pages/dashboard.html"; }, 500);
+
+  } catch (err) {
+    console.warn("[login]", err.code, err.message);
+    const key = AUTH_ERROR_MAP[err.code] || "invalid";
+    showMessage(t(key), "error");
+    setLoading(false);
+  }
+});
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    try {
+      if (!sessionStorage.getItem("loggedIn")) {
+        sessionStorage.setItem("loggedIn", "true");
+        sessionStorage.setItem("uid", user.uid);
+        sessionStorage.setItem("email", user.email || "");
+        sessionStorage.setItem("role", sessionStorage.getItem("role") || "employee");
+        sessionStorage.setItem("name", user.displayName || (user.email || "").split("@")[0]);
+      }
+    } catch (e) {}
+    window.location.replace("pages/dashboard.html");
+  }
+});
+
+(function bootLang() {
+  let saved = null, browser = "en";
+  try { saved = localStorage.getItem(LANG_KEY); } catch (e) {}
+  const b = (navigator.language || "en").slice(0, 2);
+  browser = SUPPORTED.includes(b) ? b : "en";
+  const initial = SUPPORTED.includes(saved) ? saved : browser;
+  applyLanguage(initial);
+})();
+
+console.log("[login] ready");
+</script>
+
+</body>
+</html>
