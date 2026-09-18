@@ -26,8 +26,7 @@
              window.matchMedia("(prefers-color-scheme: dark)").matches) {
       document.documentElement.classList.add("theme-dark");
     }
-    const compact = localStorage.getItem("cs.compact") === "true";
-    if (compact) document.documentElement.classList.add("compact-mode");
+    if (localStorage.getItem("cs.compact") === "true") document.documentElement.classList.add("compact-mode");
     const lang = localStorage.getItem("cs.language") || "en";
     document.documentElement.setAttribute("data-lang", lang);
     if (lang === "am") document.documentElement.setAttribute("data-ethiopic", "true");
@@ -56,8 +55,7 @@
   --sh-md:0 4px 12px rgba(20,40,70,.06),0 2px 4px rgba(20,40,70,.04);
   --sh-lg:0 12px 32px rgba(20,40,70,.08),0 4px 8px rgba(20,40,70,.04);
   --r-md:13px; --r-lg:20px; --r-full:999px;
-  --sidebar-w:272px; --topbar-h:76px;
-  --pad-main:32px;
+  --sidebar-w:272px; --topbar-h:76px; --pad-main:32px;
 }
 html.theme-dark, body.theme-dark {
   --text:#e4e8f0; --text-soft:#c5cdd9; --muted:#94a3b8; --muted-light:#64748b;
@@ -68,24 +66,26 @@ html.theme-dark .main, body.theme-dark .main { background:#0b1220; }
 html.theme-dark .sidebar, body.theme-dark .sidebar { background:linear-gradient(145deg,#0b1220,#0f172a,#111a2c); }
 html.theme-dark .topbar, body.theme-dark .topbar { background:rgba(15,23,42,.85); border-bottom-color:#1e293b; }
 html.theme-dark .card, body.theme-dark .card,
-html.theme-dark .stat, body.theme-dark .stat,
 html.theme-dark .region-card, body.theme-dark .region-card,
-html.theme-dark .cluster-block, body.theme-dark .cluster-block { background:#0f172a; border-color:#1e293b; }
+html.theme-dark .cluster-block, body.theme-dark .cluster-block,
+html.theme-dark .stat, body.theme-dark .stat { background:#0f172a; border-color:#1e293b; }
 html.theme-dark .cluster-block { background:#111a2c; }
 html.theme-dark .cluster-block:hover { background:#0f172a; }
+html.theme-dark .region-card__head { background:#0b1220; border-bottom-color:#1e293b; }
 html.theme-dark .modal { background:#0f172a; }
 html.theme-dark .modal__head { border-bottom-color:#1e293b; }
 html.theme-dark .modal__foot { border-top-color:#1e293b; background:#111a2c; }
 html.theme-dark .field input, html.theme-dark .field select, html.theme-dark .field textarea { background:#111a2c; border-color:#1e293b; color:#e4e8f0; }
-html.theme-dark .field input:focus, html.theme-dark .field select:focus, html.theme-dark .field textarea:focus { background:#0f172a; }
-html.theme-dark .wm-list { border-color:#1e293b; }
-html.theme-dark .wm-item, html.theme-dark .admin-item, html.theme-dark .office-item { border-bottom-color:#1a2433; }
-html.theme-dark .wm-add__code, html.theme-dark .wm-add__name { background:#111a2c; border-color:#1e293b; color:#e4e8f0; }
 html.theme-dark .steps { background:#111a2c; border-bottom-color:#1e293b; }
 html.theme-dark .step__num { background:#1a2433; color:#64748b; }
 html.theme-dark .step__line { background:#1e293b; }
 html.theme-dark .review { background:#111a2c; border-color:#1e293b; }
 html.theme-dark .review__row { border-bottom-color:#1a2433; }
+html.theme-dark .wm-list { border-color:#1e293b; }
+html.theme-dark .wm-item, html.theme-dark .admin-item, html.theme-dark .office-item { border-bottom-color:#1a2433; }
+html.theme-dark .user-pick-item, html.theme-dark .emp-pick-item { border-bottom-color:#1a2433; }
+html.theme-dark .user-pick-item:hover, html.theme-dark .emp-pick-item:hover { background:#1a2433; }
+html.theme-dark .user-pick-item.is-on, html.theme-dark .emp-pick-item.is-on { background:#1e3a5f; }
 html.theme-dark .dropdown__panel { background:#0f172a; border-color:#1e293b; }
 html.theme-dark .dropdown__item:hover { background:#1a2433; }
 html.theme-dark .btn { background:#1a2433; border-color:#1e293b; color:#c5cdd9; }
@@ -94,7 +94,9 @@ html.theme-dark .btn--primary { background:linear-gradient(135deg,#0b5cab,#0e749
 html.theme-dark .scope-badge { background:linear-gradient(135deg,#1a2433,#0f172a); border-color:#1e293b; color:#c5cdd9; }
 html.theme-dark .scope-badge--super { background:linear-gradient(135deg,#2a1e4a,#0f172a); border-color:#3d2a5f; color:#c4b5fd; }
 html.theme-dark .scope-badge--cluster { background:linear-gradient(135deg,#1a3a2a,#0f172a); border-color:#2a5f3d; color:#6ee7b7; }
-html.theme-dark .tag--gray { background:#1a2433; color:#c5cdd9; }
+html.theme-dark .photo-upload { background:#111a2c; border-color:#1e293b; }
+html.theme-dark .photo-upload__circle { border-color:#0f172a; }
+html.theme-dark .empty { background:#0f172a; }
 html.theme-dark .wm-item__code { background:#1a2433; color:#c5cdd9; }
 
 html.compact-mode { --pad-main:18px; --topbar-h:60px; }
@@ -131,8 +133,7 @@ body.sidebar-collapsed .sidebar { width:88px; }
   padding:22px; border-bottom:1px solid rgba(255,255,255,.10);
   min-height:var(--topbar-h); flex-shrink:0; }
 .sidebar__logo { width:46px; height:46px; flex-shrink:0; border-radius:14px;
-  background:rgba(255,255,255,.97); box-shadow:0 10px 24px rgba(0,0,0,.18);
-  display:grid; place-items:center; padding:5px; }
+  background:rgba(255,255,255,.97); display:grid; place-items:center; padding:5px; }
 .sidebar__logo img { width:100%; height:100%; object-fit:contain; border-radius:9px; }
 .sidebar__identity { min-width:0; flex:1; opacity:1; white-space:nowrap; overflow:hidden; }
 body.sidebar-collapsed .sidebar__identity { opacity:0; pointer-events:none; }
@@ -150,7 +151,7 @@ body.sidebar-collapsed .sidebar__collapse svg { transform:rotate(180deg); }
 body.sidebar-collapsed .sidebar__section { height:6px; padding:0; opacity:0; margin-top:14px; margin-bottom:6px; }
 .nav-item { display:flex; align-items:center; gap:13px; padding:11px 13px; border-radius:12px;
   font-size:14px; font-weight:600; color:rgba(255,255,255,.78);
-  margin-bottom:3px; transition:background .15s, color .15s; white-space:nowrap; cursor:pointer; position:relative; }
+  margin-bottom:3px; transition:.15s; white-space:nowrap; cursor:pointer; position:relative; }
 .nav-item:hover { background:rgba(255,255,255,.09); color:#fff; }
 .nav-item.is-active { background:rgba(255,255,255,.16); color:#fff; }
 .nav-item.is-active::before { content:""; position:absolute; left:-14px; top:50%; transform:translateY(-50%);
@@ -206,8 +207,8 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   border:1px solid #bdd7f2; color:var(--primary-dark);
   font-size:12.5px; font-weight:700; margin-top:8px; }
 .scope-badge svg { width:15px; height:15px; stroke:currentColor; stroke-width:2.2; fill:none; }
-.scope-badge--super { background:linear-gradient(135deg, #f0eaff, #fff); border-color:#ddd2fb; color:#5b21b6; }
-.scope-badge--cluster { background:linear-gradient(135deg, #ecfdf3, #fff); border-color:#abefc6; color:#067647; }
+.scope-badge--super { background:linear-gradient(135deg,#f0eaff,#fff); border-color:#ddd2fb; color:#5b21b6; }
+.scope-badge--cluster { background:linear-gradient(135deg,#ecfdf3,#fff); border-color:#abefc6; color:#067647; }
 
 .chain { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
   background:var(--card-bg); border:1px solid var(--border); border-radius:var(--r-lg);
@@ -317,7 +318,7 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   backdrop-filter:blur(6px); display:grid; place-items:center; padding:24px; overflow-y:auto; }
 .modal { background:var(--card-bg); border-radius:var(--r-lg); box-shadow:0 30px 60px rgba(20,40,70,.12);
   width:100%; max-width:640px; max-height:92vh; display:flex; flex-direction:column; margin:auto; }
-.modal--lg { max-width:860px; }
+.modal--lg { max-width:880px; }
 .modal__head { padding:24px 28px; border-bottom:1px solid var(--border-soft);
   display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
 .modal__title { font-size:20px; font-weight:800; }
@@ -432,31 +433,34 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .id-preview__parts { font-size:11.5px; color:#94a3b8; margin-top:10px; line-height:1.75; }
 .id-preview__parts b { color:#cbd5e1; }
 
-/* Woreda manager */
-.wm-add { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
-.wm-add__code { width:90px; height:48px; padding:0 12px;
-  border:2px solid var(--border); border-radius:11px; background:var(--bg-soft);
-  font-family:ui-monospace,monospace; letter-spacing:3px; text-align:center;
-  font-size:18px; font-weight:800; color:var(--primary-dark); flex-shrink:0; }
-.wm-add__name { flex:1; min-width:150px; height:48px; padding:0 14px;
-  border:1px solid var(--border); border-radius:11px; background:var(--bg-soft); font-size:14px; }
-.wm-list { border:1px solid var(--border); border-radius:12px; overflow:hidden; max-height:340px; overflow-y:auto; }
-.wm-item { display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid var(--border-soft); }
-.wm-item:last-child { border-bottom:0; }
-.wm-item__code { font-family:ui-monospace,monospace; font-weight:800; font-size:12px;
-  background:#eaf3fc; color:var(--primary-dark); padding:4px 9px; border-radius:7px; letter-spacing:1px; }
-.wm-item__name { font-weight:600; flex:1; font-size:13.5px; }
+.wm-list { border:1px solid var(--border); border-radius:12px; overflow:hidden; max-height:400px; overflow-y:auto; }
 .wm-empty { padding:26px; text-align:center; color:var(--muted); font-size:13px; font-style:italic; }
 
-.admin-item, .office-item { display:flex; align-items:center; gap:12px;
-  padding:12px 14px; border-bottom:1px solid var(--border-soft); }
-.admin-item:last-child, .office-item:last-child { border-bottom:0; }
+.user-pick-item, .emp-pick-item { display:flex; align-items:center; gap:12px; padding:12px 14px;
+  cursor:pointer; border-bottom:1px solid var(--border-soft); transition:.12s; }
+.user-pick-item:last-child, .emp-pick-item:last-child { border-bottom:0; }
+.user-pick-item:hover, .emp-pick-item:hover { background:var(--border-soft); }
+.user-pick-item.is-on, .emp-pick-item.is-on { background:#eaf3fc; }
+.user-pick-item__main, .emp-pick-item__main { flex:1; min-width:0; }
+.user-pick-item__name, .emp-pick-item__name { font-weight:700; font-size:13.5px;
+  display:flex; align-items:center; gap:6px; }
+.user-pick-item__meta, .emp-pick-item__meta { font-size:11.5px; color:var(--muted); margin-top:2px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.user-pick-radio, .emp-pick-radio { width:22px; height:22px; border-radius:50%; border:2px solid #cbd5e1;
+  flex-shrink:0; transition:.15s; }
+.user-pick-item.is-on .user-pick-radio,
+.emp-pick-item.is-on .emp-pick-radio { background:var(--primary); border-color:var(--primary); }
+
 .admin-avatar, .user-avatar-sm { width:40px; height:40px; border-radius:50%;
   background:linear-gradient(135deg, #eaf3fc, #bdd7f2);
   color:var(--primary-dark); font-weight:800; font-size:13px;
   display:grid; place-items:center; flex-shrink:0; overflow:hidden; position:relative; }
 .admin-avatar img, .user-avatar-sm img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-.admin-item__main, .user-cell-sm { flex:1; min-width:0; }
+
+.admin-item, .office-item { display:flex; align-items:center; gap:12px;
+  padding:12px 14px; border-bottom:1px solid var(--border-soft); }
+.admin-item:last-child, .office-item:last-child { border-bottom:0; }
+.admin-item__main { flex:1; min-width:0; }
 .admin-item__name { font-weight:700; font-size:13.5px; }
 .admin-item__email { font-size:12px; color:var(--muted); margin-top:2px; }
 .admin-item__actions { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
@@ -466,27 +470,13 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .office-item__name { font-weight:700; flex:1; font-size:13.5px; }
 .office-item__meta { font-size:12px; color:var(--muted); margin-top:2px; }
 
-/* Picker list */
-.user-pick-list { border:1px solid var(--border); border-radius:12px; overflow:hidden; max-height:400px; overflow-y:auto; background:var(--bg-soft); }
-.user-pick-item { display:flex; align-items:center; gap:12px; padding:12px 14px;
-  cursor:pointer; border-bottom:1px solid var(--border-soft); transition:.12s; }
-.user-pick-item:last-child { border-bottom:0; }
-.user-pick-item:hover { background:var(--border-soft); }
-.user-pick-item.is-on { background:#eaf3fc; }
-.user-pick-item__main { flex:1; min-width:0; }
-.user-pick-item__name { font-weight:700; font-size:13.5px; display:flex; align-items:center; gap:6px; }
-.user-pick-item__meta { font-size:11.5px; color:var(--muted); margin-top:2px;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.user-pick-radio { width:22px; height:22px; border-radius:50%; border:2px solid #cbd5e1;
-  flex-shrink:0; transition:.15s; }
-.user-pick-item.is-on .user-pick-radio { background:var(--primary); border-color:var(--primary); }
-
 .alert { display:flex; gap:12px; padding:13px 16px; border-radius:11px;
   font-size:13px; line-height:1.55; margin-bottom:18px; border:1px solid transparent; }
 .alert svg { width:16px; height:16px; flex-shrink:0; margin-top:2px; stroke:currentColor; stroke-width:2.2; fill:none; }
 .alert--error { background:#fef3f2; color:#b42318; border-color:#fecdca; }
 .alert--info { background:#eaf3fc; color:#0b5cab; border-color:#bdd7f2; }
 .alert--warning { background:#fdf5e0; color:#7a5210; border-color:#f0dcb0; }
+.alert--success { background:#ecfdf3; color:#067647; border-color:#abefc6; }
 
 .toast-wrap { position:fixed; top:24px; right:24px; z-index:300;
   display:flex; flex-direction:column; gap:10px; pointer-events:none; max-width:calc(100vw - 48px); }
@@ -540,7 +530,7 @@ body.sidebar-open .overlay { display:block; }
         <div class="sidebar__title">Civil Service</div>
         <div class="sidebar__subtitle">Management Information System</div>
       </div>
-      <button class="sidebar__collapse" id="collapse-toggle" aria-label="Toggle sidebar">
+      <button class="sidebar__collapse" id="collapse-toggle">
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
     </div>
@@ -552,7 +542,7 @@ body.sidebar-open .overlay { display:block; }
   </aside>
 
   <header class="topbar">
-    <button class="topbar__menu" id="menu-toggle" aria-label="Open menu">
+    <button class="topbar__menu" id="menu-toggle">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="3" y1="6" x2="21" y2="6"/>
@@ -596,7 +586,7 @@ body.sidebar-open .overlay { display:block; }
   <main class="main">
     <div class="page-head">
       <div>
-        <h1 class="page-head__title" id="page-title">Regions</h1>
+        <h1 class="page-head__title">Regions</h1>
         <p class="page-head__sub">Region → Cluster → Woreda / City → Office → Employee</p>
         <div id="scope-badge"></div>
       </div>
@@ -661,21 +651,23 @@ const REGIONS = [
   { code:"14", en:"Central Ethiopia", am:"መካከለኛው ኢትዮጵያ" },
   { code:"15", en:"South Ethiopia", am:"ደቡብ ኢትዮጵያ" }
 ];
+const regionLabel = (code) => {
+  const r = REGIONS.find(x => x.code === code);
+  return r ? r.code + " — " + r.en : (code || "—");
+};
+const regionName = (code) => REGIONS.find(x => x.code === code)?.en || (code || "");
 
 /* ============================================================
-   STATE + SETTINGS
+   SETTINGS
    ============================================================ */
-const STATE = { lang:"en", theme:"light", compact:false, userCache:{}, empCache:{} };
-
+const STATE = { lang:"en", theme:"light", compact:false };
 function applyTheme(theme) {
   STATE.theme = theme;
   document.documentElement.classList.remove("theme-dark");
   document.body.classList.remove("theme-dark");
   let dark = false;
   if (theme === "dark") dark = true;
-  else if (theme === "auto") {
-    dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  }
+  else if (theme === "auto") dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
   if (dark) {
     document.documentElement.classList.add("theme-dark");
     document.body.classList.add("theme-dark");
@@ -695,17 +687,16 @@ function applyLanguage(lang) {
   else document.documentElement.removeAttribute("data-ethiopic");
   try { localStorage.setItem("cs.language", STATE.lang); } catch(e) {}
 }
-
 async function loadUserSettings(uid) {
   try {
     const snap = await getDoc(doc(db, "settings", uid));
     if (snap.exists()) Object.assign(STATE, snap.data());
-  } catch (e) {}
+  } catch(e) {}
   try {
-    if (!STATE.theme)   STATE.theme = localStorage.getItem("cs.theme") || "light";
+    if (!STATE.theme) STATE.theme = localStorage.getItem("cs.theme") || "light";
     if (STATE.compact == null) STATE.compact = localStorage.getItem("cs.compact") === "true";
-    if (!STATE.lang)    STATE.lang = localStorage.getItem("cs.language") || "en";
-  } catch (e) {}
+    if (!STATE.lang) STATE.lang = localStorage.getItem("cs.language") || "en";
+  } catch(e) {}
   applyTheme(STATE.theme);
   applyCompact(STATE.compact);
   applyLanguage(STATE.lang);
@@ -716,7 +707,7 @@ async function loadUserSettings(uid) {
    ============================================================ */
 const INDEX_URL = "../index.html";
 let unsubRegions = null, unsubClusters = null, unsubOffices = null,
-    unsubEmployees = null, unsubUsers = null;
+    unsubEmployees = null, unsubUsers = null, unsubDepartments = null;
 
 function kick(reason) {
   if (kick.done) return;
@@ -747,7 +738,7 @@ document.addEventListener("click", async (e)=>{
 });
 
 /* ============================================================
-   STATE ARRAYS
+   STATE
    ============================================================ */
 let S = null;
 let customRegions = [];
@@ -755,6 +746,7 @@ let clusters = [];
 let offices = [];
 let employees = [];
 let users = [];
+let departments = [];
 
 const clustersByRegion = {};
 const officesByCluster = {};
@@ -772,11 +764,6 @@ function allRegions() {
   customRegions.forEach(r => map.set(r.code, { ...r, builtin: false }));
   return Array.from(map.values()).sort((a,b) => String(a.code).localeCompare(String(b.code)));
 }
-const regionLabel = (code) => {
-  const r = allRegions().find(x => x.code === code);
-  return r ? r.code + " — " + r.en : (code || "—");
-};
-const regionName = (code) => allRegions().find(x => x.code === code)?.en || (code || "");
 
 /* ============================================================
    ICONS
@@ -822,8 +809,8 @@ const NAV = [
     { key:"departments", label:"Departments",   href:"departments.html", icon:"building", roles:["super_admin","admin","hrm","manager"] }
   ]},
   { section:"Operations", items:[
-    { key:"attendance", label:"Attendance", href:"attendance.html", icon:"clock",     roles:["super_admin","admin","hrm","manager","employee"] },
-    { key:"leave",      label:"Leave",      href:"leave.html",      icon:"calendar",  roles:["super_admin","admin","hrm","manager","employee"] }
+    { key:"attendance", label:"Attendance", href:"attendance.html", icon:"clock",    roles:["super_admin","admin","hrm","manager","employee"] },
+    { key:"leave",      label:"Leave",      href:"leave.html",      icon:"calendar", roles:["super_admin","admin","hrm","manager","employee"] }
   ]},
   { section:"Finance", items:[
     { key:"payroll", label:"Payroll", href:"payroll.html", icon:"wallet", roles:["super_admin","finance","admin"] },
@@ -858,7 +845,7 @@ const normalizePhone = (v) => {
   if (s.startsWith("0"))   s = s.slice(1);
   return s;
 };
-const fullName = (u) => u.name || [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email || "User";
+const fullName = (e) => e.fullName || [e.firstName, e.lastName].filter(Boolean).join(" ") || e.nameEn || e.email || "Employee";
 function fileToDataURL(file) {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -879,7 +866,7 @@ function toast(msg, type="success") {
 }
 
 /* ============================================================
-   ID GENERATOR
+   ID + DUPLICATE HELPERS
    ============================================================ */
 const buildEmpId = (r,c,w,o,seq) =>
   `${twoDigits(r)}-${twoDigits(c)}${twoDigits(w)}${twoDigits(o)}${String(seq).padStart(4,"0")}`;
@@ -900,9 +887,6 @@ async function generateEmployeeId({ regionCode, clusterCode, woredaCode, officeC
   return { empId: buildEmpId(RR,CC,WW,OO,next), seq: next };
 }
 
-/* ============================================================
-   DUPLICATE LOOKUP
-   ============================================================ */
 async function findEmployeeByNationalId(natId) {
   const norm = normalizeNationalId(natId);
   if (!norm) return null;
@@ -977,16 +961,21 @@ function evaluatePassword(pw) {
    ============================================================ */
 const isSuper = () => S?.role === "super_admin";
 const isClusterAdmin = () => S?.role === "admin";
+const isHRM = () => S?.role === "hrm";
 const myClusterId = () => S?.clusterId || null;
-const visibleClusters = () => isSuper() ? clusters :
-  (isClusterAdmin() ? clusters.filter(c => c.id === myClusterId()) : []);
+
+const visibleClusters = () => {
+  if (isSuper() || isHRM()) return clusters;
+  if (isClusterAdmin()) return clusters.filter(c => c.id === myClusterId());
+  return [];
+};
 const visibleOffices = () => {
-  if (isSuper()) return offices;
+  if (isSuper() || isHRM()) return offices;
   const ids = new Set(visibleClusters().map(c => c.id));
   return offices.filter(o => ids.has(o.clusterId));
 };
 const visibleEmployees = () => {
-  if (isSuper()) return employees;
+  if (isSuper() || isHRM()) return employees;
   const ids = new Set(visibleClusters().map(c => c.id));
   return employees.filter(e => ids.has(e.clusterId));
 };
@@ -995,9 +984,14 @@ const canCreateCluster = () => isSuper();
 const canCreateOffice  = () => isSuper() || isClusterAdmin();
 const canManageWoredas = (cluster) => isSuper() || (isClusterAdmin() && cluster.id === myClusterId());
 const canManageAdmins  = (cluster) => isSuper() && !!cluster;
+const canAddPeopleTo   = (office) => {
+  if (!office) return false;
+  if (isSuper() || isHRM()) return true;
+  return isClusterAdmin() && office.clusterId === myClusterId();
+};
 
 /* ============================================================
-   RENDER
+   RENDER — SHELL
    ============================================================ */
 function renderSidebar() {
   const nav = document.getElementById("sidebar-nav");
@@ -1033,6 +1027,10 @@ function renderScopeBadge() {
   if (isSuper()) {
     el.innerHTML = `<span class="scope-badge scope-badge--super">
       <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Full system access — all regions
+    </span>`;
+  } else if (isHRM()) {
+    el.innerHTML = `<span class="scope-badge scope-badge--cluster">
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> HR Manager — organisation-wide
     </span>`;
   } else if (isClusterAdmin()) {
     const c = clusters.find(x => x.id === S.clusterId);
@@ -1103,7 +1101,6 @@ function render() {
 function renderRegions() {
   const host = document.getElementById("regions-grid");
   const cl = visibleClusters();
-
   const byRegion = {};
   for (const c of cl) {
     if (!byRegion[c.regionCode]) byRegion[c.regionCode] = [];
@@ -1129,9 +1126,8 @@ function renderRegions() {
   }
 
   host.innerHTML = regionCodes.map(code => renderRegionCard(code, byRegion[code] || [])).join("");
-
   host.querySelectorAll("[data-action]").forEach(el => {
-    el.addEventListener("click", () => {
+    el.addEventListener("click", ()=>{
       const { action, cid, wid, uid } = el.dataset;
       if (action === "delete-region")      deleteRegion(el.dataset.region);
       if (action === "add-cluster")        openClusterModal(null, el.dataset.region);
@@ -1145,7 +1141,6 @@ function renderRegions() {
     });
   });
 }
-
 function renderRegionCard(regionCode, regionClusters) {
   const r = allRegions().find(x => x.code === regionCode)
     || { code: regionCode, en: regionCode, am:"", builtin:false };
@@ -1153,7 +1148,6 @@ function renderRegionCard(regionCode, regionClusters) {
   const officeCount = regionClusters.reduce((n,c)=> n + (officesByCluster[c.id]?.length||0), 0);
   const cardCls = r.builtin ? "region-card--builtin" : "region-card--custom";
   const crestCls = r.builtin ? "" : "region-card__crest--custom";
-
   return `
     <article class="region-card ${cardCls}">
       <div class="region-card__head">
@@ -1193,7 +1187,6 @@ function renderRegionCard(regionCode, regionClusters) {
       </div>
     </article>`;
 }
-
 function renderClusterBlock(c) {
   const woredas = normalizeWoredas(c.woredas);
   const officeCount = (officesByCluster[c.id] || []).length;
@@ -1204,7 +1197,6 @@ function renderClusterBlock(c) {
   const canDelete = isSuper();
   const canAddOffice = canCreateOffice() && (isSuper() || c.id === myClusterId());
   const canAddAdmin = canManageAdmins(c);
-
   const woredaPills = woredas.length
     ? woredas.map(w => `
         <span class="woreda-pill">
@@ -1218,7 +1210,6 @@ function renderClusterBlock(c) {
                   style="background:rgba(11,92,171,.14);color:#0b5cab">›</button>
         </span>`).join("")
     : `<span class="no-woredas">No woredas yet${canManage ? " — click “Woredas” to add them" : ""}</span>`;
-
   return `
     <div class="cluster-block">
       <div class="cluster-block__top">
@@ -1275,7 +1266,7 @@ function openModal(html, { size="" } = {}) {
   const bd = document.createElement("div");
   bd.className = "modal-backdrop";
   bd.id = "modal-backdrop";
-  bd.innerHTML = `<div class="modal ${size ? "modal--"+size : ""}" role="dialog">${html}</div>`;
+  bd.innerHTML = `<div class="modal ${size?"modal--"+size:""}" role="dialog">${html}</div>`;
   document.body.appendChild(bd);
   bd.addEventListener("click", (e)=>{ if (e.target === bd) closeModal(); });
   bd.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", closeModal));
@@ -1295,7 +1286,6 @@ function closeModal() {
 function openWizard({ title, subtitle, finishLabel, steps, initial = {}, onFinish, successMessage, size="lg" }) {
   const data = { ...initial };
   let idx = 0, busy = false;
-
   const root = document.createElement("div");
   root.className = "modal-backdrop";
   root.id = "modal-backdrop";
@@ -1327,9 +1317,7 @@ function openWizard({ title, subtitle, finishLabel, steps, initial = {}, onFinis
             <div class="modal__title">${escapeHtml(title)}</div>
             ${subtitle ? `<div class="modal__sub">${escapeHtml(subtitle)}</div>` : ""}
           </div>
-          <button class="modal__close" data-close>
-            <svg viewBox="0 0 24 24">${ICONS.x}</svg>
-          </button>
+          <button class="modal__close" data-close><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
         </div>
         <div class="steps">
           ${steps.map((s,i)=>`
@@ -1354,11 +1342,10 @@ function openWizard({ title, subtitle, finishLabel, steps, initial = {}, onFinis
           <button class="btn" data-wiz="prev" ${idx===0?"disabled":""}>← Back</button>
           <button class="btn btn--primary" data-wiz="next">
             <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
-            <span class="btn-label">${idx===steps.length-1 ? escapeHtml(finishLabel||"Save") : "Next →"}</span>
+            <span class="btn-label">${idx===steps.length-1?escapeHtml(finishLabel||"Save"):"Next →"}</span>
           </button>
         </div>
       </div>`;
-
     root.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", closeModal));
     root.querySelectorAll("[data-field]").forEach(el => {
       const v = data[el.dataset.field];
@@ -1394,7 +1381,6 @@ function openWizard({ title, subtitle, finishLabel, steps, initial = {}, onFinis
         }
       } else { idx++; draw(); }
     });
-
     if (typeof step.after === "function") step.after(root, data, ()=>{ collect(); draw(); });
   }
   draw();
@@ -1409,44 +1395,39 @@ function setupLiveDuplicate(root, inputId, type, label, onStatusChange) {
   const wrap = input.closest(".field");
   if (!wrap) return;
   input.classList.add("has-check");
-
   let icon = wrap.querySelector(".dup-check");
   if (!icon) { icon = document.createElement("span"); icon.className = "dup-check"; wrap.appendChild(icon); }
   let err = wrap.querySelector(".field__error");
   if (!err) { err = document.createElement("div"); err.className = "field__error"; wrap.appendChild(err); }
-
   let timer = null;
   const run = async () => {
     const raw = input.value.trim();
     if (!raw) {
-      icon.textContent = ""; err.classList.remove("show"); input.removeAttribute("aria-invalid");
-      onStatusChange(type, { ok:true, empty:true });
-      return;
+      icon.textContent=""; err.classList.remove("show"); input.removeAttribute("aria-invalid");
+      onStatusChange(type, { ok:true, empty:true }); return;
     }
     if (type === "nationalId" && raw.length < 5) {
-      icon.textContent = ""; err.classList.remove("show");
-      onStatusChange(type, { ok:false, empty:false, reason:"too-short" });
-      return;
+      icon.textContent=""; err.classList.remove("show");
+      onStatusChange(type, { ok:false, empty:false, reason:"too-short" }); return;
     }
     if (type === "phone" && normalizePhone(raw).length < 9) {
-      icon.textContent = ""; err.classList.remove("show");
-      onStatusChange(type, { ok:false, empty:false, reason:"too-short" });
-      return;
+      icon.textContent=""; err.classList.remove("show");
+      onStatusChange(type, { ok:false, empty:false, reason:"too-short" }); return;
     }
-    icon.textContent = "…"; icon.style.color = "var(--muted-light)";
+    icon.textContent="…"; icon.style.color = "var(--muted-light)";
     const existing = type === "nationalId"
       ? await findEmployeeByNationalId(raw)
       : await findEmployeeByPhone(raw);
     if (existing) {
       input.setAttribute("aria-invalid","true");
       err.classList.add("show");
-      err.innerHTML = `⚠ This ${label} is already registered to <strong>${escapeHtml(existing.nameEn || existing.firstName || "another employee")}</strong>` +
+      err.innerHTML = `⚠ This ${label} is already registered to <strong>${escapeHtml(existing.nameEn||existing.firstName||"another employee")}</strong>` +
         (existing.empId ? ` (${escapeHtml(existing.empId)})` : "") + `.`;
-      icon.textContent = "✗"; icon.style.color = "var(--danger)";
+      icon.textContent="✗"; icon.style.color = "var(--danger)";
       onStatusChange(type, { ok:false, empty:false, reason:"duplicate", existing });
     } else {
       input.removeAttribute("aria-invalid"); err.classList.remove("show");
-      icon.textContent = "✓"; icon.style.color = "var(--success)";
+      icon.textContent="✓"; icon.style.color = "var(--success)";
       onStatusChange(type, { ok:true, empty:false });
     }
   };
@@ -1455,300 +1436,275 @@ function setupLiveDuplicate(root, inputId, type, label, onStatusChange) {
 }
 
 /* ============================================================
-   CLUSTER ADMINS — LIST
+   OFFICES MODAL
    ============================================================ */
-function openClusterAdminsModal(clusterId) {
+function openOfficesModal(clusterId, preWoredaCode = "") {
   const c = clusters.find(x => x.id === clusterId);
   if (!c) return;
-  if (!canManageAdmins(c)) { toast("Only super admins can manage cluster admins", "error"); return; }
+  const woredas = normalizeWoredas(c.woredas);
+  if (!woredas.length) { toast("Add woredas to this cluster first.", "error"); return; }
+  const canAdd = canCreateOffice() && (isSuper() || c.id === myClusterId());
 
-  const admins = (adminsByCluster[c.id] || []).slice();
-  const canAdd = isSuper();
+  let selectedWoreda = preWoredaCode || woredas[0].code;
 
   openModal(`
     <div class="modal__head">
       <div>
-        <div class="modal__title">Cluster Administrators</div>
-        <div class="modal__sub">
-          ${escapeHtml(c.name)} · code
-          <code style="font-family:ui-monospace,monospace;background:var(--border-soft);padding:2px 6px;border-radius:4px">${escapeHtml(c.code || "??")}</code>
-          · ${escapeHtml(regionLabel(c.regionCode))}
-        </div>
+        <div class="modal__title">Offices</div>
+        <div class="modal__sub">${escapeHtml(c.name)} · ${escapeHtml(regionName(c.regionCode))} · cluster ${escapeHtml(c.code || "??")}</div>
       </div>
       <button class="modal__close" data-close><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
     </div>
     <div class="modal__body">
-      <div class="alert alert--info">
-        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-        <div style="flex:1">
-          <div style="font-weight:800;margin-bottom:4px">What does a cluster admin do?</div>
-          <div>They sign in with their email + password. They can only see and manage
-          <strong>their own cluster</strong> — adding woredas, offices, employees and users underneath it.</div>
-        </div>
+      <div class="field">
+        <label class="field__required">Woreda / City</label>
+        <select id="of-woreda">
+          ${woredas.map(w => `
+            <option value="${escapeHtml(w.code)}" ${w.code===selectedWoreda?"selected":""}>
+              ${escapeHtml(w.code)} — ${escapeHtml(w.name)}
+            </option>`).join("")}
+        </select>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 8px">
-        <strong style="font-size:13px">Current admins</strong>
-        <span style="font-size:12px;color:var(--muted)">${admins.length} total</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px">
+        <strong style="font-size:13px">Offices in this woreda</strong>
+        <span id="of-count" style="font-size:12px;color:var(--muted)"></span>
       </div>
-      <div class="wm-list" id="adm-list">
-        ${admins.length
-          ? admins.map(a => {
-              const emp = employees.find(e => e.uid === a.id);
-              return `
-                <div class="admin-item">
-                  <div class="admin-avatar">
-                    ${a.photoURL ? `<img src="${escapeHtml(a.photoURL)}" alt="">` : escapeHtml(initials(a.name || a.email))}
-                  </div>
-                  <div class="admin-item__main">
-                    <div class="admin-item__name">${escapeHtml(a.name || "—")}</div>
-                    <div class="admin-item__email">
-                      ${escapeHtml(a.email || "")}
-                      ${emp?.empId ? ` · <span style="font-family:ui-monospace,monospace">${escapeHtml(emp.empId)}</span>` : ""}
-                    </div>
-                  </div>
-                  <div class="admin-item__actions">
-                    <span class="tag ${a.active === false ? "tag--red" : "tag--green"}">
-                      ${a.active === false ? "Inactive" : "Active"}
-                    </span>
-                    <button class="btn btn--sm btn--icon btn--danger"
-                            data-action="remove-admin"
-                            data-uid="${a.id}"
-                            data-cid="${c.id}">
-                      <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
-                    </button>
-                  </div>
-                </div>`;
-            }).join("")
-          : `<div class="wm-empty">No administrators yet for this cluster.</div>`}
-      </div>
+      <div class="wm-list" id="of-list" style="max-height:400px"></div>
     </div>
     <div class="modal__foot">
-      ${canAdd ? `<button class="btn btn--primary" id="adm-add-btn">
-        <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg> Add Admin
+      ${canAdd ? `<button class="btn btn--primary" id="of-add">
+        <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add Office
       </button>` : ""}
       <div class="spacer"></div>
       <button class="btn" data-close>Done</button>
     </div>
   `, { size:"lg" });
 
-  document.getElementById("adm-add-btn")?.addEventListener("click", ()=>{
-    closeModal();
-    setTimeout(()=>openAddAdminChooser(c.id), 120);
-  });
-  document.querySelectorAll("#adm-list [data-action='remove-admin']").forEach(btn => {
-    btn.addEventListener("click", ()=>confirmRemoveAdmin(btn.dataset.uid, c.id));
-  });
+  const listEl = document.getElementById("of-list");
+  const countEl = document.getElementById("of-count");
+  const woredaSel = document.getElementById("of-woreda");
+
+  function drawList() {
+    const list = (officesByWoreda[`${c.id}:${selectedWoreda}`] || [])
+      .slice().sort((a,b)=>String(a.code).localeCompare(String(b.code)));
+    countEl.textContent = `${list.length} total`;
+    if (!list.length) { listEl.innerHTML = `<div class="wm-empty">No offices in this woreda yet.</div>`; return; }
+
+    listEl.innerHTML = list.map(o => {
+      const emps = employeesByOffice[o.id] || [];
+      const avatars = emps.slice(0, 4).map(e => e.photoURL
+        ? `<span class="admin-avatar" style="width:30px;height:30px;font-size:11px;border:2px solid var(--card-bg);margin-left:-8px"><img src="${escapeHtml(e.photoURL)}" alt=""></span>`
+        : `<span class="admin-avatar" style="width:30px;height:30px;font-size:10px;border:2px solid var(--card-bg);margin-left:-8px">${escapeHtml(initials(fullName(e)))}</span>`
+      ).join("");
+      const rest = emps.length > 4 ? `<span style="font-size:11px;color:var(--muted);margin-left:6px">+${emps.length-4}</span>` : "";
+
+      return `
+        <div class="office-item" style="flex-wrap:wrap">
+          <span class="office-item__code">${escapeHtml(o.code || "??")}</span>
+          <div style="flex:1;min-width:0">
+            <div class="office-item__name">${escapeHtml(o.name || "—")}</div>
+            <div class="office-item__meta">${emps.length} employee(s)</div>
+          </div>
+          <div style="display:flex;align-items:center;${emps.length?'margin-right:8px':''}">
+            ${avatars}
+            ${rest}
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${canAddPeopleTo(o) ? `
+              <button class="btn btn--sm btn--xs btn--primary" data-add-emp="${o.id}">
+                <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg> Add Person
+              </button>` : ""}
+            ${canAddPeopleTo(o) ? `
+              <button class="btn btn--sm btn--xs" data-view-emps="${o.id}">
+                <svg viewBox="0 0 24 24">${ICONS.users}</svg> Members${emps.length ? ` (${emps.length})` : ""}
+              </button>` : ""}
+            ${(isSuper() || (isClusterAdmin() && c.id === myClusterId())) ? `
+              <button class="btn btn--sm btn--icon" data-edit="${o.id}">
+                <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
+              </button>` : ""}
+            ${isSuper() ? `
+              <button class="btn btn--sm btn--icon btn--danger" data-del="${o.id}">
+                <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
+              </button>` : ""}
+          </div>
+        </div>`;
+    }).join("");
+
+    listEl.querySelectorAll("[data-add-emp]").forEach(b =>
+      b.addEventListener("click", ()=>openAddPersonWizard(b.dataset.addEmp)));
+    listEl.querySelectorAll("[data-view-emps]").forEach(b =>
+      b.addEventListener("click", ()=>openOfficeMembersModal(b.dataset.viewEmps)));
+    listEl.querySelectorAll("[data-edit]").forEach(b =>
+      b.addEventListener("click", ()=>openOfficeForm(c.id, selectedWoreda, b.dataset.edit)));
+    listEl.querySelectorAll("[data-del]").forEach(b =>
+      b.addEventListener("click", ()=>deleteOfficeConfirm(b.dataset.del)));
+  }
+  woredaSel.addEventListener("change", ()=>{ selectedWoreda = woredaSel.value; drawList(); });
+  document.getElementById("of-add")?.addEventListener("click", ()=>openOfficeForm(c.id, selectedWoreda, null));
+  drawList();
 }
 
 /* ============================================================
-   ADD ADMIN — chooser: existing user OR create new
+   OFFICE MEMBERS MODAL
    ============================================================ */
-function openAddAdminChooser(clusterId) {
-  const c = clusters.find(x => x.id === clusterId);
-  if (!c) return;
-  if (!isSuper()) { toast("Only super admins can add cluster admins", "error"); return; }
-
-  const existingAdminIds = new Set((adminsByCluster[c.id] || []).map(a => a.id));
-  const candidates = users
-    .filter(u => u.role !== "super_admin")
-    .filter(u => !existingAdminIds.has(u.id))
-    .sort((a,b)=> String(a.name||a.email||"").localeCompare(String(b.name||b.email||"")));
-
-  let selectedId = null;
+function openOfficeMembersModal(officeId) {
+  const o = offices.find(x => x.id === officeId);
+  if (!o) return;
+  if (!canAddPeopleTo(o)) { toast("You cannot view members here", "error"); return; }
+  const emps = (employeesByOffice[o.id] || []).slice();
 
   openModal(`
     <div class="modal__head">
       <div>
-        <div class="modal__title">Add Cluster Administrator</div>
-        <div class="modal__sub">
-          ${escapeHtml(c.name)} · cluster code
-          <code style="font-family:ui-monospace,monospace;background:var(--border-soft);padding:2px 6px;border-radius:4px">${escapeHtml(c.code || "??")}</code>
-        </div>
+        <div class="modal__title">Members of ${escapeHtml(o.name)}</div>
+        <div class="modal__sub">${emps.length} employee(s) assigned to this office</div>
       </div>
       <button class="modal__close" data-close><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
     </div>
     <div class="modal__body">
-      <div class="alert alert--info">
-        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-        <div style="flex:1">
-          <div style="font-weight:800;margin-bottom:4px">Pick an existing user</div>
-          <div>Select a user from the list. They will be promoted to <strong>Cluster Administrator</strong> and
-          bound to this cluster. Their existing login credentials are preserved.</div>
+      ${emps.length ? `
+        <div class="wm-list">
+          ${emps.map(e => {
+            const dep = departments.find(d => d.id === e.departmentId);
+            return `
+              <div class="admin-item">
+                <div class="admin-avatar">
+                  ${e.photoURL ? `<img src="${escapeHtml(e.photoURL)}" alt="">` : escapeHtml(initials(fullName(e)))}
+                </div>
+                <div class="admin-item__main">
+                  <div class="admin-item__name">${escapeHtml(fullName(e))}</div>
+                  <div class="admin-item__email">
+                    ${escapeHtml(e.empId||"")}${e.position?" · "+escapeHtml(e.position):""}
+                    ${dep?" · "+escapeHtml(dep.name):""}
+                  </div>
+                </div>
+              </div>`;
+          }).join("")}
         </div>
-      </div>
-      <div class="field">
-        <label>Search users</label>
-        <input id="aa-search" placeholder="Search by name, email, Employee ID or National ID…">
-      </div>
-      <div class="field">
-        <label>Available users (${candidates.length})</label>
-        <div class="user-pick-list" id="aa-user-list">
-          ${candidates.length
-            ? candidates.map(u => {
-                const emp = employees.find(e => e.uid === u.id);
-                const hay = [u.name, u.email, u.nationalId, emp?.empId, emp?.nationalId].filter(Boolean).join(" ").toLowerCase();
-                return `
-                  <div class="user-pick-item" data-uid="${u.id}" data-search="${escapeHtml(hay)}">
-                    <div class="admin-avatar">
-                      ${u.photoURL ? `<img src="${escapeHtml(u.photoURL)}" alt="">` : escapeHtml(initials(u.name || u.email))}
-                    </div>
-                    <div class="user-pick-item__main">
-                      <div class="user-pick-item__name">
-                        ${escapeHtml(u.name || u.email || "User")}
-                        ${emp?.empId ? `<span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--muted)">${escapeHtml(emp.empId)}</span>` : ""}
-                      </div>
-                      <div class="user-pick-item__meta">
-                        ${escapeHtml(u.email || "—")}
-                        ${u.nationalId ? ` · NID ${escapeHtml(u.nationalId)}` : (emp?.nationalId ? ` · NID ${escapeHtml(emp.nationalId)}` : "")}
-                        · <span style="text-transform:uppercase;font-weight:700;font-size:10.5px">${escapeHtml((u.role||"").replace("_"," "))}</span>
-                      </div>
-                    </div>
-                    <div class="user-pick-radio"></div>
-                  </div>`;
-              }).join("")
-            : `<div class="wm-empty">No eligible users. Click “Create new account” below.</div>`}
-        </div>
-      </div>
-      <div id="aa-selected" class="hidden" style="margin-top:14px"></div>
-      <div id="aa-error" class="alert alert--error" style="display:none;margin-top:14px;margin-bottom:0">
-        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-        <div id="aa-error-msg" style="flex:1"></div>
-      </div>
+      ` : `<div class="wm-empty">No employees assigned to this office yet.</div>`}
     </div>
     <div class="modal__foot">
-      <button class="btn" id="aa-new-btn" style="margin-right:auto">
-        <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg> Create new account
-      </button>
-      <button class="btn" data-close>Cancel</button>
-      <button class="btn btn--primary" id="aa-submit" disabled>
-        <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
-        <span class="btn-label">Assign as Cluster Admin</span>
-      </button>
+      <div class="spacer"></div>
+      <button class="btn" data-close>Close</button>
+      ${canAddPeopleTo(o) ? `
+        <button class="btn btn--primary" id="members-add-btn">
+          <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg> Add Person
+        </button>` : ""}
     </div>
   `, { size:"lg" });
 
-  const listEl = document.getElementById("aa-user-list");
-  const searchEl = document.getElementById("aa-search");
-  const selectedEl = document.getElementById("aa-selected");
-  const submitBtn = document.getElementById("aa-submit");
-
-  searchEl.addEventListener("input", ()=>{
-    const q = searchEl.value.trim().toLowerCase();
-    listEl.querySelectorAll(".user-pick-item").forEach(el => {
-      const hay = el.dataset.search || "";
-      el.style.display = (!q || hay.includes(q)) ? "flex" : "none";
-    });
-  });
-
-  listEl.querySelectorAll(".user-pick-item").forEach(el => {
-    el.addEventListener("click", ()=>{
-      const uid = el.dataset.uid;
-      const u = users.find(x => x.id === uid);
-      if (!u) return;
-      listEl.querySelectorAll(".user-pick-item").forEach(x => {
-        x.classList.remove("is-on");
-      });
-      el.classList.add("is-on");
-      selectedId = uid;
-      selectedEl.classList.remove("hidden");
-      const emp = employees.find(e => e.uid === uid);
-      selectedEl.innerHTML = `
-        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;
-                    background:#eaf3fc;border:1px solid #bdd7f2">
-          <div class="admin-avatar" style="width:48px;height:48px;font-size:15px">
-            ${u.photoURL ? `<img src="${escapeHtml(u.photoURL)}" alt="">` : escapeHtml(initials(u.name||u.email))}
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:800;font-size:14.5px">${escapeHtml(u.name || u.email || "")}</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px">${escapeHtml(u.email || "")}</div>
-            ${emp?.empId ? `<div style="font-size:11.5px;color:var(--muted);font-family:ui-monospace,monospace;margin-top:2px">${escapeHtml(emp.empId)}</div>` : ""}
-          </div>
-          <svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:var(--success);stroke-width:2.6;fill:none">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>`;
-      submitBtn.disabled = false;
-    });
-  });
-
-  document.getElementById("aa-new-btn").addEventListener("click", ()=>{
+  document.getElementById("members-add-btn")?.addEventListener("click", ()=>{
     closeModal();
-    setTimeout(()=>openCreateBrandNewAdminWizard(clusterId), 120);
-  });
-
-  submitBtn.addEventListener("click", async ()=>{
-    const errBox = document.getElementById("aa-error");
-    const errMsg = document.getElementById("aa-error-msg");
-    const spinner = submitBtn.querySelector(".spinner");
-    const label = submitBtn.querySelector(".btn-label");
-    errBox.style.display = "none";
-    if (!selectedId) { errBox.style.display = "flex"; errMsg.textContent = "Please select a user first."; return; }
-    const u = users.find(x => x.id === selectedId);
-    if (!u) { errBox.style.display = "flex"; errMsg.textContent = "User no longer exists."; return; }
-
-    submitBtn.disabled = true;
-    spinner.classList.remove("hidden");
-    const old = label.textContent;
-    label.textContent = "Assigning…";
-    try {
-      await updateDoc(doc(db, "users", selectedId), {
-        role:"admin",
-        clusterId: c.id,
-        clusterName: c.name || null,
-        regionCode: c.regionCode || null,
-        regionName: c.regionName || regionName(c.regionCode),
-        active:true,
-        updatedAt: serverTimestamp(),
-        updatedBy: S.uid
-      });
-      // Also update linked employee's cluster if exists
-      const emp = employees.find(e => e.uid === selectedId);
-      if (emp) {
-        try {
-          await updateDoc(doc(db, "employees", emp.id), {
-            clusterId: c.id, clusterCode: c.code, clusterName: c.name,
-            regionCode: c.regionCode, regionName: regionName(c.regionCode),
-            updatedAt: serverTimestamp()
-          });
-        } catch(e) {}
-      }
-      toast(`${u.name || u.email} is now an admin of ${c.name}`, "success");
-      closeModal();
-      setTimeout(()=>openClusterAdminsModal(c.id), 120);
-    } catch (err) {
-      console.error(err);
-      errBox.style.display = "flex";
-      errMsg.innerHTML = `<strong>${escapeHtml(err.code || "error")}</strong><br>${escapeHtml(err.message || "")}`;
-      submitBtn.disabled = false;
-      spinner.classList.add("hidden");
-      label.textContent = old;
-    }
+    setTimeout(()=>openAddPersonWizard(officeId), 100);
   });
 }
 
 /* ============================================================
-   CREATE BRAND-NEW ADMIN — full wizard with photo, 3 langs, NID, phone
+   OFFICE FORM
    ============================================================ */
-function openCreateBrandNewAdminWizard(clusterId) {
+function openOfficeForm(clusterId, woredaCode, officeId=null) {
   const c = clusters.find(x => x.id === clusterId);
   if (!c) return;
-  if (!isSuper()) { toast("Only super admins can create cluster admins", "error"); return; }
+  const w = normalizeWoredas(c.woredas).find(x => x.code === woredaCode);
+  if (!w) { toast("Woreda not found.", "error"); return; }
+  const editing = !!officeId;
+  const o = editing ? offices.find(x => x.id === officeId) : {};
+  const allowed = isSuper() || (isClusterAdmin() && c.id === myClusterId());
+  if (!allowed) { toast("Not allowed", "error"); return; }
+
+  openWizard({
+    title: editing ? "Edit Office" : "Add Office",
+    subtitle: `${escapeHtml(c.name)} → ${escapeHtml(w.name)} (${escapeHtml(w.code)})`,
+    finishLabel: editing ? "Save Changes" : "Create Office",
+    successMessage: editing ? "Office updated" : "Office created",
+    initial: { name: o.name||"", code: o.code||"" },
+    steps: [{
+      label: "Details",
+      title: "Office details",
+      render: (d) => `
+        <div class="field">
+          <label class="field__required">Office name</label>
+          <input data-field="name" value="${escapeHtml(d.name||"")}" placeholder="e.g. Fitche City Office">
+        </div>
+        <div class="field">
+          <label class="field__required">Office code (2 digits)</label>
+          <input data-field="code" maxlength="2" value="${escapeHtml(d.code||"")}"
+                 placeholder="08" inputmode="numeric"
+                 style="font-family:ui-monospace,monospace;letter-spacing:3px;font-weight:700">
+          <p class="field__hint">Unique inside woreda ${escapeHtml(w.code)}.</p>
+        </div>
+        <div class="review" style="margin-top:16px">
+          <div class="review__row"><span class="review__k">Region</span><span class="review__v">${escapeHtml(regionLabel(c.regionCode))}</span></div>
+          <div class="review__row"><span class="review__k">Cluster</span><span class="review__v">${escapeHtml(c.name)} (${escapeHtml(c.code||"??")})</span></div>
+          <div class="review__row"><span class="review__k">Woreda</span><span class="review__v">${escapeHtml(w.name)} (${escapeHtml(w.code)})</span></div>
+          <div class="review__row"><span class="review__k">ID segment</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(c.regionCode||"??")}-${escapeHtml(c.code||"??")}${escapeHtml(w.code)}<b style="color:#d4a017">${escapeHtml(d.code||"??")}</b>····</span></div>
+        </div>`,
+      validate: d => {
+        if (!d.name || d.name.trim().length < 2) return "Office name must be at least 2 characters.";
+        if (!/^\d{2}$/.test(d.code || "")) return "Office code must be exactly 2 digits.";
+        const dup = offices.some(x => x.clusterId === c.id && x.woredaCode === w.code && x.code === d.code && x.id !== officeId);
+        if (dup) return `Office code ${d.code} already exists in woreda ${w.code}.`;
+        return null;
+      }
+    }],
+    onFinish: async (d) => {
+      const payload = {
+        name: d.name.trim(), code: d.code,
+        clusterId: c.id, clusterCode: c.code, clusterName: c.name,
+        regionCode: c.regionCode, regionName: regionName(c.regionCode),
+        woredaCode: w.code, woredaName: w.name,
+        updatedAt: serverTimestamp()
+      };
+      if (editing) await updateDoc(doc(db, "offices", officeId), payload);
+      else {
+        payload.createdAt = serverTimestamp();
+        payload.createdBy = S.uid;
+        const ref = doc(collection(db, "offices"));
+        await setDoc(ref, { ...payload, officeId: ref.id });
+      }
+    }
+  });
+}
+
+async function deleteOfficeConfirm(officeId) {
+  if (!isSuper()) { toast("Only super admins can delete offices", "error"); return; }
+  const o = offices.find(x => x.id === officeId);
+  if (!o) return;
+  const empCount = (employeesByOffice[officeId] || []).length;
+  if (empCount) { toast(`Cannot delete — ${empCount} employee(s) still belong to this office.`, "error"); return; }
+  if (!confirm(`Delete office "${o.name}" (${o.code})?`)) return;
+  try {
+    await deleteDoc(doc(db, "offices", officeId));
+    toast("Office deleted", "success");
+  } catch (err) { toast(err.code + ": " + err.message, "error"); }
+}
+
+/* ============================================================
+   ADD PERSON WIZARD (from an office)
+   Steps: Personal → Contact → Position → Login → Review
+   ============================================================ */
+function openAddPersonWizard(officeId) {
+  const office = offices.find(o => o.id === officeId);
+  if (!office) { toast("Office not found", "error"); return; }
+  if (!canAddPeopleTo(office)) { toast("You cannot add people to this office", "error"); return; }
+  const cluster = clusters.find(c => c.id === office.clusterId);
+  if (!cluster) { toast("Cluster missing for this office", "error"); return; }
 
   const duplicateStatus = { nationalId:{ ok:false, empty:true }, phone:{ ok:false, empty:true } };
 
   openWizard({
-    title: "Create Cluster Administrator",
-    subtitle: "Creates a full staff account — login, user profile, employee record.",
-    finishLabel: "Create Admin",
-    successMessage: "Administrator created — they can now sign in.",
+    title: "Add Person",
+    subtitle: `${office.name} · ${cluster.name}`,
+    finishLabel: "Create Person",
+    successMessage: "Person created and assigned to office.",
     size: "lg",
     initial: { gender:"", country:"ET" },
     steps: [
-      /* ---------- 1. PERSONAL ---------- */
+      /* 1. PERSONAL */
       {
         label: "Personal",
         title: "Personal details",
-        render: (d) => `
+        render: (d2) => `
           <div class="photo-upload" id="photo-upload">
             <div class="photo-upload__circle" id="photo-circle">
               <span id="photo-initials">?</span>
@@ -1765,32 +1721,32 @@ function openCreateBrandNewAdminWizard(clusterId) {
           <div class="field-row field-row--3">
             <div class="field">
               <label class="field__required">First name (English)</label>
-              <input data-field="firstName" value="${escapeHtml(d.firstName||"")}" placeholder="Abebe">
+              <input data-field="firstName" value="${escapeHtml(d2.firstName||"")}" placeholder="Abebe">
             </div>
             <div class="field">
               <label>Middle name (English)</label>
-              <input data-field="middleName" value="${escapeHtml(d.middleName||"")}" placeholder="Tesfaye">
+              <input data-field="middleName" value="${escapeHtml(d2.middleName||"")}" placeholder="Tesfaye">
             </div>
             <div class="field">
               <label class="field__required">Last name (English)</label>
-              <input data-field="lastName" value="${escapeHtml(d.lastName||"")}" placeholder="Bekele">
+              <input data-field="lastName" value="${escapeHtml(d2.lastName||"")}" placeholder="Bekele">
             </div>
           </div>
 
           <div class="field-row field-row--3">
             <div class="field">
               <label class="field__required">የመጀመሪያ ስም (Amharic)</label>
-              <input data-field="firstNameAm" value="${escapeHtml(d.firstNameAm||"")}" placeholder="አበበ"
+              <input data-field="firstNameAm" value="${escapeHtml(d2.firstNameAm||"")}" placeholder="አበበ"
                      style="font-family:'Noto Sans Ethiopic',sans-serif">
             </div>
             <div class="field">
               <label>የአባት ስም</label>
-              <input data-field="middleNameAm" value="${escapeHtml(d.middleNameAm||"")}" placeholder="ተስፋዬ"
+              <input data-field="middleNameAm" value="${escapeHtml(d2.middleNameAm||"")}" placeholder="ተስፋዬ"
                      style="font-family:'Noto Sans Ethiopic',sans-serif">
             </div>
             <div class="field">
               <label class="field__required">የአያት ስም</label>
-              <input data-field="lastNameAm" value="${escapeHtml(d.lastNameAm||"")}" placeholder="በቀለ"
+              <input data-field="lastNameAm" value="${escapeHtml(d2.lastNameAm||"")}" placeholder="በቀለ"
                      style="font-family:'Noto Sans Ethiopic',sans-serif">
             </div>
           </div>
@@ -1798,15 +1754,15 @@ function openCreateBrandNewAdminWizard(clusterId) {
           <div class="field-row field-row--3">
             <div class="field">
               <label class="field__required">Maqaa jalqabaa (Oromo)</label>
-              <input data-field="firstNameOm" value="${escapeHtml(d.firstNameOm||"")}" placeholder="Ababee">
+              <input data-field="firstNameOm" value="${escapeHtml(d2.firstNameOm||"")}" placeholder="Ababee">
             </div>
             <div class="field">
               <label>Maqaa abbaa</label>
-              <input data-field="middleNameOm" value="${escapeHtml(d.middleNameOm||"")}" placeholder="Tasfaayee">
+              <input data-field="middleNameOm" value="${escapeHtml(d2.middleNameOm||"")}" placeholder="Tasfaayee">
             </div>
             <div class="field">
               <label class="field__required">Maqaa akaakayyuu</label>
-              <input data-field="lastNameOm" value="${escapeHtml(d.lastNameOm||"")}" placeholder="Baqqalaa">
+              <input data-field="lastNameOm" value="${escapeHtml(d2.lastNameOm||"")}" placeholder="Baqqalaa">
             </div>
           </div>
 
@@ -1815,34 +1771,34 @@ function openCreateBrandNewAdminWizard(clusterId) {
               <label class="field__required">Gender</label>
               <select data-field="gender">
                 <option value="">— Select —</option>
-                <option value="M" ${d.gender==="M"?"selected":""}>Male</option>
-                <option value="F" ${d.gender==="F"?"selected":""}>Female</option>
+                <option value="M" ${d2.gender==="M"?"selected":""}>Male</option>
+                <option value="F" ${d2.gender==="F"?"selected":""}>Female</option>
               </select>
             </div>
             <div class="field">
               <label class="field__required">Date of birth</label>
-              <input data-field="dob" type="date" value="${escapeHtml(d.dob||"")}">
+              <input data-field="dob" type="date" value="${escapeHtml(d2.dob||"")}">
             </div>
           </div>
 
           <div class="field">
             <label class="field__required">National ID</label>
-            <input id="nat-id" data-field="nationalId" value="${escapeHtml(d.nationalId||"")}"
+            <input id="nat-id" data-field="nationalId" value="${escapeHtml(d2.nationalId||"")}"
                    placeholder="ET-1234-5678-90" autocomplete="off" style="font-family:ui-monospace,monospace">
             <p class="field__hint">Must be unique across the entire system.</p>
           </div>
         `,
-        validate: (d) => {
-          if (!d._photo) return "Please upload a profile photo.";
-          if (!d.firstName || d.firstName.trim().length < 2) return "First name (English) is required.";
-          if (!d.lastName  || d.lastName.trim().length  < 2) return "Last name (English) is required.";
-          if (!d.firstNameAm || d.firstNameAm.trim().length < 2) return "Amharic first name is required.";
-          if (!d.lastNameAm  || d.lastNameAm.trim().length  < 2) return "Amharic last name is required.";
-          if (!d.firstNameOm || d.firstNameOm.trim().length < 2) return "Oromo first name is required.";
-          if (!d.lastNameOm  || d.lastNameOm.trim().length  < 2) return "Oromo last name is required.";
-          if (!d.gender) return "Please select a gender.";
-          if (!d.dob)    return "Date of birth is required.";
-          const nid = normalizeNationalId(d.nationalId || "");
+        validate: (d2) => {
+          if (!d2._photo) return "Please upload a profile photo.";
+          if (!d2.firstName || d2.firstName.trim().length < 2) return "First name (English) is required.";
+          if (!d2.lastName  || d2.lastName.trim().length  < 2) return "Last name (English) is required.";
+          if (!d2.firstNameAm || d2.firstNameAm.trim().length < 2) return "Amharic first name is required.";
+          if (!d2.lastNameAm  || d2.lastNameAm.trim().length  < 2) return "Amharic last name is required.";
+          if (!d2.firstNameOm || d2.firstNameOm.trim().length < 2) return "Oromo first name is required.";
+          if (!d2.lastNameOm  || d2.lastNameOm.trim().length  < 2) return "Oromo last name is required.";
+          if (!d2.gender) return "Please select a gender.";
+          if (!d2.dob)    return "Date of birth is required.";
+          const nid = normalizeNationalId(d2.nationalId || "");
           if (!nid || nid.length < 5) return "National ID is required (at least 5 characters).";
           const st = duplicateStatus.nationalId;
           if (!st.ok) {
@@ -1884,107 +1840,135 @@ function openCreateBrandNewAdminWizard(clusterId) {
         }
       },
 
-      /* ---------- 2. CONTACT ---------- */
+      /* 2. CONTACT */
       {
         label: "Contact",
-        title: "Contact & address",
-        render: (d) => `
+        title: "Contact details",
+        render: (d2) => `
           <div class="field-row">
             <div class="field">
               <label class="field__required">Primary phone</label>
-              <input id="phone-primary" data-field="phone" value="${escapeHtml(d.phone||"")}"
+              <input id="phone-primary" data-field="phone" value="${escapeHtml(d2.phone||"")}"
                      placeholder="+251 9XX XX XX XX" autocomplete="off">
               <p class="field__hint">Must be unique across the system.</p>
             </div>
             <div class="field">
               <label>Alternate phone</label>
-              <input data-field="phoneAlt" value="${escapeHtml(d.phoneAlt||"")}" placeholder="+251 1XX XX XX XX">
+              <input data-field="phoneAlt" value="${escapeHtml(d2.phoneAlt||"")}" placeholder="+251 1XX XX XX XX">
             </div>
           </div>
           <div class="field">
             <label class="field__required">Personal email</label>
-            <input data-field="email" type="email" value="${escapeHtml(d.email||"")}" placeholder="name@example.com">
+            <input data-field="email" type="email" value="${escapeHtml(d2.email||"")}" placeholder="name@example.com">
           </div>
           <div class="field">
             <label class="field__required">Country</label>
             <select data-field="country">
-              <option value="ET" ${d.country==="ET"?"selected":""}>Ethiopia</option>
-              <option value="ER" ${d.country==="ER"?"selected":""}>Eritrea</option>
-              <option value="DJ" ${d.country==="DJ"?"selected":""}>Djibouti</option>
-              <option value="SO" ${d.country==="SO"?"selected":""}>Somalia</option>
-              <option value="KE" ${d.country==="KE"?"selected":""}>Kenya</option>
-              <option value="SD" ${d.country==="SD"?"selected":""}>Sudan</option>
+              <option value="ET" ${d2.country==="ET"?"selected":""}>Ethiopia</option>
+              <option value="ER" ${d2.country==="ER"?"selected":""}>Eritrea</option>
+              <option value="DJ" ${d2.country==="DJ"?"selected":""}>Djibouti</option>
+              <option value="SO" ${d2.country==="SO"?"selected":""}>Somalia</option>
+              <option value="KE" ${d2.country==="KE"?"selected":""}>Kenya</option>
             </select>
           </div>
           <div class="field-row">
             <div class="field">
               <label>Sub-city / Zone</label>
-              <input data-field="subCity" value="${escapeHtml(d.subCity||"")}" placeholder="Bole">
+              <input data-field="subCity" value="${escapeHtml(d2.subCity||"")}" placeholder="Bole">
             </div>
             <div class="field">
               <label>Kebele / Ward</label>
-              <input data-field="kebele" value="${escapeHtml(d.kebele||"")}" placeholder="03">
+              <input data-field="kebele" value="${escapeHtml(d2.kebele||"")}" placeholder="03">
             </div>
           </div>
         `,
-        validate: (d) => {
-          if (!d.phone) return "Primary phone is required.";
-          if (!/^[0-9+\-\s]{7,20}$/.test(d.phone)) return "Enter a valid phone number.";
+        validate: (d2) => {
+          if (!d2.phone) return "Primary phone is required.";
+          if (!/^[0-9+\-\s]{7,20}$/.test(d2.phone)) return "Enter a valid phone number.";
           const st = duplicateStatus.phone;
           if (!st.ok) {
-            if (st.reason === "duplicate") return "This phone is already registered to another employee.";
+            if (st.reason === "duplicate") return "This phone is already registered.";
             if (st.reason === "too-short") return "Phone looks too short.";
-            return "Please wait — checking phone number.";
+            return "Please wait — checking phone.";
           }
-          if (!d.email || !/^\S+@\S+\.\S+$/.test(d.email)) return "Enter a valid personal email.";
+          if (!d2.email || !/^\S+@\S+\.\S+$/.test(d2.email)) return "Enter a valid email.";
           return null;
         },
-        after: (root, data) => {
+        after: (root, data)=>{
           setupLiveDuplicate(root, "phone-primary", "phone", "phone number", (type,status)=>{
             duplicateStatus[type] = status;
           });
         }
       },
 
-      /* ---------- 3. ASSIGNMENT ---------- */
+      /* 3. POSITION */
       {
-        label: "Assignment",
-        title: "Work details",
-        render: (d) => `
-          <div class="field">
-            <label class="field__required">Position</label>
-            <input data-field="position" value="${escapeHtml(d.position || "Cluster Administrator")}">
-          </div>
-          <div class="field-row">
-            <div class="field">
-              <label class="field__required">Hire date</label>
-              <input data-field="hireDate" type="date" value="${escapeHtml(d.hireDate || new Date().toISOString().slice(0,10))}">
+        label: "Position",
+        title: "Position & department",
+        render: (d2) => {
+          const deps = departments.filter(d => d.officeId === office.id)
+            .sort((a,b)=>String(a.code).localeCompare(String(b.code)));
+          return `
+            <div class="field-row">
+              <div class="field">
+                <label class="field__required">Position</label>
+                <input data-field="position" value="${escapeHtml(d2.position||"")}" placeholder="Accountant">
+              </div>
+              <div class="field">
+                <label>Grade</label>
+                <input data-field="grade" value="${escapeHtml(d2.grade||"")}" placeholder="III">
+              </div>
             </div>
             <div class="field">
-              <label>Grade</label>
-              <input data-field="grade" value="${escapeHtml(d.grade||"")}" placeholder="III">
+              <label>Department</label>
+              <select data-field="departmentId" ${deps.length?"":"disabled"}>
+                <option value="">${deps.length?"— Not assigned —":"No departments in this office"}</option>
+                ${deps.map(dp => `
+                  <option value="${dp.id}" ${d2.departmentId===dp.id?"selected":""}>
+                    ${escapeHtml(dp.code)} · ${escapeHtml(dp.name)}
+                  </option>`).join("")}
+              </select>
             </div>
-          </div>
-          <div class="review" style="margin-top:8px">
-            <div class="review__row"><span class="review__k">Region</span><span class="review__v">${escapeHtml(regionLabel(c.regionCode))}</span></div>
-            <div class="review__row"><span class="review__k">Cluster</span><span class="review__v">${escapeHtml(c.name)} (${escapeHtml(c.code || "??")})</span></div>
-          </div>
-        `,
-        validate: d => d.position && d.position.trim().length >= 2 ? null : "Position is required."
+            <div class="field-row">
+              <div class="field">
+                <label class="field__required">Hire date</label>
+                <input data-field="hireDate" type="date" value="${escapeHtml(d2.hireDate || new Date().toISOString().slice(0,10))}">
+              </div>
+              <div class="field">
+                <label>Employment type</label>
+                <select data-field="employmentType">
+                  <option value="permanent">Permanent</option>
+                  <option value="contract">Contract</option>
+                  <option value="temporary">Temporary</option>
+                  <option value="intern">Intern</option>
+                </select>
+              </div>
+            </div>
+            <div class="review">
+              <div class="review__row"><span class="review__k">Region</span><span class="review__v">${escapeHtml(regionLabel(cluster.regionCode))}</span></div>
+              <div class="review__row"><span class="review__k">Cluster</span><span class="review__v">${escapeHtml(cluster.name)} (${escapeHtml(cluster.code||"??")})</span></div>
+              <div class="review__row"><span class="review__k">Woreda</span><span class="review__v">${escapeHtml(office.woredaName||"—")} (${escapeHtml(office.woredaCode||"??")})</span></div>
+              <div class="review__row"><span class="review__k">Office</span><span class="review__v">${escapeHtml(office.name)} (${escapeHtml(office.code||"??")})</span></div>
+            </div>`;
+        },
+        validate: d2 => {
+          if (!d2.position || d2.position.trim().length < 2) return "Position is required.";
+          if (!d2.hireDate) return "Hire date is required.";
+          return null;
+        }
       },
 
-      /* ---------- 4. LOGIN ---------- */
+      /* 4. LOGIN */
       {
         label: "Login",
         title: "Login credentials",
-        render: (d) => `
+        render: (d2) => `
           <div class="field">
             <label class="field__required">Login email</label>
-            <input data-field="loginEmail" type="email" value="${escapeHtml(d.loginEmail || d.email || "")}"
+            <input data-field="loginEmail" type="email" value="${escapeHtml(d2.loginEmail || d2.email || "")}"
                    placeholder="name@example.com" autocomplete="off">
             <p class="field__hint">This becomes the username they sign in with.</p>
           </div>
-
           <div class="field">
             <label class="field__required">Password</label>
             <div class="pw-wrap">
@@ -2004,31 +1988,30 @@ function openCreateBrandNewAdminWizard(clusterId) {
             </div>
             <div class="pw-rules" id="pw-rules">
               <div class="pw-rule" data-rule="length"><span class="pw-rule__dot"></span><span>At least 8 characters</span></div>
-              <div class="pw-rule" data-rule="upper"><span class="pw-rule__dot"></span><span>One uppercase letter</span></div>
-              <div class="pw-rule" data-rule="lower"><span class="pw-rule__dot"></span><span>One lowercase letter</span></div>
+              <div class="pw-rule" data-rule="upper"><span class="pw-rule__dot"></span><span>One uppercase</span></div>
+              <div class="pw-rule" data-rule="lower"><span class="pw-rule__dot"></span><span>One lowercase</span></div>
               <div class="pw-rule" data-rule="number"><span class="pw-rule__dot"></span><span>One number</span></div>
-              <div class="pw-rule" data-rule="symbol"><span class="pw-rule__dot"></span><span>One special character</span></div>
+              <div class="pw-rule" data-rule="symbol"><span class="pw-rule__dot"></span><span>One symbol</span></div>
             </div>
           </div>
-
           <div class="field">
             <label class="field__required">Confirm password</label>
-            <input data-field="password2" id="pw-confirm" type="password" placeholder="Repeat the password" autocomplete="new-password">
+            <input data-field="password2" id="pw-confirm" type="password" placeholder="Repeat">
             <p class="field__hint" id="pw-match-hint"></p>
           </div>
         `,
-        validate: d => {
-          if (!d.loginEmail || !/^\S+@\S+\.\S+$/.test(d.loginEmail)) return "Enter a valid login email.";
-          const pw = evaluatePassword(d.password || "");
-          if (pw.score < 3) return "Password is too weak. Add uppercase, numbers, or symbols.";
-          if (d.password !== d.password2) return "Passwords do not match.";
+        validate: (d2) => {
+          if (!d2.loginEmail || !/^\S+@\S+\.\S+$/.test(d2.loginEmail)) return "Enter a valid login email.";
+          const pw = evaluatePassword(d2.password || "");
+          if (pw.score < 3) return "Password is too weak.";
+          if (d2.password !== d2.password2) return "Passwords do not match.";
           return null;
         },
         after: (root, data) => {
-          const pwIn  = root.querySelector("#pw-new");
-          const cfm   = root.querySelector("#pw-confirm");
+          const pwIn = root.querySelector("#pw-new");
+          const cfm = root.querySelector("#pw-confirm");
           const meter = root.querySelector("#pw-meter");
-          const mTxt  = root.querySelector("#pw-meter-text");
+          const mTxt = root.querySelector("#pw-meter-text");
           function renderMeter() {
             const { checks, score, label, klass } = evaluatePassword(pwIn.value);
             meter.querySelectorAll(".pw-meter__bar").forEach(bar => {
@@ -2044,7 +2027,7 @@ function openCreateBrandNewAdminWizard(clusterId) {
           }
           function checkMatch() {
             const hint = root.querySelector("#pw-match-hint");
-            if (!cfm.value) { hint.textContent = ""; hint.style.color = ""; return; }
+            if (!cfm.value) { hint.textContent = ""; return; }
             if (pwIn.value === cfm.value) { hint.textContent = "✓ Passwords match"; hint.style.color = "#067647"; }
             else { hint.textContent = "✗ Passwords do not match"; hint.style.color = "#dc2626"; }
           }
@@ -2061,68 +2044,61 @@ function openCreateBrandNewAdminWizard(clusterId) {
         }
       },
 
-      /* ---------- 5. REVIEW ---------- */
+      /* 5. REVIEW */
       {
         label: "Review",
         title: "Confirm and create",
-        render: (d) => `
+        render: (d2) => `
           <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;padding:16px;
                       background:var(--bg-soft);border:1px solid var(--border);border-radius:14px">
             <div class="admin-avatar" style="width:70px;height:70px;font-size:24px">
-              ${d._photo ? `<img src="${d._photo}" alt="">` : escapeHtml(initials([d.firstName,d.lastName].filter(Boolean).join(" ")))}
+              ${d2._photo ? `<img src="${d2._photo}" alt="">` : escapeHtml(initials([d2.firstName,d2.lastName].filter(Boolean).join(" ")))}
             </div>
             <div style="min-width:0">
-              <div style="font-size:17px;font-weight:800">${escapeHtml([d.firstName, d.middleName, d.lastName].filter(Boolean).join(" "))}</div>
-              <div style="font-size:13px;color:var(--muted);margin-top:2px">${escapeHtml(d.firstNameAm||"")} ${escapeHtml(d.lastNameAm||"")}</div>
-              <div style="font-size:13px;color:var(--muted);margin-top:2px">${escapeHtml(d.firstNameOm||"")} ${escapeHtml(d.lastNameOm||"")}</div>
+              <div style="font-size:17px;font-weight:800">${escapeHtml([d2.firstName, d2.middleName, d2.lastName].filter(Boolean).join(" "))}</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:2px">${escapeHtml(d2.firstNameAm||"")} ${escapeHtml(d2.lastNameAm||"")}</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:2px">${escapeHtml(d2.firstNameOm||"")} ${escapeHtml(d2.lastNameOm||"")}</div>
             </div>
           </div>
           <div class="review">
-            <div class="review__row"><span class="review__k">Gender</span><span class="review__v">${d.gender==="M"?"Male":"Female"}</span></div>
-            <div class="review__row"><span class="review__k">Date of birth</span><span class="review__v">${escapeHtml(d.dob||"—")}</span></div>
-            <div class="review__row"><span class="review__k">National ID</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(d.nationalId||"—")}</span></div>
-            <div class="review__row"><span class="review__k">Phone</span><span class="review__v">${escapeHtml(d.phone||"—")}</span></div>
-            <div class="review__row"><span class="review__k">Personal email</span><span class="review__v">${escapeHtml(d.email||"—")}</span></div>
-            <div class="review__row"><span class="review__k">Position</span><span class="review__v">${escapeHtml(d.position||"Cluster Administrator")}</span></div>
-            <div class="review__row"><span class="review__k">Cluster</span><span class="review__v">${escapeHtml(c.name)} (${escapeHtml(c.code||"??")})</span></div>
-            <div class="review__row"><span class="review__k">Login email</span><span class="review__v">${escapeHtml(d.loginEmail)}</span></div>
+            <div class="review__row"><span class="review__k">National ID</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(d2.nationalId||"—")}</span></div>
+            <div class="review__row"><span class="review__k">Phone</span><span class="review__v">${escapeHtml(d2.phone||"—")}</span></div>
+            <div class="review__row"><span class="review__k">Position</span><span class="review__v">${escapeHtml(d2.position||"—")}</span></div>
+            <div class="review__row"><span class="review__k">Office</span><span class="review__v">${escapeHtml(office.name)} (${escapeHtml(office.code||"??")})</span></div>
+            <div class="review__row"><span class="review__k">Login email</span><span class="review__v">${escapeHtml(d2.loginEmail)}</span></div>
           </div>
           <div class="alert alert--info" style="margin-top:16px">
             <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-            <div>Creates a Firebase Auth login, a <code>users</code> document with role <strong>admin</strong>, and an <code>employees</code> record — all linked.</div>
-          </div>
-        `
+            <div>Creates a Firebase Auth login, a <code>users</code> doc with role <strong>employee</strong>, and an <code>employees</code> doc assigned to <strong>${escapeHtml(office.name)}</strong>.</div>
+          </div>`
       }
     ],
-    onFinish: async (d) => {
-      const nameEn = [d.firstName, d.middleName, d.lastName].filter(Boolean).map(s=>s.trim()).join(" ");
-      const nameAm = [d.firstNameAm, d.middleNameAm, d.lastNameAm].filter(Boolean).map(s=>s.trim()).join(" ") || null;
-      const nameOm = [d.firstNameOm, d.middleNameOm, d.lastNameOm].filter(Boolean).map(s=>s.trim()).join(" ") || null;
-      const natIdNorm = normalizeNationalId(d.nationalId);
-      const phoneNorm = normalizePhone(d.phone);
+    onFinish: async (data) => {
+      const nameEn = [data.firstName, data.middleName, data.lastName].filter(Boolean).map(s=>s.trim()).join(" ");
+      const nameAm = [data.firstNameAm, data.middleNameAm, data.lastNameAm].filter(Boolean).map(s=>s.trim()).join(" ") || null;
+      const nameOm = [data.firstNameOm, data.middleNameOm, data.lastNameOm].filter(Boolean).map(s=>s.trim()).join(" ") || null;
+      const natIdNorm = normalizeNationalId(data.nationalId);
+      const phoneNorm = normalizePhone(data.phone);
 
-      // Final dup checks
-      const dupNat = await findEmployeeByNationalId(d.nationalId);
+      const dupNat = await findEmployeeByNationalId(data.nationalId);
       if (dupNat) throw new Error(`National ID is already registered to ${dupNat.nameEn || dupNat.firstName || "another employee"}.`);
-      const dupPhone = await findEmployeeByPhone(d.phone);
+      const dupPhone = await findEmployeeByPhone(data.phone);
       if (dupPhone) throw new Error(`Phone is already registered to ${dupPhone.nameEn || dupPhone.firstName || "another employee"}.`);
 
-      // Generate employee ID — use cluster's region, cluster code, first woreda, and "00" as office code
-      const firstWoreda = normalizeWoredas(c.woredas)[0]?.code || "00";
       const { empId, seq } = await generateEmployeeId({
-        regionCode: c.regionCode,
-        clusterCode: c.code,
-        woredaCode: firstWoreda,
-        officeCode: "00"
+        regionCode: cluster.regionCode,
+        clusterCode: cluster.code,
+        woredaCode: office.woredaCode || "00",
+        officeCode: office.code
       });
 
-      // Create Firebase Auth
-      const secName = "adminCreator_" + Date.now();
+      // 1. Create Auth
+      const secName = "empCreator_" + Date.now();
       const secApp = initializeApp(firebaseConfig, secName);
       const secAuth = getAuth(secApp);
       let uid = null;
       try {
-        const cred = await createUserWithEmailAndPassword(secAuth, d.loginEmail.trim(), d.password);
+        const cred = await createUserWithEmailAndPassword(secAuth, data.loginEmail.trim(), data.password);
         uid = cred.user.uid;
         try { await updateProfile(cred.user, { displayName: nameEn }); } catch(e) {}
         await signOut(secAuth);
@@ -2131,12 +2107,12 @@ function openCreateBrandNewAdminWizard(clusterId) {
       }
       if (!uid) throw new Error("Could not create login account.");
 
-      // Reserve uniqueness
+      // 2. Uniqueness locks
       let natLocked = false, phoneLocked = false;
       try {
-        await reserveUnique("nationalId", d.nationalId, natIdNorm, empId, nameEn);
+        await reserveUnique("nationalId", data.nationalId, natIdNorm, empId, nameEn);
         natLocked = true;
-        await reserveUnique("phone", d.phone, phoneNorm, empId, nameEn);
+        await reserveUnique("phone", data.phone, phoneNorm, empId, nameEn);
         phoneLocked = true;
       } catch (err) {
         if (natLocked)   await releaseUnique("nationalId", natIdNorm);
@@ -2144,45 +2120,48 @@ function openCreateBrandNewAdminWizard(clusterId) {
         throw err;
       }
 
-      // Write employees record
+      // 3. Employee record
+      const dep = departments.find(x => x.id === data.departmentId);
       const empRef = doc(collection(db, "employees"));
       try {
         await setDoc(empRef, {
           empId, seq,
-          firstName: d.firstName.trim(),
-          middleName: d.middleName?.trim() || null,
-          lastName: d.lastName.trim(),
-          firstNameAm: d.firstNameAm.trim(),
-          middleNameAm: d.middleNameAm?.trim() || null,
-          lastNameAm: d.lastNameAm.trim(),
-          firstNameOm: d.firstNameOm.trim(),
-          middleNameOm: d.middleNameOm?.trim() || null,
-          lastNameOm: d.lastNameOm.trim(),
+          firstName: data.firstName.trim(),
+          middleName: data.middleName?.trim() || null,
+          lastName: data.lastName.trim(),
+          firstNameAm: data.firstNameAm.trim(),
+          middleNameAm: data.middleNameAm?.trim() || null,
+          lastNameAm: data.lastNameAm.trim(),
+          firstNameOm: data.firstNameOm.trim(),
+          middleNameOm: data.middleNameOm?.trim() || null,
+          lastNameOm: data.lastNameOm.trim(),
           nameEn, nameAm, nameOm,
           fullName: nameEn,
-          photoURL: d._photo,
-          nationalId: d.nationalId.trim(),
+          photoURL: data._photo,
+          nationalId: data.nationalId.trim(),
           nationalIdNorm: natIdNorm,
-          gender: d.gender,
-          dob: d.dob,
-          phone: d.phone.trim(),
+          gender: data.gender,
+          dob: data.dob,
+          phone: data.phone.trim(),
           phoneNorm,
-          phoneAlt: d.phoneAlt?.trim() || null,
-          email: d.email.trim(),
-          loginEmail: d.loginEmail.trim(),
-          country: d.country || "ET",
-          subCity: d.subCity?.trim() || null,
-          kebele: d.kebele?.trim() || null,
-          position: d.position || "Cluster Administrator",
-          grade: d.grade?.trim() || null,
-          hireDate: d.hireDate || new Date().toISOString().slice(0,10),
-          employmentType: "permanent",
+          phoneAlt: data.phoneAlt?.trim() || null,
+          email: data.email.trim(),
+          loginEmail: data.loginEmail.trim(),
+          country: data.country || "ET",
+          subCity: data.subCity?.trim() || null,
+          kebele: data.kebele?.trim() || null,
+          position: data.position.trim(),
+          grade: data.grade?.trim() || null,
+          hireDate: data.hireDate,
+          employmentType: data.employmentType || "permanent",
           status: "active",
-          regionCode: c.regionCode, regionName: regionName(c.regionCode),
-          clusterId: c.id, clusterCode: c.code, clusterName: c.name,
-          woredaCode: firstWoreda, woredaName: normalizeWoredas(c.woredas)[0]?.name || "",
-          officeId: null, officeCode: null, officeName: null,
-          departmentId: null, departmentName: null, departmentCode: null,
+          regionCode: cluster.regionCode, regionName: regionName(cluster.regionCode),
+          clusterId: cluster.id, clusterCode: cluster.code, clusterName: cluster.name,
+          woredaCode: office.woredaCode || null, woredaName: office.woredaName || null,
+          officeId: office.id, officeCode: office.code, officeName: office.name,
+          departmentId: dep?.id || null,
+          departmentName: dep?.name || null,
+          departmentCode: dep?.code || null,
           uid,
           active: true,
           createdAt: serverTimestamp(),
@@ -2194,19 +2173,21 @@ function openCreateBrandNewAdminWizard(clusterId) {
         throw err;
       }
 
-      // Write users record
+      // 4. User record
       try {
         await setDoc(doc(db, "users", uid), {
           uid,
-          email: d.loginEmail.trim(),
+          email: data.loginEmail.trim(),
           name: nameEn,
-          photoURL: d._photo,
-          role: "admin",
-          phone: d.phone.trim(),
-          personalEmail: d.email.trim(),
-          nationalId: d.nationalId.trim(),
-          region: c.regionCode, regionName: regionName(c.regionCode),
-          clusterId: c.id, clusterName: c.name,
+          photoURL: data._photo,
+          role: "employee",
+          phone: data.phone.trim(),
+          personalEmail: data.email.trim(),
+          nationalId: data.nationalId.trim(),
+          region: cluster.regionCode, regionName: regionName(cluster.regionCode),
+          clusterId: cluster.id, clusterName: cluster.name,
+          officeId: office.id, officeName: office.name,
+          departmentId: dep?.id || null, departmentName: dep?.name || null,
           employeeId: empRef.id,
           empId,
           active: true,
@@ -2221,21 +2202,6 @@ function openCreateBrandNewAdminWizard(clusterId) {
       }
     }
   });
-}
-
-async function confirmRemoveAdmin(uid, clusterId) {
-  if (!isSuper()) { toast("Only super admins can remove cluster admins", "error"); return; }
-  const u = users.find(x => x.id === uid);
-  if (!u) return;
-  const c = clusters.find(x => x.id === clusterId);
-  const label = u.name || u.email || uid;
-  if (!confirm(`Remove "${label}" as admin of cluster "${c?.name || ""}"?\n\nTheir login stays in Firebase Auth but they will lose cluster access immediately.`)) return;
-  try {
-    await deleteDoc(doc(db, "users", uid));
-    toast("Admin removed", "success");
-    const modalOpen = document.getElementById("modal-backdrop");
-    if (modalOpen) { closeModal(); setTimeout(()=>openClusterAdminsModal(clusterId), 80); }
-  } catch (err) { toast(err.code + ": " + err.message, "error"); }
 }
 
 /* ============================================================
@@ -2260,9 +2226,12 @@ function openWoredaModal(clusterId) {
         <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
         <div>Each woreda / city needs a <strong>2-digit code</strong>. It becomes the 3rd and 4th digits of every employee ID created for an office inside it.</div>
       </div>
-      <div class="wm-add">
-        <input class="wm-add__code" id="wm-code" maxlength="2" placeholder="12" inputmode="numeric">
-        <input class="wm-add__name" id="wm-name" placeholder="Woreda / city name">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <input id="wm-code" maxlength="2" placeholder="12" inputmode="numeric"
+               style="width:90px;height:48px;padding:0 12px;border:2px solid var(--border);border-radius:11px;background:var(--bg-soft);
+                      font-family:ui-monospace,monospace;letter-spacing:3px;text-align:center;font-size:18px;font-weight:800;color:var(--primary-dark)">
+        <input id="wm-name" placeholder="Woreda / city name"
+               style="flex:1;min-width:150px;height:48px;padding:0 14px;border:1px solid var(--border);border-radius:11px;background:var(--bg-soft);font-size:14px">
         <button class="btn btn--primary" id="wm-add-btn">
           <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add
         </button>
@@ -2326,7 +2295,6 @@ function openWoredaModal(clusterId) {
   codeEl.addEventListener("keydown", (e)=>{ if (e.key==="Enter") nameEl.focus(); });
   drawList();
 }
-
 async function removeWoredaFromCluster(clusterId, code) {
   const c = clusters.find(x => x.id === clusterId);
   if (!c || !canManageWoredas(c)) { toast("Not allowed", "error"); return; }
@@ -2344,166 +2312,635 @@ async function removeWoredaFromCluster(clusterId, code) {
 }
 
 /* ============================================================
-   OFFICES MODAL
+   CLUSTER ADMINS
    ============================================================ */
-function openOfficesModal(clusterId, preWoredaCode = "") {
+function openClusterAdminsModal(clusterId) {
   const c = clusters.find(x => x.id === clusterId);
   if (!c) return;
-  const woredas = normalizeWoredas(c.woredas);
-  if (!woredas.length) { toast("Add woredas to this cluster first.", "error"); return; }
-  const canAdd = canCreateOffice() && (isSuper() || c.id === myClusterId());
-
-  let selectedWoreda = preWoredaCode || woredas[0].code;
+  if (!canManageAdmins(c)) { toast("Only super admins can manage cluster admins", "error"); return; }
+  const admins = (adminsByCluster[c.id] || []).slice();
+  const canAdd = isSuper();
 
   openModal(`
     <div class="modal__head">
       <div>
-        <div class="modal__title">Offices</div>
-        <div class="modal__sub">${escapeHtml(c.name)} · ${escapeHtml(regionName(c.regionCode))} · cluster ${escapeHtml(c.code || "??")}</div>
+        <div class="modal__title">Cluster Administrators</div>
+        <div class="modal__sub">${escapeHtml(c.name)} · ${escapeHtml(regionLabel(c.regionCode))}</div>
       </div>
       <button class="modal__close" data-close><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
     </div>
     <div class="modal__body">
-      <div class="field">
-        <label class="field__required">Woreda / City</label>
-        <select id="of-woreda">
-          ${woredas.map(w => `
-            <option value="${escapeHtml(w.code)}" ${w.code===selectedWoreda?"selected":""}>
-              ${escapeHtml(w.code)} — ${escapeHtml(w.name)}
-            </option>`).join("")}
-        </select>
+      <div class="alert alert--info">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div>Cluster admins sign in with their own email + password and manage this cluster's woredas, offices, and employees.</div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px">
-        <strong style="font-size:13px">Offices in this woreda</strong>
-        <span id="of-count" style="font-size:12px;color:var(--muted)"></span>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 8px">
+        <strong style="font-size:13px">Current admins</strong>
+        <span style="font-size:12px;color:var(--muted)">${admins.length} total</span>
       </div>
-      <div class="wm-list" id="of-list" style="max-height:340px"></div>
+      <div class="wm-list">
+        ${admins.length
+          ? admins.map(a => {
+              const emp = employees.find(e => e.uid === a.id);
+              return `
+                <div class="admin-item">
+                  <div class="admin-avatar">
+                    ${a.photoURL ? `<img src="${escapeHtml(a.photoURL)}" alt="">` : escapeHtml(initials(a.name || a.email))}
+                  </div>
+                  <div class="admin-item__main">
+                    <div class="admin-item__name">${escapeHtml(a.name || "—")}</div>
+                    <div class="admin-item__email">
+                      ${escapeHtml(a.email || "")}
+                      ${emp?.empId ? ` · <span style="font-family:ui-monospace,monospace">${escapeHtml(emp.empId)}</span>` : ""}
+                    </div>
+                  </div>
+                  <div class="admin-item__actions">
+                    <span class="tag ${a.active === false ? "tag--red" : "tag--green"}">
+                      ${a.active === false ? "Inactive" : "Active"}
+                    </span>
+                    <button class="btn btn--sm btn--icon btn--danger"
+                            data-action="remove-admin" data-uid="${a.id}" data-cid="${c.id}">
+                      <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
+                    </button>
+                  </div>
+                </div>`;
+            }).join("")
+          : `<div class="wm-empty">No administrators yet for this cluster.</div>`}
+      </div>
     </div>
     <div class="modal__foot">
-      ${canAdd ? `<button class="btn btn--primary" id="of-add">
-        <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add Office
+      ${canAdd ? `<button class="btn btn--primary" id="adm-add-btn">
+        <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg> Add Admin
       </button>` : ""}
       <div class="spacer"></div>
       <button class="btn" data-close>Done</button>
     </div>
   `, { size:"lg" });
 
-  const listEl = document.getElementById("of-list");
-  const countEl = document.getElementById("of-count");
-  const woredaSel = document.getElementById("of-woreda");
-
-  function drawList() {
-    const list = (officesByWoreda[`${c.id}:${selectedWoreda}`] || [])
-      .slice().sort((a,b)=>String(a.code).localeCompare(String(b.code)));
-    countEl.textContent = `${list.length} total`;
-    if (!list.length) { listEl.innerHTML = `<div class="wm-empty">No offices in this woreda yet.</div>`; return; }
-    listEl.innerHTML = list.map(o => `
-      <div class="office-item">
-        <span class="office-item__code">${escapeHtml(o.code || "??")}</span>
-        <div style="flex:1;min-width:0">
-          <div class="office-item__name">${escapeHtml(o.name || "—")}</div>
-          <div class="office-item__meta">
-            ${(employeesByOffice[o.id] || []).length} employee(s)
-          </div>
-        </div>
-        <div style="display:flex;gap:6px">
-          ${(isSuper() || (isClusterAdmin() && c.id === myClusterId())) ? `
-            <button class="btn btn--sm btn--icon" data-edit="${o.id}">
-              <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
-            </button>` : ""}
-          ${isSuper() ? `
-            <button class="btn btn--sm btn--icon btn--danger" data-del="${o.id}">
-              <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
-            </button>` : ""}
-        </div>
-      </div>
-    `).join("");
-    listEl.querySelectorAll("[data-edit]").forEach(b =>
-      b.addEventListener("click", ()=>openOfficeForm(c.id, selectedWoreda, b.dataset.edit)));
-    listEl.querySelectorAll("[data-del]").forEach(b =>
-      b.addEventListener("click", ()=>deleteOfficeConfirm(b.dataset.del)));
-  }
-  woredaSel.addEventListener("change", ()=>{ selectedWoreda = woredaSel.value; drawList(); });
-  document.getElementById("of-add")?.addEventListener("click", ()=>openOfficeForm(c.id, selectedWoreda, null));
-  drawList();
+  document.getElementById("adm-add-btn")?.addEventListener("click", ()=>{
+    closeModal();
+    setTimeout(()=>openAddAdminChooser(c.id), 120);
+  });
+  document.querySelectorAll("#modal-backdrop [data-action='remove-admin']").forEach(btn => {
+    btn.addEventListener("click", ()=>confirmRemoveAdmin(btn.dataset.uid, c.id));
+  });
 }
 
-function openOfficeForm(clusterId, woredaCode, officeId=null) {
+function openAddAdminChooser(clusterId) {
   const c = clusters.find(x => x.id === clusterId);
   if (!c) return;
-  const w = normalizeWoredas(c.woredas).find(x => x.code === woredaCode);
-  if (!w) { toast("Woreda not found.", "error"); return; }
+  if (!isSuper()) { toast("Only super admins can add cluster admins", "error"); return; }
 
-  const editing = !!officeId;
-  const o = editing ? offices.find(x => x.id === officeId) : {};
-  const allowed = isSuper() || (isClusterAdmin() && c.id === myClusterId());
-  if (!allowed) { toast("Not allowed", "error"); return; }
+  const existingAdminIds = new Set((adminsByCluster[c.id] || []).map(a => a.id));
+  const candidates = users
+    .filter(u => u.role !== "super_admin")
+    .filter(u => !existingAdminIds.has(u.id))
+    .sort((a,b)=> String(a.name||a.email||"").localeCompare(String(b.name||b.email||"")));
+
+  let selectedId = null;
+
+  openModal(`
+    <div class="modal__head">
+      <div>
+        <div class="modal__title">Add Cluster Administrator</div>
+        <div class="modal__sub">${escapeHtml(c.name)} · ${escapeHtml(regionLabel(c.regionCode))}</div>
+      </div>
+      <button class="modal__close" data-close><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
+    </div>
+    <div class="modal__body">
+      <div class="alert alert--info">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div>Pick an existing user or create a brand-new account.</div>
+      </div>
+      <div class="field">
+        <label>Search users</label>
+        <input id="aa-search" placeholder="Search by name, email, Employee ID or National ID…">
+      </div>
+      <div class="field">
+        <label>Available users (${candidates.length})</label>
+        <div class="wm-list" id="aa-user-list">
+          ${candidates.length
+            ? candidates.map(u => {
+                const emp = employees.find(e => e.uid === u.id);
+                const hay = [u.name, u.email, u.nationalId, emp?.empId, emp?.nationalId].filter(Boolean).join(" ").toLowerCase();
+                return `
+                  <div class="user-pick-item" data-uid="${u.id}" data-search="${escapeHtml(hay)}">
+                    <div class="admin-avatar">
+                      ${u.photoURL ? `<img src="${escapeHtml(u.photoURL)}" alt="">` : escapeHtml(initials(u.name || u.email))}
+                    </div>
+                    <div class="user-pick-item__main">
+                      <div class="user-pick-item__name">
+                        ${escapeHtml(u.name || u.email || "User")}
+                        ${emp?.empId ? `<span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--muted)">${escapeHtml(emp.empId)}</span>` : ""}
+                      </div>
+                      <div class="user-pick-item__meta">
+                        ${escapeHtml(u.email || "—")}
+                        ${u.nationalId ? ` · NID ${escapeHtml(u.nationalId)}` : ""}
+                        · <span style="text-transform:uppercase;font-weight:700;font-size:10.5px">${escapeHtml((u.role||"").replace("_"," "))}</span>
+                      </div>
+                    </div>
+                    <div class="user-pick-radio"></div>
+                  </div>`;
+              }).join("")
+            : `<div class="wm-empty">No eligible users. Click "Create new account" below.</div>`}
+        </div>
+      </div>
+      <div id="aa-selected" class="hidden" style="margin-top:14px"></div>
+      <div id="aa-error" class="alert alert--error" style="display:none;margin-top:14px;margin-bottom:0">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div id="aa-error-msg" style="flex:1"></div>
+      </div>
+    </div>
+    <div class="modal__foot">
+      <button class="btn" id="aa-new-btn" style="margin-right:auto">
+        <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg> Create new account
+      </button>
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn btn--primary" id="aa-submit" disabled>
+        <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
+        <span class="btn-label">Assign as Cluster Admin</span>
+      </button>
+    </div>
+  `, { size:"lg" });
+
+  const listEl = document.getElementById("aa-user-list");
+  const searchEl = document.getElementById("aa-search");
+  const selectedEl = document.getElementById("aa-selected");
+  const submitBtn = document.getElementById("aa-submit");
+
+  searchEl.addEventListener("input", ()=>{
+    const q = searchEl.value.trim().toLowerCase();
+    listEl.querySelectorAll(".user-pick-item").forEach(el => {
+      const hay = el.dataset.search || "";
+      el.style.display = (!q || hay.includes(q)) ? "flex" : "none";
+    });
+  });
+
+  listEl.querySelectorAll(".user-pick-item").forEach(el => {
+    el.addEventListener("click", ()=>{
+      const uid = el.dataset.uid;
+      const u = users.find(x => x.id === uid);
+      if (!u) return;
+      listEl.querySelectorAll(".user-pick-item").forEach(x => x.classList.remove("is-on"));
+      el.classList.add("is-on");
+      selectedId = uid;
+      selectedEl.classList.remove("hidden");
+      const emp = employees.find(e => e.uid === uid);
+      selectedEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;
+                    background:#eaf3fc;border:1px solid #bdd7f2">
+          <div class="admin-avatar" style="width:48px;height:48px;font-size:15px">
+            ${u.photoURL ? `<img src="${escapeHtml(u.photoURL)}" alt="">` : escapeHtml(initials(u.name||u.email))}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:800;font-size:14.5px">${escapeHtml(u.name || u.email || "")}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">${escapeHtml(u.email || "")}</div>
+            ${emp?.empId ? `<div style="font-size:11.5px;color:var(--muted);font-family:ui-monospace,monospace;margin-top:2px">${escapeHtml(emp.empId)}</div>` : ""}
+          </div>
+          <svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:var(--success);stroke-width:2.6;fill:none">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>`;
+      submitBtn.disabled = false;
+    });
+  });
+
+  document.getElementById("aa-new-btn").addEventListener("click", ()=>{
+    closeModal();
+    setTimeout(()=>openCreateBrandNewAdminWizard(clusterId), 120);
+  });
+
+  submitBtn.addEventListener("click", async ()=>{
+    const errBox = document.getElementById("aa-error");
+    const errMsg = document.getElementById("aa-error-msg");
+    const spinner = submitBtn.querySelector(".spinner");
+    const label = submitBtn.querySelector(".btn-label");
+    errBox.style.display = "none";
+    if (!selectedId) { errBox.style.display = "flex"; errMsg.textContent = "Please select a user first."; return; }
+    const u = users.find(x => x.id === selectedId);
+    if (!u) { errBox.style.display = "flex"; errMsg.textContent = "User no longer exists."; return; }
+
+    submitBtn.disabled = true;
+    spinner.classList.remove("hidden");
+    const old = label.textContent;
+    label.textContent = "Assigning…";
+    try {
+      await updateDoc(doc(db, "users", selectedId), {
+        role:"admin",
+        clusterId: c.id,
+        clusterName: c.name || null,
+        regionCode: c.regionCode || null,
+        regionName: regionName(c.regionCode),
+        active:true,
+        updatedAt: serverTimestamp(),
+        updatedBy: S.uid
+      });
+      const emp = employees.find(e => e.uid === selectedId);
+      if (emp) {
+        try {
+          await updateDoc(doc(db, "employees", emp.id), {
+            clusterId: c.id, clusterCode: c.code, clusterName: c.name,
+            regionCode: c.regionCode, regionName: regionName(c.regionCode),
+            updatedAt: serverTimestamp()
+          });
+        } catch(e) {}
+      }
+      toast(`${u.name || u.email} is now an admin of ${c.name}`, "success");
+      closeModal();
+      setTimeout(()=>openClusterAdminsModal(c.id), 120);
+    } catch (err) {
+      console.error(err);
+      errBox.style.display = "flex";
+      errMsg.innerHTML = `<strong>${escapeHtml(err.code || "error")}</strong><br>${escapeHtml(err.message || "")}`;
+      submitBtn.disabled = false;
+      spinner.classList.add("hidden");
+      label.textContent = old;
+    }
+  });
+}
+
+function openCreateBrandNewAdminWizard(clusterId) {
+  const c = clusters.find(x => x.id === clusterId);
+  if (!c) return;
+  if (!isSuper()) { toast("Only super admins can create cluster admins", "error"); return; }
+
+  // Reuse the Add Person wizard — but this admin won't belong to an office.
+  // We create a minimal wizard just for admin creation.
+  const duplicateStatus = { nationalId:{ ok:false, empty:true }, phone:{ ok:false, empty:true } };
 
   openWizard({
-    title: editing ? "Edit Office" : "Add Office",
-    subtitle: `${escapeHtml(c.name)} → ${escapeHtml(w.name)} (${escapeHtml(w.code)})`,
-    finishLabel: editing ? "Save Changes" : "Create Office",
-    successMessage: editing ? "Office updated" : "Office created",
-    initial: { name: o.name||"", code: o.code||"" },
-    steps: [{
-      label: "Details",
-      title: "Office details",
-      render: (d) => `
-        <div class="field">
-          <label class="field__required">Office name</label>
-          <input data-field="name" value="${escapeHtml(d.name||"")}" placeholder="e.g. Fitche City Office">
-        </div>
-        <div class="field">
-          <label class="field__required">Office code (2 digits)</label>
-          <input data-field="code" maxlength="2" value="${escapeHtml(d.code||"")}"
-                 placeholder="08" inputmode="numeric"
-                 style="font-family:ui-monospace,monospace;letter-spacing:3px;font-weight:700">
-          <p class="field__hint">Unique inside woreda ${escapeHtml(w.code)}.</p>
-        </div>
-        <div class="review" style="margin-top:16px">
-          <div class="review__row"><span class="review__k">Region</span><span class="review__v">${escapeHtml(regionLabel(c.regionCode))}</span></div>
-          <div class="review__row"><span class="review__k">Cluster</span><span class="review__v">${escapeHtml(c.name)} (${escapeHtml(c.code||"??")})</span></div>
-          <div class="review__row"><span class="review__k">Woreda</span><span class="review__v">${escapeHtml(w.name)} (${escapeHtml(w.code)})</span></div>
-          <div class="review__row"><span class="review__k">ID segment</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(c.regionCode||"??")}-${escapeHtml(c.code||"??")}${escapeHtml(w.code)}<b style="color:#d4a017">${escapeHtml(d.code||"??")}</b>····</span></div>
-        </div>`,
-      validate: d => {
-        if (!d.name || d.name.trim().length < 2) return "Office name must be at least 2 characters.";
-        if (!/^\d{2}$/.test(d.code || "")) return "Office code must be exactly 2 digits.";
-        const dup = offices.some(x => x.clusterId === c.id && x.woredaCode === w.code && x.code === d.code && x.id !== officeId);
-        if (dup) return `Office code ${d.code} already exists in woreda ${w.code}.`;
-        return null;
+    title: "Create Cluster Administrator",
+    subtitle: `Full staff account for ${c.name}`,
+    finishLabel: "Create Admin",
+    successMessage: "Administrator created — they can now sign in.",
+    size: "lg",
+    initial: { gender:"", country:"ET" },
+    steps: [
+      {
+        label: "Personal",
+        title: "Personal details",
+        render: (d2) => `
+          <div class="photo-upload">
+            <div class="photo-upload__circle" id="photo-circle">
+              <span id="photo-initials">?</span>
+              <img id="photo-preview" alt="">
+              <div class="photo-upload__badge"><svg viewBox="0 0 24 24">${ICONS.camera}</svg></div>
+              <input type="file" id="photo-input" accept="image/*" style="display:none">
+            </div>
+            <div class="photo-upload__label">Profile Photo <span class="photo-upload__req">*</span></div>
+            <div class="photo-upload__hint">JPG or PNG · max 3 MB</div>
+          </div>
+          <div class="field-row field-row--3">
+            <div class="field">
+              <label class="field__required">First name</label>
+              <input data-field="firstName" value="${escapeHtml(d2.firstName||"")}">
+            </div>
+            <div class="field">
+              <label>Middle name</label>
+              <input data-field="middleName" value="${escapeHtml(d2.middleName||"")}">
+            </div>
+            <div class="field">
+              <label class="field__required">Last name</label>
+              <input data-field="lastName" value="${escapeHtml(d2.lastName||"")}">
+            </div>
+          </div>
+          <div class="field-row field-row--3">
+            <div class="field">
+              <label class="field__required">የመጀመሪያ ስም</label>
+              <input data-field="firstNameAm" value="${escapeHtml(d2.firstNameAm||"")}" style="font-family:'Noto Sans Ethiopic',sans-serif">
+            </div>
+            <div class="field">
+              <label>የአባት ስም</label>
+              <input data-field="middleNameAm" value="${escapeHtml(d2.middleNameAm||"")}" style="font-family:'Noto Sans Ethiopic',sans-serif">
+            </div>
+            <div class="field">
+              <label class="field__required">የአያት ስም</label>
+              <input data-field="lastNameAm" value="${escapeHtml(d2.lastNameAm||"")}" style="font-family:'Noto Sans Ethiopic',sans-serif">
+            </div>
+          </div>
+          <div class="field-row field-row--3">
+            <div class="field">
+              <label class="field__required">Maqaa jalqabaa</label>
+              <input data-field="firstNameOm" value="${escapeHtml(d2.firstNameOm||"")}">
+            </div>
+            <div class="field">
+              <label>Maqaa abbaa</label>
+              <input data-field="middleNameOm" value="${escapeHtml(d2.middleNameOm||"")}">
+            </div>
+            <div class="field">
+              <label class="field__required">Maqaa akaakayyuu</label>
+              <input data-field="lastNameOm" value="${escapeHtml(d2.lastNameOm||"")}">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="field__required">Gender</label>
+              <select data-field="gender">
+                <option value="">—</option>
+                <option value="M" ${d2.gender==="M"?"selected":""}>Male</option>
+                <option value="F" ${d2.gender==="F"?"selected":""}>Female</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__required">Date of birth</label>
+              <input data-field="dob" type="date" value="${escapeHtml(d2.dob||"")}">
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__required">National ID</label>
+            <input id="nat-id" data-field="nationalId" value="${escapeHtml(d2.nationalId||"")}" autocomplete="off" style="font-family:ui-monospace,monospace">
+          </div>
+        `,
+        validate: (d2) => {
+          if (!d2._photo) return "Please upload a profile photo.";
+          if (!d2.firstName || d2.firstName.trim().length < 2) return "First name required.";
+          if (!d2.lastName || d2.lastName.trim().length < 2) return "Last name required.";
+          if (!d2.firstNameAm || d2.firstNameAm.trim().length < 2) return "Amharic first name required.";
+          if (!d2.lastNameAm || d2.lastNameAm.trim().length < 2) return "Amharic last name required.";
+          if (!d2.firstNameOm || d2.firstNameOm.trim().length < 2) return "Oromo first name required.";
+          if (!d2.lastNameOm || d2.lastNameOm.trim().length < 2) return "Oromo last name required.";
+          if (!d2.gender) return "Gender required.";
+          if (!d2.dob) return "Date of birth required.";
+          const nid = normalizeNationalId(d2.nationalId||"");
+          if (!nid || nid.length < 5) return "National ID required.";
+          const st = duplicateStatus.nationalId;
+          if (!st.ok) {
+            if (st.reason === "duplicate") return "This National ID is already registered.";
+            return "Please wait — checking National ID.";
+          }
+          return null;
+        },
+        after: (root, data)=>{
+          const circle = root.querySelector("#photo-circle");
+          const input = root.querySelector("#photo-input");
+          const preview = root.querySelector("#photo-preview");
+          const ini = root.querySelector("#photo-initials");
+          const upd = ()=>{
+            const s = [data.firstName, data.lastName].filter(Boolean).join(" ") || "?";
+            ini.textContent = initials(s);
+          };
+          circle.addEventListener("click", ()=>input.click());
+          input.addEventListener("change", async ()=>{
+            const f = input.files?.[0];
+            if (!f) return;
+            if (f.size > 3*1024*1024) { toast("Photo must be under 3 MB", "error"); return; }
+            try {
+              const u = await fileToDataURL(f);
+              data._photo = u;
+              preview.src = u;
+              circle.classList.add("has-img");
+            } catch(e) {}
+          });
+          ["firstName","lastName"].forEach(k=>{
+            const el = root.querySelector(`[data-field="${k}"]`);
+            el?.addEventListener("input", ()=>{ data[k]=el.value; upd(); });
+          });
+          upd();
+          setupLiveDuplicate(root, "nat-id", "nationalId", "National ID", (t,s)=>{
+            duplicateStatus[t]=s;
+          });
+        }
+      },
+      {
+        label: "Contact",
+        title: "Contact details",
+        render: (d2) => `
+          <div class="field-row">
+            <div class="field">
+              <label class="field__required">Primary phone</label>
+              <input id="phone-primary" data-field="phone" value="${escapeHtml(d2.phone||"")}">
+            </div>
+            <div class="field">
+              <label>Alternate phone</label>
+              <input data-field="phoneAlt" value="${escapeHtml(d2.phoneAlt||"")}">
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__required">Personal email</label>
+            <input data-field="email" type="email" value="${escapeHtml(d2.email||"")}">
+          </div>`,
+        validate: (d2)=>{
+          if (!d2.phone) return "Phone required.";
+          if (!/^[0-9+\-\s]{7,20}$/.test(d2.phone)) return "Invalid phone.";
+          const st = duplicateStatus.phone;
+          if (!st.ok) return "Please wait — checking phone.";
+          if (!d2.email || !/^\S+@\S+\.\S+$/.test(d2.email)) return "Valid email required.";
+          return null;
+        },
+        after: (root, data)=>{
+          setupLiveDuplicate(root, "phone-primary", "phone", "phone number", (t,s)=>{
+            duplicateStatus[t]=s;
+          });
+        }
+      },
+      {
+        label: "Login",
+        title: "Login credentials",
+        render: (d2) => `
+          <div class="field">
+            <label class="field__required">Login email</label>
+            <input data-field="loginEmail" type="email" value="${escapeHtml(d2.loginEmail || d2.email || "")}" autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="field__required">Password</label>
+            <div class="pw-wrap">
+              <input data-field="password" id="pw-new" type="password" autocomplete="new-password">
+              <button type="button" class="pw-toggle" data-toggle="pw-new">
+                <svg viewBox="0 0 24 24">${ICONS.eye}</svg>
+              </button>
+            </div>
+            <div class="pw-meter" id="pw-meter">
+              <div class="pw-meter__bars">
+                <div class="pw-meter__bar" data-bar="1"></div>
+                <div class="pw-meter__bar" data-bar="2"></div>
+                <div class="pw-meter__bar" data-bar="3"></div>
+                <div class="pw-meter__bar" data-bar="4"></div>
+              </div>
+              <div class="pw-meter__text" id="pw-meter-text">Enter a password</div>
+            </div>
+            <div class="pw-rules" id="pw-rules">
+              <div class="pw-rule" data-rule="length"><span class="pw-rule__dot"></span><span>At least 8 characters</span></div>
+              <div class="pw-rule" data-rule="upper"><span class="pw-rule__dot"></span><span>One uppercase</span></div>
+              <div class="pw-rule" data-rule="lower"><span class="pw-rule__dot"></span><span>One lowercase</span></div>
+              <div class="pw-rule" data-rule="number"><span class="pw-rule__dot"></span><span>One number</span></div>
+              <div class="pw-rule" data-rule="symbol"><span class="pw-rule__dot"></span><span>One symbol</span></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__required">Confirm password</label>
+            <input data-field="password2" id="pw-confirm" type="password">
+            <p class="field__hint" id="pw-match-hint"></p>
+          </div>`,
+        validate: (d2)=>{
+          if (!d2.loginEmail || !/^\S+@\S+\.\S+$/.test(d2.loginEmail)) return "Valid login email required.";
+          if (evaluatePassword(d2.password||"").score < 3) return "Password too weak.";
+          if (d2.password !== d2.password2) return "Passwords do not match.";
+          return null;
+        },
+        after: (root, data)=>{
+          const pwIn = root.querySelector("#pw-new");
+          const cfm = root.querySelector("#pw-confirm");
+          const meter = root.querySelector("#pw-meter");
+          const mTxt = root.querySelector("#pw-meter-text");
+          function renderMeter(){
+            const { checks, score, label, klass } = evaluatePassword(pwIn.value);
+            meter.querySelectorAll(".pw-meter__bar").forEach(bar => {
+              const idx = Number(bar.dataset.bar);
+              bar.className = "pw-meter__bar";
+              if (idx <= score) bar.classList.add("is-on-" + klass);
+            });
+            mTxt.textContent = label;
+            mTxt.className = "pw-meter__text " + klass;
+            root.querySelectorAll(".pw-rule").forEach(rule => {
+              rule.classList.toggle("is-ok", !!checks[rule.dataset.rule]);
+            });
+          }
+          function checkMatch(){
+            const hint = root.querySelector("#pw-match-hint");
+            if (!cfm.value) { hint.textContent = ""; return; }
+            if (pwIn.value === cfm.value) { hint.textContent = "✓ Passwords match"; hint.style.color="#067647"; }
+            else { hint.textContent = "✗ Passwords do not match"; hint.style.color="#dc2626"; }
+          }
+          pwIn.addEventListener("input", ()=>{ data.password=pwIn.value; renderMeter(); checkMatch(); });
+          cfm.addEventListener("input", ()=>{ data.password2=cfm.value; checkMatch(); });
+          root.querySelectorAll(".pw-toggle").forEach(btn=>{
+            btn.addEventListener("click", ()=>{
+              const input = root.querySelector("#"+btn.dataset.toggle);
+              const showing = input.type==="text";
+              input.type = showing?"password":"text";
+              btn.innerHTML = `<svg viewBox="0 0 24 24">${showing ? ICONS.eye : ICONS.eyeOff}</svg>`;
+            });
+          });
+        }
+      },
+      {
+        label: "Review",
+        title: "Confirm and create",
+        render: (d2) => `
+          <div class="review">
+            <div class="review__row"><span class="review__k">Full name</span><span class="review__v">${escapeHtml([d2.firstName, d2.middleName, d2.lastName].filter(Boolean).join(" "))}</span></div>
+            <div class="review__row"><span class="review__k">National ID</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(d2.nationalId||"")}</span></div>
+            <div class="review__row"><span class="review__k">Phone</span><span class="review__v">${escapeHtml(d2.phone||"")}</span></div>
+            <div class="review__row"><span class="review__k">Cluster</span><span class="review__v">${escapeHtml(c.name)} (${escapeHtml(c.code||"??")})</span></div>
+            <div class="review__row"><span class="review__k">Login email</span><span class="review__v">${escapeHtml(d2.loginEmail)}</span></div>
+          </div>`
       }
-    }],
-    onFinish: async (d) => {
-      const payload = {
-        name: d.name.trim(),
-        code: d.code,
-        clusterId: c.id, clusterCode: c.code, clusterName: c.name,
-        regionCode: c.regionCode, regionName: regionName(c.regionCode),
-        woredaCode: w.code, woredaName: w.name,
-        updatedAt: serverTimestamp()
-      };
-      if (editing) await updateDoc(doc(db, "offices", officeId), payload);
-      else {
-        payload.createdAt = serverTimestamp();
-        payload.createdBy = S.uid;
-        const ref = doc(collection(db, "offices"));
-        await setDoc(ref, { ...payload, officeId: ref.id });
+    ],
+    onFinish: async (data) => {
+      const nameEn = [data.firstName, data.middleName, data.lastName].filter(Boolean).map(s=>s.trim()).join(" ");
+      const nameAm = [data.firstNameAm, data.middleNameAm, data.lastNameAm].filter(Boolean).map(s=>s.trim()).join(" ") || null;
+      const nameOm = [data.firstNameOm, data.middleNameOm, data.lastNameOm].filter(Boolean).map(s=>s.trim()).join(" ") || null;
+      const natIdNorm = normalizeNationalId(data.nationalId);
+      const phoneNorm = normalizePhone(data.phone);
+
+      const dupNat = await findEmployeeByNationalId(data.nationalId);
+      if (dupNat) throw new Error(`National ID is already registered.`);
+      const dupPhone = await findEmployeeByPhone(data.phone);
+      if (dupPhone) throw new Error(`Phone is already registered.`);
+
+      const firstWoreda = normalizeWoredas(c.woredas)[0]?.code || "00";
+      const { empId, seq } = await generateEmployeeId({
+        regionCode: c.regionCode, clusterCode: c.code,
+        woredaCode: firstWoreda, officeCode: "00"
+      });
+
+      const secName = "adminCreator_" + Date.now();
+      const secApp = initializeApp(firebaseConfig, secName);
+      const secAuth = getAuth(secApp);
+      let uid = null;
+      try {
+        const cred = await createUserWithEmailAndPassword(secAuth, data.loginEmail.trim(), data.password);
+        uid = cred.user.uid;
+        try { await updateProfile(cred.user, { displayName: nameEn }); } catch(e) {}
+        await signOut(secAuth);
+      } finally {
+        try { await deleteApp(secApp); } catch(e) {}
+      }
+      if (!uid) throw new Error("Could not create login.");
+
+      let natL=false, phL=false;
+      try {
+        await reserveUnique("nationalId", data.nationalId, natIdNorm, empId, nameEn); natL=true;
+        await reserveUnique("phone", data.phone, phoneNorm, empId, nameEn); phL=true;
+      } catch(e){
+        if (natL) await releaseUnique("nationalId", natIdNorm);
+        if (phL) await releaseUnique("phone", phoneNorm);
+        throw e;
+      }
+
+      const empRef = doc(collection(db, "employees"));
+      try {
+        await setDoc(empRef, {
+          empId, seq,
+          firstName: data.firstName.trim(),
+          middleName: data.middleName?.trim() || null,
+          lastName: data.lastName.trim(),
+          firstNameAm: data.firstNameAm.trim(),
+          middleNameAm: data.middleNameAm?.trim() || null,
+          lastNameAm: data.lastNameAm.trim(),
+          firstNameOm: data.firstNameOm.trim(),
+          middleNameOm: data.middleNameOm?.trim() || null,
+          lastNameOm: data.lastNameOm.trim(),
+          nameEn, nameAm, nameOm, fullName: nameEn,
+          photoURL: data._photo,
+          nationalId: data.nationalId.trim(), nationalIdNorm: natIdNorm,
+          gender: data.gender, dob: data.dob,
+          phone: data.phone.trim(), phoneNorm,
+          phoneAlt: data.phoneAlt?.trim() || null,
+          email: data.email.trim(), loginEmail: data.loginEmail.trim(),
+          country: data.country || "ET",
+          position: "Cluster Administrator",
+          hireDate: new Date().toISOString().slice(0,10),
+          employmentType: "permanent", status: "active",
+          regionCode: c.regionCode, regionName: regionName(c.regionCode),
+          clusterId: c.id, clusterCode: c.code, clusterName: c.name,
+          woredaCode: firstWoreda, woredaName: normalizeWoredas(c.woredas)[0]?.name || "",
+          officeId: null, officeCode: null, officeName: null,
+          departmentId: null, departmentName: null, departmentCode: null,
+          uid, active: true,
+          createdAt: serverTimestamp(), createdBy: S.uid
+        });
+      } catch(e){
+        await releaseUnique("nationalId", natIdNorm);
+        await releaseUnique("phone", phoneNorm);
+        throw e;
+      }
+
+      try {
+        await setDoc(doc(db, "users", uid), {
+          uid,
+          email: data.loginEmail.trim(), name: nameEn,
+          photoURL: data._photo,
+          role: "admin",
+          phone: data.phone.trim(), personalEmail: data.email.trim(),
+          nationalId: data.nationalId.trim(),
+          region: c.regionCode, regionName: regionName(c.regionCode),
+          clusterId: c.id, clusterName: c.name,
+          employeeId: empRef.id, empId,
+          active: true,
+          createdAt: serverTimestamp(), createdBy: S.uid
+        });
+      } catch(e){
+        try { await deleteDoc(empRef); } catch(_) {}
+        await releaseUnique("nationalId", natIdNorm);
+        await releaseUnique("phone", phoneNorm);
+        throw e;
       }
     }
   });
 }
 
-async function deleteOfficeConfirm(officeId) {
-  if (!isSuper()) { toast("Only super admins can delete offices", "error"); return; }
-  const o = offices.find(x => x.id === officeId);
-  if (!o) return;
-  const empCount = (employeesByOffice[officeId] || []).length;
-  if (empCount) { toast(`Cannot delete — ${empCount} employee(s) still belong to this office.`, "error"); return; }
-  if (!confirm(`Delete office "${o.name}" (${o.code})?`)) return;
+async function confirmRemoveAdmin(uid, clusterId) {
+  if (!isSuper()) { toast("Only super admins", "error"); return; }
+  const u = users.find(x => x.id === uid);
+  if (!u) return;
+  const c = clusters.find(x => x.id === clusterId);
+  if (!confirm(`Remove "${u.name || u.email}" as admin of "${c?.name}"?\n\nTheir login stays in Firebase Auth but they will lose cluster access.`)) return;
   try {
-    await deleteDoc(doc(db, "offices", officeId));
-    toast("Office deleted", "success");
+    await deleteDoc(doc(db, "users", uid));
+    toast("Admin removed", "success");
+    const modalOpen = document.getElementById("modal-backdrop");
+    if (modalOpen) { closeModal(); setTimeout(()=>openClusterAdminsModal(clusterId), 80); }
   } catch (err) { toast(err.code + ": " + err.message, "error"); }
 }
 
@@ -2511,10 +2948,9 @@ async function deleteOfficeConfirm(officeId) {
    REGION / CLUSTER MODALS
    ============================================================ */
 function openRegionModal() {
-  if (!canCreateRegion()) { toast("Only super admins can add regions", "error"); return; }
+  if (!canCreateRegion()) { toast("Only super admins", "error"); return; }
   openWizard({
     title: "Add Region",
-    subtitle: "Create a new region at the top of the hierarchy.",
     finishLabel: "Create Region",
     successMessage: "Region created",
     initial: { code:"", en:"", am:"" },
@@ -2562,7 +2998,7 @@ async function deleteRegion(regionCode) {
 }
 function openClusterModal(clusterId=null, preRegion=null) {
   const editing = !!clusterId;
-  if (!editing && !canCreateCluster()) { toast("Only super admins can create clusters", "error"); return; }
+  if (!editing && !canCreateCluster()) { toast("Only super admins", "error"); return; }
   const c = editing ? clusters.find(x => x.id === clusterId) : {};
   openWizard({
     title: editing ? "Edit Cluster" : "Create Cluster",
@@ -2601,7 +3037,7 @@ function openClusterModal(clusterId=null, preRegion=null) {
                    style="font-family:ui-monospace,monospace;letter-spacing:3px;font-weight:700">
           </div>`,
         validate: d => {
-          if (!d.name || d.name.trim().length < 2) return "Cluster name is required.";
+          if (!d.name || d.name.trim().length < 2) return "Cluster name required.";
           if (!/^\d{2}$/.test(d.code||"")) return "Cluster code must be 2 digits.";
           const dup = clusters.some(x => x.regionCode === d.regionCode && x.code === d.code && x.id !== clusterId);
           if (dup) return `Cluster code ${d.code} already exists in ${regionName(d.regionCode)}.`;
@@ -2611,10 +3047,8 @@ function openClusterModal(clusterId=null, preRegion=null) {
     ],
     onFinish: async (d) => {
       const payload = {
-        name: d.name.trim(),
-        code: d.code,
-        regionCode: d.regionCode,
-        regionName: regionName(d.regionCode),
+        name: d.name.trim(), code: d.code,
+        regionCode: d.regionCode, regionName: regionName(d.regionCode),
         updatedAt: serverTimestamp()
       };
       if (editing) await updateDoc(doc(db, "clusters", clusterId), payload);
@@ -2629,7 +3063,7 @@ function openClusterModal(clusterId=null, preRegion=null) {
   });
 }
 async function confirmDeleteCluster(clusterId) {
-  if (!isSuper()) { toast("Only super admins can delete clusters", "error"); return; }
+  if (!isSuper()) { toast("Only super admins", "error"); return; }
   const c = clusters.find(x => x.id === clusterId);
   if (!c) return;
   if ((officesByCluster[clusterId] || []).length) { toast("Remove offices first.", "error"); return; }
@@ -2723,9 +3157,17 @@ function subscribeUsers() {
     rebuildIndexes(); render();
   }, (err)=>console.warn("[users]", err.code));
 }
+function subscribeDepartments() {
+  if (unsubDepartments) unsubDepartments();
+  let q = collection(db, "departments");
+  if (!isSuper() && myClusterId()) q = query(q, where("clusterId","==",myClusterId()));
+  unsubDepartments = onSnapshot(q, (snap)=>{
+    departments = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+  }, (err)=>console.warn("[departments]", err.code));
+}
 
 /* ============================================================
-   SHELL INTERACTIONS
+   SHELL
    ============================================================ */
 document.getElementById("collapse-toggle").addEventListener("click", (e)=>{
   e.stopPropagation();
@@ -2752,7 +3194,6 @@ try {
   if (localStorage.getItem("cs.sidebar") === "collapsed") document.body.classList.add("sidebar-collapsed");
 } catch(e) {}
 
-/* React to OS theme changes when in auto mode */
 window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>{
   if (STATE.theme === "auto") applyTheme("auto");
 });
@@ -2768,7 +3209,7 @@ onAuthStateChanged(auth, async (user)=>{
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
     if (snap.exists()) userDoc = snap.data();
-  } catch(e) { console.warn("[user read]", e); }
+  } catch(e) {}
   if (userDoc && userDoc.active === false) { kick("inactive"); return; }
 
   S = {
@@ -2781,7 +3222,7 @@ onAuthStateChanged(auth, async (user)=>{
     clusterId: userDoc?.clusterId || ""
   };
 
-  if (S.role !== "super_admin" && S.role !== "admin") {
+  if (!["super_admin","admin","hrm"].includes(S.role)) {
     window.location.replace("dashboard.html");
     return;
   }
@@ -2795,13 +3236,12 @@ onAuthStateChanged(auth, async (user)=>{
   subscribeRegions();
   subscribeClusters();
   subscribeOffices();
+  subscribeDepartments();
   subscribeEmployees();
   subscribeUsers();
 
   console.log("[offices] booted with settings:", {
-    theme: STATE.theme,
-    lang: STATE.lang,
-    compact: STATE.compact
+    theme: STATE.theme, lang: STATE.lang, compact: STATE.compact
   });
 });
 </script>
