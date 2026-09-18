@@ -1,0 +1,3032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offices &amp; Clusters — Civil Service MIS</title>
+<link rel="icon" type="image/png" href="../images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+(function headGuard() {
+  try {
+    if (sessionStorage.getItem("loggedIn") !== "true" || !sessionStorage.getItem("uid")) {
+      sessionStorage.clear();
+      sessionStorage.setItem("__redirectReason", "expired");
+      window.location.replace("../index.html");
+    }
+  } catch (e) { window.location.replace("../index.html"); }
+})();
+</script>
+<script type="importmap">
+{
+  "imports": {
+    "firebase/app":       "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js",
+    "firebase/auth":      "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js",
+    "firebase/storage":   "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js"
+  }
+}
+</script>
+<style>
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --primary:#0b5cab; --primary-dark:#073d75; --secondary:#0e7490;
+  --text:#172033; --text-soft:#344054; --muted:#6b7280; --muted-light:#98a2b3;
+  --border:#e5e7eb; --border-soft:#eef1f5; --white:#fff;
+  --danger:#dc2626; --success:#067647; --warning:#b8860b; --bg:#f4f7fb; --bg-soft:#fbfcfe;
+  --sh-sm:0 1px 2px rgba(20,40,70,.04),0 1px 3px rgba(20,40,70,.06);
+  --sh-md:0 4px 12px rgba(20,40,70,.06),0 2px 4px rgba(20,40,70,.04);
+  --sh-lg:0 12px 32px rgba(20,40,70,.08),0 4px 8px rgba(20,40,70,.04);
+  --r-sm:9px; --r-md:13px; --r-lg:20px; --r-full:999px;
+  --sidebar-w:272px; --topbar-h:76px;
+}
+html { -webkit-text-size-adjust:100%; }
+html, body { height:100%; }
+body {
+  font-family:"Inter","Noto Sans Ethiopic",sans-serif;
+  background:radial-gradient(circle at 10% 20%, rgba(11,92,171,.09), transparent 35%),
+             radial-gradient(circle at 90% 80%, rgba(25,169,116,.09), transparent 35%),
+             var(--bg);
+  color:var(--text); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+body.ethiopic { font-family:"Noto Sans Ethiopic","Inter",sans-serif; }
+img, svg { display:block; max-width:100%; }
+button, input, select, textarea { font:inherit; color:inherit; }
+button { cursor:pointer; background:none; border:none; }
+a { color:inherit; text-decoration:none; }
+h1,h2,h3,h4 { line-height:1.25; letter-spacing:-0.02em; font-weight:800; }
+:focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+.hidden { display:none !important; }
+
+.app { display:grid; grid-template-columns:var(--sidebar-w) 1fr; grid-template-rows:var(--topbar-h) 1fr;
+  grid-template-areas:"sidebar topbar" "sidebar main"; min-height:100vh;
+  transition:grid-template-columns .25s cubic-bezier(.4,0,.2,1); }
+body.sidebar-collapsed .app { grid-template-columns:88px 1fr; }
+
+.sidebar { grid-area:sidebar; position:sticky; top:0; height:100vh; width:var(--sidebar-w);
+  background:linear-gradient(145deg, #073d75 0%, #0b5cab 55%, #0e7490 100%);
+  color:#fff; display:flex; flex-direction:column; overflow:hidden;
+  transition:width .25s cubic-bezier(.4,0,.2,1); z-index:30; }
+body.sidebar-collapsed .sidebar { width:88px; }
+.sidebar::before { content:""; position:absolute; width:450px; height:450px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.10); right:-220px; top:-150px; pointer-events:none; }
+.sidebar::after { content:""; position:absolute; width:320px; height:320px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.08); left:-170px; bottom:-150px; pointer-events:none; }
+.sidebar__brand { position:relative; z-index:2; display:flex; align-items:center; gap:14px;
+  padding:22px; border-bottom:1px solid rgba(255,255,255,.10);
+  min-height:var(--topbar-h); flex-shrink:0; }
+.sidebar__logo { width:46px; height:46px; flex-shrink:0; border-radius:14px;
+  background:rgba(255,255,255,.97); box-shadow:0 10px 24px rgba(0,0,0,.18);
+  display:grid; place-items:center; padding:5px; }
+.sidebar__logo img { width:100%; height:100%; object-fit:contain; border-radius:9px; }
+.sidebar__identity { min-width:0; flex:1; opacity:1; transition:opacity .18s ease 60ms; white-space:nowrap; overflow:hidden; }
+body.sidebar-collapsed .sidebar__identity { opacity:0; pointer-events:none; }
+.sidebar__title { font-size:16px; font-weight:800; letter-spacing:-.3px; overflow:hidden; text-overflow:ellipsis; }
+.sidebar__subtitle { font-size:11px; opacity:.72; margin-top:3px; overflow:hidden; text-overflow:ellipsis; }
+.sidebar__collapse { position:absolute; right:-13px; top:50%; transform:translateY(-50%);
+  width:28px; height:28px; border-radius:50%; background:#fff; color:var(--primary-dark);
+  border:3px solid var(--bg); display:grid; place-items:center;
+  box-shadow:0 6px 14px rgba(0,0,0,.15); z-index:10; cursor:pointer; }
+.sidebar__collapse:hover { background:#f0f6ff; }
+.sidebar__collapse svg { width:13px; height:13px; stroke:currentColor; stroke-width:2.5;
+  fill:none; stroke-linecap:round; stroke-linejoin:round; transition:transform .25s; }
+body.sidebar-collapsed .sidebar__collapse svg { transform:rotate(180deg); }
+.sidebar__nav { position:relative; z-index:2; flex:1; padding:20px 14px; overflow-y:auto; overflow-x:hidden; }
+.sidebar__nav::-webkit-scrollbar { width:5px; }
+.sidebar__nav::-webkit-scrollbar-thumb { background:rgba(255,255,255,.2); border-radius:3px; }
+.sidebar__section { font-size:10.5px; font-weight:800; letter-spacing:.12em;
+  text-transform:uppercase; color:rgba(255,255,255,.45);
+  padding:18px 12px 8px; white-space:nowrap; overflow:hidden; transition:all .2s ease; }
+.sidebar__section:first-child { padding-top:4px; }
+body.sidebar-collapsed .sidebar__section { height:6px; padding:0; opacity:0; margin-top:14px; margin-bottom:6px; }
+.nav-item { display:flex; align-items:center; gap:13px; padding:11px 13px; border-radius:12px;
+  font-size:14px; font-weight:600; color:rgba(255,255,255,.78);
+  margin-bottom:3px; transition:background .15s, color .15s;
+  white-space:nowrap; cursor:pointer; position:relative; }
+.nav-item:hover { background:rgba(255,255,255,.09); color:#fff; }
+.nav-item.is-active { background:rgba(255,255,255,.16); color:#fff; box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+.nav-item.is-active::before { content:""; position:absolute; left:-14px; top:50%; transform:translateY(-50%);
+  width:4px; height:24px; border-radius:0 4px 4px 0;
+  background:#58e6a7; box-shadow:0 0 12px rgba(88,230,167,.6); }
+.nav-item svg { width:20px; height:20px; flex-shrink:0; stroke:currentColor; stroke-width:1.85; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.nav-item__label { flex:1; overflow:hidden; text-overflow:ellipsis; transition:opacity .15s; }
+body.sidebar-collapsed .nav-item__label { opacity:0; pointer-events:none; }
+body.sidebar-collapsed .nav-item { justify-content:center; padding:12px; }
+body.sidebar-collapsed .nav-item:hover::after { content:attr(data-tooltip);
+  position:absolute; left:calc(100% + 16px); top:50%; transform:translateY(-50%);
+  background:var(--text); color:#fff; padding:7px 12px; border-radius:8px;
+  font-size:12px; font-weight:600; white-space:nowrap;
+  box-shadow:0 10px 24px rgba(20,40,70,.2); z-index:100; pointer-events:none; animation:fadeIn .12s ease; }
+body.sidebar-collapsed .nav-item.is-active::before { left:0; height:28px; border-radius:0 4px 4px 0; }
+@keyframes fadeIn { from { opacity:0; transform:translate(-4px,-50%); } to { opacity:1; transform:translate(0,-50%); } }
+.sidebar__footer { position:relative; z-index:2; padding:16px 20px;
+  border-top:1px solid rgba(255,255,255,.10);
+  font-size:11px; color:rgba(255,255,255,.55);
+  text-align:center; line-height:1.5; white-space:nowrap; overflow:hidden; }
+.sidebar__footer div { transition:opacity .15s; }
+body.sidebar-collapsed .sidebar__footer { padding:16px 8px; }
+body.sidebar-collapsed .sidebar__footer div { opacity:0; height:0; overflow:hidden; }
+body.sidebar-collapsed .sidebar__footer::after { content:"©"; display:block; font-size:18px; color:rgba(255,255,255,.5); line-height:1; }
+
+.topbar { grid-area:topbar; background:rgba(255,255,255,.85);
+  backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:16px; padding:0 28px;
+  position:sticky; top:0; z-index:20; }
+.topbar__menu { display:none; width:42px; height:42px; border-radius:12px; color:var(--text);
+  align-items:center; justify-content:center; cursor:pointer; }
+.topbar__menu:hover { background:var(--border-soft); }
+.topbar__spacer { flex:1; }
+.topbar__actions { display:flex; align-items:center; gap:8px; }
+.icon-btn { width:44px; height:44px; border-radius:13px; display:inline-flex;
+  align-items:center; justify-content:center; color:var(--text-soft);
+  transition:background .15s; cursor:pointer; }
+.icon-btn:hover { background:var(--border-soft); }
+.icon-btn svg { width:20px; height:20px; stroke:currentColor; stroke-width:1.85; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.user-btn { display:flex; align-items:center; gap:11px;
+  padding:4px 14px 4px 4px; border-radius:var(--r-full);
+  background:var(--border-soft); cursor:pointer; transition:background .15s; }
+.user-btn:hover { background:#e4e9f1; }
+.user-btn__avatar { width:38px; height:38px; border-radius:50%;
+  background:linear-gradient(135deg, var(--primary), var(--secondary));
+  color:#fff; font-weight:800; font-size:13px;
+  display:grid; place-items:center; box-shadow:0 6px 14px rgba(11,92,171,.25); }
+.user-btn__meta { text-align:left; line-height:1.2; }
+.user-btn__name { font-size:13px; font-weight:700; display:block; }
+.user-btn__role { font-size:11px; color:var(--muted); text-transform:capitalize; font-weight:600; }
+.dropdown { position:relative; }
+.dropdown__panel { position:absolute; right:0; top:calc(100% + 12px);
+  background:#fff; border:1px solid var(--border); border-radius:16px;
+  box-shadow:0 30px 60px rgba(20,40,70,.12); min-width:260px; padding:8px; z-index:50; }
+.dropdown__header { padding:12px 14px; border-bottom:1px solid var(--border-soft); margin-bottom:6px; }
+.dropdown__header strong { display:block; font-size:14px; font-weight:700; }
+.dropdown__header span { font-size:12px; color:var(--muted); }
+.dropdown__item { display:flex; align-items:center; gap:12px; width:100%;
+  padding:11px 14px; border-radius:10px; font-size:14px; font-weight:500;
+  color:var(--text-soft); text-align:left; cursor:pointer; }
+.dropdown__item:hover { background:var(--border-soft); color:var(--text); }
+.dropdown__item svg { width:17px; height:17px; stroke:currentColor; stroke-width:2; fill:none; }
+.dropdown__divider { height:1px; background:var(--border-soft); margin:6px 0; }
+.dropdown__item--danger { color:var(--danger); }
+
+.diag-banner { display:none; margin-bottom:20px; padding:14px 18px;
+  border-radius:12px; border:1px solid #fecdca;
+  background:linear-gradient(135deg, #fef3f2, #fff);
+  color:#7d1c26; font-size:13px; line-height:1.6; }
+.diag-banner.show { display:block; }
+.diag-banner.ok { border-color:#abefc6; background:linear-gradient(135deg, #ecfdf3, #fff); color:#067647; }
+.diag-banner strong { font-weight:800; }
+.diag-banner code { background:rgba(0,0,0,.06); padding:1px 6px; border-radius:4px;
+  font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; font-weight:600; }
+
+.main { grid-area:main; padding:32px; overflow-x:hidden; }
+.page-head { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:28px; flex-wrap:wrap; }
+.page-head__title { font-size:32px; font-weight:800; letter-spacing:-1.2px; margin-bottom:6px; }
+.page-head__sub { font-size:15px; color:var(--muted); }
+.page-head__actions { display:flex; gap:10px; flex-wrap:wrap; }
+.scope-badge { display:inline-flex; align-items:center; gap:8px;
+  padding:8px 14px; border-radius:var(--r-full);
+  background:linear-gradient(135deg, #eaf3fc, #fff);
+  border:1px solid #bdd7f2; color:var(--primary-dark);
+  font-size:12.5px; font-weight:700; margin-top:8px; }
+.scope-badge svg { width:15px; height:15px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.scope-badge--super { background:linear-gradient(135deg, #f0eaff, #fff); border-color:#ddd2fb; color:#5b21b6; }
+.scope-badge--manager { background:linear-gradient(135deg, #ecfdf3, #fff); border-color:#abefc6; color:#067647; }
+.scope-badge--employee { background:linear-gradient(135deg, #fdf5e0, #fff); border-color:#f0dcb0; color:#b8860b; }
+
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  height:46px; padding:0 20px; border-radius:13px;
+  border:1px solid #d9dee7; background:#fff;
+  color:var(--text-soft); font-size:14px; font-weight:700;
+  white-space:nowrap; cursor:pointer; transition:all .15s; }
+.btn:hover { background:var(--bg-soft); border-color:#b9c7d9; }
+.btn svg { width:17px; height:17px; stroke:currentColor; stroke-width:2.2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.btn--primary { background:linear-gradient(135deg, #0b5cab, #0e7490); border:none; color:#fff;
+  box-shadow:0 10px 22px rgba(11,92,171,.22); }
+.btn--primary:hover { background:linear-gradient(135deg, #073d75, #0b5cab); transform:translateY(-1px); }
+.btn--danger { color:var(--danger); }
+.btn--danger:hover { background:#fef3f2; border-color:#f0a5ab; }
+.btn--sm { height:38px; padding:0 14px; font-size:13px; border-radius:10px; }
+.btn--sm svg { width:15px; height:15px; }
+.btn--icon { width:38px; padding:0; }
+.btn:disabled { opacity:.55; pointer-events:none; }
+
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
+.stat { position:relative; background:#fff; border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:20px; box-shadow:var(--sh-sm);
+  overflow:hidden; transition:box-shadow .2s, transform .2s; }
+.stat:hover { box-shadow:var(--sh-lg); transform:translateY(-3px); }
+.stat::before { content:""; position:absolute; top:0; left:0; right:0; height:4px;
+  background:var(--c1, var(--primary)); border-radius:var(--r-lg) var(--r-lg) 0 0; }
+.stat--blue    { --c1:linear-gradient(90deg, #0b5cab, #0e7490); --ic:#eaf3fc; --ifc:#0b5cab; }
+.stat--green   { --c1:linear-gradient(90deg, #19a974, #34c78e); --ic:#e7f7f0; --ifc:#128a5c; }
+.stat--gold    { --c1:linear-gradient(90deg, #d4a017, #e8b84b); --ic:#fdf5e0; --ifc:#b8860b; }
+.stat--purple  { --c1:linear-gradient(90deg, #6d28d9, #a78bfa); --ic:#f0eaff; --ifc:#5b21b6; }
+.stat__head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
+.stat__label { font-size:12.5px; color:var(--muted); font-weight:600; }
+.stat__icon { width:42px; height:42px; border-radius:12px; background:var(--ic); color:var(--ifc);
+  display:grid; place-items:center; }
+.stat__icon svg { width:20px; height:20px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.stat__value { font-size:28px; font-weight:800; letter-spacing:-1px; line-height:1; }
+.stat__value.loading { color:transparent;
+  background:linear-gradient(90deg, #eef1f5 25%, #f8fafc 50%, #eef1f5 75%);
+  background-size:200% 100%; animation:shimmer 1.4s infinite;
+  border-radius:8px; width:50%; min-height:28px; }
+@keyframes shimmer { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
+
+.offices-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(400px, 1fr)); gap:20px; }
+.office-card { background:#fff; border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden;
+  box-shadow:var(--sh-sm); transition:box-shadow .2s, transform .2s, border-color .2s;
+  display:flex; flex-direction:column; }
+.office-card:hover { box-shadow:var(--sh-lg); transform:translateY(-3px); border-color:#bdd7f2; }
+.office-card__head { padding:22px; background:linear-gradient(135deg, #f8fbff, #fff);
+  border-bottom:1px solid var(--border-soft); display:flex; gap:16px; align-items:flex-start; }
+.office-card__crest { width:56px; height:56px; flex-shrink:0; border-radius:16px;
+  background:linear-gradient(135deg, #0b5cab, #0e7490);
+  color:#fff; display:grid; place-items:center;
+  font-weight:800; font-size:18px; letter-spacing:-.5px;
+  box-shadow:0 8px 20px rgba(11,92,171,.25); }
+.office-card__identity { flex:1; min-width:0; }
+.office-card__name { font-size:17px; font-weight:800; letter-spacing:-.3px; line-height:1.25; margin-bottom:4px; }
+.office-card__name-sub { font-size:12.5px; color:var(--muted); margin-bottom:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.office-card__meta { display:flex; gap:6px; flex-wrap:wrap; }
+
+.tag { display:inline-flex; align-items:center; gap:4px;
+  padding:3px 10px; border-radius:var(--r-full);
+  font-size:11px; font-weight:800; letter-spacing:.02em; text-transform:uppercase; }
+.tag--region    { background:#f0eaff; color:#5b21b6; }
+.tag--ministry  { background:#f0eaff; color:#5b21b6; }
+.tag--bureau    { background:#eaf3fc; color:#0b5cab; }
+.tag--agency    { background:#e0f5f7; color:#0e7490; }
+.tag--authority { background:#fdf5e0; color:#b8860b; }
+.tag--commission{ background:#ecfdf3; color:#128a5c; }
+.tag--office    { background:var(--border-soft); color:var(--text-soft); }
+.tag--green { background:#ecfdf3; color:#067647; }
+.tag--red { background:#fef3f2; color:#b42318; }
+.tag--gold { background:#fdf5e0; color:#b8860b; }
+.tag--gray { background:var(--border-soft); color:var(--text-soft); }
+.tag--code { background:#0d1520; color:#e4eef9; font-family:ui-monospace,monospace; letter-spacing:1px; }
+
+.office-card__body { padding:18px 22px; flex:1; }
+.office-row { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-soft); padding:6px 0; }
+.office-row svg { width:15px; height:15px; flex-shrink:0; stroke:var(--muted); stroke-width:2; fill:none; }
+.office-divider { height:1px; background:var(--border-soft); margin:12px 0; }
+.office-admins-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.office-admins-label { display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--text-soft); }
+.office-admins-label svg { width:14px; height:14px; stroke:var(--primary); stroke-width:2.2; fill:none; }
+.office-admins-count { font-size:11px; font-weight:800; background:var(--border-soft); color:var(--text-soft); padding:2px 8px; border-radius:999px; }
+.no-clusters { font-size:12.5px; color:var(--muted); font-style:italic; padding:8px 0; }
+
+.cluster-chip__code { width:32px; height:32px; border-radius:50%;
+  background:#5b21b6; color:#fff; font-size:11px; font-weight:800;
+  display:grid; place-items:center; font-family:ui-monospace,monospace; letter-spacing:.5px; }
+.cluster-chip__main { flex:1; min-width:0; }
+.cluster-chip__name { font-weight:700; font-size:13px; }
+.cluster-chip__meta { font-size:11px; color:var(--muted); margin-top:2px; }
+
+.empty { grid-column:1 / -1; padding:80px 40px; text-align:center;
+  background:#fff; border:2px dashed var(--border); border-radius:var(--r-lg); }
+.empty svg { width:64px; height:64px; margin:0 auto 20px; stroke:#cbd5e1; stroke-width:1.2; fill:none; }
+.empty h3 { font-size:20px; font-weight:800; color:var(--text); margin-bottom:8px; }
+.empty p { font-size:14.5px; color:var(--muted); margin-bottom:24px; }
+
+.modal-backdrop { position:fixed; inset:0; z-index:200; background:rgba(15,23,42,.55);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  display:grid; place-items:center; padding:24px; animation:fadeIn .18s ease; overflow-y:auto; }
+.modal { background:#fff; border-radius:var(--r-xl); box-shadow:0 30px 60px rgba(20,40,70,.12);
+  width:100%; max-width:600px; max-height:92vh; display:flex; flex-direction:column;
+  animation:modalUp .22s cubic-bezier(.4,0,.2,1); margin:auto; }
+@keyframes modalUp { from { opacity:0; transform:translateY(14px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+.modal--lg { max-width:820px; }
+.modal--xl { max-width:1080px; }
+.modal__head { padding:28px 32px; border-bottom:1px solid var(--border-soft);
+  display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.modal__title { font-size:21px; font-weight:800; letter-spacing:-.4px; }
+.modal__sub { font-size:13.5px; color:var(--muted); margin-top:6px; line-height:1.5; }
+.modal__close { width:38px; height:38px; border-radius:10px; display:grid; place-items:center;
+  color:var(--muted); transition:background .15s; cursor:pointer; flex-shrink:0; }
+.modal__close:hover { background:var(--border-soft); color:var(--text); }
+.modal__close svg { width:18px; height:18px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.modal__body { padding:28px 32px; overflow-y:auto; flex:1; }
+.modal__foot { padding:20px 32px; border-top:1px solid var(--border-soft);
+  display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+
+/* Modal rhythm */
+.modal .field input,
+.modal .field select,
+.modal .field textarea { height:48px; }
+.modal .field textarea { min-height:96px; padding:14px 16px; }
+.modal .field-row { gap:20px; }
+.modal .field-row--3 { gap:18px; }
+.modal .emf-section { margin-bottom:34px; }
+.modal .emf-section__title { padding-bottom:12px; margin-bottom:22px; font-size:12.5px; letter-spacing:.1em; }
+.modal .field > label { margin-bottom:2px; font-size:13.5px; }
+.modal .field { margin-bottom:20px; }
+
+@media (max-width:640px) {
+  .modal__head, .modal__body, .modal__foot { padding-left:20px; padding-right:20px; }
+  .modal__head { padding-top:20px; padding-bottom:20px; }
+}
+
+.field { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; position:relative; }
+.field > label { font-size:13px; font-weight:700; color:var(--text-soft); }
+.field__required::after { content:" *"; color:var(--danger); }
+.field input, .field select, .field textarea {
+  width:100%; height:46px; padding:0 14px; border:1px solid #d9dee7; border-radius:11px;
+  background:#fbfcfe; font-size:14px; font-family:inherit; color:var(--text); transition:all .15s; }
+.field textarea { height:auto; min-height:80px; padding:12px 14px; resize:vertical; }
+.field select { appearance:none; padding-right:38px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat; background-position:right 14px center; }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline:none; background:#fff; border-color:#70a8d9; box-shadow:0 0 0 4px rgba(11,92,171,.08); }
+.field input[aria-invalid="true"] { border-color:#f0a5ab; }
+.field__hint { font-size:12px; color:var(--muted); }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.field-row--3 { grid-template-columns:repeat(3, 1fr); }
+@media (max-width:700px) { .field-row, .field-row--3 { grid-template-columns:1fr; } }
+
+.field__group { position:relative; }
+.field__group input { padding-right:48px; }
+.field__toggle { position:absolute; right:14px; top:50%; transform:translateY(-50%);
+  width:32px; height:32px; border-radius:8px; display:grid; place-items:center;
+  color:var(--muted); cursor:pointer; }
+.field__toggle:hover { background:var(--border-soft); color:var(--text); }
+.field__toggle svg { width:17px; height:17px; stroke:currentColor; stroke-width:1.85; fill:none; }
+
+.checkbox { display:inline-flex; align-items:center; gap:10px;
+  font-size:13.5px; color:var(--text-soft); font-weight:500; cursor:pointer; user-select:none; }
+.checkbox input { width:18px; height:18px; accent-color:var(--primary); cursor:pointer; }
+
+.alert { display:flex; gap:12px; padding:12px 16px; border-radius:11px;
+  font-size:13px; line-height:1.5; margin-bottom:18px; border:1px solid transparent; }
+.alert svg { width:16px; height:16px; flex-shrink:0; margin-top:2px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.alert--error { background:#fef3f2; color:#b42318; border-color:#fecdca; }
+.alert--info { background:#eaf3fc; color:#0b5cab; border-color:#bdd7f2; }
+.alert--warning { background:#fdf5e0; color:#7a5210; border-color:#f0dcb0; }
+
+.tabs-nav { display:flex; gap:4px; padding:4px; background:#fff;
+  border:1px solid var(--border); border-radius:14px;
+  margin-bottom:24px; overflow-x:auto; box-shadow:var(--sh-sm); }
+.tabs-nav__btn { padding:10px 18px; border-radius:10px;
+  font-size:13.5px; font-weight:700; color:var(--muted);
+  cursor:pointer; transition:all .15s; white-space:nowrap; }
+.tabs-nav__btn:hover { color:var(--text-soft); background:var(--bg-soft); }
+.tabs-nav__btn.is-active { background:linear-gradient(135deg, #0b5cab, #0e7490); color:#fff; }
+.tab-panel { display:none; }
+.tab-panel.is-active { display:block; }
+
+.emf-panel { display:block; }
+.emf-panel.hidden { display:none; }
+.emf-section { margin-bottom:28px; }
+.emf-section:last-child { margin-bottom:0; }
+.emf-section__title { font-size:12px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.08em; color:var(--muted);
+  padding-bottom:10px; margin-bottom:18px;
+  border-bottom:1px solid var(--border-soft); }
+
+.dup-error { display:block; font-size:12px; color:var(--danger); margin-top:6px; line-height:1.5; }
+.dup-error strong { font-weight:700; }
+.dup-check-icon { position:absolute; right:14px; top:46px; font-size:12px; font-weight:700; pointer-events:none; }
+.field .dup-check-icon { top:32px; }
+
+.cluster-list, .admin-list { list-style:none; }
+.cluster-list__item, .admin-list__item { display:flex; align-items:center; gap:14px;
+  padding:14px 0; border-bottom:1px solid var(--border-soft); }
+.cluster-list__item:last-child, .admin-list__item:last-child { border-bottom:none; }
+.cluster-list__avatar { width:44px; height:44px; border-radius:12px;
+  background:linear-gradient(135deg, #6d28d9, #8b5cf6);
+  color:#fff; font-weight:800; font-size:11px; letter-spacing:-.5px;
+  display:grid; place-items:center; flex-shrink:0;
+  font-family:ui-monospace,monospace; }
+.cluster-list__avatar--inactive { background:var(--muted); }
+.admin-list__avatar { width:42px; height:42px; border-radius:50%;
+  background:linear-gradient(135deg, #0b5cab, #0e7490);
+  color:#fff; font-weight:800; font-size:13px;
+  display:grid; place-items:center; flex-shrink:0; }
+.admin-list__avatar--inactive { background:var(--muted); }
+.cluster-list__main, .admin-list__main { flex:1; min-width:0; }
+.cluster-list__name, .admin-list__name { font-weight:700; font-size:14px; }
+.cluster-list__meta, .admin-list__email { font-size:12.5px; color:var(--muted); margin-top:2px; }
+.cluster-list__actions, .admin-list__actions { display:flex; gap:6px; flex-wrap:wrap; }
+
+.woreda-pill { display:inline-flex; align-items:center; gap:6px;
+  padding:3px 10px; border-radius:999px;
+  background:#f0eaff; border:1px solid #ddd2fb;
+  font-size:11px; color:#5b21b6; font-weight:700; margin:2px; }
+.woreda-pill__code { font-family:ui-monospace,monospace; }
+
+.wm-row {
+  display:flex; gap:14px; align-items:center;
+  padding:14px 16px;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  transition:border-color .15s, box-shadow .15s;
+}
+
+.toast-wrap { position:fixed; top:24px; right:24px; z-index:300;
+  display:flex; flex-direction:column; gap:10px; pointer-events:none;
+  max-width:calc(100vw - 48px); }
+.toast { background:var(--text); color:#fff; padding:13px 18px; border-radius:12px;
+  box-shadow:0 12px 32px rgba(20,40,70,.2); font-size:13.5px; font-weight:500;
+  display:flex; align-items:center; gap:12px; pointer-events:auto;
+  animation:toastIn .22s cubic-bezier(.4,0,.2,1); max-width:400px; }
+@keyframes toastIn { from { opacity:0; transform:translateX(24px); } to { opacity:1; transform:translateX(0); } }
+.toast--success { background:#067647; }
+.toast--error { background:#b42318; }
+.toast--info { background:#0b5cab; }
+.toast svg { width:17px; height:17px; stroke:currentColor; stroke-width:2.5; fill:none; flex-shrink:0; }
+
+.spinner { width:16px; height:16px; border:2px solid currentColor;
+  border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.skeleton-card { height:280px;
+  background:linear-gradient(90deg, #eef1f5 25%, #f8fafc 50%, #eef1f5 75%);
+  background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:var(--r-lg); }
+.overlay { display:none; position:fixed; inset:0; background:rgba(13,21,32,.45); z-index:25; }
+body.sidebar-open .overlay { display:block; }
+
+@media (max-width:900px) {
+  .app { grid-template-columns:1fr !important; grid-template-areas:"topbar" "main"; }
+  .sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w) !important;
+    transform:translateX(-100%); transition:transform .28s; z-index:40; }
+  body.sidebar-open .sidebar { transform:translateX(0); }
+  body.sidebar-collapsed .sidebar { width:var(--sidebar-w) !important; }
+  body.sidebar-collapsed .sidebar__identity { opacity:1; pointer-events:auto; }
+  body.sidebar-collapsed .nav-item__label { opacity:1; pointer-events:auto; }
+  body.sidebar-collapsed .nav-item { justify-content:flex-start; padding:11px 13px; }
+  body.sidebar-collapsed .sidebar__section { height:auto; padding:18px 12px 8px; opacity:1; }
+  body.sidebar-collapsed .sidebar__footer div { opacity:1; height:auto; }
+  body.sidebar-collapsed .sidebar__footer::after { display:none; }
+  .sidebar__collapse { display:none; }
+  .topbar__menu { display:inline-flex; }
+  .user-btn__meta { display:none; }
+  .user-btn { padding:4px; }
+  .main { padding:20px; }
+  .page-head__title { font-size:26px; letter-spacing:-1px; }
+  .stats { grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
+  .stat { padding:16px; }
+  .stat__value { font-size:22px; }
+  .offices-grid { grid-template-columns:1fr; }
+  .modal__head, .modal__body, .modal__foot { padding-left:20px; padding-right:20px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay" id="overlay"></div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <div class="sidebar__logo">
+        <img src="../images/logo.png" alt=""
+             onerror="this.parentElement.innerHTML='<span style=&quot;color:#0b5cab;font-weight:800;font-size:18px&quot;>CS</span>'">
+      </div>
+      <div class="sidebar__identity">
+        <div class="sidebar__title">Civil Service</div>
+        <div class="sidebar__subtitle">Management Information System</div>
+      </div>
+      <button class="sidebar__collapse" id="collapse-toggle" aria-label="Toggle sidebar">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <nav class="sidebar__nav" id="sidebar-nav"></nav>
+    <div class="sidebar__footer">
+      <div>© 2026 Civil Service MIS</div>
+      <div style="margin-top:3px;opacity:.7">Eng. Abdi Furgasa</div>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <button class="topbar__menu" id="menu-toggle" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="topbar__spacer"></div>
+    <div class="topbar__actions">
+      <div class="dropdown">
+        <button class="user-btn" data-dropdown-toggle>
+          <span class="user-btn__avatar" id="user-avatar">–</span>
+          <span class="user-btn__meta">
+            <span class="user-btn__name" id="user-name">Loading…</span>
+            <span class="user-btn__role" id="user-role">–</span>
+          </span>
+        </button>
+        <div class="dropdown__panel hidden" data-dropdown-panel>
+          <div class="dropdown__header">
+            <strong id="dd-name">—</strong>
+            <span id="dd-email">—</span>
+          </div>
+          <a class="dropdown__item" href="dashboard.html">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <span>Dashboard</span>
+          </a>
+          <div class="dropdown__divider"></div>
+          <button class="dropdown__item dropdown__item--danger" id="logout-btn">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span>Sign out</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div id="diag-banner" class="diag-banner"></div>
+
+    <div class="page-head">
+      <div>
+        <h1 class="page-head__title" id="page-title">Offices &amp; Clusters</h1>
+        <p class="page-head__sub" id="page-sub">Manage offices, clusters and administrators</p>
+        <div id="scope-badge"></div>
+      </div>
+      <div class="page-head__actions" id="head-actions"></div>
+    </div>
+
+    <section class="stats" id="stats"></section>
+
+    <section class="offices-grid" id="offices-grid">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp, deleteApp } from "firebase/app";
+import {
+  getAuth, signOut, onAuthStateChanged,
+  createUserWithEmailAndPassword, updateProfile
+} from "firebase/auth";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+  collection, query, where, orderBy, limit,
+  getDocs, onSnapshot, serverTimestamp, getCountFromServer,
+  runTransaction
+} from "firebase/firestore";
+import {
+  getStorage, ref as storageRef, uploadBytes, getDownloadURL
+} from "firebase/storage";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyASE2f6DVivrH7koQXAFZeOrj6Wng45Uq4",
+  authDomain: "civil-service-system-f2d46.firebaseapp.com",
+  projectId: "civil-service-system-f2d46",
+  storageBucket: "civil-service-system-f2d46.firebasestorage.app",
+  messagingSenderId: "12482599055",
+  appId: "1:12482599055:web:4daa6a56cc9674c15cf8fa"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+/* ============================================================
+   REGIONS
+   ============================================================ */
+const REGIONS = [
+  { code: "01", en: "Tigray",                 am: "ትግራይ",              om: "Tigraay" },
+  { code: "02", en: "Afar",                   am: "አፋር",                om: "Affaar" },
+  { code: "03", en: "Amhara",                 am: "አማራ",                om: "Amaaraa" },
+  { code: "04", en: "Oromia",                 am: "ኦሮሚያ",               om: "Oromiyaa" },
+  { code: "05", en: "Somali",                 am: "ሶማሌ",                om: "Somaalee" },
+  { code: "06", en: "Benishangul-Gumuz",      am: "ቤንሻንጉል-ጉሙዝ",        om: "Benshangul-Gumuz" },
+  { code: "07", en: "South Nations (SNNPR)",  am: "ደቡብ ብሔሮች",          om: "Sabaa Naannoo" },
+  { code: "08", en: "Gambella",               am: "ጋምቤላ",               om: "Gaambellaa" },
+  { code: "09", en: "Harari",                 am: "ሐረሪ",                om: "Hareerii" },
+  { code: "10", en: "Sidama",                 am: "ሲዳማ",                om: "Sidaamaa" },
+  { code: "11", en: "South West Ethiopia",    am: "ደቡብ ምዕራብ ኢትዮጵያ",  om: "Kibba Dhihaa Itoophiyaa" },
+  { code: "12", en: "Dire Dawa",              am: "ድሬ ዳዋ",              om: "Dirre Dhawaa" },
+  { code: "13", en: "Addis Ababa",            am: "አዲስ አበባ",           om: "Finfinnee" },
+  { code: "14", en: "Central Ethiopia",       am: "መካከለኛው ኢትዮጵያ",     om: "Itoophiyaa Giddugaleessaa" },
+  { code: "15", en: "South Ethiopia",         am: "ደቡብ ኢትዮጵያ",        om: "Itoophiyaa Kibbaa" }
+];
+function regionLabel(code) {
+  const r = REGIONS.find((x) => x.code === code);
+  return r ? r.code + " — " + r.en : (code || "—");
+}
+function regionName(code) {
+  const r = REGIONS.find((x) => x.code === code);
+  return r ? r.en : (code || "");
+}
+
+/* ============================================================
+   COUNTRIES
+   ============================================================ */
+const COUNTRIES = [
+  { code: "ET", name: "Ethiopia",        dial: "+251" },
+  { code: "ER", name: "Eritrea",         dial: "+291" },
+  { code: "DJ", name: "Djibouti",        dial: "+253" },
+  { code: "SO", name: "Somalia",         dial: "+252" },
+  { code: "SD", name: "Sudan",           dial: "+249" },
+  { code: "SS", name: "South Sudan",     dial: "+211" },
+  { code: "KE", name: "Kenya",           dial: "+254" },
+  { code: "UG", name: "Uganda",          dial: "+256" },
+  { code: "TZ", name: "Tanzania",        dial: "+255" },
+  { code: "OT", name: "Other",           dial: "" }
+];
+
+/* ============================================================
+   GUARD
+   ============================================================ */
+const INDEX_URL = "../index.html";
+let GUARD_PASSED = false;
+let unsubOffices = null, unsubClusters = null, unsubAdmins = null, unsubEmployees = null;
+
+function kick(reason) {
+  if (kick.done) return;
+  kick.done = true;
+  console.warn("[guard]", reason);
+  try { sessionStorage.clear(); if (reason === "expired") sessionStorage.setItem("__redirectReason","expired"); } catch (e) {}
+  signOut(auth).catch(() => {}).finally(() => window.location.replace(INDEX_URL));
+  setTimeout(() => window.location.replace(INDEX_URL), 800);
+}
+(function preCheck() {
+  let ok = false;
+  try { ok = sessionStorage.getItem("loggedIn") === "true" && !!sessionStorage.getItem("uid"); } catch (e) {}
+  if (!ok) kick("no-session");
+})();
+window.addEventListener("storage", (e) => { if (e.key === "loggedIn" && e.newValue !== "true") kick("cross-tab"); });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  if (kick.done) return;
+  if (!auth.currentUser || sessionStorage.getItem("loggedIn") !== "true") kick("hidden-expired");
+});
+setInterval(() => { if (kick.done) return; if (!auth.currentUser) kick("heartbeat"); }, 60000);
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest("#logout-btn");
+  if (!btn) return;
+  e.preventDefault();
+  try { sessionStorage.clear(); } catch (err) {}
+  try { await signOut(auth); } catch (err) {}
+  window.location.replace(INDEX_URL);
+});
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let S = null;
+let offices = [];
+let clusters = [];
+let admins = [];
+let employees = [];
+let clustersByOffice = {};
+let adminsByCluster = {};
+let employeesByCluster = {};
+let EMF = null;
+
+/* ============================================================
+   ICONS
+   ============================================================ */
+const ICONS = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  building:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  wallet:'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',
+  briefcase:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+  trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  phone:'<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  mail:'<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+  pin:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+  eye:'<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff:'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
+  alert:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+  cluster:'<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="8.5" y1="6" x2="15.5" y2="6"/>',
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  userPlus:'<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>',
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  camera:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  id:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M15 8h3M15 12h3M15 16h3M5 16c0-2 2-3 4-3s4 1 4 3"/>'
+};
+
+/* ============================================================
+   NAV
+   ============================================================ */
+const NAV = [
+  { section:"Overview", items:[
+    { key:"dashboard", label:"Dashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
+  ]},
+  { section:"Organization", items:[
+    { key:"employees",   label:"Employees",   href:"employees.html",   icon:"users",    roles:["super_admin","admin","manager"] },
+    { key:"departments", label:"Departments", href:"departments.html", icon:"building", roles:["super_admin","admin","manager"] }
+  ]},
+  { section:"Operations", items:[
+    { key:"attendance",  label:"Attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","admin","manager","employee"] },
+    { key:"leave",       label:"Leave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","admin","manager","employee"] },
+    { key:"payroll",     label:"Payroll",     href:"payroll.html",     icon:"wallet",    roles:["super_admin","admin","employee"] },
+    { key:"performance", label:"Performance", href:"performance.html", icon:"target",    roles:["super_admin","admin","manager","employee"] },
+    { key:"training",    label:"Training",    href:"training.html",    icon:"book",      roles:["super_admin","admin","manager","employee"] }
+  ]},
+  { section:"Administration", items:[
+    { key:"offices",       label:"Offices",       href:"offices.html",       icon:"building", roles:["super_admin","admin"] },
+    { key:"reports",       label:"Reports",       href:"reports.html",       icon:"chart",    roles:["super_admin","admin","manager"] },
+    { key:"notifications", label:"Notifications", href:"notifications.html", icon:"bell",     roles:["*"] },
+    { key:"users",         label:"Users",         href:"users.html",         icon:"shield",   roles:["super_admin"] },
+    { key:"settings",      label:"Settings",      href:"settings.html",      icon:"settings", roles:["super_admin","admin"] }
+  ]}
+];
+
+const initials = (n) => (n || "?").split(/\s+/).slice(0,2).map((s) => s[0]).join("").toUpperCase();
+const roleLabel = (r) => (r || "").replace(/_/g," ").replace(/\b\w/g, (c) => c.toUpperCase());
+const hasAccess = (item, role) => item.roles.includes("*") || item.roles.includes(role);
+const escapeHtml = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g,
+  (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const fullName = (e) => [e.firstName, e.middleName, e.lastName].filter(Boolean).join(" ") || e.email || e.empId || "Employee";
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function toast(msg, type = "success") {
+  const wrap = document.getElementById("toast-wrap");
+  const el = document.createElement("div");
+  el.className = "toast toast--" + type;
+  const icon = type === "error" ? ICONS.alert : ICONS.check;
+  el.innerHTML = `<svg viewBox="0 0 24 24">${icon}</svg><span>${escapeHtml(msg)}</span>`;
+  wrap.appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; }, 4200);
+  setTimeout(() => el.remove(), 4600);
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function twoDigits(v, fallback = "00") {
+  if (v == null) return fallback;
+  const s = String(v).replace(/\D/g, "");
+  if (!s) return fallback;
+  return s.length >= 2 ? s.slice(0, 2) : s.padStart(2, "0");
+}
+
+function normalizeWoredas(list) {
+  return (list || []).map((w) => {
+    if (typeof w === "string") return { code: "", name: w };
+    return { code: w.code || "", name: w.name || "" };
+  });
+}
+
+function normalizeNationalId(v) {
+  return String(v || "").trim().toUpperCase().replace(/[\s-]/g, "");
+}
+function normalizePhone(v) {
+  let s = String(v || "").replace(/\D/g, "");
+  if (s.startsWith("251")) s = s.slice(3);
+  if (s.startsWith("0"))   s = s.slice(1);
+  return s;
+}
+function fileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+/* ============================================================
+   EMPLOYEE ID GENERATOR
+   Format: RR-CCWWOO NNNN → 04-0612080001
+   ============================================================ */
+async function generateEmployeeId({ regionCode, clusterCode, woredaCode, officeCode }) {
+  const RR = twoDigits(regionCode);
+  const CC = twoDigits(clusterCode);
+  const WW = twoDigits(woredaCode);
+  const OO = twoDigits(officeCode);
+  const counterKey = `${RR}-${CC}${WW}${OO}`;
+  const counterRef = doc(db, "counters", "employeeIds");
+
+  const next = await runTransaction(db, async (tx) => {
+    const snap = await tx.get(counterRef);
+    const data = snap.exists() ? snap.data() : {};
+    const current = Number(data[counterKey] || 0);
+    const value = current + 1;
+    tx.set(counterRef, { [counterKey]: value }, { merge: true });
+    return value;
+  });
+
+  const seq = String(next).padStart(4, "0");
+  return `${RR}-${CC}${WW}${OO}${seq}`;
+}
+
+/* ============================================================
+   DUPLICATE CHECKS
+   ============================================================ */
+async function findEmployeeByNationalId(nationalId) {
+  const norm = normalizeNationalId(nationalId);
+  if (!norm) return null;
+  try {
+    const snap = await getDocs(query(
+      collection(db, "employees"),
+      where("nationalIdNorm", "==", norm),
+      limit(1)
+    ));
+    if (snap.empty) return null;
+    const d = snap.docs[0];
+    return { id: d.id, ...d.data() };
+  } catch (e) { return null; }
+}
+async function findEmployeeByPhone(phone) {
+  const norm = normalizePhone(phone);
+  if (!norm) return null;
+  try {
+    const snap = await getDocs(query(
+      collection(db, "employees"),
+      where("phoneNorm", "==", norm),
+      limit(1)
+    ));
+    if (snap.empty) return null;
+    const d = snap.docs[0];
+    return { id: d.id, ...d.data() };
+  } catch (e) { return null; }
+}
+async function reserveUnique(type, value, norm, employeeId, empId, name) {
+  const docRef = doc(db, "uniqueness", `${type}_${norm}`);
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(docRef);
+    if (snap.exists()) {
+      const d = snap.data();
+      throw Object.assign(new Error(
+        `This ${type === "nationalId" ? "National ID" : "phone number"} is already registered` +
+        (d.empId ? ` (employee ${d.empId})` : "")
+      ), { code: "duplicate", conflicting: d });
+    }
+    tx.set(docRef, {
+      type, value, norm, employeeId, empId,
+      name: name || null,
+      createdAt: serverTimestamp()
+    });
+  });
+}
+async function releaseUnique(type, norm) {
+  try { await deleteDoc(doc(db, "uniqueness", `${type}_${norm}`)); } catch (e) {}
+}
+
+/* ============================================================
+   PHOTO UPLOAD
+   ============================================================ */
+async function uploadEmployeePhoto(file, empId) {
+  if (!file) return null;
+  if (file.size > 3 * 1024 * 1024) throw new Error("Photo must be under 3 MB");
+  const safeId = empId.replace(/[^A-Za-z0-9-]/g, "_");
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const path = `employees/${safeId}/photo.${ext}`;
+  const ref = storageRef(storage, path);
+  await uploadBytes(ref, file, { contentType: file.type || "image/jpeg" });
+  return await getDownloadURL(ref);
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderSidebar() {
+  const nav = document.getElementById("sidebar-nav");
+  nav.innerHTML = "";
+  for (const group of NAV) {
+    const visible = group.items.filter((it) => hasAccess(it, S.role));
+    if (!visible.length) continue;
+    const sec = document.createElement("div");
+    sec.className = "sidebar__section";
+    sec.textContent = group.section;
+    nav.appendChild(sec);
+    for (const item of visible) {
+      const a = document.createElement("a");
+      a.className = "nav-item" + (item.key === "offices" ? " is-active" : "");
+      a.href = item.href;
+      a.setAttribute("data-tooltip", item.label);
+      a.innerHTML = `<svg viewBox="0 0 24 24">${ICONS[item.icon]}</svg>
+                     <span class="nav-item__label">${item.label}</span>`;
+      nav.appendChild(a);
+    }
+  }
+}
+
+function renderUser() {
+  document.getElementById("user-avatar").textContent = initials(S.name);
+  document.getElementById("user-name").textContent = S.name;
+  document.getElementById("user-role").textContent = roleLabel(S.role);
+  document.getElementById("dd-name").textContent = S.name;
+  document.getElementById("dd-email").textContent = S.email;
+}
+
+function renderScopeBadge() {
+  const map = {
+    super_admin: { class:"scope-badge--super", label:"Full system access" },
+    admin:       { class:"",                   label:"Cluster: " + (S.clusterName || "—") },
+    manager:     { class:"scope-badge--manager", label:"Team: " + (S.teamSize || 0) + " reports" },
+    employee:    { class:"scope-badge--employee", label:"Viewer" }
+  };
+  const c = map[S.role] || map.employee;
+  document.getElementById("scope-badge").innerHTML =
+    `<span class="scope-badge ${c.class}"><svg viewBox="0 0 24 24">${ICONS.lock}</svg>${escapeHtml(c.label)}</span>`;
+}
+
+function renderHeadActions() {
+  const host = document.getElementById("head-actions");
+  const btns = [];
+  if (S.role === "super_admin") {
+    btns.push(`<button class="btn btn--primary" id="add-office-btn">
+      <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add Office
+    </button>`);
+  }
+  host.innerHTML = btns.join("");
+  document.getElementById("add-office-btn")?.addEventListener("click", () => openOfficeModal());
+}
+
+function renderStats() {
+  const set = (id, v) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove("loading");
+    el.textContent = v;
+  };
+  const visibleOffices = S.role === "super_admin" ? offices : offices.filter((o) => o.id === S.officeId);
+  const visibleClusters = S.role === "super_admin"
+    ? clusters
+    : clusters.filter((c) => c.id === S.clusterId || c.officeId === S.officeId);
+  const visibleAdmins = S.role === "super_admin"
+    ? admins
+    : admins.filter((a) => a.clusterId === S.clusterId);
+  const visibleEmployees = S.role === "super_admin"
+    ? employees
+    : employees.filter((e) => e.clusterId === S.clusterId);
+
+  set("stat-offices", visibleOffices.length);
+  set("stat-clusters", visibleClusters.length);
+  set("stat-admins", visibleAdmins.length);
+  set("stat-employees", visibleEmployees.length);
+}
+
+const TYPE_TAG = { ministry:"tag--ministry", bureau:"tag--bureau", agency:"tag--agency",
+  authority:"tag--authority", commission:"tag--commission", office:"tag--office" };
+const TYPE_LABEL = { ministry:"Ministry", bureau:"Regional Bureau", agency:"Agency",
+  authority:"Authority", commission:"Commission", office:"Office" };
+
+/* ============================================================
+   PERMISSIONS
+   ============================================================ */
+function visibleOffices() {
+  if (S.role === "super_admin") return offices;
+  return offices.filter((o) => o.id === S.officeId);
+}
+function visibleClusters(officeId) {
+  const list = clustersByOffice[officeId] || [];
+  if (S.role === "super_admin") return list;
+  return list.filter((c) => c.id === S.clusterId || (S.role === "admin" && c.officeId === S.officeId));
+}
+function canEditOffice(o)  { return S.role === "super_admin" || (S.role === "admin" && o.id === S.officeId); }
+function canDeleteOffice() { return S.role === "super_admin"; }
+function canCreateCluster(o) { return S.role === "super_admin"; }
+function canEditCluster(c) { return S.role === "super_admin" || (S.role === "admin" && c.id === S.clusterId); }
+function canDeleteCluster(c) { return S.role === "super_admin"; }
+function canAddAdminTo(c) { return S.role === "super_admin" || (S.role === "admin" && c.id === S.clusterId); }
+function canManageWoredas(c) {
+  // Only the cluster's own admin may manage woredas/cities
+  return S.role === "admin" && c && c.id === S.clusterId;
+}
+
+function renderOffices() {
+  const grid = document.getElementById("offices-grid");
+  const list = visibleOffices();
+
+  if (!list.length) {
+    grid.innerHTML = `
+      <div class="empty">
+        <svg viewBox="0 0 24 24">${ICONS.building}</svg>
+        <h3>No offices yet</h3>
+        <p>${S.role === "super_admin" ? "Add your first governmental office to get started." : "Ask your super admin to assign you to an office."}</p>
+        ${S.role === "super_admin" ? `
+          <button class="btn btn--primary" id="empty-add">
+            <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add Office
+          </button>` : ""}
+      </div>`;
+    document.getElementById("empty-add")?.addEventListener("click", () => openOfficeModal());
+    return;
+  }
+
+  grid.innerHTML = list.map(renderOfficeCard).join("");
+
+  grid.querySelectorAll("[data-action]").forEach((el) => {
+    el.addEventListener("click", () => {
+      const { action, id, cid } = el.dataset;
+      if (action === "edit-office")     openOfficeModal(id);
+      if (action === "delete-office")   confirmDeleteOffice(id);
+      if (action === "add-cluster")     openClusterForm(id, null);
+      if (action === "edit-cluster")    openClusterForm(id, cid);
+      if (action === "delete-cluster")  confirmDeleteCluster(cid);
+      if (action === "manage-admins")   openClusterAdminsManager(id, cid);
+      if (action === "add-admin")       openAddAdminModal(id, cid);
+      if (action === "add-employee")    openAddEmployeeModal(id, cid);
+      if (action === "manage-woredas")  openWoredasManager(id, cid);
+    });
+  });
+}
+
+function renderOfficeCard(o) {
+  const allClusters = visibleClusters(o.id);
+  const typeClass = TYPE_TAG[o.type] || "tag--office";
+  const typeLabel = TYPE_LABEL[o.type] || "Office";
+  const crest = (o.code || o.name || "?").slice(0,3).toUpperCase();
+  const canEdit = canEditOffice(o);
+  const canDel = canDeleteOffice();
+  const canAddCluster = canCreateCluster(o);
+
+  const clusterList = allClusters.length
+    ? allClusters.map((c) => {
+        const cAdmins = adminsByCluster[c.id] || [];
+        const cEmps = employeesByCluster[c.id] || [];
+        const canEditC = canEditCluster(c);
+        const canDelC = canDeleteCluster(c);
+        const canAddAdm = canAddAdminTo(c);
+        const canWoredas = canManageWoredas(c);
+        const woredas = normalizeWoredas(c.woredas);
+
+        return `
+          <div style="display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid var(--border-soft);border-radius:12px;background:var(--bg-soft);margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="cluster-chip__code">${escapeHtml(c.code || "??")}</div>
+              <div class="cluster-chip__main">
+                <div class="cluster-chip__name">${escapeHtml(c.name || "—")}</div>
+                <div class="cluster-chip__meta">
+                  ${cAdmins.length} admin${cAdmins.length !== 1 ? "s" : ""} ·
+                  ${cEmps.length} employee${cEmps.length !== 1 ? "s" : ""}
+                  ${c.active === false ? " · inactive" : ""}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              ${canAddAdm ? `
+                <button class="btn btn--sm" data-action="add-employee" data-id="${o.id}" data-cid="${c.id}" title="Add employee">
+                  <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg>
+                  Employee
+                </button>
+                <button class="btn btn--sm btn--primary" data-action="add-admin" data-id="${o.id}" data-cid="${c.id}" title="Add admin">
+                  <svg viewBox="0 0 24 24">${ICONS.shield}</svg>
+                  Admin
+                </button>
+              ` : ""}
+              ${canWoredas ? `
+                <button class="btn btn--sm" data-action="manage-woredas" data-id="${o.id}" data-cid="${c.id}" title="Manage woredas &amp; codes" style="border-color:#ddd2fb;color:#5b21b6;background:#f5f0ff">
+                  <svg viewBox="0 0 24 24">${ICONS.pin}</svg>
+                  Woredas ${woredas.length ? "(" + woredas.length + ")" : ""}
+                </button>
+              ` : ""}
+              ${canAddAdm ? `
+                <button class="btn btn--sm btn--icon" data-action="manage-admins" data-id="${o.id}" data-cid="${c.id}" title="View admins">
+                  <svg viewBox="0 0 24 24">${ICONS.users}</svg>
+                </button>
+              ` : ""}
+              ${canEditC ? `<button class="btn btn--sm btn--icon" data-action="edit-cluster" data-id="${o.id}" data-cid="${c.id}" title="Edit cluster">
+                <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
+              </button>` : ""}
+              ${canDelC ? `<button class="btn btn--sm btn--icon btn--danger" data-action="delete-cluster" data-cid="${c.id}" title="Delete cluster">
+                <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
+              </button>` : ""}
+            </div>
+            ${woredas.length ? `
+              <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">
+                ${woredas.slice(0, 6).map((w) => `
+                  <span class="woreda-pill">
+                    <span class="woreda-pill__code">${escapeHtml(w.code || "??")}</span>
+                    ${escapeHtml(w.name)}
+                  </span>
+                `).join("")}
+                ${woredas.length > 6 ? `<span style="font-size:11px;color:var(--muted)">+${woredas.length - 6}</span>` : ""}
+              </div>
+            ` : `<div style="font-size:11.5px;color:var(--muted);font-style:italic;margin-top:4px">
+              ${canWoredas ? "No woredas yet — click the Woredas button to add them" : "No woredas/cities registered yet"}
+            </div>`}
+          </div>
+        `;
+      }).join("")
+    : `<div class="no-clusters">${canAddCluster ? "No clusters — click Add Cluster" : "No clusters"}</div>`;
+
+  return `
+    <article class="office-card">
+      <div class="office-card__head">
+        <div class="office-card__crest">${escapeHtml(crest)}</div>
+        <div class="office-card__identity">
+          <div class="office-card__name">${escapeHtml(o.name || "—")}</div>
+          ${o.nameAm ? `<div class="office-card__name-sub">${escapeHtml(o.nameAm)}</div>` : ""}
+          <div class="office-card__meta">
+            <span class="tag ${typeClass}">${typeLabel}</span>
+            ${o.region ? `<span class="tag tag--region">${regionLabel(o.region)}</span>` : ""}
+            ${o.officeCode ? `<span class="tag tag--code">${escapeHtml(o.officeCode)}</span>` : ""}
+            ${o.code ? `<span class="tag tag--gray">${escapeHtml(o.code)}</span>` : ""}
+          </div>
+        </div>
+      </div>
+
+      <div class="office-card__body">
+        ${o.phone ? `<div class="office-row"><svg viewBox="0 0 24 24">${ICONS.phone}</svg><span>${escapeHtml(o.phone)}</span></div>` : ""}
+        ${o.email ? `<div class="office-row"><svg viewBox="0 0 24 24">${ICONS.mail}</svg><span>${escapeHtml(o.email)}</span></div>` : ""}
+
+        <div class="office-divider"></div>
+        <div class="office-admins-head">
+          <div class="office-admins-label">
+            <svg viewBox="0 0 24 24">${ICONS.cluster}</svg>
+            Clusters
+          </div>
+          <span class="office-admins-count">${allClusters.length}</span>
+        </div>
+        ${clusterList}
+      </div>
+
+      <div class="office-card__actions" style="padding:14px 18px;background:var(--bg-soft);border-top:1px solid var(--border-soft);display:flex;gap:8px;flex-wrap:wrap">
+        ${canAddCluster ? `
+          <button class="btn btn--primary btn--sm" data-action="add-cluster" data-id="${o.id}">
+            <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add Cluster
+          </button>` : ""}
+        ${canEdit ? `
+          <button class="btn btn--sm" data-action="edit-office" data-id="${o.id}">
+            <svg viewBox="0 0 24 24">${ICONS.edit}</svg> Edit
+          </button>` : ""}
+        ${canDel ? `
+          <button class="btn btn--sm btn--danger" data-action="delete-office" data-id="${o.id}">
+            <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
+          </button>` : ""}
+      </div>
+    </article>
+  `;
+}
+
+/* ============================================================
+   MODAL FRAMEWORK
+   ============================================================ */
+let escHandler = null;
+function openModal(html, { size = "" } = {}) {
+  closeModal();
+  const bd = document.createElement("div");
+  bd.className = "modal-backdrop";
+  bd.id = "modal-backdrop";
+  bd.innerHTML = `<div class="modal ${size ? "modal--" + size : ""}" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(bd);
+  bd.addEventListener("click", (e) => { if (e.target === bd) closeModal(); });
+  bd.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeModal));
+  escHandler = (e) => { if (e.key === "Escape") closeModal(); };
+  document.addEventListener("keydown", escHandler);
+  return bd;
+}
+function closeModal() {
+  const el = document.getElementById("modal-backdrop");
+  if (el) el.remove();
+  if (escHandler) { document.removeEventListener("keydown", escHandler); escHandler = null; }
+}
+
+/* ============================================================
+   OFFICE FORM
+   ============================================================ */
+function openOfficeModal(officeId = null) {
+  const editing = !!officeId;
+  if (editing && !canEditOffice({ id: officeId })) { toast("You cannot edit this office", "error"); return; }
+  if (!editing && S.role !== "super_admin") { toast("Only super admins can create offices", "error"); return; }
+
+  const o = editing ? offices.find((x) => x.id === officeId) : {};
+  const regionOptions = REGIONS.map((r) =>
+    `<option value="${r.code}" ${o.region === r.code ? "selected" : ""}>${regionLabel(r.code)}</option>`
+  ).join("");
+
+  openModal(`
+    <div class="modal__head">
+      <div>
+        <div class="modal__title">${editing ? "Edit Office" : "New Governmental Office"}</div>
+        <div class="modal__sub">${editing ? "Update office information" : "Register a ministry, bureau, agency or authority"}</div>
+      </div>
+      <button class="modal__close" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24">${ICONS.x}</svg>
+      </button>
+    </div>
+
+    <form class="modal__body" id="office-form">
+      <div id="office-error" class="alert alert--error hidden">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div id="office-error-msg" style="flex:1"></div>
+      </div>
+
+      <div class="field">
+        <label for="of-name" class="field__required">Name (English)</label>
+        <input id="of-name" value="${escapeHtml(o.name || "")}" autocomplete="off">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="of-nameAm">Name (Amharic)</label>
+          <input id="of-nameAm" value="${escapeHtml(o.nameAm || "")}" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="of-nameOm">Name (Afaan Oromoo)</label>
+          <input id="of-nameOm" value="${escapeHtml(o.nameOm || "")}" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="of-code">Short code</label>
+          <input id="of-code" value="${escapeHtml(o.code || "")}" placeholder="MoE" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="of-officeCode" class="field__required">Office code (2 digits)</label>
+          <input id="of-officeCode" value="${escapeHtml(o.officeCode || "")}"
+                 placeholder="08" inputmode="numeric" maxlength="2"
+                 style="font-family:ui-monospace,monospace;letter-spacing:2px">
+          <p class="field__hint">Used in employee IDs — e.g. 04-06<b>12</b>08-0001</p>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="of-type">Type</label>
+          <select id="of-type">
+            ${Object.entries(TYPE_LABEL).map(([k, v]) =>
+              `<option value="${k}" ${o.type === k ? "selected" : ""}>${v}</option>`
+            ).join("")}
+          </select>
+        </div>
+        <div class="field">
+          <label for="of-region" class="field__required">Region</label>
+          <select id="of-region">
+            <option value="">—</option>
+            ${regionOptions}
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="of-phone">Phone</label>
+          <input id="of-phone" value="${escapeHtml(o.phone || "")}" placeholder="+251 …" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="of-email">Email</label>
+          <input id="of-email" type="email" value="${escapeHtml(o.email || "")}" placeholder="info@office.gov.et" autocomplete="off">
+        </div>
+      </div>
+
+      <label class="checkbox">
+        <input type="checkbox" id="of-active" ${o.active !== false ? "checked" : ""}>
+        Active
+      </label>
+    </form>
+
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn btn--primary" id="of-submit">
+        <span class="spinner hidden"></span>
+        <span class="btn-label">${editing ? "Save" : "Add Office"}</span>
+      </button>
+    </div>
+  `, { size: "lg" });
+
+  document.getElementById("of-submit").addEventListener("click", () => saveOffice(officeId));
+  document.getElementById("office-form").addEventListener("submit", (e) => {
+    e.preventDefault(); saveOffice(officeId);
+  });
+}
+
+async function saveOffice(officeId) {
+  const nameEl = document.getElementById("of-name");
+  const regionEl = document.getElementById("of-region");
+  const codeEl = document.getElementById("of-officeCode");
+  const errBox = document.getElementById("office-error");
+  const errMsg = document.getElementById("office-error-msg");
+  const btn = document.getElementById("of-submit");
+  const spinner = btn.querySelector(".spinner");
+  const label = btn.querySelector(".btn-label");
+
+  const name = nameEl.value.trim();
+  const region = regionEl.value;
+  const codeDigits = codeEl.value.replace(/\D/g, "").slice(0, 2);
+
+  if (!name) { nameEl.setAttribute("aria-invalid","true"); nameEl.focus();
+    errBox.classList.remove("hidden"); errMsg.textContent = "Name is required"; return; }
+  nameEl.removeAttribute("aria-invalid");
+  if (!region) { regionEl.setAttribute("aria-invalid","true"); regionEl.focus();
+    errBox.classList.remove("hidden"); errMsg.textContent = "Region is required"; return; }
+  regionEl.removeAttribute("aria-invalid");
+  if (codeDigits.length !== 2) { codeEl.setAttribute("aria-invalid","true"); codeEl.focus();
+    errBox.classList.remove("hidden"); errMsg.textContent = "Office code must be 2 digits"; return; }
+  codeEl.removeAttribute("aria-invalid");
+  errBox.classList.add("hidden");
+
+  btn.disabled = true;
+  spinner.classList.remove("hidden");
+  const oldLabel = label.textContent;
+  label.textContent = "Saving…";
+
+  const data = {
+    name,
+    nameAm: document.getElementById("of-nameAm").value.trim() || null,
+    nameOm: document.getElementById("of-nameOm").value.trim() || null,
+    code: document.getElementById("of-code").value.trim().toUpperCase() || null,
+    officeCode: codeDigits,
+    type: document.getElementById("of-type").value,
+    region,
+    regionName: regionName(region),
+    phone: document.getElementById("of-phone").value.trim() || null,
+    email: document.getElementById("of-email").value.trim() || null,
+    active: document.getElementById("of-active").checked,
+    updatedAt: serverTimestamp()
+  };
+
+  try {
+    if (officeId) {
+      await updateDoc(doc(db, "offices", officeId), data);
+      toast("Office updated", "success");
+    } else {
+      data.createdAt = serverTimestamp();
+      data.createdBy = S.uid;
+      await setDoc(doc(collection(db, "offices")), data);
+      toast("Office created", "success");
+    }
+    closeModal();
+  } catch (err) {
+    errBox.classList.remove("hidden");
+    errMsg.innerHTML = `<strong>${escapeHtml(err.code || "error")}</strong><br>${escapeHtml(err.message || "")}`;
+    btn.disabled = false;
+    spinner.classList.add("hidden");
+    label.textContent = oldLabel;
+  }
+}
+
+async function confirmDeleteOffice(officeId) {
+  if (!canDeleteOffice()) return;
+  const o = offices.find((x) => x.id === officeId);
+  if (!o) return;
+  if (!confirm("Delete this office?\n\n" + o.name)) return;
+  try {
+    await deleteDoc(doc(db, "offices", officeId));
+    toast("Office deleted", "success");
+  } catch (err) { toast(err.code + ": " + err.message, "error"); }
+}
+
+/* ============================================================
+   CLUSTER FORM — no woredas here; they're managed by the cluster admin
+   ============================================================ */
+function openClusterForm(officeId, clusterId) {
+  const o = offices.find((x) => x.id === officeId);
+  if (!o) return;
+  if (clusterId && !canEditCluster({ id: clusterId })) { toast("Read-only", "error"); return; }
+  if (!clusterId && !canCreateCluster(o)) { toast("Only super admins can create clusters", "error"); return; }
+
+  const editing = !!clusterId;
+  const c = editing ? clusters.find((x) => x.id === clusterId) : {};
+
+  openModal(`
+    <div class="modal__head">
+      <div>
+        <div class="modal__title">${editing ? "Edit Cluster" : "Register Cluster"}</div>
+        <div class="modal__sub">${escapeHtml(o.name)} — ${regionLabel(o.region)}</div>
+      </div>
+      <button class="modal__close" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24">${ICONS.x}</svg>
+      </button>
+    </div>
+
+    <form class="modal__body" id="cluster-form">
+      <div id="cluster-error" class="alert alert--error hidden">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div id="cluster-error-msg" style="flex:1"></div>
+      </div>
+
+      <div class="field">
+        <label for="cl-name" class="field__required">Cluster name (English)</label>
+        <input id="cl-name" value="${escapeHtml(c.name || "")}" placeholder="Bole Cluster" autocomplete="off">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="cl-nameAm">Name (Amharic)</label>
+          <input id="cl-nameAm" value="${escapeHtml(c.nameAm || "")}" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="cl-nameOm">Name (Afaan Oromoo)</label>
+          <input id="cl-nameOm" value="${escapeHtml(c.nameOm || "")}" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="cl-code" class="field__required">Cluster code (2 digits)</label>
+          <input id="cl-code" value="${escapeHtml(c.code || "")}" placeholder="06"
+                 inputmode="numeric" maxlength="2"
+                 style="font-family:ui-monospace,monospace;letter-spacing:2px">
+          <p class="field__hint">Used in employee IDs</p>
+        </div>
+        <div class="field">
+          <label>Region code</label>
+          <input value="${escapeHtml(o.region || "")}" disabled
+                 style="font-family:ui-monospace,monospace;letter-spacing:2px">
+        </div>
+      </div>
+
+      ${editing ? "" : `
+      <div class="alert alert--info" style="margin-top:8px">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div>
+          After saving, the cluster's admin will add <strong>woredas / cities</strong> with their 2-digit codes.
+          Employee IDs use those codes.
+        </div>
+      </div>
+      `}
+
+      <label class="checkbox" style="margin-top:8px">
+        <input type="checkbox" id="cl-active" ${c.active !== false ? "checked" : ""}>
+        Active
+      </label>
+    </form>
+
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn btn--primary" id="cl-submit">
+        <span class="spinner hidden"></span>
+        <span class="btn-label">${editing ? "Save" : "Add Cluster"}</span>
+      </button>
+    </div>
+  `, { size: "lg" });
+
+  document.getElementById("cl-submit").addEventListener("click", () => saveCluster(officeId, clusterId));
+  document.getElementById("cluster-form").addEventListener("submit", (e) => {
+    e.preventDefault(); saveCluster(officeId, clusterId);
+  });
+}
+
+async function saveCluster(officeId, clusterId) {
+  const o = offices.find((x) => x.id === officeId);
+  const nameEl = document.getElementById("cl-name");
+  const codeEl = document.getElementById("cl-code");
+  const errBox = document.getElementById("cluster-error");
+  const errMsg = document.getElementById("cluster-error-msg");
+  const btn = document.getElementById("cl-submit");
+  const spinner = btn.querySelector(".spinner");
+  const label = btn.querySelector(".btn-label");
+
+  const name = nameEl.value.trim();
+  const codeDigits = codeEl.value.replace(/\D/g, "").slice(0, 2);
+
+  if (!name) { nameEl.setAttribute("aria-invalid","true"); nameEl.focus();
+    errBox.classList.remove("hidden"); errMsg.textContent = "Cluster name is required"; return; }
+  nameEl.removeAttribute("aria-invalid");
+  if (codeDigits.length !== 2) { codeEl.setAttribute("aria-invalid","true"); codeEl.focus();
+    errBox.classList.remove("hidden"); errMsg.textContent = "Cluster code must be 2 digits"; return; }
+  codeEl.removeAttribute("aria-invalid");
+  errBox.classList.add("hidden");
+
+  btn.disabled = true;
+  spinner.classList.remove("hidden");
+  const oldLabel = label.textContent;
+  label.textContent = "Saving…";
+
+  const data = {
+    name,
+    nameAm: document.getElementById("cl-nameAm").value.trim() || null,
+    nameOm: document.getElementById("cl-nameOm").value.trim() || null,
+    code: codeDigits,
+    officeId,
+    officeName: o?.name || null,
+    region: o?.region || null,
+    regionName: o?.regionName || null,
+    active: document.getElementById("cl-active").checked,
+    updatedAt: serverTimestamp()
+  };
+
+  try {
+    if (clusterId) {
+      // Never touch existing woredas — the cluster admin owns them
+      await updateDoc(doc(db, "clusters", clusterId), data);
+      toast("Cluster updated", "success");
+    } else {
+      data.createdAt = serverTimestamp();
+      data.createdBy = S.uid;
+      data.woredas = []; // brand-new cluster starts empty; admin adds them
+      const ref = doc(collection(db, "clusters"));
+      await setDoc(ref, { ...data, clusterId: ref.id });
+      toast("Cluster registered — assign an admin to add woredas", "success");
+    }
+    closeModal();
+  } catch (err) {
+    errBox.classList.remove("hidden");
+    errMsg.innerHTML = `<strong>${escapeHtml(err.code || "error")}</strong><br>${escapeHtml(err.message || "")}`;
+    btn.disabled = false;
+    spinner.classList.add("hidden");
+    label.textContent = oldLabel;
+  }
+}
+
+async function confirmDeleteCluster(clusterId) {
+  if (!canDeleteCluster({ id: clusterId })) return;
+  if (!confirm("Delete this cluster?")) return;
+  try {
+    await deleteDoc(doc(db, "clusters", clusterId));
+    toast("Cluster deleted", "success");
+  } catch (err) { toast(err.code + ": " + err.message, "error"); }
+}
+
+/* ============================================================
+   WOREDAS MANAGER — only the cluster's admin can use it
+   ============================================================ */
+function openWoredasManager(officeId, clusterId) {
+  const o = offices.find((x) => x.id === officeId);
+  const c = clusters.find((x) => x.id === clusterId);
+  if (!o || !c) return;
+  if (!canManageWoredas(c)) {
+    toast("Only the cluster's own administrator can manage woredas", "error");
+    return;
+  }
+
+  const woredas = normalizeWoredas(c.woredas);
+
+  openModal(`
+    <div class="modal__head">
+      <div>
+        <div class="modal__title">Woredas / Cities</div>
+        <div class="modal__sub">
+          ${escapeHtml(c.name)} · Cluster code
+          <code style="font-family:ui-monospace,monospace;background:var(--border-soft);padding:2px 6px;border-radius:4px">${escapeHtml(c.code || "??")}</code>
+          · Region ${escapeHtml(o.region || "??")}
+        </div>
+      </div>
+      <button class="modal__close" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24">${ICONS.x}</svg>
+      </button>
+    </div>
+
+    <div class="modal__body">
+      <div class="alert alert--info" style="padding:20px 24px;margin-bottom:24px">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div style="flex:1">
+          <div style="font-weight:800;margin-bottom:6px">How woreda codes work</div>
+          <div style="color:#0b5cab;font-size:13.5px;line-height:1.55">
+            Each woreda/city needs a <strong>2-digit code</strong>. It becomes part of every employee ID created in that woreda.
+          </div>
+          <div style="margin-top:14px;padding:16px 20px;border-radius:12px;background:#fff;border:1px solid #bdd7f2;
+                      font-family:ui-monospace,Menlo,Consolas,monospace;font-size:18px;font-weight:800;
+                      color:#0b5cab;letter-spacing:3px;text-align:center">
+            ${escapeHtml(o.region || "04")}-${escapeHtml(c.code || "06")}<u style="color:#d4a017;text-decoration-thickness:3px">12</u>${escapeHtml(o.officeCode || "08")}-0001
+          </div>
+          <div style="margin-top:10px;font-size:12px;color:#5c6b85;text-align:center">
+            region · cluster · <strong style="color:#b8860b">woreda</strong> · office · sequence
+          </div>
+        </div>
+      </div>
+
+      <div id="wm-rows" style="display:flex;flex-direction:column;gap:12px"></div>
+
+      <button type="button" class="btn" id="wm-add"
+              style="width:100%;border-style:dashed;border-width:2px;margin-top:18px;
+                     height:54px;color:var(--primary);border-color:#bdd7f2;
+                     background:linear-gradient(135deg,#eaf3fc,#fff)">
+        <svg viewBox="0 0 24 24">${ICONS.plus}</svg>
+        <span style="font-weight:800">Add another woreda / city</span>
+      </button>
+    </div>
+
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn btn--primary" id="wm-save">
+        <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
+        <span class="btn-label">Save woredas</span>
+      </button>
+    </div>
+  `, { size: "lg" });
+
+  const rowsHost = document.getElementById("wm-rows");
+
+  const makeRow = (w = { code: "", name: "" }) => {
+    const row = document.createElement("div");
+    row.className = "wm-row";
+    row.innerHTML = `
+      <div style="position:relative;flex-shrink:0">
+        <input class="wm-code" type="text" inputmode="numeric" maxlength="2"
+               value="${escapeHtml(w.code)}" placeholder="00"
+               style="width:84px;height:54px;padding:0 10px;
+                      border:2px solid #d9dee7;border-radius:12px;
+                      background:linear-gradient(135deg,#eaf3fc,#f4f8fd);
+                      font-family:ui-monospace,Menlo,Consolas,monospace;
+                      letter-spacing:3px;text-align:center;
+                      font-size:22px;font-weight:800;color:#0b5cab;
+                      transition:border-color .15s, box-shadow .15s">
+      </div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+        <input class="wm-name" type="text" value="${escapeHtml(w.name)}"
+               placeholder="Bole, Yeka, Adama…"
+               style="width:100%;height:54px;padding:0 16px;
+                      border:1px solid #d9dee7;border-radius:12px;
+                      background:#fbfcfe;font-size:15px;font-weight:500">
+      </div>
+      <button type="button" class="wm-del btn btn--icon btn--danger"
+              style="height:54px;width:54px;padding:0;flex-shrink:0;border-radius:12px"
+              aria-label="Remove this woreda">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round">
+          ${ICONS.trash}
+        </svg>
+      </button>
+    `;
+
+    row.querySelector(".wm-del").addEventListener("click", () => row.remove());
+
+    const codeInput = row.querySelector(".wm-code");
+    const nameInput = row.querySelector(".wm-name");
+
+    codeInput.addEventListener("input", () => {
+      codeInput.value = codeInput.value.replace(/\D/g, "").slice(0, 2);
+      codeInput.style.borderColor = codeInput.value.length === 2 ? "#1a4d8a" : "#d9dee7";
+    });
+    codeInput.addEventListener("focus", () => {
+      codeInput.style.borderColor = "#70a8d9";
+      codeInput.style.boxShadow = "0 0 0 4px rgba(11,92,171,.08)";
+    });
+    codeInput.addEventListener("blur", () => {
+      codeInput.style.boxShadow = "none";
+      codeInput.style.borderColor = codeInput.value.length === 2 ? "#1a4d8a" : "#d9dee7";
+    });
+
+    nameInput.addEventListener("focus", () => {
+      nameInput.style.borderColor = "#70a8d9";
+      nameInput.style.background = "#fff";
+      nameInput.style.boxShadow = "0 0 0 4px rgba(11,92,171,.08)";
+    });
+    nameInput.addEventListener("blur", () => {
+      nameInput.style.boxShadow = "none";
+      nameInput.style.borderColor = "#d9dee7";
+      nameInput.style.background = "#fbfcfe";
+    });
+
+    rowsHost.appendChild(row);
+  };
+
+  if (woredas.length) woredas.forEach(makeRow);
+  else makeRow();
+
+  document.getElementById("wm-add").addEventListener("click", () => makeRow());
+
+  document.getElementById("wm-save").addEventListener("click", async () => {
+    const btn = document.getElementById("wm-save");
+    const spinner = btn.querySelector(".spinner");
+    const label = btn.querySelector(".btn-label");
+
+    const rows = Array.from(rowsHost.querySelectorAll(".wm-row"));
+    const parsed = [];
+    const seen = new Set();
+
+    for (const r of rows) {
+      const code = r.querySelector(".wm-code").value.replace(/\D/g, "").slice(0, 2);
+      const name = r.querySelector(".wm-name").value.trim();
+      if (!code && !name) continue;
+      if (code.length !== 2) {
+        toast(`Each woreda needs a 2-digit code (got "${code || "—"}")`, "error");
+        r.querySelector(".wm-code").focus();
+        return;
+      }
+      if (!name) {
+        toast("Each woreda needs a name", "error");
+        r.querySelector(".wm-name").focus();
+        return;
+      }
+      if (seen.has(code)) {
+        toast(`Duplicate woreda code "${code}"`, "error");
+        r.querySelector(".wm-code").focus();
+        return;
+      }
+      seen.add(code);
+      parsed.push({ code, name });
+    }
+
+    if (!parsed.length) {
+      toast("Add at least one woreda", "error");
+      return;
+    }
+
+    btn.disabled = true;
+    spinner.classList.remove("hidden");
+    const old = label.textContent;
+    label.textContent = "Saving…";
+
+    try {
+      await updateDoc(doc(db, "clusters", clusterId), {
+        woredas: parsed,
+        updatedAt: serverTimestamp(),
+        updatedBy: S.uid
+      });
+      toast(`${parsed.length} woreda${parsed.length !== 1 ? "s" : ""} saved`, "success");
+      closeModal();
+    } catch (err) {
+      toast((err.code || "") + ": " + (err.message || ""), "error");
+      btn.disabled = false;
+      spinner.classList.add("hidden");
+      label.textContent = old;
+    }
+  });
+}
+
+/* ============================================================
+   CLUSTER ADMINS MANAGER
+   ============================================================ */
+function openClusterAdminsManager(officeId, clusterId) {
+  const o = offices.find((x) => x.id === officeId);
+  const c = clusters.find((x) => x.id === clusterId);
+  if (!o || !c) return;
+  const canAdd = canAddAdminTo(c);
+  const list = adminsByCluster[clusterId] || [];
+
+  openModal(`
+    <div class="modal__head">
+      <div>
+        <div class="modal__title">Administrators</div>
+        <div class="modal__sub">${escapeHtml(c.name)} — ${escapeHtml(o.name)}</div>
+      </div>
+      <button class="modal__close" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24">${ICONS.x}</svg>
+      </button>
+    </div>
+    <div class="modal__body">
+      ${list.length ? `
+        <ul class="admin-list">
+          ${list.map((a) => `
+            <li class="admin-list__item">
+              <div class="admin-list__avatar ${a.active === false ? "admin-list__avatar--inactive" : ""}">
+                ${initials(a.name || a.email)}
+              </div>
+              <div class="admin-list__main">
+                <div class="admin-list__name">${escapeHtml(a.name || "—")}</div>
+                <div class="admin-list__email">
+                  ${escapeHtml(a.email || a.id)}
+                  ${a.empId ? ` · ${escapeHtml(a.empId)}` : ""}
+                </div>
+              </div>
+              <div class="admin-list__actions">
+                ${a.id !== S.uid ? `<button class="btn btn--sm" data-toggle-admin="${a.id}" data-active="${a.active !== false}">
+                  ${a.active === false ? "Activate" : "Deactivate"}
+                </button>` : ""}
+                ${a.id !== S.uid ? `<button class="btn btn--sm btn--icon btn--danger" data-remove-admin="${a.id}">
+                  <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
+                </button>` : ""}
+              </div>
+            </li>
+          `).join("")}
+        </ul>
+      ` : `<div class="no-clusters" style="padding:40px 0;text-align:center">No administrators yet.</div>`}
+    </div>
+    <div class="modal__foot">
+      <button class="btn" data-close>Close</button>
+      ${canAdd ? `<button class="btn btn--primary" id="modal-add-admin">
+        <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg> Add Admin
+      </button>` : ""}
+    </div>
+  `);
+
+  document.getElementById("modal-add-admin")?.addEventListener("click", () => {
+    closeModal();
+    setTimeout(() => openAddAdminModal(officeId, clusterId), 100);
+  });
+
+  document.querySelectorAll("[data-toggle-admin]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const uid = btn.dataset.toggleAdmin;
+      const active = btn.dataset.active === "true";
+      if (uid === S.uid) { toast("Cannot modify yourself", "error"); return; }
+      try {
+        await updateDoc(doc(db, "users", uid), { active: !active });
+        toast(active ? "Deactivated" : "Activated", "success");
+        closeModal();
+      } catch (err) { toast(err.code + ": " + err.message, "error"); }
+    });
+  });
+  document.querySelectorAll("[data-remove-admin]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const uid = btn.dataset.removeAdmin;
+      if (uid === S.uid) { toast("Cannot remove yourself", "error"); return; }
+      if (!confirm("Remove this administrator?")) return;
+      try {
+        await deleteDoc(doc(db, "users", uid));
+        toast("Removed", "success");
+        closeModal();
+      } catch (err) { toast(err.code + ": " + err.message, "error"); }
+    });
+  });
+}
+
+/* ============================================================
+   ADD ADMIN — existing employee only, points to Add Employee for new
+   ============================================================ */
+function openAddAdminModal(officeId, clusterId) {
+  const o = offices.find((x) => x.id === officeId);
+  const c = clusters.find((x) => x.id === clusterId);
+  if (!o || !c) return;
+  if (!canAddAdminTo(c)) { toast("You cannot add admins here", "error"); return; }
+
+  const oEmployees = employeesByCluster[clusterId] || [];
+
+  openModal(`
+    <div class="modal__head">
+      <div>
+        <div class="modal__title">Add Administrator</div>
+        <div class="modal__sub">${escapeHtml(c.name)} — ${escapeHtml(o.name)}</div>
+      </div>
+      <button class="modal__close" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24">${ICONS.x}</svg>
+      </button>
+    </div>
+
+    <div class="modal__body">
+      <div id="aa-error" class="alert alert--error hidden">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div id="aa-error-msg" style="flex:1"></div>
+      </div>
+
+      ${!oEmployees.length ? `
+        <div class="alert alert--info">
+          <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+          <div>
+            No employees in this cluster yet. Use the <strong>Employee</strong> button to add one first —
+            it will create the login and the employee record together.
+          </div>
+        </div>
+      ` : `
+        <div class="field">
+          <label>Search employees</label>
+          <input id="aa-search" placeholder="Search by name or ID">
+        </div>
+        <div class="field">
+          <label>Select from ${oEmployees.length} employee${oEmployees.length !== 1 ? "s" : ""}</label>
+          <div id="aa-emp-list" style="max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;background:var(--bg-soft)"></div>
+        </div>
+        <div id="aa-selected" class="hidden"></div>
+        <div id="aa-existing-fields" class="hidden">
+          <div class="field">
+            <label for="aa-password" class="field__required">Login password</label>
+            <div class="field__group">
+              <input id="aa-password" type="password" placeholder="••••••••">
+              <button type="button" class="field__toggle" id="aa-toggle-pw">
+                <svg viewBox="0 0 24 24">${ICONS.eye}</svg>
+              </button>
+            </div>
+            <p class="field__hint">The employee's email becomes their login.</p>
+          </div>
+        </div>
+      `}
+    </div>
+
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancel</button>
+      ${oEmployees.length ? `
+        <button class="btn btn--primary" id="aa-submit">
+          <span class="spinner hidden"></span>
+          <span class="btn-label">Create Admin</span>
+        </button>
+      ` : ""}
+    </div>
+  `, { size: "lg" });
+
+  if (!oEmployees.length) return;
+
+  const picker = document.getElementById("aa-emp-list");
+  const searchEl = document.getElementById("aa-search");
+  const selectedBox = document.getElementById("aa-selected");
+  const existingFields = document.getElementById("aa-existing-fields");
+  let selectedEmp = null;
+
+  const renderEmployees = (term) => {
+    const s = (term || "").trim().toLowerCase();
+    const filtered = oEmployees.filter((e) => {
+      if (!s) return true;
+      const hay = [e.firstName, e.lastName, e.empId, e.email, e.position].filter(Boolean).join(" ").toLowerCase();
+      return hay.includes(s);
+    });
+    if (!filtered.length) {
+      picker.innerHTML = `<div style="padding:32px;text-align:center;color:var(--muted);font-size:13px">No matches</div>`;
+      return;
+    }
+    picker.innerHTML = filtered.map((e) => `
+      <div class="aa-emp-item" data-emp-id="${e.id}"
+           style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border-soft)">
+        <div class="admin-list__avatar" style="width:38px;height:38px;font-size:12px">${initials(fullName(e))}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:14px">${escapeHtml(fullName(e))}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">
+            ${e.empId ? escapeHtml(e.empId) + " · " : ""}
+            ${e.position ? escapeHtml(e.position) + " · " : ""}
+            ${e.email ? escapeHtml(e.email) : ""}
+          </div>
+        </div>
+      </div>
+    `).join("");
+
+    picker.querySelectorAll("[data-emp-id]").forEach((item) => {
+      item.addEventListener("click", () => {
+        const e = filtered.find((x) => x.id === item.dataset.empId);
+        if (!e) return;
+        selectedEmp = e;
+        picker.querySelectorAll("[data-emp-id]").forEach((x) => x.style.background = "");
+        item.style.background = "#eaf3fc";
+        selectedBox.innerHTML = `
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;
+                      background:linear-gradient(135deg,#eaf3fc,#fff);border:1px solid #bdd7f2;margin-bottom:18px">
+            <div class="admin-list__avatar">${initials(fullName(e))}</div>
+            <div style="flex:1">
+              <div style="font-weight:700">${escapeHtml(fullName(e))}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px">${escapeHtml(e.email || "(no email)")}</div>
+            </div>
+          </div>`;
+        selectedBox.classList.remove("hidden");
+        existingFields.classList.remove("hidden");
+      });
+    });
+  };
+  renderEmployees("");
+  searchEl.addEventListener("input", () => renderEmployees(searchEl.value));
+
+  document.getElementById("aa-toggle-pw")?.addEventListener("click", (e) => {
+    const inp = document.getElementById("aa-password");
+    const showing = inp.type === "text";
+    inp.type = showing ? "password" : "text";
+    e.currentTarget.innerHTML = `<svg viewBox="0 0 24 24">${showing ? ICONS.eye : ICONS.eyeOff}</svg>`;
+  });
+
+  document.getElementById("aa-submit").addEventListener("click", async () => {
+    const errBox = document.getElementById("aa-error");
+    const errMsg = document.getElementById("aa-error-msg");
+    const btn = document.getElementById("aa-submit");
+    const spinner = btn.querySelector(".spinner");
+    const label = btn.querySelector(".btn-label");
+
+    errBox.classList.add("hidden");
+    if (!selectedEmp) { errBox.classList.remove("hidden"); errMsg.textContent = "Select an employee first."; return; }
+    const pw = document.getElementById("aa-password").value;
+    if (!pw || pw.length < 6) { errBox.classList.remove("hidden"); errMsg.textContent = "Password must be 6+ chars."; return; }
+    if (!selectedEmp.email) { errBox.classList.remove("hidden"); errMsg.textContent = "Employee has no email."; return; }
+
+    btn.disabled = true;
+    spinner.classList.remove("hidden");
+    const old = label.textContent;
+    label.textContent = "Creating…";
+    try {
+      const secName = "adminCreator_" + Date.now();
+      const secApp = initializeApp(firebaseConfig, secName);
+      const secAuth = getAuth(secApp);
+      let uid = null;
+      try {
+        const cred = await createUserWithEmailAndPassword(secAuth, selectedEmp.email, pw);
+        uid = cred.user.uid;
+        try { await updateProfile(cred.user, { displayName: fullName(selectedEmp) }); } catch (e) {}
+        await signOut(secAuth);
+      } finally { try { await deleteApp(secApp); } catch (e) {} }
+
+      try { await updateDoc(doc(db, "employees", selectedEmp.id), { uid, updatedAt: serverTimestamp() }); } catch (e) {}
+
+      await setDoc(doc(db, "users", uid), {
+        email: selectedEmp.email,
+        name: fullName(selectedEmp),
+        role: "admin",
+        officeId: o.id,
+        officeName: o.name || null,
+        clusterId: c.id,
+        clusterName: c.name || null,
+        region: o.region || null,
+        regionName: o.regionName || null,
+        employeeId: selectedEmp.id,
+        empId: selectedEmp.empId || null,
+        active: true,
+        scope: { teamId: null, departmentId: null },
+        createdAt: serverTimestamp(),
+        createdBy: S.uid
+      });
+      toast("Administrator created", "success");
+      closeModal();
+    } catch (err) {
+      errBox.classList.remove("hidden");
+      errMsg.innerHTML = `<strong>${escapeHtml(err.code || "error")}</strong><br>${escapeHtml(err.message || String(err))}`;
+      btn.disabled = false;
+      spinner.classList.add("hidden");
+      label.textContent = old;
+    }
+  });
+}
+
+/* ============================================================
+   ADD EMPLOYEE — full form
+   ============================================================ */
+function openAddEmployeeModal(officeId, clusterId) {
+  const o = offices.find((x) => x.id === officeId);
+  const c = clusters.find((x) => x.id === clusterId);
+  if (!o || !c) return;
+  if (!canAddAdminTo(c)) { toast("You cannot add employees here", "error"); return; }
+  if (!o.officeCode || o.officeCode.replace(/\D/g, "").length !== 2) {
+    toast("Office needs a 2-digit office code first", "error");
+    return;
+  }
+  if (!c.code || c.code.replace(/\D/g, "").length !== 2) {
+    toast("Cluster needs a 2-digit code first", "error");
+    return;
+  }
+  const woredas = normalizeWoredas(c.woredas);
+  if (!woredas.length) {
+    const who = S.role === "admin" && c.id === S.clusterId
+      ? "Add woredas/cities via the Woredas button on this cluster."
+      : "The cluster's administrator must add woredas before employees can be created.";
+    toast("No woredas in this cluster — " + who, "error");
+    return;
+  }
+
+  EMF = {
+    photo: null,
+    firstName: "", middleName: "", lastName: "",
+    firstNameAm: "", middleNameAm: "", lastNameAm: "",
+    firstNameOm: "", middleNameOm: "", lastNameOm: "",
+    nationalId: "", gender: "", dob: "", maritalStatus: "",
+    phone: "", phoneAlt: "", email: "",
+    country: "ET", region: o.region || "",
+    clusterId: c.id, woredaCode: "", woredaName: "",
+    subCity: "", kebele: "", houseNo: "", street: "",
+    position: "", grade: "", step: "",
+    hireDate: new Date().toISOString().slice(0,10),
+    employmentType: "permanent", status: "active",
+    emergency: { name: "", relation: "", phone: "" },
+    loginEmail: "", password: "", password2: ""
+  };
+
+  openModal(`
+    <div class="modal__head">
+      <div>
+        <div class="modal__title">Add Employee</div>
+        <div class="modal__sub">${escapeHtml(o.name)} · ${escapeHtml(c.name)} · ${regionLabel(o.region)}</div>
+      </div>
+      <button class="modal__close" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24">${ICONS.x}</svg>
+      </button>
+    </div>
+
+    <div class="modal__body" style="padding:0;display:flex;flex-direction:column">
+
+      <div style="display:flex;gap:32px;padding:32px;background:linear-gradient(135deg,#f8fbff,#fff);
+                  border-bottom:1px solid var(--border-soft);align-items:center;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+          <div id="emp-photo-wrap" style="position:relative;width:128px;height:128px;border-radius:50%;
+            background:linear-gradient(135deg,#eaf3fc,#bdd7f2);color:#0b5cab;
+            display:grid;place-items:center;cursor:pointer;overflow:hidden;
+            border:4px solid #fff;box-shadow:0 10px 28px rgba(11,92,171,.22);
+            font-size:42px;font-weight:800">
+            <span id="emp-photo-initials">?</span>
+            <img id="emp-photo-preview" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none">
+            <input type="file" id="emp-photo-input" accept="image/*" style="display:none">
+          </div>
+          <button type="button" class="btn btn--sm" id="emp-photo-btn" style="height:34px;padding:0 14px;font-size:12.5px">
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px">${ICONS.camera}</svg> Upload
+          </button>
+          <span style="font-size:11px;color:var(--muted);text-align:center;max-width:130px">JPG or PNG · max 3 MB</span>
+        </div>
+        <div style="flex:1;min-width:280px">
+          <div style="font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px">Name preview</div>
+          <div id="emp-name-en" style="font-size:20px;font-weight:800;line-height:1.3;color:var(--text)">—</div>
+          <div id="emp-name-am" style="font-size:16px;color:var(--text-soft);margin-top:6px;font-family:'Noto Sans Ethiopic',sans-serif;line-height:1.5">—</div>
+          <div id="emp-name-om" style="font-size:16px;color:var(--text-soft);margin-top:6px;line-height:1.5">—</div>
+        </div>
+      </div>
+
+      <nav class="tabs-nav" style="margin:24px 32px 0;background:var(--bg-soft);padding:6px">
+        <button type="button" class="tabs-nav__btn is-active" data-emf-tab="personal">Personal</button>
+        <button type="button" class="tabs-nav__btn" data-emf-tab="address">Address</button>
+        <button type="button" class="tabs-nav__btn" data-emf-tab="employment">Employment</button>
+        <button type="button" class="tabs-nav__btn" data-emf-tab="account">Account</button>
+      </nav>
+
+      <form id="emp-form" style="padding:32px;flex:1;overflow-y:auto">
+
+        <div id="emf-error" class="alert alert--error" style="display:none">
+          <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+          <div id="emf-error-msg" style="flex:1"></div>
+        </div>
+
+        <!-- PERSONAL -->
+        <div class="emf-panel" data-emf-panel="personal">
+          <div class="emf-section">
+            <div class="emf-section__title">Name in English</div>
+            <div class="field-row field-row--3">
+              <div class="field">
+                <label for="emf-firstName" class="field__required">First name</label>
+                <input id="emf-firstName" placeholder="Abebe">
+              </div>
+              <div class="field">
+                <label for="emf-middleName">Middle name</label>
+                <input id="emf-middleName" placeholder="Tesfaye">
+              </div>
+              <div class="field">
+                <label for="emf-lastName" class="field__required">Last name</label>
+                <input id="emf-lastName" placeholder="Bekele">
+              </div>
+            </div>
+          </div>
+
+          <div class="emf-section">
+            <div class="emf-section__title">ስም በአማርኛ</div>
+            <div class="field-row field-row--3">
+              <div class="field">
+                <label for="emf-firstNameAm">የመጀመሪያ ስም</label>
+                <input id="emf-firstNameAm" placeholder="አበበ" style="font-family:'Noto Sans Ethiopic',sans-serif">
+              </div>
+              <div class="field">
+                <label for="emf-middleNameAm">የአባት ስም</label>
+                <input id="emf-middleNameAm" placeholder="ተስፋዬ" style="font-family:'Noto Sans Ethiopic',sans-serif">
+              </div>
+              <div class="field">
+                <label for="emf-lastNameAm">የአያት ስም</label>
+                <input id="emf-lastNameAm" placeholder="በቀለ" style="font-family:'Noto Sans Ethiopic',sans-serif">
+              </div>
+            </div>
+          </div>
+
+          <div class="emf-section">
+            <div class="emf-section__title">Maqaa Afaan Oromoon</div>
+            <div class="field-row field-row--3">
+              <div class="field">
+                <label for="emf-firstNameOm">Maqaa jalqabaa</label>
+                <input id="emf-firstNameOm" placeholder="Ababee">
+              </div>
+              <div class="field">
+                <label for="emf-middleNameOm">Maqaa abbaa</label>
+                <input id="emf-middleNameOm" placeholder="Tasfaayee">
+              </div>
+              <div class="field">
+                <label for="emf-lastNameOm">Maqaa akaakayyuu</label>
+                <input id="emf-lastNameOm" placeholder="Baqqalaa">
+              </div>
+            </div>
+          </div>
+
+          <div class="emf-section">
+            <div class="emf-section__title">Identity</div>
+            <div class="field-row">
+              <div class="field">
+                <label for="emf-nationalId" class="field__required">National ID</label>
+                <input id="emf-nationalId" placeholder="ET-1234-5678-90" style="font-family:ui-monospace,monospace">
+              </div>
+              <div class="field">
+                <label for="emf-gender" class="field__required">Gender</label>
+                <select id="emf-gender">
+                  <option value="">—</option>
+                  <option value="M">Male</option>
+                  <option value="F">Female</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="emf-dob" class="field__required">Date of birth</label>
+                <input id="emf-dob" type="date">
+              </div>
+              <div class="field">
+                <label for="emf-maritalStatus">Marital status</label>
+                <select id="emf-maritalStatus">
+                  <option value="">—</option>
+                  <option value="single">Single</option>
+                  <option value="married">Married</option>
+                  <option value="divorced">Divorced</option>
+                  <option value="widowed">Widowed</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADDRESS -->
+        <div class="emf-panel hidden" data-emf-panel="address">
+          <div class="emf-section">
+            <div class="emf-section__title">Country, region &amp; location</div>
+            <div class="field">
+              <label for="emf-country" class="field__required">Country</label>
+              <select id="emf-country">
+                ${COUNTRIES.map((co) => `<option value="${co.code}">${co.name} (${co.dial})</option>`).join("")}
+              </select>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="emf-region" class="field__required">Region</label>
+                <select id="emf-region">
+                  <option value="">—</option>
+                  ${REGIONS.map((r) => `<option value="${r.code}" ${r.code === o.region ? "selected" : ""}>${regionLabel(r.code)}</option>`).join("")}
+                </select>
+              </div>
+              <div class="field">
+                <label for="emf-clusterId" class="field__required">Cluster</label>
+                <select id="emf-clusterId"></select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="emf-woredaCode" class="field__required">Woreda / City</label>
+              <select id="emf-woredaCode">
+                <option value="">—</option>
+                ${woredas.map((w) => `<option value="${escapeHtml(w.code)}" data-name="${escapeHtml(w.name)}">${escapeHtml(w.code)} — ${escapeHtml(w.name)}</option>`).join("")}
+              </select>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="emf-subCity">Sub-city / Zone</label>
+                <input id="emf-subCity" placeholder="Bole">
+              </div>
+              <div class="field">
+                <label for="emf-kebele">Kebele / Ward</label>
+                <input id="emf-kebele" placeholder="03">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="emf-houseNo">House number</label>
+                <input id="emf-houseNo" placeholder="123">
+              </div>
+              <div class="field">
+                <label for="emf-street">Street</label>
+                <input id="emf-street" placeholder="Africa Avenue">
+              </div>
+            </div>
+          </div>
+
+          <div class="emf-section">
+            <div class="emf-section__title">Phone &amp; email</div>
+            <div class="field-row">
+              <div class="field">
+                <label for="emf-phone" class="field__required">Primary phone</label>
+                <input id="emf-phone" type="tel" placeholder="+251 9XX XX XX XX">
+              </div>
+              <div class="field">
+                <label for="emf-phoneAlt">Alternate phone</label>
+                <input id="emf-phoneAlt" type="tel" placeholder="+251 1XX XX XX XX">
+              </div>
+            </div>
+            <div class="field">
+              <label for="emf-email" class="field__required">Email</label>
+              <input id="emf-email" type="email" placeholder="name@agency.gov.et">
+            </div>
+          </div>
+
+          <div class="emf-section">
+            <div class="emf-section__title">Emergency contact</div>
+            <div class="field-row">
+              <div class="field">
+                <label for="emf-emgName">Full name</label>
+                <input id="emf-emgName">
+              </div>
+              <div class="field">
+                <label for="emf-emgRelation">Relationship</label>
+                <input id="emf-emgRelation" placeholder="Spouse">
+              </div>
+            </div>
+            <div class="field">
+              <label for="emf-emgPhone">Phone</label>
+              <input id="emf-emgPhone" type="tel">
+            </div>
+          </div>
+        </div>
+
+        <!-- EMPLOYMENT -->
+        <div class="emf-panel hidden" data-emf-panel="employment">
+          <div class="emf-section">
+            <div class="emf-section__title">Position</div>
+            <div class="field-row">
+              <div class="field">
+                <label for="emf-position" class="field__required">Position / Title</label>
+                <input id="emf-position" placeholder="Accountant">
+              </div>
+              <div class="field">
+                <label for="emf-grade">Grade</label>
+                <input id="emf-grade" placeholder="III">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="emf-step">Step</label>
+                <input id="emf-step" type="number" min="1" max="10">
+              </div>
+              <div class="field">
+                <label for="emf-hireDate" class="field__required">Hire date</label>
+                <input id="emf-hireDate" type="date" value="${new Date().toISOString().slice(0,10)}">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="emf-employmentType">Employment type</label>
+                <select id="emf-employmentType">
+                  <option value="permanent">Permanent</option>
+                  <option value="contract">Contract</option>
+                  <option value="temporary">Temporary</option>
+                  <option value="intern">Intern</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="emf-status">Initial status</label>
+                <select id="emf-status">
+                  <option value="active">Active</option>
+                  <option value="probation">Probation</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="emf-section">
+            <div class="emf-section__title">Auto-assigned</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
+              <div style="padding:16px;background:var(--bg-soft);border-radius:12px;border:1px solid var(--border)">
+                <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Office</div>
+                <div style="font-weight:700;margin-top:6px;font-size:15px">${escapeHtml(o.name)}</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">
+                  Code <code style="font-family:ui-monospace,monospace">${escapeHtml(o.officeCode)}</code> · Region <code style="font-family:ui-monospace,monospace">${escapeHtml(o.region)}</code>
+                </div>
+              </div>
+              <div style="padding:16px;background:var(--bg-soft);border-radius:12px;border:1px solid var(--border)">
+                <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Cluster</div>
+                <div style="font-weight:700;margin-top:6px;font-size:15px">${escapeHtml(c.name)}</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">
+                  Code <code style="font-family:ui-monospace,monospace">${escapeHtml(c.code)}</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACCOUNT -->
+        <div class="emf-panel hidden" data-emf-panel="account">
+          <div class="emf-section">
+            <div class="emf-section__title">Login credentials</div>
+            <div class="field">
+              <label for="emf-loginEmail">Login email</label>
+              <input id="emf-loginEmail" type="email" placeholder="name@agency.gov.et">
+              <p class="field__hint">Leave blank to reuse the personal email</p>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="emf-password" class="field__required">Password</label>
+                <div class="field__group">
+                  <input id="emf-password" type="password" placeholder="••••••••">
+                  <button type="button" class="field__toggle" id="emf-toggle-pw">
+                    <svg viewBox="0 0 24 24">${ICONS.eye}</svg>
+                  </button>
+                </div>
+              </div>
+              <div class="field">
+                <label for="emf-password2" class="field__required">Confirm password</label>
+                <input id="emf-password2" type="password" placeholder="••••••••">
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert--info" style="margin-top:20px">
+            <svg viewBox="0 0 24 24">${ICONS.id}</svg>
+            <div style="flex:1">
+              <strong>Employee ID (auto-generated)</strong>
+              <div id="emf-id-preview" style="margin-top:12px;padding:14px 18px;border-radius:12px;background:#fff;border:1px solid #bdd7f2;
+                font-family:ui-monospace,Menlo,Consolas,monospace;font-size:22px;font-weight:800;letter-spacing:3px;
+                color:#0b5cab;text-align:center">${escapeHtml(o.region || "??")}-${escapeHtml(c.code || "??")}???????
+              </div>
+              <div style="margin-top:10px;font-size:11.5px;color:var(--muted);text-align:center">
+                region · cluster · woreda · office · sequence
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal__foot" style="justify-content:space-between">
+      <div style="font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)">
+        <span id="emf-id-footer">ID: ${escapeHtml(o.region || "??")}-${escapeHtml(c.code || "??")}???????</span>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn" data-close>Cancel</button>
+        <button class="btn btn--primary" id="emf-submit">
+          <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
+          <span class="btn-label">Create Employee</span>
+        </button>
+      </div>
+    </div>
+  `, { size: "xl" });
+
+  wireAddEmployeeForm(o, c);
+}
+
+function switchTab(t) {
+  document.querySelectorAll("[data-emf-tab]").forEach((b) =>
+    b.classList.toggle("is-active", b.dataset.emfTab === t)
+  );
+  document.querySelectorAll("[data-emf-panel]").forEach((p) =>
+    p.classList.toggle("hidden", p.dataset.emfPanel !== t)
+  );
+}
+
+function wireAddEmployeeForm(office, cluster) {
+  document.querySelectorAll("[data-emf-tab]").forEach((btn) => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.emfTab));
+  });
+
+  const photoWrap = document.getElementById("emp-photo-wrap");
+  const photoInput = document.getElementById("emp-photo-input");
+  const photoPreview = document.getElementById("emp-photo-preview");
+  const photoInitials = document.getElementById("emp-photo-initials");
+  const triggerPicker = () => photoInput.click();
+  photoWrap.addEventListener("click", triggerPicker);
+  document.getElementById("emp-photo-btn").addEventListener("click", triggerPicker);
+
+  photoInput.addEventListener("change", async () => {
+    const f = photoInput.files?.[0];
+    if (!f) return;
+    if (f.size > 3 * 1024 * 1024) { toast("Photo must be under 3 MB", "error"); return; }
+    EMF.photo = f;
+    try {
+      const dataUrl = await fileToDataURL(f);
+      photoPreview.src = dataUrl;
+      photoPreview.style.display = "block";
+      photoInitials.style.display = "none";
+    } catch (e) {}
+  });
+
+  const bindField = (id, key, event = "input") => {
+    const el = document.getElementById("emf-" + id);
+    if (!el) return;
+    el.addEventListener(event, () => {
+      EMF[key] = el.value;
+      updateNamePreview();
+    });
+  };
+
+  ["firstName","middleName","lastName",
+   "firstNameAm","middleNameAm","lastNameAm",
+   "firstNameOm","middleNameOm","lastNameOm"].forEach((k) => bindField(k, k));
+
+  bindField("nationalId", "nationalId");
+  bindField("dob", "dob", "change");
+  bindField("phone", "phone");
+  bindField("phoneAlt", "phoneAlt");
+  bindField("email", "email");
+  bindField("subCity", "subCity");
+  bindField("kebele", "kebele");
+  bindField("houseNo", "houseNo");
+  bindField("street", "street");
+  bindField("position", "position");
+  bindField("grade", "grade");
+  bindField("step", "step");
+  bindField("hireDate", "hireDate", "change");
+  bindField("loginEmail", "loginEmail");
+  bindField("password", "password");
+  bindField("password2", "password2");
+  bindField("emgName", "emgName");
+  bindField("emgRelation", "emgRelation");
+  bindField("emgPhone", "emgPhone");
+  bindField("gender", "gender", "change");
+  bindField("maritalStatus", "maritalStatus", "change");
+  bindField("employmentType", "employmentType", "change");
+  bindField("status", "status", "change");
+  bindField("country", "country", "change");
+  bindField("region", "region", "change");
+
+  const emgName = document.getElementById("emf-emgName");
+  if (emgName) emgName.addEventListener("input", () => EMF.emergency.name = emgName.value);
+  const emgRel = document.getElementById("emf-emgRelation");
+  if (emgRel) emgRel.addEventListener("input", () => EMF.emergency.relation = emgRel.value);
+  const emgPhone = document.getElementById("emf-emgPhone");
+  if (emgPhone) emgPhone.addEventListener("input", () => EMF.emergency.phone = emgPhone.value);
+
+  document.getElementById("emf-toggle-pw")?.addEventListener("click", (e) => {
+    const inp = document.getElementById("emf-password");
+    const showing = inp.type === "text";
+    inp.type = showing ? "password" : "text";
+    e.currentTarget.innerHTML = `<svg viewBox="0 0 24 24">${showing ? ICONS.eye : ICONS.eyeOff}</svg>`;
+  });
+
+  const regionSel = document.getElementById("emf-region");
+  const clusterSel = document.getElementById("emf-clusterId");
+  const woredaSel = document.getElementById("emf-woredaCode");
+
+  const populateClusters = () => {
+    const r = regionSel.value;
+    const list = clusters.filter((x) => x.region === r);
+    clusterSel.innerHTML = `<option value="">—</option>` +
+      list.map((x) => `<option value="${x.id}" ${x.id === cluster.id ? "selected" : ""}>${escapeHtml(x.code)} — ${escapeHtml(x.name)}</option>`).join("");
+    if (list.find((x) => x.id === cluster.id)) clusterSel.value = cluster.id;
+    EMF.clusterId = clusterSel.value;
+    populateWoredas();
+  };
+
+  const populateWoredas = () => {
+    const cid = clusterSel.value;
+    const c = clusters.find((x) => x.id === cid);
+    const ws = normalizeWoredas(c?.woredas);
+    woredaSel.innerHTML = `<option value="">—</option>` +
+      ws.map((w) => `<option value="${escapeHtml(w.code)}" data-name="${escapeHtml(w.name)}">${escapeHtml(w.code)} — ${escapeHtml(w.name)}</option>`).join("");
+    EMF.woredaCode = "";
+    updateIdPreview();
+  };
+
+  regionSel.addEventListener("change", populateClusters);
+  clusterSel.addEventListener("change", () => { EMF.clusterId = clusterSel.value; populateWoredas(); });
+  woredaSel.addEventListener("change", () => {
+    EMF.woredaCode = woredaSel.value;
+    const opt = woredaSel.selectedOptions[0];
+    EMF.woredaName = opt?.dataset?.name || "";
+    updateIdPreview();
+  });
+
+  populateClusters();
+
+  function updateNamePreview() {
+    const en = [EMF.firstName, EMF.middleName, EMF.lastName].filter(Boolean).join(" ");
+    const am = [EMF.firstNameAm, EMF.middleNameAm, EMF.lastNameAm].filter(Boolean).join(" ");
+    const om = [EMF.firstNameOm, EMF.middleNameOm, EMF.lastNameOm].filter(Boolean).join(" ");
+    document.getElementById("emp-name-en").textContent = en || "—";
+    document.getElementById("emp-name-am").textContent = am || "—";
+    document.getElementById("emp-name-om").textContent = om || "—";
+    const ini = (en || am || om || "?").split(/\s+/).slice(0,2).map((s) => s[0]).join("").toUpperCase();
+    if (photoInitials) photoInitials.textContent = ini || "?";
+  }
+
+  function updateIdPreview() {
+    const RR = (regionSel.value || "??").replace(/\D/g,"").slice(0,2).padStart(2,"0");
+    const c = clusters.find((x) => x.id === clusterSel.value);
+    const CC = ((c?.code) || "??").toString().slice(0,2).padStart(2,"0");
+    const WW = (woredaSel.value || "??").toString().slice(0,2).padStart(2,"0");
+    const OO = (office.officeCode || "??").toString().slice(0,2);
+    const preview = `${RR}-${CC}${WW}${OO}????`;
+    const a = document.getElementById("emf-id-preview");
+    const b = document.getElementById("emf-id-footer");
+    if (a) a.textContent = preview;
+    if (b) b.textContent = "ID: " + preview;
+  }
+  updateNamePreview();
+  updateIdPreview();
+
+  const natIdEl = document.getElementById("emf-nationalId");
+  const phoneEl = document.getElementById("emf-phone");
+
+  const setupLiveCheck = (inputEl, type, label) => {
+    if (!inputEl) return;
+    let errEl = inputEl.parentElement.querySelector(".dup-error");
+    if (!errEl) {
+      errEl = document.createElement("p");
+      errEl.className = "field__error dup-error";
+      errEl.style.display = "none";
+      inputEl.parentElement.appendChild(errEl);
+    }
+    let icon = inputEl.parentElement.querySelector(".dup-check-icon");
+    if (!icon) {
+      icon = document.createElement("span");
+      icon.className = "dup-check-icon";
+      inputEl.parentElement.style.position = "relative";
+      inputEl.style.paddingRight = "40px";
+      inputEl.parentElement.appendChild(icon);
+    }
+    let timer = null;
+    const run = async () => {
+      const raw = inputEl.value.trim();
+      if (!raw) {
+        errEl.style.display = "none";
+        inputEl.removeAttribute("aria-invalid");
+        icon.textContent = "";
+        return;
+      }
+      icon.textContent = "…";
+      icon.style.color = "var(--muted-light)";
+      const existing = type === "nationalId"
+        ? await findEmployeeByNationalId(raw)
+        : await findEmployeeByPhone(raw);
+      if (existing) {
+        inputEl.setAttribute("aria-invalid", "true");
+        errEl.style.display = "block";
+        errEl.innerHTML = `⚠ This ${label} is already registered to ` +
+          `<strong>${escapeHtml(existing.nameEn || existing.firstName || "another employee")}</strong>` +
+          (existing.empId ? ` (${escapeHtml(existing.empId)})` : "") + ".";
+        icon.textContent = "✗";
+        icon.style.color = "var(--danger)";
+      } else {
+        inputEl.removeAttribute("aria-invalid");
+        errEl.style.display = "none";
+        icon.textContent = "✓";
+        icon.style.color = "var(--success)";
+      }
+    };
+    inputEl.addEventListener("blur", run);
+    inputEl.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(run, 350); });
+  };
+  setupLiveCheck(natIdEl, "nationalId", "National ID");
+  setupLiveCheck(phoneEl, "phone", "phone number");
+
+  document.getElementById("emf-submit").addEventListener("click", () => submitAddEmployee(office, cluster));
+  document.getElementById("emp-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitAddEmployee(office, cluster);
+  });
+}
+
+async function submitAddEmployee(office, cluster) {
+  const errBox = document.getElementById("emf-error");
+  const errMsg = document.getElementById("emf-error-msg");
+  const btn = document.getElementById("emf-submit");
+  const spinner = btn.querySelector(".spinner");
+  const label = btn.querySelector(".btn-label");
+
+  const showError = (msg, tab) => {
+    errBox.style.display = "flex";
+    errMsg.textContent = msg;
+    if (tab) switchTab(tab);
+    btn.disabled = false;
+    spinner.classList.add("hidden");
+    label.textContent = "Create Employee";
+  };
+
+  errBox.style.display = "none";
+
+  if (!EMF.firstName || !EMF.lastName) return showError("First and last name (English) required.", "personal");
+  if (!EMF.nationalId) return showError("National ID required.", "personal");
+  if (!EMF.gender) return showError("Gender required.", "personal");
+  if (!EMF.dob) return showError("Date of birth required.", "personal");
+  if (!EMF.region) return showError("Region required.", "address");
+  if (!EMF.clusterId) return showError("Cluster required.", "address");
+  if (!EMF.woredaCode) return showError("Woreda required.", "address");
+  if (!EMF.phone) return showError("Primary phone required.", "address");
+  if (!EMF.email) return showError("Email required.", "address");
+  if (!EMF.position) return showError("Position required.", "employment");
+  if (!EMF.hireDate) return showError("Hire date required.", "employment");
+
+  const loginEmail = (EMF.loginEmail || EMF.email).trim();
+  if (!loginEmail) return showError("Login email required.", "account");
+  if (!EMF.password || EMF.password.length < 6) return showError("Password must be 6+ chars.", "account");
+  if (EMF.password !== EMF.password2) return showError("Passwords do not match.", "account");
+
+  btn.disabled = true;
+  spinner.classList.remove("hidden");
+  const oldLabel = label.textContent;
+  label.textContent = "Checking…";
+
+  try {
+    const byNat = await findEmployeeByNationalId(EMF.nationalId);
+    if (byNat) {
+      throw Object.assign(new Error(
+        `National ID ${EMF.nationalId} already belongs to ${byNat.nameEn || byNat.firstName || "another employee"}` +
+        (byNat.empId ? ` (${byNat.empId})` : "")
+      ), { code: "duplicate", tab: "personal" });
+    }
+    const byPhone = await findEmployeeByPhone(EMF.phone);
+    if (byPhone) {
+      throw Object.assign(new Error(
+        `Phone ${EMF.phone} already belongs to ${byPhone.nameEn || byPhone.firstName || "another employee"}` +
+        (byPhone.empId ? ` (${byPhone.empId})` : "")
+      ), { code: "duplicate", tab: "address" });
+    }
+
+    label.textContent = "Creating…";
+
+    const empId = await generateEmployeeId({
+      regionCode: office.region,
+      clusterCode: cluster.code,
+      woredaCode: EMF.woredaCode,
+      officeCode: office.officeCode
+    });
+    console.log("[employee] generated:", empId);
+
+    const secName = "empCreator_" + Date.now();
+    const secApp = initializeApp(firebaseConfig, secName);
+    const secAuth = getAuth(secApp);
+    let uid = null;
+    try {
+      const cred = await createUserWithEmailAndPassword(secAuth, loginEmail, EMF.password);
+      uid = cred.user.uid;
+      try { await updateProfile(cred.user, { displayName: [EMF.firstName, EMF.middleName, EMF.lastName].filter(Boolean).join(" ") }); } catch (e) {}
+      await signOut(secAuth);
+    } finally { try { await deleteApp(secApp); } catch (e) {} }
+
+    let photoURL = null;
+    if (EMF.photo) {
+      try { photoURL = await uploadEmployeePhoto(EMF.photo, empId); }
+      catch (e) { console.warn("[photo]", e); }
+    }
+
+    const natIdNorm = normalizeNationalId(EMF.nationalId);
+    const phoneNorm = normalizePhone(EMF.phone);
+    const nameForLock = [EMF.firstName, EMF.middleName, EMF.lastName].filter(Boolean).join(" ");
+
+    await reserveUnique("nationalId", EMF.nationalId, natIdNorm, "pending", empId, nameForLock);
+    try {
+      await reserveUnique("phone", EMF.phone, phoneNorm, "pending", empId, nameForLock);
+    } catch (e) {
+      await releaseUnique("nationalId", natIdNorm);
+      throw e;
+    }
+
+    const empRef = doc(collection(db, "employees"));
+    const nameEn = [EMF.firstName, EMF.middleName, EMF.lastName].filter(Boolean).join(" ");
+    const nameAm = [EMF.firstNameAm, EMF.middleNameAm, EMF.lastNameAm].filter(Boolean).join(" ") || null;
+    const nameOm = [EMF.firstNameOm, EMF.middleNameOm, EMF.lastNameOm].filter(Boolean).join(" ") || null;
+
+    await setDoc(empRef, {
+      empId,
+      regionCode: office.region,
+      clusterCode: cluster.code,
+      woredaCode: EMF.woredaCode,
+      woredaName: EMF.woredaName,
+      officeCode: office.officeCode,
+
+      firstName: EMF.firstName,
+      middleName: EMF.middleName || null,
+      lastName: EMF.lastName,
+      firstNameAm: EMF.firstNameAm || null,
+      middleNameAm: EMF.middleNameAm || null,
+      lastNameAm: EMF.lastNameAm || null,
+      firstNameOm: EMF.firstNameOm || null,
+      middleNameOm: EMF.middleNameOm || null,
+      lastNameOm: EMF.lastNameOm || null,
+      nameEn, nameAm, nameOm,
+
+      photoURL,
+      nationalId: EMF.nationalId,
+      nationalIdNorm: natIdNorm,
+      gender: EMF.gender,
+      dob: EMF.dob,
+      maritalStatus: EMF.maritalStatus || null,
+
+      phone: EMF.phone,
+      phoneNorm,
+      phoneAlt: EMF.phoneAlt || null,
+      email: EMF.email,
+      loginEmail,
+
+      country: EMF.country || "ET",
+      countryName: COUNTRIES.find((x) => x.code === (EMF.country || "ET"))?.name || "Ethiopia",
+      region: office.region || EMF.region,
+      regionName: regionLabel(office.region || EMF.region),
+      clusterId: cluster.id,
+      clusterName: cluster.name || null,
+      subCity: EMF.subCity || null,
+      kebele: EMF.kebele || null,
+      houseNo: EMF.houseNo || null,
+      street: EMF.street || null,
+      address: [EMF.subCity, EMF.kebele, EMF.houseNo, EMF.street].filter(Boolean).join(", ") || null,
+
+      position: EMF.position,
+      grade: EMF.grade || null,
+      step: EMF.step ? Number(EMF.step) : null,
+      hireDate: EMF.hireDate,
+      employmentType: EMF.employmentType || "permanent",
+      status: EMF.status || "active",
+
+      officeId: office.id,
+      officeName: office.name || null,
+
+      emergency: {
+        name: EMF.emergency.name || null,
+        relation: EMF.emergency.relation || null,
+        phone: EMF.emergency.phone || null
+      },
+
+      uid,
+      active: true,
+      createdAt: serverTimestamp(),
+      createdBy: S.uid
+    });
+
+    await setDoc(doc(db, "users", uid), {
+      email: loginEmail,
+      name: nameEn,
+      role: "employee",
+      officeId: office.id,
+      officeName: office.name || null,
+      clusterId: cluster.id,
+      clusterName: cluster.name || null,
+      region: office.region || null,
+      regionName: office.regionName || null,
+      employeeId: empRef.id,
+      empId,
+      active: true,
+      scope: { teamId: null, departmentId: null },
+      createdAt: serverTimestamp(),
+      createdBy: S.uid
+    });
+
+    toast(`Employee ${empId} created`, "success");
+    closeModal();
+
+  } catch (err) {
+    console.error("[add employee]", err);
+    try {
+      if (EMF.nationalId) await releaseUnique("nationalId", normalizeNationalId(EMF.nationalId));
+      if (EMF.phone) await releaseUnique("phone", normalizePhone(EMF.phone));
+    } catch (e) {}
+    showError(
+      (err.code ? err.code + ": " : "") + (err.message || String(err)),
+      err.tab
+    );
+  }
+}
+
+/* ============================================================
+   SUBSCRIPTIONS
+   ============================================================ */
+function rebuildIndexes() {
+  clustersByOffice = {};
+  clusters.forEach((c) => {
+    if (!c.officeId) return;
+    if (!clustersByOffice[c.officeId]) clustersByOffice[c.officeId] = [];
+    clustersByOffice[c.officeId].push(c);
+  });
+  adminsByCluster = {};
+  admins.forEach((a) => {
+    if (!a.clusterId) return;
+    if (!adminsByCluster[a.clusterId]) adminsByCluster[a.clusterId] = [];
+    adminsByCluster[a.clusterId].push(a);
+  });
+  employeesByCluster = {};
+  employees.forEach((e) => {
+    if (!e.clusterId) return;
+    if (!employeesByCluster[e.clusterId]) employeesByCluster[e.clusterId] = [];
+    employeesByCluster[e.clusterId].push(e);
+  });
+}
+
+function subscribeOffices() {
+  if (unsubOffices) unsubOffices();
+  if (S.role !== "super_admin" && S.officeId) {
+    unsubOffices = onSnapshot(doc(db, "offices", S.officeId), (snap) => {
+      offices = snap.exists() ? [{ id: snap.id, ...snap.data() }] : [];
+      renderStats(); renderOffices();
+    }, (err) => console.warn("[offices]", err.code, err.message));
+  } else {
+    unsubOffices = onSnapshot(
+      query(collection(db, "offices"), orderBy("createdAt", "desc")),
+      (snap) => {
+        offices = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        renderStats(); renderOffices();
+      },
+      (err) => {
+        console.error("[offices]", err.code, err.message);
+        document.getElementById("offices-grid").innerHTML =
+          `<div class="empty"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+            <h3>${escapeHtml(err.code)}</h3><p>${escapeHtml(err.message || "")}</p></div>`;
+      }
+    );
+  }
+}
+
+function subscribeClusters() {
+  if (unsubClusters) unsubClusters();
+  let q = collection(db, "clusters");
+  if (S.role !== "super_admin" && S.clusterId) {
+    q = query(q, where("clusterId", "==", S.clusterId));
+  } else if (S.role !== "super_admin" && S.officeId) {
+    q = query(q, where("officeId", "==", S.officeId));
+  }
+  unsubClusters = onSnapshot(q, (snap) => {
+    clusters = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    rebuildIndexes(); renderStats(); renderOffices();
+  }, (err) => console.warn("[clusters]", err.code, err.message));
+}
+
+function subscribeAdmins() {
+  if (unsubAdmins) unsubAdmins();
+  let q = query(collection(db, "users"), where("role", "==", "admin"));
+  if (S.role !== "super_admin" && S.clusterId) {
+    q = query(collection(db, "users"), where("role", "==", "admin"), where("clusterId", "==", S.clusterId));
+  }
+  unsubAdmins = onSnapshot(q, (snap) => {
+    admins = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    rebuildIndexes(); renderStats(); renderOffices();
+  }, (err) => console.warn("[admins]", err.code, err.message));
+}
+
+function subscribeEmployees() {
+  if (unsubEmployees) unsubEmployees();
+  let q = collection(db, "employees");
+  if (S.role !== "super_admin" && S.clusterId) {
+    q = query(q, where("clusterId", "==", S.clusterId));
+  } else if (S.role !== "super_admin" && S.officeId) {
+    q = query(q, where("officeId", "==", S.officeId));
+  }
+  unsubEmployees = onSnapshot(q, (snap) => {
+    employees = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    rebuildIndexes(); renderStats(); renderOffices();
+  }, (err) => console.warn("[employees]", err.code, err.message));
+}
+
+/* ============================================================
+   INTERACTIONS
+   ============================================================ */
+document.getElementById("collapse-toggle").addEventListener("click", (e) => {
+  e.stopPropagation();
+  const c = !document.body.classList.contains("sidebar-collapsed");
+  document.body.classList.toggle("sidebar-collapsed", c);
+  try { localStorage.setItem("cs.sidebar", c ? "collapsed" : "expanded"); } catch (err) {}
+});
+document.getElementById("menu-toggle").addEventListener("click", () =>
+  document.body.classList.toggle("sidebar-open"));
+document.getElementById("overlay").addEventListener("click", () =>
+  document.body.classList.remove("sidebar-open"));
+document.getElementById("sidebar-nav").addEventListener("click", (e) => {
+  if (e.target.closest(".nav-item")) document.body.classList.remove("sidebar-open");
+});
+document.querySelectorAll("[data-dropdown-toggle]").forEach((btn) => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const panel = btn.closest(".dropdown").querySelector("[data-dropdown-panel]");
+    const open = !panel.classList.contains("hidden");
+    document.querySelectorAll("[data-dropdown-panel]").forEach((p) => p.classList.add("hidden"));
+    if (!open) panel.classList.remove("hidden");
+  });
+});
+document.addEventListener("click", () => {
+  document.querySelectorAll("[data-dropdown-panel]").forEach((p) => p.classList.add("hidden"));
+});
+try {
+  if (localStorage.getItem("cs.sidebar") === "collapsed") document.body.classList.add("sidebar-collapsed");
+} catch (e) {}
+
+/* ============================================================
+   BANNER
+   ============================================================ */
+function showBanner(html, isOk = false) {
+  const b = document.getElementById("diag-banner");
+  b.className = "diag-banner show" + (isOk ? " ok" : "");
+  b.innerHTML = html;
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+onAuthStateChanged(auth, async (user) => {
+  if (kick.done) return;
+  if (!user) { kick("no-user"); return; }
+
+  let userDoc = null, readError = null;
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (snap.exists()) userDoc = snap.data();
+    if (userDoc && userDoc.active === false) { kick("inactive"); return; }
+  } catch (err) { readError = err; }
+
+  let clusterName = null;
+  if (userDoc?.clusterId) {
+    try {
+      const cs = await getDoc(doc(db, "clusters", userDoc.clusterId));
+      if (cs.exists()) clusterName = cs.data().name;
+    } catch (e) {}
+  }
+
+  S = {
+    uid: user.uid,
+    role: userDoc?.role || "employee",
+    email: user.email || "",
+    name: userDoc?.name || user.email?.split("@")[0] || "User",
+    officeId: userDoc?.officeId || "",
+    clusterId: userDoc?.clusterId || "",
+    clusterName
+  };
+
+  GUARD_PASSED = true;
+
+  if (S.role !== "super_admin" && S.role !== "admin") {
+    if (!readError) { window.location.replace("dashboard.html"); return; }
+  }
+
+  console.log("[offices] session:", S);
+
+  renderSidebar();
+  renderUser();
+  renderScopeBadge();
+  renderHeadActions();
+  renderStats();
+
+  if (readError || !userDoc) {
+    showBanner(`<strong>⚠ Cannot read your user profile.</strong> Ensure <code>users/${escapeHtml(user.uid)}</code> exists with role and active=true.`);
+  } else if (userDoc.active !== true) {
+    showBanner(`<strong>⚠ Your user profile has active=false.</strong> Set <code>active</code> to boolean <strong>true</strong>.`);
+  } else {
+    showBanner(`<strong>✓ Signed in as ${escapeHtml(roleLabel(S.role))}</strong>`, true);
+    setTimeout(() => document.getElementById("diag-banner")?.classList.remove("show"), 4000);
+  }
+
+  subscribeOffices();
+  subscribeClusters();
+  subscribeAdmins();
+  subscribeEmployees();
+});
+
+console.log("[offices] booted");
+</script>
+
+</body>
+</html>
