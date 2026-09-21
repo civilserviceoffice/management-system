@@ -386,6 +386,46 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .photo-upload__label { font-size:13px; font-weight:700; }
 .photo-upload__hint { font-size:11.5px; color:var(--muted); }
 .photo-upload__req { color:var(--danger); }
+
+/* Reassign photo picker */
+.reassign-photo {
+  display:flex; align-items:center; gap:18px;
+  padding:16px; background:linear-gradient(135deg,#f8fbff,#fff);
+  border:1px solid var(--border); border-radius:14px; margin-bottom:20px;
+}
+.reassign-photo__circle {
+  width:90px; height:90px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,#eaf3fc,#bdd7f2);
+  display:grid; place-items:center; cursor:pointer;
+  overflow:hidden; position:relative;
+  border:3px solid #fff; box-shadow:0 6px 16px rgba(11,92,171,.16);
+  font-size:28px; font-weight:800; color:var(--primary-dark);
+}
+.reassign-photo__circle img {
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+}
+.reassign-photo__badge {
+  position:absolute; right:2px; bottom:2px;
+  width:26px; height:26px; border-radius:50%;
+  background:var(--primary); color:#fff;
+  display:grid; place-items:center;
+  box-shadow:0 3px 8px rgba(11,92,171,.4);
+  border:2px solid #fff;
+}
+.reassign-photo__badge svg {
+  width:12px; height:12px; stroke:currentColor; stroke-width:2.4; fill:none;
+}
+.reassign-photo__main { flex:1; min-width:0; }
+.reassign-photo__title { font-size:14px; font-weight:800; color:var(--text); }
+.reassign-photo__hint { font-size:11.5px; color:var(--muted); margin-top:3px; }
+.reassign-photo__btn {
+  margin-top:8px; display:inline-flex; align-items:center; gap:6px;
+  padding:6px 12px; border:1px solid #d9dee7; border-radius:9px;
+  background:#fff; font-size:12px; font-weight:700; color:var(--text-soft);
+  cursor:pointer;
+}
+.reassign-photo__btn:hover { background:var(--bg-soft); border-color:#b9c7d9; }
+
 .review { background:#f8fafc; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .review__row { display:flex; gap:14px; padding:11px 16px; border-bottom:1px solid #eef2f7; font-size:13px; }
 .review__row:last-child { border-bottom:0; }
@@ -1999,8 +2039,6 @@ function openCreateUserWizard() {
 
 /* ============================================================
    STEP 2 — ASSIGN / RE-ASSIGN ROLE & WORK AREA WIZARD
-   Flow (unassigned): Select User → Placement → Role & Pay → Review
-   Flow (already assigned): Select User → Re-assign → Placement → Role & Pay → Review
    ============================================================ */
 function openAssignWizard(preselectedUserId = null) {
   if (!canAddStaff()) { toast("You cannot assign roles", "error"); return; }
@@ -2066,6 +2104,7 @@ function openAssignWizard(preselectedUserId = null) {
      RE-ASSIGN STEP — conditionally inserted when the user is
      already assigned. Shows full current details, asks for
      confirmation, and collects clearance / transfer documents.
+     Now includes a photo upload + live preview.
      ============================================================ */
   const reassignStep = {
     label: "Re-assign",
@@ -2080,8 +2119,40 @@ function openAssignWizard(preselectedUserId = null) {
       const cluster = CLUSTERS.find(c => c.id === u.clusterId);
       const currentEmpId = emp?.empId || u.empId || "—";
 
+      /* Photo: use newly picked one if any, else current */
+      const photoSrc = d._newPhoto || u.photoURL || emp?.photoURL || null;
+
       let html = '';
 
+      /* ---- Photo upload with live preview ---- */
+      html += '<div class="reassign-photo">';
+      html +=   '<div class="reassign-photo__circle" id="reassign-photo-circle">';
+      if (photoSrc) {
+        html += '<img id="reassign-photo-preview" src="' + escapeHtml(photoSrc) + '" alt="">';
+      } else {
+        html += '<span id="reassign-photo-initials">' + escapeHtml(initials(u.name || u.email)) + '</span>';
+      }
+      html +=     '<div class="reassign-photo__badge"><svg viewBox="0 0 24 24">' + ICONS.camera + '</svg></div>';
+      html +=     '<input type="file" id="reassign-photo-input" accept="image/*" style="display:none">';
+      html +=   '</div>';
+      html +=   '<div class="reassign-photo__main">';
+      html +=     '<div class="reassign-photo__title">' + escapeHtml(u.name || u.email || "User") + '</div>';
+      html +=     '<div class="reassign-photo__hint">';
+      html +=       d._newPhoto
+        ? 'New photo will replace the current one'
+        : 'Current photo · click to update during transfer (optional)';
+      html +=     '</div>';
+      html +=     '<button type="button" class="reassign-photo__btn" id="reassign-photo-btn">';
+      html +=       '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4">' + ICONS.camera + '</svg>';
+      html +=       (d._newPhoto ? 'Change photo' : 'Upload new photo');
+      html +=     '</button>';
+      html +=     (d._newPhoto
+                    ? ' <button type="button" class="reassign-photo__btn" id="reassign-photo-clear">Remove</button>'
+                    : '');
+      html +=   '</div>';
+      html += '</div>';
+
+      /* ---- Warning ---- */
       html += '<div class="alert alert--warning">';
       html += '<svg viewBox="0 0 24 24">' + ICONS.alert + '</svg>';
       html += '<div><strong>This user is already assigned.</strong> ';
@@ -2093,96 +2164,57 @@ function openAssignWizard(preselectedUserId = null) {
       html += '<div style="font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">Current Assignment — full details</div>';
       html += '<div class="review" style="margin-bottom:18px">';
 
-      /* Person row */
-      html += '<div class="review__row" style="align-items:center">';
-      html += '<span class="review__k">Person</span>';
-      html += '<span class="review__v" style="display:flex;align-items:center;gap:10px">';
-      html += '<span class="admin-avatar" style="width:38px;height:38px;font-size:13px">';
-      html += (u.photoURL
-        ? '<img src="' + escapeHtml(u.photoURL) + '" alt="">'
-        : escapeHtml(initials(u.name || u.email)));
-      html += '</span>';
-      html += '<span>';
-      html += '<strong>' + escapeHtml(u.name || u.email) + '</strong>';
-      if (u.email) html += '<div style="font-size:11.5px;color:var(--muted);font-weight:500">' + escapeHtml(u.email) + '</div>';
-      html += '</span></span></div>';
-
-      /* Emp ID */
       html += '<div class="review__row"><span class="review__k">Current Employee ID</span>';
       html += '<span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(currentEmpId) + '</span></div>';
 
-      /* National ID */
       if (emp?.nationalId) {
         html += '<div class="review__row"><span class="review__k">National ID</span>';
         html += '<span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(formatNationalIdDisplay(emp.nationalId)) + '</span></div>';
       }
-
-      /* Phone */
       if (emp?.phone || u.phone) {
         html += '<div class="review__row"><span class="review__k">Phone</span>';
         html += '<span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(formatPhoneDisplay(emp?.phone || u.phone)) + '</span></div>';
       }
-
-      /* Current role */
       html += '<div class="review__row"><span class="review__k">Current Role</span>';
       html += '<span class="review__v"><span class="role-badge role-badge--' + (u.role || "unassigned") + '">' +
         escapeHtml(roleLabel(u.role || "unassigned")) + '</span></span></div>';
-
-      /* Region */
       if (u.regionCode || u.region) {
         html += '<div class="review__row"><span class="review__k">Region</span>';
         html += '<span class="review__v">' + escapeHtml(regionLabel(u.regionCode || u.region)) + '</span></div>';
       }
-
-      /* Sector */
       if (sector || u.sectorName) {
         html += '<div class="review__row"><span class="review__k">Sector</span>';
         html += '<span class="review__v">' + escapeHtml(sector?.name || u.sectorName) + '</span></div>';
       }
-
-      /* Department */
       if (dept || u.departmentName) {
         html += '<div class="review__row"><span class="review__k">Department</span>';
         html += '<span class="review__v">' + escapeHtml(dept?.name || u.departmentName) + '</span></div>';
       }
-
-      /* Cluster */
       if (cluster || u.clusterName) {
         html += '<div class="review__row"><span class="review__k">Cluster</span>';
         html += '<span class="review__v">' + escapeHtml(cluster?.name || u.clusterName) + '</span></div>';
       }
-
-      /* Woreda */
       if (u.woredaCode) {
         html += '<div class="review__row"><span class="review__k">Woreda / City</span>';
         html += '<span class="review__v">' + escapeHtml(u.woredaName || u.woredaCode) + '</span></div>';
       }
-
-      /* Office */
       if (u.officeName) {
         html += '<div class="review__row"><span class="review__k">Office</span>';
         html += '<span class="review__v">' + escapeHtml(u.officeName) + '</span></div>';
       }
-
-      /* Position */
       if (u.position || emp?.position) {
         html += '<div class="review__row"><span class="review__k">Position</span>';
         html += '<span class="review__v">' + escapeHtml(u.position || emp?.position) + '</span></div>';
       }
-
-      /* Hire date */
       if (emp?.hireDate) {
         html += '<div class="review__row"><span class="review__k">Hire date</span>';
         html += '<span class="review__v">' + escapeHtml(emp.hireDate) + '</span></div>';
       }
-
-      /* Salary */
       const basic = Number(emp?.basicSalary || 0);
       if (basic) {
         html += '<div class="review__row"><span class="review__k">Basic salary</span>';
         html += '<span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(fmtMoney(basic) || "0") + ' ETB</span></div>';
       }
-
       html += '</div>';
 
       /* ---- Confirmation ---- */
@@ -2192,19 +2224,16 @@ function openAssignWizard(preselectedUserId = null) {
       html += '<div class="field" style="margin-top:20px">';
       html += '<label class="field__required">Do you want to re-assign this user?</label>';
       html += '<div style="display:flex;gap:8px">';
-
       html += '<button type="button" class="placement-btn' + (yesOn ? ' is-on' : '') + '" data-reassign-confirm="yes" style="flex:1">';
       html += '<span class="placement-btn__icon"><svg viewBox="0 0 24 24">' + ICONS.check + '</svg></span>';
       html += '<span class="placement-btn__label">Yes, re-assign</span>';
       html += '<span class="placement-btn__hint">Proceed with transfer — clearance required</span>';
       html += '</button>';
-
       html += '<button type="button" class="placement-btn' + (noOn ? ' is-on' : '') + '" data-reassign-confirm="no" style="flex:1">';
       html += '<span class="placement-btn__icon"><svg viewBox="0 0 24 24">' + ICONS.x + '</svg></span>';
       html += '<span class="placement-btn__label">No, cancel</span>';
       html += '<span class="placement-btn__hint">Keep current assignment</span>';
       html += '</button>';
-
       html += '</div></div>';
 
       /* ---- Clearance fields (shown only when confirmed) ---- */
@@ -2253,6 +2282,44 @@ function openAssignWizard(preselectedUserId = null) {
       return null;
     },
     after: (root, data, refresh) => {
+      /* ---- Photo upload + live preview ---- */
+      const circle    = root.querySelector("#reassign-photo-circle");
+      const input     = root.querySelector("#reassign-photo-input");
+      const uploadBtn = root.querySelector("#reassign-photo-btn");
+      const clearBtn  = root.querySelector("#reassign-photo-clear");
+
+      if (circle && input) {
+        circle.addEventListener("click", () => input.click());
+        uploadBtn?.addEventListener("click", (e) => { e.stopPropagation(); input.click(); });
+      }
+
+      if (input) {
+        input.addEventListener("change", async () => {
+          const f = input.files?.[0];
+          if (!f) return;
+          if (f.size > 3 * 1024 * 1024) { toast("Photo must be under 3 MB", "error"); return; }
+          try {
+            const dataURL = await fileToDataURL(f);
+            data._newPhoto = dataURL;
+            data._newPhotoName = f.name;
+            refresh();
+          } catch (e) {
+            toast("Could not read image", "error");
+          }
+        });
+      }
+
+      if (clearBtn) {
+        clearBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          data._newPhoto = null;
+          data._newPhotoName = "";
+          if (input) input.value = "";
+          refresh();
+        });
+      }
+
+      /* ---- Yes / No ---- */
       root.querySelectorAll("[data-reassign-confirm]").forEach(btn => {
         btn.addEventListener("click", () => {
           const choice = btn.dataset.reassignConfirm;
@@ -2266,6 +2333,7 @@ function openAssignWizard(preselectedUserId = null) {
         });
       });
 
+      /* ---- Clearance letter upload ---- */
       const fileInput = root.querySelector("#reassign-file");
       if (fileInput) {
         fileInput.addEventListener("change", async () => {
@@ -2339,8 +2407,8 @@ function openAssignWizard(preselectedUserId = null) {
       },
       validate: d => d.selectedUserId ? null : "Please select a user.",
       after: (root, data, refresh) => {
-        const listEl = root.querySelector("#au-search") ? root.querySelector("#au-list") : null;
         const searchEl = root.querySelector("#au-search");
+        const listEl   = root.querySelector("#au-list");
         if (searchEl && listEl) searchEl.addEventListener("input", () => {
           const q = searchEl.value.trim().toLowerCase();
           listEl.querySelectorAll(".user-pick-item").forEach(el => {
@@ -2383,7 +2451,6 @@ function openAssignWizard(preselectedUserId = null) {
           });
         }
 
-        /* If preselected and already assigned, insert the reassign step */
         if (preselected) setReassignStepFor(preselected.id);
       }
     },
@@ -2703,12 +2770,15 @@ function openAssignWizard(preselectedUserId = null) {
 
         const isReassign = isUserAlreadyAssigned(u, employeesByUid[u.id]);
 
+        /* Photo — new one takes priority */
+        const reviewPhoto = d._newPhoto || u.photoURL || employeesByUid[u.id]?.photoURL || null;
+
         let html = '';
 
         html += '<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;' +
                 'background:linear-gradient(135deg,#f8fbff,#fff);border:1px solid var(--border);border-radius:14px">' +
           '<div class="admin-avatar" style="width:60px;height:60px;font-size:20px">' +
-            (u.photoURL ? '<img src="' + escapeHtml(u.photoURL) + '" alt="">' : escapeHtml(initials(u.name || u.email))) +
+            (reviewPhoto ? '<img src="' + escapeHtml(reviewPhoto) + '" alt="">' : escapeHtml(initials(u.name || u.email))) +
           '</div>' +
           '<div style="min-width:0">' +
             '<div style="font-size:16px;font-weight:800">' + escapeHtml(u.name || u.email || "User") + '</div>' +
@@ -2821,7 +2891,9 @@ function openAssignWizard(preselectedUserId = null) {
       reassign_letterNumber: "",
       reassign_letterDate: "",
       reassign_clearanceFileData: null,
-      reassign_clearanceFileName: ""
+      reassign_clearanceFileName: "",
+      _newPhoto: null,
+      _newPhotoName: ""
     },
     steps,
     onFinish: async (d) => {
@@ -2877,6 +2949,7 @@ function openAssignWizard(preselectedUserId = null) {
             userEmail: u.email || "",
             previousEmpId,
             previousRole: u.role || null,
+            previousPhotoURL: u.photoURL || emp?.photoURL || null,
             previousPlacement: {
               regionCode: u.regionCode || u.region || null,
               sectorId:   u.sectorId || null,   sectorName: prevSector?.name || u.sectorName || null,
@@ -2910,6 +2983,7 @@ function openAssignWizard(preselectedUserId = null) {
             letterDate: d.reassign_letterDate || null,
             clearanceFileData: d.reassign_clearanceFileData || null,
             clearanceFileName: d.reassign_clearanceFileName || null,
+            newPhotoURL: d._newPhoto || null,
             transferredBy: S.uid,
             transferredByName: S.name,
             transferredAt: serverTimestamp()
@@ -2917,7 +2991,6 @@ function openAssignWizard(preselectedUserId = null) {
           historyRefId = prevRef.id;
         } catch (e) {
           console.warn("[transferHistory]", e.code, e.message);
-          /* Not fatal — the transfer still proceeds */
         }
       }
 
@@ -2944,6 +3017,10 @@ function openAssignWizard(preselectedUserId = null) {
         assignedAt: serverTimestamp(),
         assignedBy: S.uid
       };
+      /* Save new photo if uploaded during transfer */
+      if (isReassign && d._newPhoto) {
+        userPatch.photoURL = d._newPhoto;
+      }
       if (isReassign) {
         userPatch.previousEmpId = previousEmpId;
         userPatch.lastTransferAt = serverTimestamp();
@@ -2984,6 +3061,9 @@ function openAssignWizard(preselectedUserId = null) {
           updatedAt: serverTimestamp(),
           updatedBy: S.uid
         };
+        if (isReassign && d._newPhoto) {
+          empPatch.photoURL = d._newPhoto;
+        }
         if (isReassign) {
           empPatch.previousEmpId = previousEmpId;
           empPatch.lastTransferAt = serverTimestamp();
@@ -3506,7 +3586,7 @@ onAuthStateChanged(auth, async (user) => {
   subscribeUsers();
 });
 
-console.log("[users] booted — assign wizard now supports transfer with clearance documents");
+console.log("[users] booted — assign wizard supports transfer with photo + clearance documents");
 </script>
 
 </body>
