@@ -1,0 +1,3559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Plans — Civil Service MIS</title>
+<link rel="icon" type="image/png" href="../images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+(function headGuard(){
+  try{ if(sessionStorage.getItem("loggedIn")!=="true"||!sessionStorage.getItem("uid")){
+    sessionStorage.clear(); sessionStorage.setItem("__redirectReason","expired");
+    window.location.replace("../index.html");
+  }}catch(e){ window.location.replace("../index.html"); }
+})();
+(function preTheme(){
+  try{
+    const t=localStorage.getItem("cs.theme")||"light";
+    if(t==="dark") document.documentElement.classList.add("theme-dark");
+    else if(t==="auto"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)
+      document.documentElement.classList.add("theme-dark");
+    if(localStorage.getItem("cs.compact")==="true") document.documentElement.classList.add("compact-mode");
+    const lang=localStorage.getItem("cs.language")||"en";
+    document.documentElement.setAttribute("data-lang",lang);
+    if(lang==="am") document.documentElement.setAttribute("data-ethiopic","true");
+  }catch(e){}
+})();
+</script>
+<script type="importmap">
+{ "imports": {
+  "firebase/app":"https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js",
+  "firebase/auth":"https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js",
+  "firebase/firestore":"https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js"
+}}
+</script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --primary:#0b5cab;--primary-dark:#073d75;--secondary:#0e7490;
+  --text:#172033;--text-soft:#344054;--muted:#6b7280;--muted-light:#98a2b3;
+  --border:#e5e7eb;--border-soft:#eef1f5;
+  --danger:#dc2626;--success:#067647;--warning:#b8860b;--bg:#f4f7fb;--bg-soft:#fbfcfe;
+  --violet:#5b21b6;
+  --sh-sm:0 1px 2px rgba(20,40,70,.04),0 1px 3px rgba(20,40,70,.06);
+  --sh-md:0 4px 12px rgba(20,40,70,.06),0 2px 4px rgba(20,40,70,.04);
+  --r-lg:20px;--r-full:999px;
+  --sidebar-w:272px;--topbar-h:76px;
+}
+html,body{height:100%;}
+body{
+  font-family:"Inter","Noto Sans Ethiopic",sans-serif;
+  background:radial-gradient(circle at 10% 20%, rgba(11,92,171,.09), transparent 35%),
+             radial-gradient(circle at 90% 80%, rgba(25,169,116,.09), transparent 35%),
+             var(--bg);
+  color:var(--text);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+img,svg{display:block;max-width:100%;}
+button,input,select,textarea{font:inherit;color:inherit;}
+button{cursor:pointer;background:none;border:none;}
+a{color:inherit;text-decoration:none;}
+h1,h2,h3,h4{line-height:1.25;letter-spacing:-0.02em;font-weight:800;}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:6px;}
+.hidden{display:none !important;}
+.app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;grid-template-rows:var(--topbar-h) 1fr;
+  grid-template-areas:"sidebar topbar" "sidebar main";min-height:100vh;}
+body.sidebar-collapsed .app{grid-template-columns:88px 1fr;}
+.sidebar{grid-area:sidebar;position:sticky;top:0;height:100vh;width:var(--sidebar-w);
+  background:linear-gradient(145deg,#073d75 0%,#0b5cab 55%,#0e7490 100%);
+  color:#fff;display:flex;flex-direction:column;overflow:hidden;z-index:30;}
+body.sidebar-collapsed .sidebar{width:88px;}
+.sidebar__brand{position:relative;z-index:2;display:flex;align-items:center;gap:14px;
+  padding:22px;border-bottom:1px solid rgba(255,255,255,.10);
+  min-height:var(--topbar-h);flex-shrink:0;}
+.sidebar__logo{width:46px;height:46px;flex-shrink:0;border-radius:14px;
+  background:rgba(255,255,255,.97);display:grid;place-items:center;padding:5px;}
+.sidebar__logo img{width:100%;height:100%;object-fit:contain;border-radius:9px;}
+.sidebar__identity{min-width:0;flex:1;opacity:1;white-space:nowrap;overflow:hidden;}
+body.sidebar-collapsed .sidebar__identity{opacity:0;pointer-events:none;}
+.sidebar__title{font-size:16px;font-weight:800;}
+.sidebar__subtitle{font-size:11px;opacity:.72;margin-top:3px;}
+.sidebar__collapse{position:absolute;right:-13px;top:50%;transform:translateY(-50%);
+  width:28px;height:28px;border-radius:50%;background:#fff;color:var(--primary-dark);
+  border:3px solid var(--bg);display:grid;place-items:center;cursor:pointer;z-index:10;}
+.sidebar__collapse svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;fill:none;}
+body.sidebar-collapsed .sidebar__collapse svg{transform:rotate(180deg);}
+.sidebar__nav{position:relative;z-index:2;flex:1;padding:20px 14px;overflow-y:auto;}
+.sidebar__section{font-size:10.5px;font-weight:800;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(255,255,255,.45);padding:18px 12px 8px;white-space:nowrap;}
+body.sidebar-collapsed .sidebar__section{height:6px;padding:0;opacity:0;margin-top:14px;margin-bottom:6px;}
+.nav-item{display:flex;align-items:center;gap:13px;padding:11px 13px;border-radius:12px;
+  font-size:14px;font-weight:600;color:rgba(255,255,255,.78);
+  margin-bottom:3px;transition:.15s;white-space:nowrap;cursor:pointer;position:relative;}
+.nav-item:hover{background:rgba(255,255,255,.09);color:#fff;}
+.nav-item.is-active{background:rgba(255,255,255,.16);color:#fff;}
+.nav-item.is-active::before{content:"";position:absolute;left:-14px;top:50%;transform:translateY(-50%);
+  width:4px;height:24px;border-radius:0 4px 4px 0;background:#58e6a7;}
+.nav-item svg{width:20px;height:20px;flex-shrink:0;stroke:currentColor;stroke-width:1.85;fill:none;}
+.nav-item__label{flex:1;overflow:hidden;}
+body.sidebar-collapsed .nav-item{justify-content:center;padding:12px;}
+body.sidebar-collapsed .nav-item__label{display:none;}
+.sidebar__footer{position:relative;z-index:2;padding:16px 20px;
+  border-top:1px solid rgba(255,255,255,.10);font-size:11px;color:rgba(255,255,255,.55);text-align:center;}
+.topbar{grid-area:topbar;background:rgba(255,255,255,.85);
+  backdrop-filter:blur(18px);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:16px;padding:0 28px;position:sticky;top:0;z-index:20;}
+.topbar__menu{display:none;width:42px;height:42px;border-radius:12px;color:var(--text);
+  align-items:center;justify-content:center;cursor:pointer;}
+.topbar__spacer{flex:1;}
+.user-btn{display:flex;align-items:center;gap:11px;padding:4px 14px 4px 4px;
+  border-radius:var(--r-full);background:var(--border-soft);cursor:pointer;transition:background .15s;}
+.user-btn__avatar{width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--secondary));
+  color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;overflow:hidden;position:relative;}
+.user-btn__avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.user-btn__name{font-size:13px;font-weight:700;display:block;}
+.user-btn__role{font-size:11px;color:var(--muted);font-weight:600;}
+.dropdown{position:relative;}
+.dropdown__panel{position:absolute;right:0;top:calc(100% + 12px);
+  background:#fff;border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 30px 60px rgba(20,40,70,.12);min-width:260px;padding:8px;z-index:50;}
+.dropdown__header{padding:12px 14px;border-bottom:1px solid var(--border-soft);margin-bottom:6px;}
+.dropdown__header strong{display:block;font-size:14px;font-weight:700;}
+.dropdown__header span{font-size:12px;color:var(--muted);}
+.dropdown__item{display:flex;align-items:center;gap:12px;width:100%;
+  padding:11px 14px;border-radius:10px;font-size:14px;font-weight:500;
+  color:var(--text-soft);text-align:left;cursor:pointer;}
+.dropdown__item:hover{background:var(--border-soft);color:var(--text);}
+.dropdown__item svg{width:17px;height:17px;stroke:currentColor;stroke-width:2;fill:none;}
+.dropdown__divider{height:1px;background:var(--border-soft);margin:6px 0;}
+.dropdown__item--danger{color:var(--danger);}
+.main{grid-area:main;padding:32px;overflow-x:hidden;}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px;flex-wrap:wrap;}
+.page-head__title{font-size:32px;font-weight:800;letter-spacing:-1.2px;margin-bottom:6px;}
+.page-head__sub{font-size:15px;color:var(--muted);}
+.page-head__actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.scope-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:var(--r-full);
+  background:linear-gradient(135deg,#eaf3fc,#fff);border:1px solid #bdd7f2;color:var(--primary-dark);
+  font-size:12.5px;font-weight:700;margin-top:8px;}
+.scope-badge svg{width:15px;height:15px;stroke:currentColor;stroke-width:2.2;fill:none;}
+.scope-badge--super{background:linear-gradient(135deg,#f0eaff,#fff);border-color:#ddd2fb;color:#5b21b6;}
+.scope-badge--regional{background:linear-gradient(135deg,#fdf5e0,#fff);border-color:#f0dcb0;color:#b8860b;}
+.scope-badge--cluster{background:linear-gradient(135deg,#ecfdf3,#fff);border-color:#abefc6;color:#067647;}
+.year-picker{display:inline-flex;align-items:center;gap:8px;
+  background:#fff;border:1px solid var(--border);border-radius:11px;
+  padding:0 12px;height:42px;box-shadow:var(--sh-sm);}
+.year-picker label{font-size:12.5px;font-weight:700;color:var(--muted);}
+.year-picker select{border:none;background:transparent;font-weight:800;
+  font-size:14px;color:var(--text);outline:none;cursor:pointer;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  height:46px;padding:0 20px;border-radius:13px;border:1px solid #d9dee7;background:#fff;
+  color:var(--text-soft);font-size:14px;font-weight:700;white-space:nowrap;cursor:pointer;transition:all .15s;}
+.btn:hover{background:var(--bg-soft);border-color:#b9c7d9;}
+.btn svg{width:17px;height:17px;stroke:currentColor;stroke-width:2.2;fill:none;}
+.btn--primary{background:linear-gradient(135deg,#0b5cab,#0e7490);border:none;color:#fff;
+  box-shadow:0 10px 22px rgba(11,92,171,.22);}
+.btn--primary:hover{background:linear-gradient(135deg,#073d75,#0b5cab);}
+.btn--gold{background:linear-gradient(135deg,#d4a017,#e8b84b);border:none;color:#fff;
+  box-shadow:0 10px 22px rgba(212,160,23,.22);}
+.btn--gold:hover{background:linear-gradient(135deg,#b8860b,#d4a017);}
+.btn--danger{color:var(--danger);}
+.btn--danger:hover{background:#fef3f2;border-color:#f0a5ab;}
+.btn--sm{height:38px;padding:0 14px;font-size:13px;border-radius:10px;}
+.btn--sm svg{width:15px;height:15px;}
+.btn--icon{width:38px;padding:0;}
+.btn:disabled{opacity:.55;pointer-events:none;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;}
+.stat{position:relative;background:#fff;border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:18px;box-shadow:var(--sh-sm);overflow:hidden;}
+.stat::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--c1,var(--primary));}
+.stat--blue{--c1:linear-gradient(90deg,#0b5cab,#0e7490);--ic:#eaf3fc;--ifc:#0b5cab;}
+.stat--green{--c1:linear-gradient(90deg,#19a974,#34c78e);--ic:#e7f7f0;--ifc:#128a5c;}
+.stat--gold{--c1:linear-gradient(90deg,#d4a017,#e8b84b);--ic:#fdf5e0;--ifc:#b8860b;}
+.stat--violet{--c1:linear-gradient(90deg,#6d28d9,#a78bfa);--ic:#f0eaff;--ifc:#5b21b6;}
+.stat__head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.stat__label{font-size:12.5px;color:var(--muted);font-weight:600;}
+.stat__icon{width:40px;height:40px;border-radius:12px;background:var(--ic);color:var(--ifc);
+  display:grid;place-items:center;}
+.stat__icon svg{width:19px;height:19px;stroke:currentColor;stroke-width:2.2;fill:none;}
+.stat__value{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;}
+.toolbar{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;
+  background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px 18px;box-shadow:var(--sh-sm);}
+.toolbar__search{flex:1;min-width:220px;position:relative;}
+.toolbar__search input{width:100%;height:44px;padding:0 14px 0 42px;
+  border:1px solid #d9dee7;border-radius:11px;background:#fbfcfe;font-size:14px;}
+.toolbar__search input:focus{outline:none;background:#fff;border-color:#70a8d9;box-shadow:0 0 0 4px rgba(11,92,171,.08);}
+.toolbar__search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;color:var(--muted-light);stroke:currentColor;stroke-width:2;fill:none;}
+.toolbar__filter{height:44px;padding:0 36px 0 14px;border:1px solid #d9dee7;border-radius:11px;
+  background:#fbfcfe;font-size:13.5px;font-weight:600;color:var(--text-soft);
+  cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;background-position:right 12px center;min-width:140px;}
+.toolbar__count{font-size:13px;font-weight:700;color:var(--muted);padding:0 8px;margin-left:auto;}
+.section-title{display:flex;align-items:center;gap:10px;margin:28px 0 14px;
+  font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+.section-title::after{content:"";flex:1;height:1px;background:var(--border);}
+.section-title__badge{display:inline-flex;padding:2px 9px;border-radius:999px;
+  background:var(--primary);color:#fff;font-size:11px;font-weight:800;letter-spacing:0;}
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;}
+
+/* ============ MY ALLOCATIONS — compact table ============ */
+.my-alloc-wrap{background:#fff;border:1px solid #f0dcb0;border-radius:16px;
+  box-shadow:var(--sh-sm);overflow:hidden;margin-bottom:24px;}
+.my-alloc-head{display:flex;align-items:center;gap:14px;padding:14px 18px;
+  background:linear-gradient(135deg,#fffaf0,#fff);border-bottom:1px solid #f0dcb0;}
+.my-alloc-head__icon{width:42px;height:42px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,#d4a017,#e8b84b);color:#fff;
+  display:grid;place-items:center;}
+.my-alloc-head__icon svg{width:20px;height:20px;stroke:currentColor;stroke-width:2.2;fill:none;}
+.my-alloc-head__main{flex:1;min-width:0;}
+.my-alloc-head__title{font-size:15px;font-weight:800;color:#7a5210;letter-spacing:-.2px;}
+.my-alloc-head__sub{font-size:12px;color:#a9740c;margin-top:2px;}
+.my-alloc-head__badge{display:inline-flex;align-items:center;justify-content:center;
+  min-width:28px;height:28px;padding:0 11px;border-radius:999px;
+  background:#d4a017;color:#fff;font-size:13px;font-weight:800;flex-shrink:0;}
+.my-alloc-table-wrap{overflow-x:auto;}
+.my-alloc-table{width:100%;border-collapse:collapse;min-width:1000px;}
+.my-alloc-table thead th{background:#fffaf0;
+  font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+  color:#a9740c;padding:10px 12px;text-align:left;
+  border-bottom:1px solid #f0dcb0;white-space:nowrap;}
+.my-alloc-table thead th.num{text-align:right;}
+.my-alloc-table thead th.rownum{width:44px;text-align:center;}
+.my-alloc-table tbody td{padding:10px 12px;border-bottom:1px solid #fef3d6;
+  font-size:12.5px;color:var(--text-soft);vertical-align:middle;}
+.my-alloc-table tbody tr:last-child td{border-bottom:none;}
+.my-alloc-table tbody tr:hover td{background:#fffaf0;}
+.my-alloc-table td.num{text-align:right;font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-weight:700;white-space:nowrap;}
+.my-alloc-table td.rownum{text-align:center;font-weight:800;color:var(--muted);
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;}
+.my-alloc-table__title{font-weight:800;color:var(--text);font-size:13px;line-height:1.3;}
+.my-alloc-table__desc{font-size:11.5px;color:var(--muted);line-height:1.4;
+  max-width:280px;overflow:hidden;text-overflow:ellipsis;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.my-alloc-table .load-cell{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.my-alloc-table .load-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:#cbd5e1;}
+.my-alloc-table .load-dot--easy     {background:#34c78e;}
+.my-alloc-table .load-dot--medium   {background:#d4a017;}
+.my-alloc-table .load-dot--hard     {background:#e0731c;}
+.my-alloc-table .load-dot--very_hard{background:#dc2626;}
+.my-alloc-table .load-dot--custom   {background:#5b21b6;}
+.my-alloc-table .load-txt{font-weight:800;font-size:11.5px;color:var(--text);}
+.my-alloc-table .unit-mini{font-size:10.5px;color:var(--muted);font-weight:600;margin-left:3px;}
+.my-alloc-table .table-action{display:inline-flex;align-items:center;gap:6px;
+  height:32px;padding:0 12px;border-radius:8px;font-size:12px;font-weight:800;
+  white-space:nowrap;cursor:pointer;border:1px solid transparent;transition:.15s;}
+.my-alloc-table .table-action--gold{background:linear-gradient(135deg,#d4a017,#e8b84b);color:#fff;
+  box-shadow:0 4px 10px rgba(212,160,23,.25);}
+.my-alloc-table .table-action--gold:hover{background:linear-gradient(135deg,#b8860b,#d4a017);}
+.my-alloc-table .table-action--ghost{background:#fff;border-color:#e5e7eb;color:var(--text-soft);}
+.my-alloc-table .table-action--ghost:hover{background:var(--bg-soft);border-color:#b9c7d9;}
+.my-alloc-table .table-action svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.4;fill:none;}
+.my-alloc-table .status-clickable{cursor:pointer;
+  transition:transform .12s, box-shadow .12s, background .12s;
+  user-select:none;}
+.my-alloc-table .status-clickable:hover{
+  transform:translateY(-1px);
+  box-shadow:0 4px 10px rgba(212,160,23,.3);
+  background:#f6c95a;}
+.my-alloc-table .status-clickable:active{
+  transform:translateY(0) scale(.97);}
+.my-alloc-table .status-clickable svg{
+  width:10px;height:10px;
+  stroke:currentColor;stroke-width:3;fill:none;
+  display:inline-block;vertical-align:-1px;margin-left:3px;}
+
+.sector-group{background:#fff;border:1px solid var(--border);border-radius:16px;
+  box-shadow:var(--sh-sm);overflow:hidden;margin-bottom:14px;transition:box-shadow .15s;}
+.sector-group:hover{box-shadow:var(--sh-md);}
+.sector-group__head{display:flex;align-items:center;gap:14px;padding:16px 20px;
+  cursor:pointer;user-select:none;background:linear-gradient(135deg,#f8fbff,#fff);
+  transition:background .15s;}
+.sector-group__head:hover{background:#f8fafc;}
+.sector-group.is-open .sector-group__head{background:linear-gradient(135deg,#eaf3fc,#fff);
+  border-bottom:1px solid var(--border-soft);}
+.sector-group__code{width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,#0b5cab,#0e7490);color:#fff;
+  display:grid;place-items:center;font-weight:800;font-size:14px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.5px;}
+.sector-group__main{flex:1;min-width:0;}
+.sector-group__name{font-size:15.5px;font-weight:800;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.2px;}
+.sector-group__meta{font-size:12px;color:var(--muted);margin-top:3px;
+  display:flex;gap:14px;flex-wrap:wrap;}
+.sector-group__meta span{display:inline-flex;align-items:center;gap:4px;}
+.sector-group__meta svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.2;fill:none;}
+.sector-group__badge{display:inline-flex;align-items:center;justify-content:center;
+  min-width:26px;height:26px;padding:0 9px;border-radius:999px;
+  background:#eaf3fc;color:#0b5cab;font-size:12px;font-weight:800;flex-shrink:0;}
+.sector-group__chevron{width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  display:grid;place-items:center;color:var(--muted);transition:transform .2s,color .2s;}
+.sector-group.is-open .sector-group__chevron{transform:rotate(180deg);color:var(--primary);}
+.sector-group__chevron svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none;}
+.sector-group__body{display:none;background:var(--bg-soft);}
+.sector-group.is-open .sector-group__body{display:block;}
+.sector-group__section{padding:16px 20px;border-bottom:1px solid var(--border-soft);}
+.sector-group__section:last-child{border-bottom:none;}
+.sector-group__section-title{font-size:11px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--muted);display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:12px;}
+.sector-group__section-title .count{display:inline-flex;padding:2px 8px;
+  border-radius:999px;background:#fff;border:1px solid var(--border);color:var(--text-soft);
+  font-size:10.5px;font-weight:800;letter-spacing:0;}
+
+.dept-list{display:flex;flex-direction:column;gap:8px;}
+.dept-row{display:flex;align-items:center;gap:12px;padding:11px 14px;
+  border:1px solid var(--border);border-radius:11px;background:#fff;transition:.12s;}
+.dept-row:hover{border-color:#bdd7f2;box-shadow:var(--sh-sm);}
+.dept-row__code{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:800;font-size:12px;
+  background:#f0eaff;color:#5b21b6;padding:4px 9px;border-radius:7px;
+  letter-spacing:1px;flex-shrink:0;min-width:34px;text-align:center;}
+.dept-row__main{flex:1;min-width:0;}
+.dept-row__name{font-weight:700;font-size:13.5px;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dept-row__meta{font-size:11.5px;color:var(--muted);margin-top:3px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.dept-row__leader{display:inline-flex;align-items:center;gap:5px;
+  color:var(--violet);font-weight:700;}
+.dept-row__leader svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.2;fill:none;}
+.dept-row__leader--missing{color:var(--warning);font-weight:700;}
+.dept-row__level{display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+  padding:2px 7px;border-radius:999px;}
+.dept-row__level--regional{background:#fdf5e0;color:#b8860b;}
+.dept-row__level--cluster{background:#e0f5f7;color:#0e7490;}
+
+.plan-card{background:#fff;border:1px solid var(--border);border-radius:14px;
+  padding:16px;box-shadow:var(--sh-sm);transition:.15s;display:flex;flex-direction:column;gap:12px;
+  position:relative;overflow:hidden;}
+.plan-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--c1,var(--primary));}
+.plan-card--regional{--c1:linear-gradient(90deg,#0b5cab,#0e7490);}
+.plan-card--cluster{--c1:linear-gradient(90deg,#128a5c,#34c78e);}
+.plan-card--woreda{--c1:linear-gradient(90deg,#b8860b,#e8b84b);}
+.plan-card--staff{--c1:linear-gradient(90deg,#6d28d9,#a78bfa);}
+.plan-card:hover{box-shadow:var(--sh-md);transform:translateY(-1px);}
+.plan-card--actionable{border-color:#f0dcb0;background:linear-gradient(180deg,#fffdf7,#fff);}
+.plan-card__head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.plan-card__level{display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;border-radius:999px;background:var(--bg-soft);
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.plan-card__title{font-size:15px;font-weight:800;color:var(--text);line-height:1.35;margin-top:6px;}
+.plan-card__scope{font-size:11.5px;color:var(--muted);margin-top:4px;
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.plan-card__scope svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.2;fill:none;}
+.plan-card__numbers{display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  padding:12px;background:var(--bg-soft);border-radius:10px;margin-top:4px;}
+.plan-card__num{display:flex;flex-direction:column;gap:2px;}
+.plan-card__num-label{font-size:10.5px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--muted);}
+.plan-card__num-value{font-size:14px;font-weight:800;color:var(--text);
+  font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:-.3px;}
+.plan-card__foot{display:flex;gap:8px;align-items:center;justify-content:space-between;
+  padding-top:12px;border-top:1px solid var(--border-soft);margin-top:auto;}
+.plan-card__alert{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;
+  background:#fdf5e0;border:1px solid #f0dcb0;border-radius:10px;font-size:12px;
+  color:#7a5210;line-height:1.45;}
+.plan-card__alert svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.2;fill:none;flex-shrink:0;margin-top:1px;}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:var(--r-full);
+  font-size:11px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;}
+.tag--green{background:#ecfdf3;color:#067647;}
+.tag--red{background:#fef3f2;color:#b42318;}
+.tag--gold{background:#fdf5e0;color:#b8860b;}
+.tag--gray{background:var(--border-soft);color:var(--text-soft);}
+.tag--blue{background:#eaf3fc;color:#0b5cab;}
+.tag--violet{background:#f0eaff;color:#5b21b6;}
+.tag--orange{background:#fff1e8;color:#c2410c;}
+.empty-state{padding:64px 24px;text-align:center;background:#fff;
+  border:1px dashed var(--border);border-radius:16px;}
+.empty-state__icon{font-size:46px;opacity:.35;margin-bottom:14px;}
+.empty-state__title{font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px;}
+.empty-state__text{font-size:13.5px;color:var(--muted);max-width:560px;margin:0 auto;line-height:1.65;}
+.inline-empty{padding:22px;text-align:center;color:var(--muted);font-size:12.5px;
+  font-style:italic;background:#fff;border:1px dashed var(--border);border-radius:11px;}
+.alert{display:flex;gap:12px;padding:14px 18px;border-radius:12px;
+  font-size:13.5px;line-height:1.6;margin-bottom:20px;border:1px solid transparent;}
+.alert svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;stroke:currentColor;stroke-width:2.2;fill:none;}
+.alert--error{background:#fef3f2;color:#b42318;border-color:#fecdca;}
+.alert--info{background:#eaf3fc;color:#0b5cab;border-color:#bdd7f2;}
+.alert--warning{background:#fdf5e0;color:#7a5210;border-color:#f0dcb0;}
+.alert--success{background:#ecfdf3;color:#067647;border-color:#abefc6;}
+.alert__content{flex:1;}
+.alert__title{font-weight:800;margin-bottom:4px;font-size:14px;}
+.alert__actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.modal-backdrop{position:fixed;inset:0;z-index:200;background:rgba(15,23,42,.55);
+  backdrop-filter:blur(6px);display:grid;place-items:center;padding:24px;overflow-y:auto;}
+.modal{background:#fff;border-radius:var(--r-lg);box-shadow:0 30px 60px rgba(20,40,70,.12);
+  width:100%;max-width:640px;max-height:92vh;display:flex;flex-direction:column;margin:auto;}
+.modal--lg{max-width:960px;}
+.modal--xl{max-width:1180px;}
+.modal__head{padding:24px 28px;border-bottom:1px solid var(--border-soft);
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.modal__title{font-size:20px;font-weight:800;}
+.modal__sub{font-size:13.5px;color:var(--muted);margin-top:6px;}
+.modal__close{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
+  color:var(--muted);cursor:pointer;flex-shrink:0;}
+.modal__close:hover{background:var(--border-soft);}
+.modal__close svg{width:18px;height:18px;stroke:currentColor;stroke-width:2.2;fill:none;}
+.modal__body{padding:24px 28px;overflow-y:auto;flex:1;}
+.modal__foot{padding:18px 28px;border-top:1px solid var(--border-soft);
+  display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;align-items:center;}
+.modal__foot .spacer{flex:1;}
+.steps{display:flex;align-items:center;padding:16px 28px;
+  background:#f8fafc;border-bottom:1px solid var(--border-soft);overflow-x:auto;}
+.step{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.step__num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  font-size:12.5px;font-weight:800;background:#e2e8f0;color:#94a3b8;flex-shrink:0;}
+.step__label{font-size:12.5px;font-weight:700;color:#94a3b8;white-space:nowrap;}
+.step.is-active .step__num{background:var(--primary);color:#fff;box-shadow:0 0 0 4px rgba(11,92,171,.14);}
+.step.is-active .step__label{color:var(--text);}
+.step.is-done .step__num{background:var(--success);color:#fff;}
+.step__line{flex:1;height:2px;background:#e2e8f0;margin:0 12px;min-width:16px;border-radius:2px;}
+.step-header{display:flex;align-items:center;gap:10px;font-size:15.5px;font-weight:800;
+  margin-bottom:18px;color:var(--text);}
+.step-header__badge{width:26px;height:26px;border-radius:8px;
+  background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;
+  display:grid;place-items:center;font-size:13px;font-weight:800;flex-shrink:0;}
+.field{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;position:relative;}
+.field > label{font-size:13px;font-weight:700;color:var(--text-soft);}
+.field__required::after{content:" *";color:var(--danger);}
+.field input,.field select,.field textarea{
+  width:100%;height:48px;padding:0 14px;border:1px solid #d9dee7;border-radius:11px;
+  background:#fbfcfe;font-size:14px;font-family:inherit;color:var(--text);}
+.field textarea{height:auto;min-height:80px;padding:12px 14px;resize:vertical;line-height:1.6;}
+.field select{appearance:none;padding-right:38px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center;}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;background:#fff;border-color:#70a8d9;box-shadow:0 0 0 4px rgba(11,92,171,.08);}
+.field input:disabled,.field select:disabled{background:#f1f5f9;color:var(--muted);cursor:not-allowed;}
+.field__hint{font-size:12px;color:var(--muted);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.field-row--3{grid-template-columns:repeat(3,1fr);}
+@media (max-width:700px){ .field-row,.field-row--3{grid-template-columns:1fr;} }
+
+.worktype-table-wrap{border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;background:#fff;}
+.worktype-table-wrap .scroll{overflow-x:auto;}
+.worktype-table{width:100%;border-collapse:collapse;min-width:1020px;}
+.worktype-table thead th{background:linear-gradient(180deg,#f8fafc,#eef2f7);
+  font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--text-soft);padding:11px 8px;text-align:left;
+  border-bottom:1px solid var(--border);white-space:nowrap;}
+.worktype-table tbody td{padding:7px 6px;border-bottom:1px solid var(--border-soft);
+  vertical-align:middle;background:#fff;}
+.worktype-table tbody tr:nth-child(even) td{background:#fcfdff;}
+.worktype-table tbody tr:hover td{background:#f8fafc;}
+.worktype-table input,
+.worktype-table select{
+  height:38px;font-size:13px;border-radius:8px;
+  background:#fbfcfe;border:1px solid #d9dee7;padding:0 10px;width:100%;
+  font-family:inherit;color:var(--text);
+}
+.worktype-table input:focus,
+.worktype-table select:focus{
+  outline:none;background:#fff;border-color:#70a8d9;
+  box-shadow:0 0 0 3px rgba(11,92,171,.08);
+}
+.worktype-table select{appearance:none;padding-right:28px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;background-position:right 10px center;}
+.worktype-table input[type="number"]{text-align:right;font-family:ui-monospace,Menlo,Consolas,monospace;}
+.worktype-table__rownum{text-align:center;font-weight:800;color:var(--muted);
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;
+  width:44px;}
+.worktype-table tfoot td{background:#f1f5f9;padding:12px 8px;
+  border-top:2px solid var(--border);font-weight:800;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;color:var(--text);}
+.worktype-table tfoot td.label{text-align:right;font-family:"Inter",sans-serif;
+  font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
+.worktype-table__empty{padding:34px 20px;text-align:center;color:var(--muted);
+  font-size:13px;font-style:italic;background:#fff;}
+.worktype-table__remove{width:34px;height:34px;border-radius:8px;
+  display:inline-grid;place-items:center;color:var(--danger);
+  border:1px solid transparent;cursor:pointer;background:transparent;}
+.worktype-table__remove:hover{background:#fef3f2;border-color:#f0a5ab;}
+.worktype-table__remove svg{width:14px;height:14px;stroke:currentColor;
+  stroke-width:2.4;fill:none;}
+.worktype-toolbar{display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:12px 14px;background:#f8fafc;
+  border-top:1px solid var(--border-soft);}
+.worktype-toolbar__meta{font-size:12px;color:var(--muted);font-weight:600;}
+.worktype-toolbar__meta strong{color:var(--text);font-family:ui-monospace,monospace;}
+
+.worktype-table__load{
+  display:flex;gap:6px;align-items:center;
+}
+.worktype-table__load select{flex:1 1 auto;min-width:0;}
+.worktype-table__load input{
+  flex:0 0 68px;text-align:right;
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+}
+.worktype-table__load input::-webkit-outer-spin-button,
+.worktype-table__load input::-webkit-inner-spin-button{
+  -webkit-appearance:none;margin:0;
+}
+.worktype-table__load input[type=number]{-moz-appearance:textfield;}
+.worktype-table__pct{font-weight:800;color:var(--muted);font-size:12px;}
+
+.worktype-table__dot{
+  width:9px;height:9px;border-radius:50%;flex-shrink:0;background:#cbd5e1;
+}
+.worktype-table__dot--easy     {background:#34c78e;}
+.worktype-table__dot--medium   {background:#d4a017;}
+.worktype-table__dot--hard     {background:#e0731c;}
+.worktype-table__dot--very_hard{background:#dc2626;}
+.worktype-table__dot--custom   {background:#5b21b6;}
+
+.worktype-table__measure{
+  display:flex;gap:6px;align-items:center;
+}
+.worktype-table__measure select{flex:1 1 auto;min-width:0;}
+.worktype-table__measure input{
+  flex:1 1 auto;min-width:0;display:none;
+}
+.worktype-table__measure.is-other select{flex:0 0 118px;}
+.worktype-table__measure.is-other input{display:block;}
+
+.wt-load-total{
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-weight:800;font-size:13px;
+}
+.wt-load-total--ok{color:var(--success);}
+.wt-load-total--bad{color:var(--danger);}
+
+.period-picker{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+@media (max-width:600px){ .period-picker{grid-template-columns:repeat(2,1fr);} }
+.period-btn{padding:12px 8px;border:2px solid var(--border);border-radius:11px;
+  background:#f8fafc;cursor:pointer;text-align:center;transition:.15s;}
+.period-btn:hover{border-color:#bdd7f2;background:#fff;}
+.period-btn.is-on{border-color:var(--primary);background:#eaf3fc;box-shadow:0 0 0 4px rgba(11,92,171,.08);}
+.period-btn__label{font-size:12.5px;font-weight:800;}
+.period-btn__icon{width:32px;height:32px;border-radius:9px;background:#e2e8f0;
+  color:var(--text-soft);display:grid;place-items:center;margin:0 auto 6px;}
+.period-btn.is-on .period-btn__icon{background:var(--primary);color:#fff;}
+.period-btn__icon svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.2;fill:none;}
+.alloc-table{width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.alloc-table th{background:var(--bg-soft);font-size:11px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+  padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.alloc-table td{padding:8px 10px;border-bottom:1px solid var(--border-soft);font-size:13px;}
+.alloc-table tr:last-child td{border-bottom:none;}
+.alloc-table input,.alloc-table select{height:38px;font-size:13px;border-radius:8px;
+  background:#fbfcfe;border:1px solid #d9dee7;padding:0 10px;width:100%;}
+.alloc-table input:focus,.alloc-table select:focus{outline:none;background:#fff;border-color:#70a8d9;}
+.alloc-sum{display:flex;gap:24px;padding:12px 16px;margin-top:12px;
+  background:var(--bg-soft);border-radius:10px;font-size:13px;flex-wrap:wrap;}
+.alloc-sum__item{display:flex;flex-direction:column;gap:2px;}
+.alloc-sum__label{font-size:10.5px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--muted);}
+.alloc-sum__value{font-weight:800;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;}
+.alloc-sum__value.ok{color:var(--success);}
+.alloc-sum__value.bad{color:var(--danger);}
+.review{background:#f8fafc;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.review__row{display:flex;gap:14px;padding:11px 16px;border-bottom:1px solid #eef2f7;font-size:13px;}
+.review__row:last-child{border-bottom:0;}
+.review__k{color:var(--muted);width:170px;flex-shrink:0;font-weight:700;font-size:12.5px;}
+.review__v{font-weight:600;word-break:break-word;flex:1;}
+.toast-wrap{position:fixed;top:24px;right:24px;z-index:300;
+  display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:calc(100vw - 48px);}
+.toast{background:var(--text);color:#fff;padding:13px 18px;border-radius:12px;
+  box-shadow:0 12px 32px rgba(20,40,70,.2);font-size:13.5px;font-weight:600;
+  display:flex;align-items:center;gap:12px;pointer-events:auto;
+  animation:toastIn .22s cubic-bezier(.4,0,.2,1);max-width:400px;}
+@keyframes toastIn{from{opacity:0;transform:translateX(24px);}to{opacity:1;transform:translateX(0);}}
+.toast--success{background:#067647;}
+.toast--error{background:#b42318;}
+.toast--info{background:#0b5cab;}
+.toast svg{width:17px;height:17px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0;}
+.spinner{width:16px;height:16px;border:2px solid currentColor;
+  border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.overlay{display:none;position:fixed;inset:0;background:rgba(13,21,32,.45);z-index:25;}
+body.sidebar-open .overlay{display:block;}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr !important;grid-template-areas:"topbar" "main";}
+  .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w) !important;
+    transform:translateX(-100%);transition:transform .28s;z-index:40;}
+  body.sidebar-open .sidebar{transform:translateX(0);}
+  .sidebar__collapse{display:none;}
+  .topbar__menu{display:inline-flex;}
+  .user-btn__name,.user-btn__role{display:none;}
+  .user-btn{padding:4px;}
+  .main{padding:18px;}
+  .page-head__title{font-size:24px;letter-spacing:-1px;}
+  .modal__head,.modal__body,.modal__foot{padding-left:18px;padding-right:18px;}
+  .steps{padding-left:14px;padding-right:14px;}
+  .toolbar__count{display:none;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay" id="overlay"></div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <div class="sidebar__logo">
+        <img src="../images/logo.png" alt=""
+             onerror="this.parentElement.innerHTML='<span style=&quot;color:#0b5cab;font-weight:800;font-size:18px&quot;>CS</span>'">
+      </div>
+      <div class="sidebar__identity">
+        <div class="sidebar__title">Civil Service</div>
+        <div class="sidebar__subtitle">Management Information System</div>
+      </div>
+      <button class="sidebar__collapse" id="collapse-toggle" aria-label="Toggle sidebar">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <nav class="sidebar__nav" id="sidebar-nav"></nav>
+    <div class="sidebar__footer">
+      <div>© 2026 Civil Service MIS</div>
+      <div style="margin-top:3px;opacity:.7">Eng. Abdi Furgasa</div>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <button class="topbar__menu" id="menu-toggle" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="topbar__spacer"></div>
+    <div class="topbar__actions">
+      <div class="dropdown">
+        <button class="user-btn" data-dropdown-toggle>
+          <span class="user-btn__avatar" id="user-avatar">–</span>
+          <span class="user-btn__meta">
+            <span class="user-btn__name" id="user-name">Loading…</span>
+            <span class="user-btn__role" id="user-role">–</span>
+          </span>
+        </button>
+        <div class="dropdown__panel hidden" data-dropdown-panel>
+          <div class="dropdown__header">
+            <strong id="dd-name">—</strong>
+            <span id="dd-email">—</span>
+          </div>
+          <a class="dropdown__item" href="dashboard.html">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <span>Dashboard</span>
+          </a>
+          <div class="dropdown__divider"></div>
+          <button class="dropdown__item dropdown__item--danger" id="logout-btn">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span>Sign out</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <h1 class="page-head__title">Work Plans</h1>
+        <p class="page-head__sub">Region → Sector → Department → Team Leader → Work Type → Cluster → Woreda → Staff</p>
+        <div id="scope-badge"></div>
+      </div>
+      <div class="page-head__actions" id="head-actions"></div>
+    </div>
+
+    <div id="gate-notice"></div>
+
+    <section class="stats" id="stats"></section>
+
+    <div class="toolbar">
+      <div class="toolbar__search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="search-input" placeholder="Search plans by title, sector, cluster or woreda…">
+      </div>
+      <select class="toolbar__filter" id="level-filter">
+        <option value="">All levels</option>
+        <option value="regional">Regional</option>
+        <option value="cluster">Cluster</option>
+        <option value="woreda">Woreda / City</option>
+        <option value="staff">Staff</option>
+      </select>
+      <select class="toolbar__filter" id="status-filter">
+        <option value="">All statuses</option>
+        <option value="draft">Draft</option>
+        <option value="active">Active</option>
+        <option value="completed">Completed</option>
+      </select>
+      <span class="toolbar__count" id="count-label"></span>
+    </div>
+
+    <div id="plans-container"></div>
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp } from "firebase/app";
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
+import {
+  getFirestore, doc, getDoc, updateDoc, deleteDoc,
+  collection, query, where, onSnapshot, serverTimestamp, addDoc, getDocs
+} from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyASE2f6DVivrH7koQXAFZeOrj6Wng45Uq4",
+  authDomain: "civil-service-system-f2d46.firebaseapp.com",
+  projectId: "civil-service-system-f2d46",
+  storageBucket: "civil-service-system-f2d46.firebasestorage.app",
+  messagingSenderId: "12482599055",
+  appId: "1:12482599055:web:4daa6a56cc9674c15cf8fa"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ============================================================
+   REGIONS
+   ============================================================ */
+const REGIONS = [
+  { code:"01", en:"Tigray" }, { code:"02", en:"Afar" },
+  { code:"03", en:"Amhara" }, { code:"04", en:"Oromia" },
+  { code:"05", en:"Somali" }, { code:"06", en:"Benishangul-Gumuz" },
+  { code:"07", en:"South Nations (SNNPR)" }, { code:"08", en:"Gambella" },
+  { code:"09", en:"Harari" }, { code:"10", en:"Sidama" },
+  { code:"11", en:"South West Ethiopia" }, { code:"12", en:"Dire Dawa" },
+  { code:"13", en:"Addis Ababa" }, { code:"14", en:"Central Ethiopia" },
+  { code:"15", en:"South Ethiopia" }
+];
+const regionLabel = (c) => {
+  const r = REGIONS.find(x => x.code === c);
+  return r ? r.code + " — " + r.en : (c || "—");
+};
+const regionName = (c) => REGIONS.find(x => x.code === c)?.en || "";
+const normalizeWoredas = (list) => (list || []).map(w =>
+  typeof w === "string" ? { code:"", name:w } : { code:w.code||"", name:w.name||"" });
+
+/* ============================================================
+   GUARD
+   ============================================================ */
+const INDEX_URL = "../index.html";
+let unsubPlans = null, unsubUsers = null, unsubClusters = null,
+    unsubSectors = null, unsubDepartments = null;
+
+function kick(reason) {
+  if (kick.done) return;
+  kick.done = true;
+  try { sessionStorage.clear(); if (reason === "expired") sessionStorage.setItem("__redirectReason","expired"); } catch (e) {}
+  signOut(auth).catch(() => {}).finally(() => window.location.replace(INDEX_URL));
+  setTimeout(() => window.location.replace(INDEX_URL), 800);
+}
+(function preCheck() {
+  let ok = false;
+  try { ok = sessionStorage.getItem("loggedIn") === "true" && !!sessionStorage.getItem("uid"); } catch (e) {}
+  if (!ok) kick("no-session");
+})();
+window.addEventListener("storage", (e) => { if (e.key === "loggedIn" && e.newValue !== "true") kick("cross-tab"); });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  if (kick.done) return;
+  if (!auth.currentUser || sessionStorage.getItem("loggedIn") !== "true") kick("hidden-expired");
+});
+setInterval(() => { if (kick.done) return; if (!auth.currentUser) kick("heartbeat"); }, 60000);
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest("#logout-btn");
+  if (!btn) return;
+  e.preventDefault();
+  try { sessionStorage.clear(); } catch (err) {}
+  try { await signOut(auth); } catch (err) {}
+  window.location.replace(INDEX_URL);
+});
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let S = null;
+let PLANS = [];
+let USERS = [];
+let CLUSTERS = [];
+let SECTORS = [];
+let DEPARTMENTS = [];
+let currentYear = new Date().getFullYear();
+let searchTerm = "";
+let filterLevel = "";
+let filterStatus = "";
+
+const expandedSectors = new Set();
+
+/* ============================================================
+   LABELS
+   ============================================================ */
+const ROLE_LABELS = {
+  super_admin:"Super Admin", regional_admin:"Regional Admin",
+  admin:"Cluster Admin", directorate:"Regional Directorate",
+  cluster_directorate:"Cluster Directorate", woreda_city:"Woreda / City",
+  hrm:"HR Manager", finance:"Finance Officer", manager:"Manager",
+  employee:"Employee", unassigned:"Unassigned"
+};
+const roleLabel = (r) => ROLE_LABELS[r] || (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+
+const LEVEL_LABELS = { regional:"Regional", cluster:"Cluster", woreda:"Woreda / City", staff:"Staff" };
+
+const PERIODS = ["yearly","quarterly","monthly","weekly","daily"];
+const PERIOD_LABELS = {
+  yearly:"Yearly", quarterly:"Quarterly", monthly:"Monthly",
+  weekly:"Weekly", daily:"Daily"
+};
+
+const STATUS_META = {
+  draft:    { label:"Draft",     klass:"tag--gray"  },
+  active:   { label:"Active",    klass:"tag--blue"  },
+  completed:{ label:"Completed", klass:"tag--green" },
+  on_hold:  { label:"On Hold",   klass:"tag--gold"  }
+};
+
+const LOAD_TAGS = {
+  easy:"tag--green", medium:"tag--gold", hard:"tag--orange",
+  very_hard:"tag--red", custom:"tag--violet"
+};
+
+const ICONS = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  userPlus:'<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>',
+  userCheck:'<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/>',
+  building:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  wallet:'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',
+  target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+  trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  eye:'<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>',
+  alert:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  clipboard:'<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>',
+  fileText:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
+  pin:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+  layers:'<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  org:'<rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="9" y="15" width="6" height="6" rx="1"/><path d="M6 9v3h12V9"/><path d="M12 12v3"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  arrows:'<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+  briefcase:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  teamLeader:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/>',
+  split:'<path d="M12 3v18"/><path d="M5 9l7-6 7 6"/><path d="M5 15l7 6 7-6"/>',
+  inbox:'<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'
+};
+
+/* ============================================================
+   NAV
+   ============================================================ */
+const NAV = [
+  { section:"Overview", items:[
+    { key:"dashboard", label:"Dashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
+  ]},
+  { section:"Organization", items:[
+    { key:"users",       label:"Users & Staff", href:"users.html",       icon:"users",  roles:["super_admin","regional_admin","admin","hrm"] },
+    { key:"departments", label:"Sectors",       href:"departments.html", icon:"layers", roles:["super_admin","regional_admin","admin","hrm","manager","directorate","cluster_directorate"] }
+  ]},
+  { section:"Work Plans", items:[
+    { key:"workplans", label:"Work Plans", href:"workplans.html", icon:"fileText",
+      roles:["super_admin","regional_admin","directorate","admin","cluster_directorate","woreda_city","manager","employee"] }
+  ]},
+  { section:"Human Resources", items:[
+    { key:"recruitment", label:"Recruitment", href:"recruitment.html", icon:"userPlus", roles:["super_admin","regional_admin","hrm","admin"] },
+    { key:"training",    label:"Training",    href:"training.html",    icon:"book",     roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] },
+    { key:"performance", label:"Performance", href:"performance.html", icon:"target",   roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] }
+  ]},
+  { section:"Operations", items:[
+    { key:"attendance", label:"Attendance", href:"attendance.html", icon:"clock",    roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] },
+    { key:"leave",      label:"Leave",      href:"leave.html",      icon:"calendar", roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] }
+  ]},
+  { section:"Finance", items:[
+    { key:"payroll", label:"Payroll", href:"payroll.html", icon:"wallet", roles:["super_admin","regional_admin","finance","admin"] },
+    { key:"budget",  label:"Budget",  href:"budget.html",  icon:"chart",  roles:["super_admin","regional_admin","finance"] }
+  ]},
+  { section:"Administration", items:[
+    { key:"offices",       label:"Offices",       href:"offices.html",       icon:"building", roles:["super_admin","regional_admin","admin"] },
+    { key:"reports",       label:"Reports",       href:"reports.html",       icon:"fileText", roles:["*"] },
+    { key:"notifications", label:"Notifications", href:"notifications.html", icon:"bell",     roles:["*"] },
+    { key:"settings",      label:"Settings",      href:"settings.html",      icon:"settings", roles:["*"] }
+  ]}
+];
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const escapeHtml = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g,
+  (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const initials = (n) => (n || "?").split(/\s+/).slice(0,2).map(s => s[0]).join("").toUpperCase();
+const hasAccess = (item, role) => item.roles.includes("*") || item.roles.includes(role);
+const num = (v) => { const n = Number(v); return isFinite(n) ? n : 0; };
+const fmtNum = (v) => num(v).toLocaleString("en-US", { maximumFractionDigits:2 });
+const fmtMoney = (v) => num(v).toLocaleString("en-US", { maximumFractionDigits:0 });
+const uid = () => "wt_" + Math.random().toString(36).slice(2, 10);
+
+function toast(msg, type = "success") {
+  const wrap = document.getElementById("toast-wrap");
+  const el = document.createElement("div");
+  el.className = "toast toast--" + type;
+  const icon = type === "error" ? ICONS.alert : ICONS.check;
+  el.innerHTML = `<svg viewBox="0 0 24 24">${icon}</svg><span>${escapeHtml(msg)}</span>`;
+  wrap.appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; }, 4200);
+  setTimeout(() => el.remove(), 4600);
+}
+
+/* ============================================================
+   ROLE / SCOPE
+   ============================================================ */
+const isSuper         = () => S?.role === "super_admin";
+const isRegionalAdmin = () => S?.role === "regional_admin";
+const isRegionalDir   = () => S?.role === "directorate";
+const isClusterDir    = () => S?.role === "cluster_directorate";
+const isClusterAdmin  = () => S?.role === "admin";
+const isWoredaCity    = () => S?.role === "woreda_city";
+const isManager       = () => S?.role === "manager";
+const isStaff         = () => S?.role === "employee";
+
+function isScopedViewer() {
+  return isClusterDir() || isClusterAdmin() || isWoredaCity() || isManager() || isStaff();
+}
+
+function myLevel() {
+  if (isRegionalDir()) return "regional";
+  if (isClusterDir())  return "cluster";
+  if (isWoredaCity() || isManager()) return "woreda";
+  if (isSuper() || isRegionalAdmin()) return "regional";
+  return null;
+}
+function myScope() {
+  if (!S) return null;
+  if (isSuper())         return { type:"global",   label:"Full system" };
+  if (isRegionalAdmin()) return { type:"region",   region:S.region,   label:regionLabel(S.region) };
+  if (isRegionalDir())   return { type:"sector",   region:S.region,   sectorId:S.sectorId,
+                                  sectorName:S.sectorName, label:S.sectorName || "Regional directorate" };
+  if (isClusterDir() || isClusterAdmin())
+    return { type:"cluster", region:S.region, clusterId:S.clusterId,
+             clusterName:S.clusterName, label:S.clusterName || "Cluster" };
+  if (isWoredaCity() || isManager())
+    return { type:"woreda", region:S.region, clusterId:S.clusterId,
+             woredaCode:S.woredaCode, woredaName:S.woredaName, label:S.woredaName || "Woreda / City" };
+  return { type:"staff", label:"Staff" };
+}
+function canCreateAtMyLevel() {
+  if (isSuper() || isRegionalAdmin()) return true;
+  if (isRegionalDir() && S.region) return true;
+  if (isClusterDir() && S.clusterId) return true;
+  if ((isWoredaCity() || isManager()) && S.woredaCode) return true;
+  return false;
+}
+
+/* ============================================================
+   VISIBILITY
+   ============================================================ */
+function planMatchesScope(p) {
+  if (!S) return false;
+  if (isSuper()) return true;
+  if (isRegionalAdmin()) return p.regionCode === S.region;
+  if (isRegionalDir())   return p.sectorId === S.sectorId || p.regionCode === S.region;
+  if (isClusterDir() || isClusterAdmin())
+    return p.clusterId === S.clusterId ||
+      (p.allocations || []).some(a => a.targetType === "cluster" && a.targetId === S.clusterId);
+  if (isWoredaCity() || isManager())
+    return p.woredaCode === S.woredaCode ||
+      (p.allocations || []).some(a => a.targetType === "woreda" && a.targetId === S.woredaCode);
+  if (isStaff())
+    return (p.allocations || []).some(a => a.targetType === "staff" && a.targetId === S.uid);
+  return false;
+}
+function visiblePlans() {
+  return PLANS.filter(p => {
+    if (num(p.year) && num(p.year) !== currentYear) return false;
+    return planMatchesScope(p);
+  });
+}
+
+function findMyPendingAllocation(p) {
+  if (!S || !p || !(p.allocations || []).length) return null;
+  for (const a of p.allocations) {
+    if (a.childPlanId) continue;
+    if (isClusterDir() && a.targetType === "cluster" && a.targetId === S.clusterId)
+      return { alloc:a, forLevel:"cluster" };
+    if (isClusterAdmin() && a.targetType === "cluster" && a.targetId === S.clusterId)
+      return { alloc:a, forLevel:"cluster" };
+    if ((isWoredaCity() || isManager()) && a.targetType === "woreda" && a.targetId === S.woredaCode)
+      return { alloc:a, forLevel:"woreda" };
+  }
+  return null;
+}
+function hasPendingAllocation(p) { return !!findMyPendingAllocation(p); }
+
+/* Locate MY allocation in a plan and return its index too, so we can update it. */
+function findMyAllocationEntry(p) {
+  if (!S || !p || !(p.allocations || []).length) return null;
+  for (let i = 0; i < p.allocations.length; i++) {
+    const a = p.allocations[i];
+    if ((isClusterDir() || isClusterAdmin()) && a.targetType === "cluster" && a.targetId === S.clusterId)
+      return { alloc: a, index: i, forLevel: "cluster" };
+    if ((isWoredaCity() || isManager()) && a.targetType === "woreda" && a.targetId === S.woredaCode)
+      return { alloc: a, index: i, forLevel: "woreda" };
+    if (isStaff() && a.targetType === "staff" && a.targetId === S.uid)
+      return { alloc: a, index: i, forLevel: "staff" };
+  }
+  return null;
+}
+
+/* Mark MY allocation as Accepted. */
+async function acceptMyAllocation(planId) {
+  const p = PLANS.find(x => x.id === planId);
+  if (!p) return;
+  const entry = findMyAllocationEntry(p);
+  if (!entry) { toast("You are not the recipient of this allocation.", "error"); return; }
+  if (entry.alloc.childPlanId) { toast("This allocation is already broken down.", "error"); return; }
+  if (entry.alloc.accepted)   { toast("Already accepted", "info"); return; }
+
+  /* Can't use serverTimestamp() inside an array — use a plain ISO string. */
+  const nowIso = new Date().toISOString();
+  const updated = (p.allocations || []).map((a, i) =>
+    i === entry.index
+      ? Object.assign({}, a, {
+          accepted: true,
+          acceptedAt: nowIso,
+          acceptedBy: S.uid,
+          acceptedByName: S.name
+        })
+      : a
+  );
+
+  try {
+    await updateDoc(doc(db, "workplans", planId), {
+      allocations: updated,
+      updatedAt: serverTimestamp()
+    });
+    toast("Allocation accepted", "success");
+  } catch (e) {
+    console.error("[accept] ", e);
+    toast(e.message || "Could not accept", "error");
+  }
+}
+
+function myAllocationRows() {
+  const out = [];
+  if (!S) return out;
+  for (const p of visiblePlans()) {
+    for (const a of (p.allocations || [])) {
+      if ((isClusterDir() || isClusterAdmin()) && a.targetType === "cluster" && a.targetId === S.clusterId) {
+        out.push({ plan: p, alloc: a, forLevel: "cluster" });
+      }
+      if ((isWoredaCity() || isManager()) && a.targetType === "woreda" && a.targetId === S.woredaCode) {
+        out.push({ plan: p, alloc: a, forLevel: "woreda" });
+      }
+      if (isStaff() && a.targetType === "staff" && a.targetId === S.uid) {
+        out.push({ plan: p, alloc: a, forLevel: "staff" });
+      }
+    }
+  }
+  out.sort((x, y) => {
+    const px = x.alloc.childPlanId ? 1 : 0;
+    const py = y.alloc.childPlanId ? 1 : 0;
+    if (px !== py) return px - py;
+    return String(x.plan.title || "").localeCompare(String(y.plan.title || ""));
+  });
+  return out;
+}
+
+function pendingAllocations() {
+  const out = [];
+  for (const p of PLANS) {
+    if (!p.allocations?.length) continue;
+    if (num(p.year) && num(p.year) !== currentYear) continue;
+    const mine = findMyPendingAllocation(p);
+    if (mine) out.push({ parent:p, alloc:mine.alloc, forLevel:mine.forLevel });
+  }
+  return out;
+}
+
+/* ============================================================
+   SECTOR / DEPARTMENT RESOLUTION
+   ============================================================ */
+function getRegionSectors(regionCode) {
+  const map = new Map();
+  const add = (x) => { if (x && x.id && x.active !== false) map.set(x.id, x); };
+  SECTORS.forEach(add);
+  DEPARTMENTS.forEach(d => {
+    if (d.level === "regional" || d.level === "sector" || d.isSector === true || !d.level) add(d);
+  });
+  const all = Array.from(map.values());
+  if (!regionCode) return all;
+  const wanted = String(regionCode).trim();
+  const filtered = all.filter(s => {
+    const rc = String(s.regionCode || s.region || "").trim();
+    return !rc || rc === wanted;
+  });
+  return filtered.length ? filtered : all;
+}
+function departmentsForSector(sectorId) {
+  return DEPARTMENTS.filter(d => d.sectorId === sectorId && d.active !== false);
+}
+function usersForDepartment(deptId) {
+  return USERS.filter(u =>
+    u.departmentId === deptId &&
+    u.active !== false &&
+    u.role !== "unassigned"
+  );
+}
+function teamLeaderForDepartment(deptId) {
+  return USERS.find(u =>
+    u.departmentId === deptId &&
+    u.active !== false &&
+    (
+      u.role === "manager" ||
+      u.role === "woreda_city" ||
+      u.role === "cluster_directorate" ||
+      u.isDirector === true ||
+      (u.position && /(team\s*leader|teamlead|team-leader|supervisor|head|lead)/i.test(u.position))
+    )
+  ) || null;
+}
+
+/* ============================================================
+   RENDER — SHELL
+   ============================================================ */
+function renderSidebar() {
+  const nav = document.getElementById("sidebar-nav");
+  nav.innerHTML = "";
+  for (const group of NAV) {
+    const vis = group.items.filter(it => hasAccess(it, S.role));
+    if (!vis.length) continue;
+    const sec = document.createElement("div");
+    sec.className = "sidebar__section";
+    sec.textContent = group.section;
+    nav.appendChild(sec);
+    for (const item of vis) {
+      const a = document.createElement("a");
+      a.className = "nav-item" + (item.key === "workplans" ? " is-active" : "");
+      a.href = item.href;
+      a.innerHTML = `<svg viewBox="0 0 24 24">${ICONS[item.icon]}</svg>
+                     <span class="nav-item__label">${item.label}</span>`;
+      nav.appendChild(a);
+    }
+  }
+}
+function renderUser() {
+  const avatar = document.getElementById("user-avatar");
+  if (S.photoURL) avatar.innerHTML = `<img src="${escapeHtml(S.photoURL)}" alt="">`;
+  else avatar.textContent = initials(S.name);
+  document.getElementById("user-name").textContent = S.name;
+  document.getElementById("user-role").textContent = roleLabel(S.role);
+  document.getElementById("dd-name").textContent = S.name;
+  document.getElementById("dd-email").textContent = S.email;
+}
+function renderScopeBadge() {
+  const el = document.getElementById("scope-badge");
+  const scope = myScope();
+  let klass = "", icon = "pin";
+  if (scope.type === "global")  { klass = "scope-badge--super";    icon = "shield"; }
+  if (scope.type === "region")  { klass = "scope-badge--regional"; icon = "pin"; }
+  if (scope.type === "sector")  { klass = "scope-badge--regional"; icon = "org"; }
+  if (scope.type === "cluster") { klass = "scope-badge--cluster";  icon = "layers"; }
+  if (scope.type === "woreda")  { klass = "scope-badge--cluster";  icon = "building"; }
+  el.innerHTML = `<span class="scope-badge ${klass}">
+    <svg viewBox="0 0 24 24">${ICONS[icon]}</svg>
+    ${escapeHtml(scope.label || "—")} · Level: ${escapeHtml(LEVEL_LABELS[myLevel()] || "—")}
+  </span>`;
+}
+function renderHeadActions() {
+  const host = document.getElementById("head-actions");
+  const btns = [];
+  const years = [];
+  for (let y = new Date().getFullYear() - 1; y <= new Date().getFullYear() + 2; y++) years.push(y);
+  btns.push(`<div class="year-picker">
+    <label>Year</label>
+    <select id="year-select">${years.map(y => `<option value="${y}" ${y===currentYear?"selected":""}>${y}</option>`).join("")}</select>
+  </div>`);
+
+  if (canCreateAtMyLevel()) {
+    btns.push(`<button class="btn btn--primary" id="add-plan-btn">
+      <svg viewBox="0 0 24 24">${ICONS.plus}</svg> New ${LEVEL_LABELS[myLevel()] || ""} Plan
+    </button>`);
+  }
+  host.innerHTML = btns.join("");
+  document.getElementById("year-select")?.addEventListener("change", (e) => {
+    currentYear = Number(e.target.value);
+    expandedSectors.clear();
+    render();
+  });
+  document.getElementById("add-plan-btn")?.addEventListener("click", openPlanCreation);
+}
+
+/* ============================================================
+   GATE NOTICE — only shows "not linked" warnings (no pending banner)
+   ============================================================ */
+function renderGateNotice() {
+  const box = document.getElementById("gate-notice");
+  const msgs = [];
+
+  if (isRegionalDir() && !S.region)
+    msgs.push({ title:"Region not linked",
+      text:"Your account is not linked to a region. Contact your administrator." });
+  if ((isClusterDir() || isClusterAdmin()) && !S.clusterId)
+    msgs.push({ title:"Cluster not linked",
+      text:"Your account is not linked to a cluster. Contact your regional admin." });
+  if ((isWoredaCity() || isManager()) && !S.woredaCode)
+    msgs.push({ title:"Woreda / City not linked",
+      text:"Your account is not linked to a woreda or city. Contact your cluster director." });
+
+  if (!msgs.length) { box.innerHTML = ""; return; }
+  box.innerHTML = msgs.map(m => `
+    <div class="alert alert--warning">
+      <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+      <div class="alert__content">
+        <div class="alert__title">${escapeHtml(m.title)}</div>
+        <div>${escapeHtml(m.text || "")}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* ============================================================
+   STATS
+   ============================================================ */
+function renderStats() {
+  const list = visiblePlans();
+  const mine = myAllocationRows();
+  const pending = mine.filter(x => !x.alloc.childPlanId).length;
+  document.getElementById("stats").innerHTML = `
+    ${statCard("Total Plans",  list.length, "stat--blue",   "fileText")}
+    ${statCard("Active",       list.filter(p => p.status === "active").length, "stat--green",  "clock")}
+    ${statCard("My Allocations", mine.length, "stat--violet", "inbox")}
+    ${statCard("Pending Tasks",pending, "stat--gold", "arrows")}
+  `;
+}
+function statCard(label, value, cls, iconKey) {
+  return `<div class="stat ${cls}">
+    <div class="stat__head">
+      <span class="stat__label">${escapeHtml(label)}</span>
+      <span class="stat__icon"><svg viewBox="0 0 24 24">${ICONS[iconKey]}</svg></span>
+    </div>
+    <div class="stat__value">${value}</div>
+  </div>`;
+}
+
+/* ============================================================
+   MY ALLOCATIONS TABLE
+   Column layout mirrors the regional "Work Items" table exactly,
+   only the Amount & Budget are the ones given from above, and the
+   ⚙ column is replaced with Status + Action.  Status is clickable
+   (Pending → Accepted).
+   ============================================================ */
+function renderMyAllocationsTable() {
+  const rows = myAllocationRows();
+  if (!rows.length) return "";
+
+  const pendingCount = rows.filter(r => !r.alloc.childPlanId).length;
+  const isClusterScope = rows[0].forLevel === "cluster";
+  const isWoredaScope  = rows[0].forLevel === "woreda";
+  const scopeName = isClusterScope ? (S.clusterName || "your cluster")
+    : isWoredaScope ? (S.woredaName || "your woreda / city")
+    : "you";
+  const headerIcon = isClusterScope ? ICONS.layers
+    : isWoredaScope ? ICONS.pin : ICONS.clipboard;
+
+  let html = '';
+  html += '<div class="my-alloc-wrap">';
+  html +=   '<div class="my-alloc-head">';
+  html +=     '<div class="my-alloc-head__icon"><svg viewBox="0 0 24 24">' + headerIcon + '</svg></div>';
+  html +=     '<div class="my-alloc-head__main">';
+  html +=       '<div class="my-alloc-head__title">Work allocated to ' + escapeHtml(scopeName) + '</div>';
+  html +=       '<div class="my-alloc-head__sub">';
+  html +=         rows.length + ' item' + (rows.length === 1 ? '' : 's') + ' received · ';
+  html +=         pendingCount + ' still to break down';
+  html +=       '</div>';
+  html +=     '</div>';
+  html +=     '<span class="my-alloc-head__badge">' + rows.length + '</span>';
+  html +=   '</div>';
+
+  html +=   '<div class="my-alloc-table-wrap">';
+  html +=   '<table class="my-alloc-table">';
+  html +=     '<thead><tr>';
+  html +=       '<th class="rownum">#</th>';
+  html +=       '<th style="min-width:200px">Work</th>';
+  html +=       '<th style="width:145px">Load</th>';
+  html +=       '<th style="width:120px">Measurement</th>';
+  html +=       '<th class="num" style="width:130px">Amount</th>';
+  html +=       '<th class="num" style="width:140px">Budget (ETB)</th>';
+  html +=       '<th style="min-width:220px">Description</th>';
+  html +=       '<th style="width:110px">Status</th>';
+  html +=       '<th style="width:150px;text-align:right">Action</th>';
+  html +=     '</tr></thead>';
+  html +=     '<tbody>';
+
+  rows.forEach((r, i) => {
+    const p = r.plan;
+    const a = r.alloc;
+    const isDone = !!a.childPlanId;
+    const isAccepted = !!a.accepted;
+
+    const workName = p.workTypeName || p.title || "Untitled work";
+
+    const loadPct = Number(p.workTypeLoadPercent || 0);
+    let dotCls = "custom", loadTxt = p.workTypeLoadLabel || "—";
+    if (loadPct) {
+      if (loadPct <= 25)       { dotCls = "easy";      loadTxt = "Easy " + loadPct + "%"; }
+      else if (loadPct <= 50)  { dotCls = "medium";    loadTxt = "Medium " + loadPct + "%"; }
+      else if (loadPct <= 75)  { dotCls = "hard";      loadTxt = "Hard " + loadPct + "%"; }
+      else                     { dotCls = "very_hard"; loadTxt = "V.Hard " + loadPct + "%"; }
+    }
+
+    let measureTxt = "—";
+    if      (p.workTypeMeasure === "number")     measureTxt = "Number";
+    else if (p.workTypeMeasure === "time")       measureTxt = "Time";
+    else if (p.workTypeMeasure === "money")      measureTxt = "Money";
+    else if (p.workTypeMeasure === "percentage") measureTxt = "Percent";
+    else if (p.workTypeMeasure === "other")      measureTxt = p.workTypeMeasureOther || "Other";
+    else if (p.unit)                             measureTxt = p.unit;
+
+    const amountTxt = fmtNum(a.target) +
+      '<span class="unit-mini">' + escapeHtml(p.unit || "") + '</span>';
+    const budgetTxt = fmtMoney(a.budget);
+
+    const desc = p.description || "";
+
+    /* Status pill — Split > Accepted > Pending (clickable) */
+    let statusPill;
+    if (isDone) {
+      statusPill = '<span class="tag tag--green">Split</span>';
+    } else if (isAccepted) {
+      statusPill = '<span class="tag tag--blue">Accepted</span>';
+    } else {
+      statusPill = '<span class="tag tag--gold status-clickable" ' +
+        'data-accept-id="' + p.id + '" ' +
+        'title="Click to accept this allocation">' +
+        'Pending' +
+        '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' +
+      '</span>';
+    }
+
+    const actionBtn = isDone
+      ? '<button class="table-action table-action--ghost" data-action="view" data-id="' + p.id + '"><svg viewBox="0 0 24 24">' + ICONS.eye + '</svg> View</button>'
+      : '<button class="table-action table-action--gold" data-action="breakdown" data-id="' + p.id + '"><svg viewBox="0 0 24 24">' + ICONS.split + '</svg> Break down</button>';
+
+    html += '<tr>';
+    html +=   '<td class="rownum">' + (i + 1) + '</td>';
+    html +=   '<td><div class="my-alloc-table__title">' + escapeHtml(workName) + '</div></td>';
+    html +=   '<td><span class="load-cell"><span class="load-dot load-dot--' + dotCls + '"></span><span class="load-txt">' + escapeHtml(loadTxt) + '</span></span></td>';
+    html +=   '<td>' + escapeHtml(measureTxt) + '</td>';
+    html +=   '<td class="num">' + amountTxt + '</td>';
+    html +=   '<td class="num">' + budgetTxt + '</td>';
+    html +=   '<td>' + (desc
+              ? '<div class="my-alloc-table__desc">' + escapeHtml(desc) + '</div>'
+              : '<span style="color:var(--muted-light)">—</span>') + '</td>';
+    html +=   '<td>' + statusPill + '</td>';
+    html +=   '<td style="text-align:right">' + actionBtn + '</td>';
+    html += '</tr>';
+  });
+
+  html +=     '</tbody>';
+  html +=   '</table>';
+  html +=   '</div>';
+  html += '</div>';
+  return html;
+}
+
+/* ============================================================
+   PLAN LIST
+   ============================================================ */
+function filteredPlans() {
+  const q = searchTerm.trim().toLowerCase();
+  return visiblePlans().slice().sort((a,b) => {
+    const pa = hasPendingAllocation(a) ? 0 : 1;
+    const pb = hasPendingAllocation(b) ? 0 : 1;
+    if (pa !== pb) return pa - pb;
+    const lv = { regional:0, cluster:1, woreda:2, staff:3 };
+    const la = lv[a.level] ?? 9, lb = lv[b.level] ?? 9;
+    if (la !== lb) return la - lb;
+    return (b.updatedAt?.seconds||b.createdAt?.seconds||0) - (a.updatedAt?.seconds||a.createdAt?.seconds||0);
+  }).filter(p => {
+    if (filterLevel && p.level !== filterLevel) return false;
+    if (filterStatus && p.status !== filterStatus) return false;
+    if (q) {
+      const hay = [p.title, p.workTypeName, p.description, p.sectorName, p.departmentName, p.teamLeaderName,
+                   p.clusterName, p.woredaName, p.createdByName]
+        .filter(Boolean).join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function planScopeLine(p) {
+  const parts = [];
+  if (p.regionCode)  parts.push(regionLabel(p.regionCode));
+  if (p.sectorName)  parts.push(p.sectorName);
+  if (p.departmentName) parts.push(p.departmentName);
+  if (p.clusterName) parts.push(p.clusterName);
+  if (p.woredaName)  parts.push(p.woredaName);
+  return parts.join(" · ") || "—";
+}
+
+function allVisibleSectors() {
+  const map = new Map();
+  const add = (x) => { if (x && x.id && x.active !== false) map.set(x.id, x); };
+  SECTORS.forEach(add);
+  DEPARTMENTS.forEach(d => {
+    if (d.level === "regional" || d.level === "sector" || d.isSector === true || !d.level) add(d);
+  });
+  let list = Array.from(map.values());
+  if (S?.region && (isRegionalDir() || isRegionalAdmin() || isClusterDir() || isClusterAdmin() || isWoredaCity() || isManager())) {
+    list = list.filter(s => {
+      const rc = String(s.regionCode || s.region || "").trim();
+      return !rc || rc === String(S.region).trim();
+    });
+  }
+  for (const p of visiblePlans()) {
+    if (p.sectorId && !map.has(p.sectorId)) {
+      list.push({ id: p.sectorId, name: p.sectorName || "Unnamed sector", code: p.sectorCode || "" });
+    }
+  }
+  return list;
+}
+
+function renderPlans() {
+  const host = document.getElementById("plans-container");
+  const list = filteredPlans();
+  const total = visiblePlans().length;
+  const countEl = document.getElementById("count-label");
+  if (countEl) countEl.textContent = list.length + " / " + total;
+
+  /* ==========================================================
+     SCOPED VIEWERS (cluster / woreda / staff)
+     → ONLY the "My Allocations" table. No sector tree, no other
+       clusters' info.
+     ========================================================== */
+  if (isScopedViewer()) {
+    const tableHtml = renderMyAllocationsTable();
+    if (!tableHtml) {
+      host.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state__icon">📭</div>
+          <div class="empty-state__title">No work allocated to you yet</div>
+          <div class="empty-state__text">
+            Once your director splits a regional plan to
+            ${isClusterDir() || isClusterAdmin() ? "your cluster" : "your woreda / city"}, it will appear here.
+          </div>
+        </div>`;
+      return;
+    }
+    host.innerHTML = tableHtml;
+
+    /* Action buttons (View / Break down) */
+    host.querySelectorAll("[data-action]").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const { action, id } = btn.dataset;
+        if (action === "view")      openViewPlan(id);
+        if (action === "breakdown") {
+          const p = PLANS.find(x => x.id === id);
+          const mine = p ? findMyPendingAllocation(p) : null;
+          if (p && mine) openBreakdownWizard(p, mine.alloc);
+        }
+      });
+    });
+
+    /* Clicking the "Pending" pill accepts the allocation */
+    host.querySelectorAll("[data-accept-id]").forEach(el => {
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        acceptMyAllocation(el.dataset.acceptId);
+      });
+    });
+
+    return;
+  }
+
+  /* ==========================================================
+     REGIONAL / REGIONAL-ADMIN / SUPER-ADMIN
+     → Full sector-grouped tree.
+     ========================================================== */
+  const sectorList = allVisibleSectors();
+
+  if (!sectorList.length && !total) {
+    host.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state__icon">📋</div>
+        <div class="empty-state__title">No sectors yet</div>
+        <div class="empty-state__text">
+          ${canCreateAtMyLevel()
+            ? `Create a sector first on the <a href="departments.html" style="color:var(--primary);font-weight:700">Sectors</a> page, then add work plans here.`
+            : `Once your director creates a sector and a plan, it will appear here.`}
+        </div>
+      </div>`;
+    return;
+  }
+
+  const plansBySector = new Map();
+  for (const p of list) {
+    const key = p.sectorId || "__nos__";
+    if (!plansBySector.has(key)) plansBySector.set(key, []);
+    plansBySector.get(key).push(p);
+  }
+
+  const rows = [];
+  const seen = new Set();
+  for (const s of sectorList) {
+    rows.push({ sector: s, plans: plansBySector.get(s.id) || [] });
+    seen.add(s.id);
+  }
+  for (const [sid, plans] of plansBySector) {
+    if (!seen.has(sid)) {
+      rows.push({
+        sector: {
+          id: sid,
+          name: plans[0]?.sectorName || "Other sector",
+          code: plans[0]?.sectorCode || "",
+          regionCode: plans[0]?.regionCode || ""
+        },
+        plans
+      });
+    }
+  }
+
+  for (const { sector, plans } of rows) {
+    if (plans.some(hasPendingAllocation)) expandedSectors.add("sector:" + sector.id);
+  }
+
+  let pageHtml = rows.map(({ sector, plans }) => renderSectorGroup(sector, plans)).join("");
+  host.innerHTML = pageHtml;
+
+  host.querySelectorAll("[data-sector-toggle]").forEach(el => {
+    el.addEventListener("click", (e) => {
+      if (e.target.closest("[data-action]")) return;
+      const key = el.dataset.sectorToggle;
+      if (expandedSectors.has(key)) expandedSectors.delete(key);
+      else expandedSectors.add(key);
+      renderPlans();
+    });
+  });
+
+  host.querySelectorAll("[data-action]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const { action, id } = btn.dataset;
+      if (action === "view")      openViewPlan(id);
+      if (action === "edit")      openEditPlan(id);
+      if (action === "delete")    confirmDeletePlan(id);
+      if (action === "split")     openSplitRegionalPlan(id);
+      if (action === "breakdown") {
+        const p = PLANS.find(x => x.id === id);
+        const mine = p ? findMyPendingAllocation(p) : null;
+        if (p && mine) openBreakdownWizard(p, mine.alloc);
+      }
+    });
+  });
+}
+
+function renderSectorGroup(sector, plans) {
+  const key = "sector:" + sector.id;
+  const isOpen = expandedSectors.has(key);
+  const region = sector.regionCode ? regionLabel(sector.regionCode) : "";
+  const headTitle = [region, sector.name].filter(Boolean).join(" · ") || sector.name || "Unnamed sector";
+
+  const depts = departmentsForSector(sector.id);
+  const leaderCount = depts.filter(d => teamLeaderForDepartment(d.id)).length;
+
+  return `
+    <div class="sector-group ${isOpen ? "is-open" : ""}" data-sector-group="${escapeHtml(key)}">
+      <div class="sector-group__head" data-sector-toggle="${escapeHtml(key)}">
+        <div class="sector-group__code">${escapeHtml(sector.code || "??")}</div>
+        <div class="sector-group__main">
+          <div class="sector-group__name">${escapeHtml(headTitle)}</div>
+          <div class="sector-group__meta">
+            <span>
+              <svg viewBox="0 0 24 24">${ICONS.layers}</svg>
+              ${depts.length} department${depts.length === 1 ? "" : "s"}
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24">${ICONS.teamLeader}</svg>
+              ${leaderCount}/${depts.length} team leader${depts.length === 1 ? "" : "s"}
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24">${ICONS.fileText}</svg>
+              ${plans.length} work plan${plans.length === 1 ? "" : "s"}
+            </span>
+          </div>
+        </div>
+        <span class="sector-group__badge">${plans.length}</span>
+        <div class="sector-group__chevron">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <div class="sector-group__body">
+
+        <div class="sector-group__section">
+          <div class="sector-group__section-title">
+            <span>Departments / Directorates</span>
+            <span class="count">${depts.length}</span>
+          </div>
+          ${depts.length
+            ? `<div class="dept-list">${depts.map(deptRow).join("")}</div>`
+            : `<div class="inline-empty">No departments under this sector yet. Add them on the <a href="departments.html" style="color:var(--primary);font-weight:700">Sectors</a> page.</div>`}
+        </div>
+
+        <div class="sector-group__section">
+          <div class="sector-group__section-title">
+            <span>Work Plans</span>
+            <span class="count">${plans.length}</span>
+          </div>
+          ${plans.length
+            ? `<div class="plans-grid">${plans.map(planCard).join("")}</div>`
+            : `<div class="inline-empty">No work plans for this sector in ${currentYear} yet.</div>`}
+        </div>
+
+      </div>
+    </div>`;
+}
+
+function deptRow(d) {
+  const leader = teamLeaderForDepartment(d.id);
+  const levelCls = d.level === "cluster" ? "dept-row__level--cluster" : "dept-row__level--regional";
+  const levelLbl = d.level === "cluster" ? "Cluster" : "Regional";
+  return `
+    <div class="dept-row">
+      <div class="dept-row__code">${escapeHtml(d.code || "??")}</div>
+      <div class="dept-row__main">
+        <div class="dept-row__name">${escapeHtml(d.name || "Untitled department")}</div>
+        <div class="dept-row__meta">
+          <span class="dept-row__level ${levelCls}">${levelLbl}</span>
+          ${leader
+            ? `<span class="dept-row__leader">
+                 <svg viewBox="0 0 24 24">${ICONS.teamLeader}</svg>
+                 Team Leader: ${escapeHtml(leader.name || leader.email || "—")}
+               </span>`
+            : `<span class="dept-row__leader dept-row__leader--missing">
+                 <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+                 No team leader assigned
+               </span>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+function planCard(p) {
+  const status = STATUS_META[p.status] || STATUS_META.draft;
+  const allocCount = (p.allocations || []).length;
+  const claimed = (p.allocations || []).filter(a => a.childPlanId).length;
+  const loadTag = p.workTypeLoadLabel
+    ? `<span class="tag ${LOAD_TAGS[p.workTypeLoad] || "tag--gray"}" style="margin-left:6px">${escapeHtml(p.workTypeLoadLabel)}</span>`
+    : "";
+
+  const mine = findMyPendingAllocation(p);
+  const actionable = !!mine;
+
+  const alertHtml = mine
+    ? `<div class="plan-card__alert">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div>
+          <strong>Action needed:</strong> you were allocated
+          <strong>${fmtNum(mine.alloc.target)} ${escapeHtml(p.unit || "")}</strong>
+          and <strong>${fmtMoney(mine.alloc.budget)} ETB</strong>.
+          Break this down to ${mine.forLevel === "cluster" ? "woredas" : "staff"}.
+        </div>
+      </div>`
+    : "";
+
+  return `
+    <article class="plan-card plan-card--${p.level}${actionable ? " plan-card--actionable" : ""}">
+      <div class="plan-card__head">
+        <div style="min-width:0;flex:1">
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+            <span class="plan-card__level">${escapeHtml(LEVEL_LABELS[p.level] || p.level)}</span>
+            ${loadTag}
+          </div>
+          <div class="plan-card__title">${escapeHtml(p.workTypeName || p.title || "Untitled plan")}</div>
+          <div class="plan-card__scope">
+            <svg viewBox="0 0 24 24">${ICONS.pin}</svg>
+            ${escapeHtml(planScopeLine(p))}
+          </div>
+        </div>
+        <span class="tag ${status.klass}">${status.label}</span>
+      </div>
+
+      ${alertHtml}
+
+      <div class="plan-card__numbers">
+        <div class="plan-card__num">
+          <span class="plan-card__num-label">Amount</span>
+          <span class="plan-card__num-value">${fmtNum(p.target)} ${escapeHtml(p.unit || "")}</span>
+        </div>
+        <div class="plan-card__num">
+          <span class="plan-card__num-label">Budget</span>
+          <span class="plan-card__num-value">${fmtMoney(p.budget)} ETB</span>
+        </div>
+        ${allocCount ? `<div class="plan-card__num">
+          <span class="plan-card__num-label">Allocations</span>
+          <span class="plan-card__num-value">${claimed} / ${allocCount}</span>
+        </div>` : ""}
+        ${p.period ? `<div class="plan-card__num">
+          <span class="plan-card__num-label">Period</span>
+          <span class="plan-card__num-value">${escapeHtml(PERIOD_LABELS[p.period] || p.period)}</span>
+        </div>` : ""}
+      </div>
+
+      <div class="plan-card__foot">
+        <span style="font-size:11.5px;color:var(--muted);font-weight:600">
+          ${escapeHtml(p.teamLeaderName || p.createdByName || "—")}
+        </span>
+        <div style="display:flex;gap:4px">
+          ${actionable ? `
+            <button class="btn btn--sm btn--gold" data-action="breakdown" data-id="${p.id}" title="Break this allocation down">
+              <svg viewBox="0 0 24 24">${ICONS.split}</svg> Break down
+            </button>
+          ` : ""}
+          <button class="btn btn--sm btn--icon" data-action="view" data-id="${p.id}" title="View">
+            <svg viewBox="0 0 24 24">${ICONS.eye}</svg>
+          </button>
+          ${canSplitRegionalPlan(p) ? `
+            <button class="btn btn--sm btn--gold" data-action="split" data-id="${p.id}" title="Split to clusters">
+              <svg viewBox="0 0 24 24">${ICONS.arrows}</svg> Split
+            </button>` : ""}
+          ${canEditPlan(p) ? `
+            <button class="btn btn--sm btn--icon" data-action="edit" data-id="${p.id}" title="Edit">
+              <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
+            </button>` : ""}
+          ${canDeletePlan(p) ? `
+            <button class="btn btn--sm btn--icon btn--danger" data-action="delete" data-id="${p.id}" title="Delete">
+              <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
+            </button>` : ""}
+        </div>
+      </div>
+    </article>`;
+}
+
+function canEditPlan(p) {
+  if (!p) return false;
+  if (isSuper()) return true;
+  if (p.createdBy === S.uid) return true;
+  if (isRegionalAdmin() && p.regionCode === S.region) return true;
+  if (isRegionalDir() && p.sectorId === S.sectorId) return true;
+  if (isClusterDir() && p.clusterId === S.clusterId) return true;
+  if ((isWoredaCity() || isManager()) && p.woredaCode === S.woredaCode) return true;
+  return false;
+}
+function canDeletePlan(p) { return canEditPlan(p); }
+
+function canSplitRegionalPlan(p) {
+  if (!p || p.level !== "regional") return false;
+  if ((p.allocations || []).length > 0) return false;
+  if (isSuper() || isRegionalAdmin()) return true;
+  if (isRegionalDir() && p.sectorId === S.sectorId) return true;
+  return false;
+}
+
+function render() {
+  renderScopeBadge();
+  renderGateNotice();
+  renderHeadActions();
+  renderStats();
+  renderPlans();
+}
+
+/* ============================================================
+   MODAL + WIZARD FRAMEWORK
+   ============================================================ */
+let escHandler = null;
+function openModal(html, { size = "" } = {}) {
+  closeModal();
+  const bd = document.createElement("div");
+  bd.className = "modal-backdrop";
+  bd.id = "modal-backdrop";
+  bd.innerHTML = `<div class="modal ${size ? "modal--" + size : ""}" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(bd);
+  bd.addEventListener("click", (e) => { if (e.target === bd) closeModal(); });
+  bd.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", closeModal));
+  escHandler = (e) => { if (e.key === "Escape") closeModal(); };
+  document.addEventListener("keydown", escHandler);
+  return bd;
+}
+function closeModal() {
+  const el = document.getElementById("modal-backdrop");
+  if (el) el.remove();
+  if (escHandler) { document.removeEventListener("keydown", escHandler); escHandler = null; }
+}
+function openWizard({ title, subtitle, finishLabel, steps, initial = {}, onFinish, successMessage, size = "lg" }) {
+  const data = JSON.parse(JSON.stringify(initial));
+  let idx = 0, busy = false;
+  const root = document.createElement("div");
+  root.className = "modal-backdrop";
+  root.id = "modal-backdrop";
+  document.body.appendChild(root);
+  escHandler = (e) => { if (e.key === "Escape") closeModal(); };
+  document.addEventListener("keydown", escHandler);
+  root.addEventListener("click", (e) => { if (e.target === root) closeModal(); });
+
+  function collect() {
+    root.querySelectorAll("[data-field]").forEach(el => {
+      const k = el.dataset.field;
+      if (el.type === "checkbox") data[k] = el.checked;
+      else data[k] = el.value;
+    });
+  }
+  function showErr(msg) {
+    const el = root.querySelector("#wizErr");
+    if (!el) return;
+    if (!msg) { el.style.display = "none"; el.textContent = ""; return; }
+    el.innerHTML = `<svg viewBox="0 0 24 24">${ICONS.alert}</svg><div style="flex:1">${escapeHtml(msg)}</div>`;
+    el.style.display = "flex";
+  }
+  function draw() {
+    const step = steps[idx];
+    root.innerHTML = `
+      <div class="modal modal--${size}">
+        <div class="modal__head">
+          <div>
+            <div class="modal__title">${escapeHtml(title)}</div>
+            ${subtitle ? `<div class="modal__sub">${escapeHtml(subtitle)}</div>` : ""}
+          </div>
+          <button class="modal__close" data-close aria-label="Close">
+            <svg viewBox="0 0 24 24">${ICONS.x}</svg>
+          </button>
+        </div>
+        <div class="steps">
+          ${steps.map((s,i) => `
+            <div class="step ${i<idx?"is-done":""} ${i===idx?"is-active":""}">
+              <span class="step__num">${i<idx?"✓":i+1}</span>
+              <span class="step__label">${escapeHtml(s.label)}</span>
+            </div>
+            ${i<steps.length-1?`<div class="step__line"></div>`:""}
+          `).join("")}
+        </div>
+        <div class="modal__body">
+          <div class="step-header">
+            <span class="step-header__badge">${idx+1}</span>
+            ${escapeHtml(step.title || step.label)}
+          </div>
+          ${step.render(data)}
+          <div class="alert alert--error" id="wizErr" style="display:none;margin-top:14px;margin-bottom:0"></div>
+        </div>
+        <div class="modal__foot">
+          <button class="btn" data-close>Cancel</button>
+          <div class="spacer"></div>
+          <button class="btn" data-wiz="prev" ${idx===0?"disabled":""}>← Back</button>
+          <button class="btn btn--primary" data-wiz="next">
+            <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
+            <span class="btn-label">${idx===steps.length-1?escapeHtml(finishLabel||"Save"):"Next →"}</span>
+          </button>
+        </div>
+      </div>`;
+    root.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", closeModal));
+    root.querySelectorAll("[data-field]").forEach(el => {
+      const v = data[el.dataset.field];
+      if (v === undefined || v === null) return;
+      if (el.type === "checkbox") el.checked = !!v;
+      else el.value = v;
+    });
+    root.querySelector('[data-wiz="prev"]').addEventListener("click", () => {
+      if (idx > 0) { collect(); idx--; draw(); }
+    });
+    root.querySelector('[data-wiz="next"]').addEventListener("click", async () => {
+      const step = steps[idx];
+      collect();
+      const err = step.validate ? await step.validate(data) : null;
+      if (err) { showErr(err); return; }
+      if (idx === steps.length - 1) {
+        if (busy) return;
+        busy = true;
+        const btn = root.querySelector('[data-wiz="next"]');
+        const sp = btn.querySelector(".spinner");
+        const lbl = btn.querySelector(".btn-label");
+        btn.disabled = true; sp.classList.remove("hidden"); lbl.textContent = "Saving…";
+        try {
+          await onFinish(data);
+          closeModal();
+          toast(successMessage || "Saved successfully", "success");
+        } catch (e) {
+          console.error(e);
+          busy = false;
+          btn.disabled = false; sp.classList.add("hidden");
+          lbl.textContent = finishLabel || "Save";
+          showErr(e?.message || "Something went wrong.");
+        }
+      } else { idx++; draw(); }
+    });
+    if (typeof step.after === "function") step.after(root, data, () => { collect(); draw(); });
+  }
+  draw();
+}
+
+/* ============================================================
+   ALLOCATION SUM WIDGET
+   ============================================================ */
+function allocSummary(total, allocations) {
+  const sum = allocations.reduce((s,a) => s + num(a.target), 0);
+  const sumBudget = allocations.reduce((s,a) => s + num(a.budget), 0);
+  const ok = Math.abs(sum - num(total)) < 0.01;
+  return `
+    <div class="alloc-sum">
+      <div class="alloc-sum__item">
+        <span class="alloc-sum__label">Total to split</span>
+        <span class="alloc-sum__value">${fmtNum(total)}</span>
+      </div>
+      <div class="alloc-sum__item">
+        <span class="alloc-sum__label">Sum allocated</span>
+        <span class="alloc-sum__value ${ok?"ok":"bad"}">${fmtNum(sum)}${ok?" ✓":" ✗"}</span>
+      </div>
+      <div class="alloc-sum__item">
+        <span class="alloc-sum__label">Total of Budget</span>
+        <span class="alloc-sum__value">${fmtMoney(sumBudget)} ETB</span>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   ENTRY POINT
+   ============================================================ */
+async function openPlanCreation() {
+  const level = myLevel();
+  if (!level) { toast("You cannot create plans", "error"); return; }
+
+  if (level === "regional") {
+    try {
+      const region = S.region;
+      const sectorQ = region
+        ? query(collection(db, "sectors"), where("regionCode", "==", region))
+        : collection(db, "sectors");
+      const deptQ = region
+        ? query(collection(db, "departments"), where("regionCode", "==", region))
+        : collection(db, "departments");
+
+      const [secSnap, depSnap] = await Promise.all([getDocs(sectorQ), getDocs(deptQ)]);
+      SECTORS = secSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+      DEPARTMENTS = depSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+
+      console.log("[workplans] fresh fetch →", {
+        region,
+        sectors: SECTORS.length,
+        departments: DEPARTMENTS.length,
+        users: USERS.length
+      });
+    } catch (e) {
+      console.warn("[workplans] scoped fetch failed:", e.code, e.message);
+      try {
+        const [s2, d2] = await Promise.all([
+          getDocs(collection(db, "sectors")),
+          getDocs(collection(db, "departments"))
+        ]);
+        SECTORS = s2.docs.map(d => ({ id:d.id, ...d.data() }));
+        DEPARTMENTS = d2.docs.map(d => ({ id:d.id, ...d.data() }));
+        console.log("[workplans] unfiltered fallback →", {
+          sectors: SECTORS.length,
+          departments: DEPARTMENTS.length,
+          users: USERS.length
+        });
+      } catch (e2) {
+        console.error("[workplans] unfiltered fallback failed:", e2.code, e2.message);
+        toast(`Cannot read sectors/departments (${e2.code || e2.message}).`, "error");
+        return;
+      }
+    }
+    openRegionalPlanWizard();
+  }
+  else if (level === "cluster") {
+    const pending = pendingAllocations().filter(p => p.forLevel === "cluster");
+    if (!pending.length) { toast("No allocation waiting for your cluster.", "error"); return; }
+    openBreakdownWizard(pending[0].parent, pending[0].alloc);
+  } else if (level === "woreda") {
+    const pending = pendingAllocations().filter(p => p.forLevel === "woreda");
+    if (!pending.length) { toast("No allocation waiting for your woreda.", "error"); return; }
+    openBreakdownWizard(pending[0].parent, pending[0].alloc);
+  }
+}
+
+/* ============================================================
+   REGIONAL WIZARD — 6 steps
+   ============================================================ */
+function openRegionalPlanWizard() {
+  const regionClusters = CLUSTERS.filter(c => c.regionCode === S.region);
+
+  const regionSectors = getRegionSectors(S.region);
+  if (!regionSectors.length) {
+    console.warn("[workplans] no sectors", {
+      region: S.region,
+      sectors_docs: SECTORS.length,
+      departments_docs: DEPARTMENTS.length
+    });
+    toast(`No sectors found for region "${S.region}". See console.`, "error");
+    return;
+  }
+
+  function renderWorkTypeTable(d) {
+    const list = d.workTypes || [];
+    const totalTarget = list.reduce((s,w) => s + num(w.target), 0);
+    const totalBudget = list.reduce((s,w) => s + num(w.budget), 0);
+    const totalLoad   = list.reduce((s,w) => s + num(w.loadPercent), 0);
+    const loadOk      = list.length > 0 && Math.abs(totalLoad - 100) < 0.01;
+
+    if (!list.length) {
+      return `
+        <div class="worktype-table-wrap">
+          <div class="worktype-table__empty">
+            No work items yet — click <strong>Add row</strong> to start.
+          </div>
+          <div class="worktype-toolbar">
+            <div class="worktype-toolbar__meta">0 rows</div>
+            <button type="button" class="btn btn--sm btn--primary" id="wt-add-row">
+              <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add row
+            </button>
+          </div>
+        </div>`;
+    }
+
+    const LOADS = [
+      { id:"easy",      label:"Easy",      preset:25 },
+      { id:"medium",    label:"Medium",    preset:50 },
+      { id:"hard",      label:"Hard",      preset:75 },
+      { id:"very_hard", label:"Very Hard", preset:100 },
+      { id:"custom",    label:"Rated (%)", preset:null }
+    ];
+    const dotClassFor = (w) => {
+      const p = num(w.loadPercent);
+      if (p <= 0)   return "custom";
+      if (p <= 25)  return "easy";
+      if (p <= 50)  return "medium";
+      if (p <= 75)  return "hard";
+      return "very_hard";
+    };
+
+    const MEASURES = [
+      { id:"number",     label:"Number" },
+      { id:"time",       label:"Time" },
+      { id:"money",      label:"Money" },
+      { id:"percentage", label:"Percentage" },
+      { id:"other",      label:"Other" }
+    ];
+
+    return `
+      <div class="worktype-table-wrap">
+        <div class="scroll">
+          <table class="worktype-table">
+            <thead>
+              <tr>
+                <th class="worktype-table__rownum">#</th>
+                <th style="min-width:200px">Work</th>
+                <th style="width:260px">Load</th>
+                <th style="width:260px">Measurement</th>
+                <th style="width:120px">Amount</th>
+                <th style="width:170px">Budget (ETB)</th>
+                <th style="min-width:220px">Description</th>
+                <th style="width:50px;text-align:center">⚙</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${list.map((w, i) => {
+                const measure = w.measure || "number";
+                const isOther = measure === "other";
+                const load    = w.load || "custom";
+                return `
+                <tr>
+                  <td class="worktype-table__rownum">${i + 1}</td>
+
+                  <td>
+                    <input data-wt-field="name" data-wt-id="${w.id}"
+                           value="${escapeHtml(w.name || "")}"
+                           placeholder="e.g. Training sessions">
+                  </td>
+
+                  <td>
+                    <div class="worktype-table__load" data-wt-load-wrap="${w.id}">
+                      <span class="worktype-table__dot worktype-table__dot--${dotClassFor(w)}"
+                            data-wt-dot="${w.id}"></span>
+                      <select data-wt-field="load" data-wt-id="${w.id}">
+                        ${LOADS.map(l => `
+                          <option value="${l.id}" ${load===l.id?"selected":""}>
+                            ${l.label}
+                          </option>`).join("")}
+                      </select>
+                      <input data-wt-field="loadPercent" data-wt-id="${w.id}"
+                             type="number" min="0" max="100" step="1"
+                             value="${escapeHtml(w.loadPercent || "")}"
+                             placeholder="0"
+                             title="Load percent (0–100). All rows must total 100%.">
+                      <span class="worktype-table__pct">%</span>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div class="worktype-table__measure ${isOther ? "is-other" : ""}"
+                         data-wt-measure-wrap="${w.id}">
+                      <select data-wt-field="measure" data-wt-id="${w.id}">
+                        ${MEASURES.map(m => `
+                          <option value="${m.id}" ${measure===m.id?"selected":""}>
+                            ${m.label}
+                          </option>`).join("")}
+                      </select>
+                      <input data-wt-field="measureOther" data-wt-id="${w.id}"
+                             value="${escapeHtml(w.measureOther || "")}"
+                             placeholder="specify…"
+                             ${isOther ? "" : "disabled"}>
+                    </div>
+                  </td>
+
+                  <td>
+                    <input data-wt-field="target" data-wt-id="${w.id}"
+                           type="number" min="0" step="0.01"
+                           value="${escapeHtml(w.target || "")}"
+                           placeholder="0">
+                  </td>
+
+                  <td>
+                    <input data-wt-field="budget" data-wt-id="${w.id}"
+                           type="number" min="0" step="1"
+                           value="${escapeHtml(w.budget || "")}"
+                           placeholder="0">
+                  </td>
+
+                  <td>
+                    <input data-wt-field="description" data-wt-id="${w.id}"
+                           value="${escapeHtml(w.description || "")}"
+                           placeholder="Short description">
+                  </td>
+
+                  <td style="text-align:center">
+                    <button type="button" class="worktype-table__remove"
+                            data-wt-remove="${w.id}" title="Remove row">
+                      <svg viewBox="0 0 24 24">${ICONS.x}</svg>
+                    </button>
+                  </td>
+                </tr>`;
+              }).join("")}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2" class="label">Totals</td>
+                <td style="text-align:center">
+                  <span class="wt-load-total ${loadOk?"wt-load-total--ok":"wt-load-total--bad"}"
+                        id="wt-total-load">
+                    ${fmtNum(totalLoad)}% / 100% ${loadOk?"✓":"✗"}
+                  </span>
+                </td>
+                <td class="label" style="text-align:right">Amount:</td>
+                <td id="wt-total-target">${fmtNum(totalTarget)}</td>
+                <td>
+                  <span id="wt-total-budget" style="color:var(--primary)">
+                    Total of Budget = ${fmtMoney(totalBudget)} ETB
+                  </span>
+                </td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="worktype-toolbar">
+          <div class="worktype-toolbar__meta">
+            <strong>${list.length}</strong> row${list.length===1?"":"s"} ·
+            load
+            <strong id="wt-total-load-meta"
+                    class="wt-load-total ${loadOk?"wt-load-total--ok":"wt-load-total--bad"}">
+              ${fmtNum(totalLoad)}%
+            </strong> ·
+            amount <strong id="wt-total-target-meta">${fmtNum(totalTarget)}</strong> ·
+            <span id="wt-total-budget-meta" style="color:var(--primary)">
+              Total of Budget = <strong>${fmtMoney(totalBudget)} ETB</strong>
+            </span>
+          </div>
+          <button type="button" class="btn btn--sm btn--primary" id="wt-add-row">
+            <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add row
+          </button>
+        </div>
+      </div>`;
+  }
+
+  function refreshWorkTypeTotals(root, data) {
+    const list = data.workTypes || [];
+    const totalTarget = list.reduce((s,w) => s + num(w.target), 0);
+    const totalBudget = list.reduce((s,w) => s + num(w.budget), 0);
+    const totalLoad   = list.reduce((s,w) => s + num(w.loadPercent), 0);
+    const loadOk      = list.length > 0 && Math.abs(totalLoad - 100) < 0.01;
+
+    const tt     = root.querySelector("#wt-total-target");
+    const tb     = root.querySelector("#wt-total-budget");
+    const ttMeta = root.querySelector("#wt-total-target-meta");
+    const tbMeta = root.querySelector("#wt-total-budget-meta");
+    const tl     = root.querySelector("#wt-total-load");
+    const tlMeta = root.querySelector("#wt-total-load-meta");
+
+    if (tt) tt.textContent = fmtNum(totalTarget);
+    if (tb) tb.textContent = "Total of Budget = " + fmtMoney(totalBudget) + " ETB";
+    if (ttMeta) ttMeta.textContent = fmtNum(totalTarget);
+    if (tbMeta) tbMeta.innerHTML =
+      "Total of Budget = <strong>" + fmtMoney(totalBudget) + " ETB</strong>";
+
+    if (tl) {
+      tl.textContent = fmtNum(totalLoad) + "% / 100% " + (loadOk ? "✓" : "✗");
+      tl.classList.toggle("wt-load-total--ok",  loadOk);
+      tl.classList.toggle("wt-load-total--bad", !loadOk);
+    }
+    if (tlMeta) {
+      tlMeta.textContent = fmtNum(totalLoad) + "%";
+      tlMeta.classList.toggle("wt-load-total--ok",  loadOk);
+      tlMeta.classList.toggle("wt-load-total--bad", !loadOk);
+    }
+  }
+
+  function makeAllocRows() {
+    return regionClusters.map(c => ({
+      targetType:"cluster", targetId:c.id,
+      targetName:c.code ? c.code + " — " + c.name : c.name,
+      target:"", budget:""
+    }));
+  }
+
+  openWizard({
+    title: "New Regional Work Plan",
+    subtitle: `Year ${currentYear} — sector → department → team leader → work items → clusters`,
+    finishLabel: "Create Plans",
+    successMessage: "Work plan(s) created — cluster directors will now see their allocations.",
+    size: "xl",
+    initial: {
+      sectorId: "",
+      departmentId: "",
+      teamLeaderId: "",
+      workTypes: [],
+      allocationsByWorkType: {}
+    },
+    steps: [
+      {
+        label: "Sector", title: "Step 1 — Select a sector",
+        render: (d) => {
+          const sel = regionSectors.find(s => s.id === d.sectorId);
+          return `
+            <div class="alert alert--info">
+              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+              <div>Pick a saved sector. ${regionSectors.length} available for your region.</div>
+            </div>
+            <div class="field">
+              <label class="field__required">Sector</label>
+              <select data-field="sectorId" id="sector-select">
+                <option value="">— Choose a sector —</option>
+                ${regionSectors.map(s => `
+                  <option value="${s.id}" ${d.sectorId===s.id?"selected":""}>
+                    ${escapeHtml(s.code || "??")} · ${escapeHtml(s.name || "Unnamed")}
+                  </option>`).join("")}
+              </select>
+              <p class="field__hint">
+                Manage sectors on the
+                <a href="departments.html" style="color:var(--primary);font-weight:700">Sectors</a> page.
+              </p>
+            </div>
+            ${sel ? `
+              <div class="review" style="margin-top:14px">
+                <div class="review__row"><span class="review__k">Sector</span><span class="review__v">${escapeHtml(sel.name || "—")}</span></div>
+                <div class="review__row"><span class="review__k">Code</span><span class="review__v">${escapeHtml(sel.code || "—")}</span></div>
+                <div class="review__row"><span class="review__k">Region</span><span class="review__v">${escapeHtml(regionLabel(sel.regionCode || sel.region))}</span></div>
+              </div>` : ""}
+          `;
+        },
+        validate: d => d.sectorId ? null : "Please select a sector.",
+        after: (root, data, refresh) => {
+          const sel = root.querySelector("#sector-select");
+          sel?.addEventListener("change", () => {
+            data.sectorId = sel.value;
+            data.departmentId = "";
+            data.teamLeaderId = "";
+            data.workTypes = [];
+            data.allocationsByWorkType = {};
+            refresh();
+          });
+        }
+      },
+      {
+        label: "Department", title: "Step 2 — Select a department",
+        render: (d) => {
+          const sec = regionSectors.find(s => s.id === d.sectorId);
+          const depts = departmentsForSector(d.sectorId);
+          const selected = depts.find(x => x.id === d.departmentId);
+          return `
+            <div class="alert alert--info">
+              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+              <div>
+                Sector: <strong>${escapeHtml(sec?.name || "—")}</strong> ·
+                ${depts.length} department${depts.length === 1 ? "" : "s"} available.
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field__required">Department / Directorate</label>
+              <select data-field="departmentId" id="dept-select" ${depts.length ? "" : "disabled"}>
+                <option value="">
+                  ${depts.length ? "— Choose a department —" : "No departments in this sector yet"}
+                </option>
+                ${depts.map(x => `
+                  <option value="${x.id}" ${d.departmentId===x.id?"selected":""}>
+                    ${escapeHtml(x.code || "??")} · ${escapeHtml(x.name || "Unnamed")}
+                  </option>`).join("")}
+              </select>
+              ${!depts.length ? `
+                <p class="field__hint" style="color:var(--warning)">
+                  ⚠ No departments found under this sector. Add one on the
+                  <a href="departments.html" style="color:var(--primary);font-weight:700">Sectors</a> page first.
+                </p>` : ""}
+            </div>
+
+            ${selected ? `
+              <div class="review" style="margin-top:14px">
+                <div class="review__row"><span class="review__k">Department</span>
+                  <span class="review__v">${escapeHtml(selected.name || "—")}</span></div>
+                <div class="review__row"><span class="review__k">Code</span>
+                  <span class="review__v">${escapeHtml(selected.code || "—")}</span></div>
+                <div class="review__row"><span class="review__k">Level</span>
+                  <span class="review__v">${selected.level === "cluster" ? "Cluster" : "Regional"}</span></div>
+              </div>` : ""}
+          `;
+        },
+        validate: d => {
+          if (!d.sectorId) return "Please go back and select a sector.";
+          const depts = departmentsForSector(d.sectorId);
+          if (!depts.length) return "This sector has no departments yet. Add one on the Sectors page first.";
+          if (!d.departmentId) return "Please select a department.";
+          return null;
+        },
+        after: (root, data, refresh) => {
+          const sel = root.querySelector("#dept-select");
+          sel?.addEventListener("change", () => {
+            data.departmentId = sel.value;
+            data.teamLeaderId = "";
+            data.workTypes = [];
+            data.allocationsByWorkType = {};
+            refresh();
+          });
+        }
+      },
+      {
+        label: "Team Leader", title: "Step 3 — Select a team leader / manager",
+        render: (d) => {
+          const sec = regionSectors.find(s => s.id === d.sectorId);
+          const dept = DEPARTMENTS.find(x => x.id === d.departmentId);
+          const users = usersForDepartment(d.departmentId);
+          const chosen = users.find(u => u.id === d.teamLeaderId);
+          return `
+            <div class="alert alert--info">
+              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+              <div>
+                <strong>${escapeHtml(sec?.name || "—")}</strong> →
+                <strong>${escapeHtml(dept?.name || "—")}</strong> ·
+                ${users.length} user${users.length === 1 ? "" : "s"} available in this department.
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field__required">Team Leader / Manager</label>
+              <select data-field="teamLeaderId" id="leader-select" ${users.length ? "" : "disabled"}>
+                <option value="">
+                  ${users.length ? "— Choose a team leader —" : "No users in this department yet"}
+                </option>
+                ${users.map(u => `
+                  <option value="${u.id}" ${d.teamLeaderId===u.id?"selected":""}>
+                    ${escapeHtml(u.name || u.email)} — ${escapeHtml(roleLabel(u.role))}${u.position ? " · " + escapeHtml(u.position) : ""}
+                  </option>`).join("")}
+              </select>
+              <p class="field__hint">
+                Users are managed on the
+                <a href="users.html" style="color:var(--primary);font-weight:700">Users & Staff</a> page.
+                Only active users with a placement in this department appear here.
+              </p>
+              ${!users.length ? `
+                <p class="field__hint" style="color:var(--warning)">
+                  ⚠ No active users in this department. Assign staff first on Users & Staff.
+                </p>` : ""}
+            </div>
+
+            ${chosen ? `
+              <div class="review" style="margin-top:14px">
+                <div class="review__row"><span class="review__k">Name</span>
+                  <span class="review__v">${escapeHtml(chosen.name || chosen.email || "—")}</span></div>
+                <div class="review__row"><span class="review__k">Role</span>
+                  <span class="review__v">${escapeHtml(roleLabel(chosen.role))}</span></div>
+                ${chosen.position ? `
+                  <div class="review__row"><span class="review__k">Position</span>
+                    <span class="review__v">${escapeHtml(chosen.position)}</span></div>` : ""}
+                ${chosen.email ? `
+                  <div class="review__row"><span class="review__k">Email</span>
+                    <span class="review__v">${escapeHtml(chosen.email)}</span></div>` : ""}
+              </div>` : ""}
+          `;
+        },
+        validate: d => {
+          if (!d.departmentId) return "Please go back and select a department.";
+          const users = usersForDepartment(d.departmentId);
+          if (!users.length) return "This department has no active users yet. Add staff on the Users & Staff page first.";
+          if (!d.teamLeaderId) return "Please select a team leader.";
+          return null;
+        },
+        after: (root, data) => {
+          const sel = root.querySelector("#leader-select");
+          sel?.addEventListener("change", () => { data.teamLeaderId = sel.value; });
+        }
+      },
+      {
+        label: "Work Items", title: "Step 4 — List work items",
+        render: (d) => {
+          const sec = regionSectors.find(s => s.id === d.sectorId);
+          const dept = DEPARTMENTS.find(x => x.id === d.departmentId);
+          const leader = USERS.find(u => u.id === d.teamLeaderId);
+          return `
+            <div class="alert alert--info">
+              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+              <div>
+                Planning for <strong>${escapeHtml(sec?.name || "—")}</strong>
+                → <strong>${escapeHtml(dept?.name || "—")}</strong>
+                · Team leader: <strong>${escapeHtml(leader?.name || leader?.email || "—")}</strong>.
+                Load percentages across all rows must total <strong>100%</strong>.
+              </div>
+            </div>
+            ${renderWorkTypeTable(d)}
+          `;
+        },
+        validate: d => {
+          const list = d.workTypes || [];
+          if (!list.length) return "Add at least one work item.";
+
+          for (let i = 0; i < list.length; i++) {
+            const w = list[i];
+            if (!w.name || w.name.trim().length < 2)
+              return `Row ${i+1}: Work is required.`;
+            const p = num(w.loadPercent);
+            if (!(p > 0 && p <= 100))
+              return `Row ${i+1}: Load must be between 1 and 100.`;
+            if (!w.measure)
+              return `Row ${i+1}: Choose a measurement.`;
+            if (w.measure === "other" && !(w.measureOther || "").trim())
+              return `Row ${i+1}: Specify a custom measurement.`;
+            if (!(num(w.target) > 0))
+              return `Row ${i+1}: Amount must be > 0.`;
+          }
+
+          const sumLoad = list.reduce((s,w) => s + num(w.loadPercent), 0);
+          if (Math.abs(sumLoad - 100) > 0.01) {
+            return `Load percentages sum to ${fmtNum(sumLoad)}% but must total exactly 100%.`;
+          }
+          return null;
+        },
+        after: (root, data, refresh) => {
+          const PRESETS = { easy:25, medium:50, hard:75, very_hard:100 };
+
+          function dotClassFor(w) {
+            const p = num(w.loadPercent);
+            if (p <= 0)   return "custom";
+            if (p <= 25)  return "easy";
+            if (p <= 50)  return "medium";
+            if (p <= 75)  return "hard";
+            return "very_hard";
+          }
+          function recolourDot(root, id) {
+            const w = (data.workTypes || []).find(x => x.id === id);
+            const dot = root.querySelector('[data-wt-dot="' + id + '"]');
+            if (!w || !dot) return;
+            dot.className = "worktype-table__dot worktype-table__dot--" + dotClassFor(w);
+          }
+
+          root.querySelectorAll("[data-wt-field]").forEach(inp => {
+            const handler = () => {
+              const id    = inp.dataset.wtId;
+              const field = inp.dataset.wtField;
+              const w = (data.workTypes || []).find(x => x.id === id);
+              if (!w) return;
+              w[field] = inp.value;
+
+              if (field === "load") {
+                const preset = PRESETS[inp.value];
+                const wrap = root.querySelector('[data-wt-load-wrap="' + id + '"]');
+                const pctInput = wrap ? wrap.querySelector('[data-wt-field="loadPercent"]') : null;
+                if (preset != null && pctInput) {
+                  pctInput.value = preset;
+                  w.loadPercent = preset;
+                } else if (pctInput && !pctInput.value) {
+                  pctInput.focus();
+                }
+                recolourDot(root, id);
+              }
+
+              if (field === "loadPercent") {
+                let p = num(inp.value);
+                if (p < 0)   p = 0;
+                if (p > 100) p = 100;
+                if (String(p) !== inp.value && inp.value !== "") inp.value = p;
+                w.loadPercent = inp.value === "" ? "" : p;
+                recolourDot(root, id);
+              }
+
+              if (field === "measure") {
+                const wrap = root.querySelector('[data-wt-measure-wrap="' + id + '"]');
+                const other = wrap ? wrap.querySelector('[data-wt-field="measureOther"]') : null;
+                const isOther = inp.value === "other";
+                if (wrap) wrap.classList.toggle("is-other", isOther);
+                if (other) {
+                  other.disabled = !isOther;
+                  if (!isOther) { other.value = ""; w.measureOther = ""; }
+                  else if (!other.value) other.focus();
+                }
+              }
+
+              refreshWorkTypeTotals(root, data);
+            };
+            inp.addEventListener("input", handler);
+            inp.addEventListener("change", handler);
+          });
+
+          root.querySelector("#wt-add-row")?.addEventListener("click", () => {
+            data.workTypes = data.workTypes || [];
+            const newId = uid();
+            data.workTypes.push({
+              id: newId,
+              name: "",
+              load: "custom",
+              loadPercent: "",
+              measure: "number",
+              measureOther: "",
+              target: "",
+              budget: "",
+              description: ""
+            });
+            data.allocationsByWorkType[newId] = makeAllocRows();
+            refresh();
+          });
+
+          root.querySelectorAll("[data-wt-remove]").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const id = btn.dataset.wtRemove;
+              data.workTypes = (data.workTypes || []).filter(x => x.id !== id);
+              delete data.allocationsByWorkType[id];
+              refresh();
+            });
+          });
+        }
+      },
+      {
+        label: "Split to Clusters", title: "Step 5 — Split each work item across clusters",
+        render: (d) => {
+          const list = d.workTypes || [];
+          if (!list.length) return `<div class="alert alert--error">No work items to split.</div>`;
+
+          if (!regionClusters.length) {
+            return `
+              <div class="alert alert--warning">
+                <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+                <div>
+                  <strong>No clusters exist in ${escapeHtml(regionLabel(S.region))} yet.</strong><br>
+                  You can save this regional work plan now without splitting it. Once a regional
+                  admin adds clusters to this region, open the plan card and click
+                  <strong>Split</strong> to allocate it.
+                </div>
+              </div>
+              <div class="review" style="margin-top:14px">
+                <div class="review__row"><span class="review__k">Plan status</span>
+                  <span class="review__v">Will be saved as <strong>Regional only</strong> (no cluster split)</span></div>
+                <div class="review__row"><span class="review__k">Work items</span>
+                  <span class="review__v">${list.length}</span></div>
+                <div class="review__row"><span class="review__k">Region</span>
+                  <span class="review__v">${escapeHtml(regionLabel(S.region))}</span></div>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="alert alert--info">
+              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+              <div>For each work item, split amount & budget across every cluster. Sum must equal total.</div>
+            </div>
+            ${list.map(w => {
+              const allocs = d.allocationsByWorkType[w.id] || [];
+              const sumT = allocs.reduce((s,a)=>s+num(a.target),0);
+              const sumB = allocs.reduce((s,a)=>s+num(a.budget),0);
+              const okT = Math.abs(sumT - num(w.target)) < 0.01;
+              const okB = Math.abs(sumB - num(w.budget)) < 0.01;
+              return `
+                <div style="margin-bottom:24px;padding:14px;border:1px solid var(--border);border-radius:12px;background:#fff">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div>
+                      <div style="font-weight:800;font-size:14px">${escapeHtml(w.name)}</div>
+                      <div style="font-size:11.5px;color:var(--muted);margin-top:2px">
+                        Load: <strong>${fmtNum(w.loadPercent)}%</strong> ·
+                        Measurement: <strong>${escapeHtml(w.measure === "other" ? (w.measureOther || "Other") : w.measure)}</strong> ·
+                        Total: <strong>${fmtNum(w.target)}</strong> ·
+                        <strong>${fmtMoney(w.budget)} ETB</strong>
+                      </div>
+                    </div>
+                    <span class="tag ${okT && okB ? "tag--green" : "tag--gold"}">
+                      ${okT && okB ? "Balanced" : "Needs attention"}
+                    </span>
+                  </div>
+                  <table class="alloc-table">
+                    <thead><tr><th>Cluster</th><th style="width:130px">Amount</th><th style="width:160px">Budget (ETB)</th></tr></thead>
+                    <tbody>
+                      ${allocs.map((a,i) => `
+                        <tr>
+                          <td><strong>${escapeHtml(a.targetName)}</strong></td>
+                          <td><input data-wt="${w.id}" data-alloc-target="${i}" type="number" min="0" step="0.01" value="${escapeHtml(a.target||"")}" placeholder="0"></td>
+                          <td><input data-wt="${w.id}" data-alloc-budget="${i}" type="number" min="0" step="1" value="${escapeHtml(a.budget||"")}" placeholder="0"></td>
+                        </tr>`).join("")}
+                    </tbody>
+                  </table>
+                  ${allocSummary(w.target, allocs)}
+                </div>`;
+            }).join("")}`;
+        },
+        validate: d => {
+          if (!regionClusters.length) return null;
+          for (const w of (d.workTypes||[])) {
+            const allocs = d.allocationsByWorkType[w.id] || [];
+            const sumT = allocs.reduce((s,a)=>s+num(a.target),0);
+            const sumB = allocs.reduce((s,a)=>s+num(a.budget),0);
+            if (Math.abs(sumT - num(w.target)) > 0.01) return `"${w.name}": amounts sum to ${fmtNum(sumT)} but total is ${fmtNum(w.target)}.`;
+            if (Math.abs(sumB - num(w.budget)) > 0.01) return `"${w.name}": budgets sum to ${fmtMoney(sumB)} but total is ${fmtMoney(w.budget)}.`;
+          }
+          return null;
+        },
+        after: (root, data) => {
+          root.querySelectorAll("[data-wt][data-alloc-target]").forEach(inp => {
+            inp.addEventListener("input", () => {
+              const wtId = inp.dataset.wt;
+              data.allocationsByWorkType[wtId][Number(inp.dataset.allocTarget)].target = inp.value;
+              const block = inp.closest("div[style*='margin-bottom']");
+              if (block) {
+                const w = (data.workTypes||[]).find(x => x.id === wtId);
+                const s = block.querySelector(".alloc-sum");
+                if (w && s) s.outerHTML = allocSummary(w.target, data.allocationsByWorkType[wtId]);
+              }
+            });
+          });
+          root.querySelectorAll("[data-wt][data-alloc-budget]").forEach(inp => {
+            inp.addEventListener("input", () => {
+              const wtId = inp.dataset.wt;
+              data.allocationsByWorkType[wtId][Number(inp.dataset.allocBudget)].budget = inp.value;
+              const block = inp.closest("div[style*='margin-bottom']");
+              if (block) {
+                const w = (data.workTypes||[]).find(x => x.id === wtId);
+                const s = block.querySelector(".alloc-sum");
+                if (w && s) s.outerHTML = allocSummary(w.target, data.allocationsByWorkType[wtId]);
+              }
+            });
+          });
+        }
+      },
+      {
+        label: "Review", title: "Step 6 — Review and create",
+        render: (d) => {
+          const sel = regionSectors.find(s => s.id === d.sectorId);
+          const dept = DEPARTMENTS.find(x => x.id === d.departmentId);
+          const leader = USERS.find(u => u.id === d.teamLeaderId);
+          const list = d.workTypes || [];
+          const totalLoad = list.reduce((s,w) => s + num(w.loadPercent), 0);
+          const totalBudget = list.reduce((s,w) => s + num(w.budget), 0);
+          return `
+            <div class="review" style="margin-bottom:18px">
+              <div class="review__row"><span class="review__k">Sector</span>
+                <span class="review__v">${escapeHtml(sel?.name || "—")} (${escapeHtml(sel?.code || "??")})</span></div>
+              <div class="review__row"><span class="review__k">Department</span>
+                <span class="review__v">${escapeHtml(dept?.name || "—")} (${escapeHtml(dept?.code || "??")})</span></div>
+              <div class="review__row"><span class="review__k">Team Leader</span>
+                <span class="review__v">${escapeHtml(leader?.name || leader?.email || "—")} — ${escapeHtml(roleLabel(leader?.role || ""))}</span></div>
+              <div class="review__row"><span class="review__k">Region</span>
+                <span class="review__v">${escapeHtml(regionLabel(S.region))}</span></div>
+              <div class="review__row"><span class="review__k">Year</span>
+                <span class="review__v">${currentYear}</span></div>
+              <div class="review__row"><span class="review__k">Work items</span>
+                <span class="review__v">${list.length}</span></div>
+              <div class="review__row"><span class="review__k">Total load</span>
+                <span class="review__v" style="color:${Math.abs(totalLoad-100)<0.01?"var(--success)":"var(--danger)"}">
+                  <strong>${fmtNum(totalLoad)}%</strong> / 100%
+                </span></div>
+              <div class="review__row"><span class="review__k">Total of Budget</span>
+                <span class="review__v"><strong>${fmtMoney(totalBudget)} ETB</strong></span></div>
+              <div class="review__row"><span class="review__k">Cluster split</span>
+                <span class="review__v">${regionClusters.length ? "Yes — " + regionClusters.length + " clusters" : "No clusters yet — will be saved regional only"}</span></div>
+            </div>
+            ${list.map(w => `
+              <div class="review" style="margin-bottom:12px">
+                <div class="review__row"><span class="review__k">Work</span>
+                  <span class="review__v"><strong>${escapeHtml(w.name)}</strong></span></div>
+                <div class="review__row"><span class="review__k">Load</span>
+                  <span class="review__v">${fmtNum(w.loadPercent)}%</span></div>
+                <div class="review__row"><span class="review__k">Measurement</span>
+                  <span class="review__v">${escapeHtml(w.measure === "other" ? (w.measureOther || "Other") : w.measure)}</span></div>
+                <div class="review__row"><span class="review__k">Amount</span>
+                  <span class="review__v">${fmtNum(w.target)}</span></div>
+                <div class="review__row"><span class="review__k">Budget</span>
+                  <span class="review__v">${fmtMoney(w.budget)} ETB</span></div>
+                ${w.description ? `<div class="review__row"><span class="review__k">Description</span>
+                  <span class="review__v">${escapeHtml(w.description)}</span></div>` : ""}
+              </div>`).join("")}`;
+        }
+      }
+    ],
+    onFinish: async (d) => {
+      const sel = regionSectors.find(s => s.id === d.sectorId);
+      if (!sel) throw new Error("Selected sector no longer exists.");
+      const dept = DEPARTMENTS.find(x => x.id === d.departmentId);
+      if (!dept) throw new Error("Selected department no longer exists.");
+      const leader = USERS.find(u => u.id === d.teamLeaderId);
+      if (!leader) throw new Error("Selected team leader no longer exists.");
+      const list = d.workTypes || [];
+      if (!list.length) throw new Error("No work items to save.");
+      const sectorName = sel.name || "Unnamed sector";
+      const departmentName = dept.name || "Unnamed department";
+
+      function derivedUnit(w) {
+        const m = w.measure || "number";
+        if (m === "other")      return (w.measureOther || "unit").trim();
+        if (m === "number")     return "count";
+        if (m === "time")       return "hours";
+        if (m === "money")      return "ETB";
+        if (m === "percentage") return "%";
+        return "unit";
+      }
+      function loadSummary(w) {
+        const p = num(w.loadPercent);
+        if (!p) return null;
+        if (p <= 25)  return `Easy · ${p}%`;
+        if (p <= 50)  return `Medium · ${p}%`;
+        if (p <= 75)  return `Hard · ${p}%`;
+        return `Very Hard · ${p}%`;
+      }
+
+      for (const w of list) {
+        const allocs = regionClusters.length
+          ? (d.allocationsByWorkType[w.id] || [])
+          : [];
+        const payload = {
+          level: "regional",
+          workTypeId: w.id,
+          workTypeName: w.name,
+          workTypeLoad: w.load || null,
+          workTypeLoadPercent: num(w.loadPercent),
+          workTypeLoadLabel: loadSummary(w),
+          workTypeMeasure: w.measure || null,
+          workTypeMeasureOther: w.measure === "other" ? (w.measureOther || null) : null,
+          title: `${w.name} — ${sectorName} / ${departmentName} ${currentYear}`,
+          description: w.description || null,
+          unit: derivedUnit(w),
+          target: num(w.target),
+          budget: num(w.budget),
+          year: currentYear,
+          period: "yearly",
+          status: "active",
+          regionCode: sel.regionCode || sel.region || S.region,
+          sectorId: sel.id,
+          sectorName,
+          sectorCode: sel.code || null,
+          departmentId: dept.id,
+          departmentName: dept.name || null,
+          departmentCode: dept.code || null,
+          teamLeaderId: leader.id,
+          teamLeaderName: leader.name || leader.email || null,
+          teamLeaderRole: leader.role || null,
+          allocations: allocs.map(a => ({
+            targetType:"cluster", targetId:a.targetId, targetName:a.targetName,
+            target: num(a.target), budget: num(a.budget), childPlanId: null
+          })),
+          createdBy: S.uid, createdByName: S.name, createdByRole: S.role,
+          createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+        };
+        await addDoc(collection(db, "workplans"), payload);
+      }
+      try {
+        await addDoc(collection(db, "notifications"), {
+          type:"workplan_regional_created",
+          title:`New regional work plan${list.length>1?"s":""}`,
+          body:
+            `${S.name} created ${list.length} plan(s) for ${sectorName} / ${departmentName} ` +
+            `(leader: ${leader.name || leader.email}).` +
+            (regionClusters.length
+              ? ""
+              : ` No clusters exist in this region yet — the plan has not been split.`),
+          forRoles:["super_admin","regional_admin","cluster_directorate"],
+          link:"workplans.html", read:false,
+          createdAt: serverTimestamp(), createdBy: S.uid
+        });
+      } catch (e) {}
+    }
+  });
+}
+
+/* ============================================================
+   SPLIT REGIONAL PLAN TO CLUSTERS (post-creation)
+   ============================================================ */
+function openSplitRegionalPlan(planId) {
+  const p = PLANS.find(x => x.id === planId);
+  if (!p) return;
+  if (p.level !== "regional") { toast("Only regional plans can be split to clusters.", "error"); return; }
+  if ((p.allocations || []).length > 0) { toast("This plan is already split.", "error"); return; }
+
+  const regionClusters = CLUSTERS.filter(c => c.regionCode === (p.regionCode || S.region));
+  if (!regionClusters.length) {
+    toast("No clusters exist in this region yet. Ask a regional admin to add clusters first.", "error");
+    return;
+  }
+
+  openWizard({
+    title: "Split to Clusters",
+    subtitle: p.workTypeName || p.title || "Regional plan",
+    finishLabel: "Send to Clusters",
+    successMessage: "Allocation sent to clusters.",
+    size: "lg",
+    initial: {
+      target: p.target,
+      budget: p.budget,
+      unit: p.unit,
+      allocations: regionClusters.map(c => ({
+        targetType: "cluster",
+        targetId: c.id,
+        targetName: c.code ? c.code + " — " + c.name : c.name,
+        target: "",
+        budget: ""
+      }))
+    },
+    steps: [
+      {
+        label: "Split", title: "Split amount & budget across clusters",
+        render: (d) => `
+          <div class="alert alert--info">
+            <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+            <div>
+              Splitting <strong>${fmtNum(p.target)} ${escapeHtml(p.unit || "")}</strong>
+              and <strong>${fmtMoney(p.budget)} ETB</strong> across
+              ${regionClusters.length} cluster${regionClusters.length === 1 ? "" : "s"}.
+            </div>
+          </div>
+          <table class="alloc-table">
+            <thead>
+              <tr>
+                <th>Cluster</th>
+                <th style="width:140px">Amount</th>
+                <th style="width:160px">Budget (ETB)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${d.allocations.map((a, i) => `
+                <tr>
+                  <td><strong>${escapeHtml(a.targetName)}</strong></td>
+                  <td><input data-alloc-target="${i}" type="number" min="0" step="0.01"
+                             value="${escapeHtml(a.target || "")}" placeholder="0"></td>
+                  <td><input data-alloc-budget="${i}" type="number" min="0" step="1"
+                             value="${escapeHtml(a.budget || "")}" placeholder="0"></td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+          ${allocSummary(d.target, d.allocations)}`,
+        validate: d => {
+          const sumT = d.allocations.reduce((s,a) => s + num(a.target), 0);
+          const sumB = d.allocations.reduce((s,a) => s + num(a.budget), 0);
+          if (Math.abs(sumT - num(d.target)) > 0.01)
+            return `Amounts sum to ${fmtNum(sumT)} but total is ${fmtNum(d.target)}.`;
+          if (Math.abs(sumB - num(d.budget)) > 0.01)
+            return `Budgets sum to ${fmtMoney(sumB)} but total is ${fmtMoney(d.budget)}.`;
+          return null;
+        },
+        after: (root, data) => {
+          root.querySelectorAll("[data-alloc-target]").forEach(inp => {
+            inp.addEventListener("input", () => {
+              data.allocations[Number(inp.dataset.allocTarget)].target = inp.value;
+              const s = root.querySelector(".alloc-sum");
+              if (s) s.outerHTML = allocSummary(data.target, data.allocations);
+            });
+          });
+          root.querySelectorAll("[data-alloc-budget]").forEach(inp => {
+            inp.addEventListener("input", () => {
+              data.allocations[Number(inp.dataset.allocBudget)].budget = inp.value;
+              const s = root.querySelector(".alloc-sum");
+              if (s) s.outerHTML = allocSummary(data.target, data.allocations);
+            });
+          });
+        }
+      }
+    ],
+    onFinish: async (d) => {
+      const allocs = d.allocations.map(a => ({
+        targetType: "cluster",
+        targetId: a.targetId,
+        targetName: a.targetName,
+        target: num(a.target),
+        budget: num(a.budget),
+        childPlanId: null
+      }));
+      await updateDoc(doc(db, "workplans", planId), {
+        allocations: allocs,
+        updatedAt: serverTimestamp()
+      });
+      try {
+        await addDoc(collection(db, "notifications"), {
+          type: "workplan_split_to_clusters",
+          title: "Work plan split to clusters",
+          body: `${S.name} split "${p.workTypeName || p.title}" across ${allocs.length} clusters.`,
+          forRoles: ["super_admin", "regional_admin", "cluster_directorate"],
+          link: "workplans.html", read: false,
+          createdAt: serverTimestamp(), createdBy: S.uid
+        });
+      } catch (e) {}
+    }
+  });
+}
+
+/* ============================================================
+   BREAKDOWN WIZARDS
+   ============================================================ */
+function openBreakdownWizard(parentPlan, alloc) {
+  const level = myLevel();
+  if (level === "cluster") return openClusterBreakdown(parentPlan, alloc);
+  if (level === "woreda")  return openWoredaBreakdown(parentPlan, alloc);
+  toast("You cannot break this plan down.", "error");
+}
+
+function openClusterBreakdown(parentPlan, alloc) {
+  const cluster = CLUSTERS.find(c => c.id === S.clusterId);
+  const woredas = normalizeWoredas(cluster?.woredas);
+  if (!woredas.length) { toast("No woredas in this cluster yet.", "error"); return; }
+
+  openWizard({
+    title: "Split Allocation to Woredas",
+    subtitle: `From: ${parentPlan.title}`,
+    finishLabel: "Send to Woredas",
+    successMessage: "Allocation sent to woredas.",
+    size: "lg",
+    initial: {
+      title: `${parentPlan.title} — ${cluster?.name || "Cluster"} breakdown`,
+      description: parentPlan.description || "",
+      unit: parentPlan.unit,
+      target: alloc.target, budget: alloc.budget,
+      allocations: woredas.map(w => ({
+        targetType:"woreda", targetId:w.code,
+        targetName: w.code ? w.code + " — " + w.name : w.name,
+        target:"", budget:""
+      }))
+    },
+    steps: [
+      { label:"Confirm", title:"Confirm scope",
+        render: (d) => `
+          <div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+            <div>You received <strong>${fmtNum(alloc.target)} ${escapeHtml(parentPlan.unit)}</strong>
+              and <strong>${fmtMoney(alloc.budget)} ETB</strong>. Split across woredas.</div></div>
+          <div class="field"><label class="field__required">Breakdown title</label>
+            <input data-field="title" value="${escapeHtml(d.title)}"></div>
+          <div class="field"><label>Description</label>
+            <textarea data-field="description">${escapeHtml(d.description)}</textarea></div>`,
+        validate: d => d.title && d.title.trim().length >= 3 ? null : "Title required." },
+      { label:"Split to Woredas", title:"Split amount & budget across woredas",
+        render: (d) => `
+          <table class="alloc-table">
+            <thead><tr><th>Woreda / City</th><th style="width:140px">Amount</th><th style="width:160px">Budget (ETB)</th></tr></thead>
+            <tbody>${d.allocations.map((a,i) => `
+              <tr><td><strong>${escapeHtml(a.targetName)}</strong></td>
+                <td><input data-alloc-target="${i}" type="number" min="0" step="0.01" value="${escapeHtml(a.target||"")}" placeholder="0"></td>
+                <td><input data-alloc-budget="${i}" type="number" min="0" step="1" value="${escapeHtml(a.budget||"")}" placeholder="0"></td></tr>`).join("")}
+            </tbody></table>
+          ${allocSummary(d.target, d.allocations)}`,
+        validate: d => {
+          const sumT = d.allocations.reduce((s,a) => s + num(a.target), 0);
+          const sumB = d.allocations.reduce((s,a) => s + num(a.budget), 0);
+          if (Math.abs(sumT - num(d.target)) > 0.01) return `Amounts sum to ${fmtNum(sumT)} but total is ${fmtNum(d.target)}.`;
+          if (Math.abs(sumB - num(d.budget)) > 0.01) return `Budgets sum to ${fmtMoney(sumB)} but total is ${fmtMoney(d.budget)}.`;
+          return null;
+        },
+        after: (root, data) => {
+          root.querySelectorAll("[data-alloc-target]").forEach(inp => {
+            inp.addEventListener("input", () => {
+              data.allocations[Number(inp.dataset.allocTarget)].target = inp.value;
+              const s = root.querySelector(".alloc-sum"); if (s) s.outerHTML = allocSummary(data.target, data.allocations);
+            });
+          });
+          root.querySelectorAll("[data-alloc-budget]").forEach(inp => {
+            inp.addEventListener("input", () => {
+              data.allocations[Number(inp.dataset.allocBudget)].budget = inp.value;
+              const s = root.querySelector(".alloc-sum"); if (s) s.outerHTML = allocSummary(data.target, data.allocations);
+            });
+          });
+        } },
+      { label:"Review", title:"Review and send",
+        render: (d) => `
+          <div class="review">
+            <div class="review__row"><span class="review__k">Cluster</span><span class="review__v">${escapeHtml(cluster?.name||"—")}</span></div>
+            <div class="review__row"><span class="review__k">Amount</span><span class="review__v">${fmtNum(d.target)} ${escapeHtml(d.unit)}</span></div>
+            <div class="review__row"><span class="review__k">Budget</span><span class="review__v">${fmtMoney(d.budget)} ETB</span></div>
+            <div class="review__row"><span class="review__k">Woredas</span><span class="review__v">${d.allocations.length}</span></div>
+          </div>` }
+    ],
+    onFinish: async (d) => {
+      const payload = {
+        level:"cluster", parentPlanId: parentPlan.id,
+        workTypeId: parentPlan.workTypeId || null,
+        workTypeName: parentPlan.workTypeName || null,
+        workTypeLoad: parentPlan.workTypeLoad || null,
+        workTypeLoadPercent: parentPlan.workTypeLoadPercent || null,
+        workTypeLoadLabel: parentPlan.workTypeLoadLabel || null,
+        workTypeMeasure: parentPlan.workTypeMeasure || null,
+        title: d.title.trim(),
+        description: (d.description||"").trim() || null,
+        unit: parentPlan.unit,
+        target: num(d.target), budget: num(d.budget),
+        year: currentYear, period:"yearly", status:"active",
+        regionCode: S.region, sectorId: parentPlan.sectorId, sectorName: parentPlan.sectorName || null,
+        departmentId: parentPlan.departmentId || null,
+        departmentName: parentPlan.departmentName || null,
+        teamLeaderId: parentPlan.teamLeaderId || null,
+        teamLeaderName: parentPlan.teamLeaderName || null,
+        clusterId: S.clusterId, clusterName: cluster?.name || null,
+        allocations: d.allocations.map(a => ({
+          targetType:"woreda", targetId:a.targetId, targetName:a.targetName,
+          target: num(a.target), budget: num(a.budget), childPlanId:null
+        })),
+        createdBy: S.uid, createdByName: S.name, createdByRole: S.role,
+        createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+      };
+      const ref = await addDoc(collection(db, "workplans"), payload);
+      const parentAllocs = (parentPlan.allocations || []).map(a =>
+        a.targetId === S.clusterId ? { ...a, childPlanId: ref.id } : a);
+      await updateDoc(doc(db, "workplans", parentPlan.id), {
+        allocations: parentAllocs, updatedAt: serverTimestamp()
+      });
+      return ref;
+    }
+  });
+}
+
+function openWoredaBreakdown(parentPlan, alloc) {
+  const staffCandidates = USERS.filter(u =>
+    u.woredaCode === S.woredaCode && u.active !== false &&
+    ["employee","manager","woreda_city"].includes(u.role)
+  );
+
+  openWizard({
+    title:"Split Allocation to Periods & Staff",
+    subtitle:`From: ${parentPlan.title}`,
+    finishLabel:"Send to Staff",
+    successMessage:"Work sent to staff.",
+    size:"lg",
+    initial:{
+      title:`${parentPlan.title} — ${S.woredaName || "Woreda"} work plan`,
+      description: parentPlan.description || "",
+      unit: parentPlan.unit, target: alloc.target, budget: alloc.budget,
+      period:"monthly",
+      allocations: [{ targetType:"staff", targetId:"", targetName:"", period:"monthly", target:"", budget:"" }]
+    },
+    steps:[
+      { label:"Confirm", title:"Confirm scope & period",
+        render: (d) => `
+          <div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+            <div>You received <strong>${fmtNum(alloc.target)} ${escapeHtml(parentPlan.unit)}</strong> and
+              <strong>${fmtMoney(alloc.budget)} ETB</strong>. Choose period, then assign to staff.</div></div>
+          <div class="field"><label class="field__required">Breakdown title</label>
+            <input data-field="title" value="${escapeHtml(d.title)}"></div>
+          <div class="field"><label>Description</label>
+            <textarea data-field="description">${escapeHtml(d.description)}</textarea></div>
+          <div class="field"><label class="field__required">Planning period</label>
+            <div class="period-picker">
+              ${PERIODS.map(p => `
+                <div class="period-btn ${d.period===p?"is-on":""}" data-period="${p}">
+                  <div class="period-btn__icon"><svg viewBox="0 0 24 24">${ICONS.calendar}</svg></div>
+                  <div class="period-btn__label">${PERIOD_LABELS[p]}</div>
+                </div>`).join("")}
+            </div></div>`,
+        validate: d => {
+          if (!d.title || d.title.trim().length < 3) return "Title required.";
+          if (!PERIODS.includes(d.period)) return "Choose a period.";
+          return null;
+        },
+        after: (root, data, refresh) => {
+          root.querySelectorAll("[data-period]").forEach(btn => {
+            btn.addEventListener("click", () => {
+              data.period = btn.dataset.period;
+              (data.allocations||[]).forEach(a => a.period = data.period);
+              refresh();
+            });
+          });
+        } },
+      { label:"Split to Staff", title:"Assign amount, budget & period to staff",
+        render: (d) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-size:12.5px;font-weight:700;color:var(--muted)">Period:
+              <strong style="color:var(--primary)">${escapeHtml(PERIOD_LABELS[d.period])}</strong></div>
+            <button type="button" class="btn btn--sm" id="add-alloc-row">
+              <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add staff row</button>
+          </div>
+          <table class="alloc-table">
+            <thead><tr><th>Staff member</th><th style="width:130px">Amount</th><th style="width:150px">Budget (ETB)</th><th style="width:40px"></th></tr></thead>
+            <tbody>${d.allocations.map((a,i) => `
+              <tr>
+                <td><select data-alloc-staff="${i}"><option value="">— Choose staff —</option>
+                  ${staffCandidates.map(u => `<option value="${u.id}" ${a.targetId===u.id?"selected":""}>
+                    ${escapeHtml(u.name||u.email)} — ${escapeHtml(roleLabel(u.role))}</option>`).join("")}
+                </select></td>
+                <td><input data-alloc-target="${i}" type="number" min="0" step="0.01" value="${escapeHtml(a.target||"")}" placeholder="0"></td>
+                <td><input data-alloc-budget="${i}" type="number" min="0" step="1" value="${escapeHtml(a.budget||"")}" placeholder="0"></td>
+                <td>${d.allocations.length>1 ? `<button type="button" class="btn btn--sm btn--icon btn--danger" data-remove="${i}"><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>` : ""}</td>
+              </tr>`).join("")}
+            </tbody></table>
+          ${allocSummary(d.target, d.allocations)}`,
+        validate: d => {
+          if (!(d.allocations||[]).length) return "Add at least one staff row.";
+          for (const a of d.allocations) {
+            if (!a.targetId) return "Select a staff member in every row.";
+            if (!(num(a.target) > 0)) return "Each row needs an amount > 0.";
+          }
+          const sumT = d.allocations.reduce((s,a) => s + num(a.target), 0);
+          const sumB = d.allocations.reduce((s,a) => s + num(a.budget), 0);
+          if (Math.abs(sumT - num(d.target)) > 0.01) return `Amounts sum to ${fmtNum(sumT)} but total is ${fmtNum(d.target)}.`;
+          if (Math.abs(sumB - num(d.budget)) > 0.01) return `Budgets sum to ${fmtMoney(sumB)} but total is ${fmtMoney(d.budget)}.`;
+          return null;
+        },
+        after: (root, data, refresh) => {
+          root.querySelector("#add-alloc-row")?.addEventListener("click", () => {
+            data.allocations.push({ targetType:"staff", targetId:"", targetName:"", period:data.period, target:"", budget:"" });
+            refresh();
+          });
+          root.querySelectorAll("[data-remove]").forEach(btn => btn.addEventListener("click", () => {
+            data.allocations.splice(Number(btn.dataset.remove), 1); refresh();
+          }));
+          root.querySelectorAll("[data-alloc-staff]").forEach(sel => sel.addEventListener("change", () => {
+            const i = Number(sel.dataset.allocStaff);
+            const u = USERS.find(x => x.id === sel.value);
+            data.allocations[i].targetId = sel.value;
+            data.allocations[i].targetName = u ? (u.name || u.email) : "";
+          }));
+          root.querySelectorAll("[data-alloc-target]").forEach(inp => inp.addEventListener("input", () => {
+            data.allocations[Number(inp.dataset.allocTarget)].target = inp.value;
+            const s = root.querySelector(".alloc-sum"); if (s) s.outerHTML = allocSummary(data.target, data.allocations);
+          }));
+          root.querySelectorAll("[data-alloc-budget]").forEach(inp => inp.addEventListener("input", () => {
+            data.allocations[Number(inp.dataset.allocBudget)].budget = inp.value;
+            const s = root.querySelector(".alloc-sum"); if (s) s.outerHTML = allocSummary(data.target, data.allocations);
+          }));
+        } },
+      { label:"Review", title:"Review and send",
+        render: (d) => `
+          <div class="review">
+            <div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">${escapeHtml(S.woredaName||"—")}</span></div>
+            <div class="review__row"><span class="review__k">Period</span><span class="review__v"><span class="tag tag--blue">${escapeHtml(PERIOD_LABELS[d.period])}</span></span></div>
+            <div class="review__row"><span class="review__k">Amount</span><span class="review__v">${fmtNum(d.target)} ${escapeHtml(d.unit)}</span></div>
+            <div class="review__row"><span class="review__k">Staff</span><span class="review__v">${d.allocations.length}</span></div>
+          </div>` }
+    ],
+    onFinish: async (d) => {
+      const payload = {
+        level:"staff", parentPlanId: parentPlan.id,
+        workTypeId: parentPlan.workTypeId || null,
+        workTypeName: parentPlan.workTypeName || null,
+        workTypeLoad: parentPlan.workTypeLoad || null,
+        workTypeLoadPercent: parentPlan.workTypeLoadPercent || null,
+        workTypeLoadLabel: parentPlan.workTypeLoadLabel || null,
+        workTypeMeasure: parentPlan.workTypeMeasure || null,
+        title: d.title.trim(),
+        description: (d.description||"").trim() || null,
+        unit: parentPlan.unit,
+        target: num(d.target), budget: num(d.budget),
+        year: currentYear, period: d.period, status:"active",
+        regionCode: S.region, sectorId: parentPlan.sectorId, sectorName: parentPlan.sectorName || null,
+        departmentId: parentPlan.departmentId || null,
+        departmentName: parentPlan.departmentName || null,
+        teamLeaderId: parentPlan.teamLeaderId || null,
+        teamLeaderName: parentPlan.teamLeaderName || null,
+        clusterId: S.clusterId, clusterName: parentPlan.clusterName || null,
+        woredaCode: S.woredaCode, woredaName: S.woredaName,
+        allocations: d.allocations.map(a => ({
+          targetType:"staff", targetId:a.targetId, targetName:a.targetName,
+          target: num(a.target), budget: num(a.budget), period: d.period, childPlanId:null
+        })),
+        createdBy: S.uid, createdByName: S.name, createdByRole: S.role,
+        createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+      };
+      const ref = await addDoc(collection(db, "workplans"), payload);
+      const parentAllocs = (parentPlan.allocations || []).map(a =>
+        a.targetId === S.woredaCode ? { ...a, childPlanId: ref.id } : a);
+      await updateDoc(doc(db, "workplans", parentPlan.id), {
+        allocations: parentAllocs, updatedAt: serverTimestamp()
+      });
+      return ref;
+    }
+  });
+}
+
+/* ============================================================
+   VIEW / EDIT / DELETE
+   ============================================================ */
+function openViewPlan(planId) {
+  const p = PLANS.find(x => x.id === planId);
+  if (!p) return;
+  const status = STATUS_META[p.status] || STATUS_META.draft;
+  const mine = findMyPendingAllocation(p);
+  const visibleAllocs = isScopedViewer()
+    ? (mine ? [mine.alloc] : [])
+    : (p.allocations || []);
+
+  openModal(`
+    <div class="modal__head">
+      <div>
+        <div class="modal__title">${escapeHtml(p.workTypeName || p.title || "Work Plan")}</div>
+        <div class="modal__sub">${escapeHtml(planScopeLine(p))}</div>
+      </div>
+      <button class="modal__close" data-close aria-label="Close"><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
+    </div>
+    <div class="modal__body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">
+        <span class="tag ${status.klass}">${status.label}</span>
+        <span class="tag tag--blue">${escapeHtml(LEVEL_LABELS[p.level] || p.level)}</span>
+        ${p.workTypeLoadLabel ? `<span class="tag ${LOAD_TAGS[p.workTypeLoad] || "tag--gray"}">${escapeHtml(p.workTypeLoadLabel)}</span>` : ""}
+        ${p.period ? `<span class="tag tag--violet">${escapeHtml(PERIOD_LABELS[p.period] || p.period)}</span>` : ""}
+      </div>
+      ${mine ? `
+        <div class="alert alert--warning">
+          <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+          <div>
+            <strong>You have a pending allocation.</strong><br>
+            Target: <strong>${fmtNum(mine.alloc.target)} ${escapeHtml(p.unit || "")}</strong>,
+            Budget: <strong>${fmtMoney(mine.alloc.budget)} ETB</strong>.
+            Break this down to ${mine.forLevel === "cluster" ? "woredas" : "staff"}.
+          </div>
+        </div>` : ""}
+      ${p.description ? `<p style="font-size:13.5px;color:var(--text-soft);line-height:1.65;margin-bottom:18px">${escapeHtml(p.description)}</p>` : ""}
+      <div class="review">
+        ${p.teamLeaderName ? `<div class="review__row"><span class="review__k">Team Leader</span><span class="review__v">${escapeHtml(p.teamLeaderName)}</span></div>` : ""}
+        <div class="review__row"><span class="review__k">Year</span><span class="review__v">${p.year||"—"}</span></div>
+        <div class="review__row"><span class="review__k">Amount</span><span class="review__v">${fmtNum(p.target)} ${escapeHtml(p.unit||"")}</span></div>
+        <div class="review__row"><span class="review__k">Budget</span><span class="review__v">${fmtMoney(p.budget)} ETB</span></div>
+        <div class="review__row"><span class="review__k">Created by</span><span class="review__v">${escapeHtml(p.createdByName||"—")}</span></div>
+      </div>
+      ${visibleAllocs.length ? `
+        <table class="alloc-table" style="margin-top:22px">
+          <thead><tr>
+            <th>Recipient</th>
+            <th>Amount</th>
+            <th>Budget</th>
+            ${!isScopedViewer() ? "<th>Status</th>" : ""}
+          </tr></thead>
+          <tbody>${visibleAllocs.map(a => `
+            <tr>
+              <td>${escapeHtml(a.targetName||"—")}</td>
+              <td>${fmtNum(a.target)} ${escapeHtml(p.unit||"")}</td>
+              <td>${fmtMoney(a.budget)} ETB</td>
+              ${!isScopedViewer() ? '<td>' +
+                (a.childPlanId
+                  ? '<span class="tag tag--green">Split</span>'
+                  : a.accepted
+                    ? '<span class="tag tag--blue">Accepted</span>'
+                    : '<span class="tag tag--gold">Pending</span>') +
+                '</td>' : ""}
+            </tr>`).join("")}
+          </tbody></table>` : ""}
+    </div>
+    <div class="modal__foot">
+      <button class="btn" data-close>Close</button>
+      ${mine ? `<button class="btn btn--gold" id="view-breakdown-btn">
+        <svg viewBox="0 0 24 24">${ICONS.split}</svg> Break down
+      </button>` : ""}
+      ${!isScopedViewer() && canEditPlan(p) ? `<button class="btn btn--primary" id="view-edit-btn">
+        <svg viewBox="0 0 24 24">${ICONS.edit}</svg> Edit</button>` : ""}
+    </div>
+  `);
+  document.getElementById("view-edit-btn")?.addEventListener("click", () => {
+    closeModal(); setTimeout(() => openEditPlan(planId), 100);
+  });
+  document.getElementById("view-breakdown-btn")?.addEventListener("click", () => {
+    if (mine) { closeModal(); setTimeout(() => openBreakdownWizard(p, mine.alloc), 100); }
+  });
+}
+function openEditPlan(planId) {
+  const p = PLANS.find(x => x.id === planId);
+  if (!p) return;
+  if (!canEditPlan(p)) { toast("You cannot edit this plan", "error"); return; }
+  openModal(`
+    <div class="modal__head">
+      <div><div class="modal__title">Edit Work Plan</div>
+        <div class="modal__sub">${escapeHtml(p.workTypeName || p.title)}</div></div>
+      <button class="modal__close" data-close aria-label="Close"><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
+    </div>
+    <div class="modal__body">
+      <div class="field"><label>Title</label>
+        <input id="ep-title" value="${escapeHtml(p.title||"")}"></div>
+      <div class="field"><label>Description</label>
+        <textarea id="ep-desc">${escapeHtml(p.description||"")}</textarea></div>
+      <div class="field-row">
+        <div class="field"><label>Amount</label>
+          <input id="ep-target" type="number" min="0" step="0.01" value="${p.target||0}"></div>
+        <div class="field"><label>Budget (ETB)</label>
+          <input id="ep-budget" type="number" min="0" step="1" value="${p.budget||0}"></div>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="ep-status">
+          ${Object.entries(STATUS_META).map(([k,m]) => `<option value="${k}" ${p.status===k?"selected":""}>${m.label}</option>`).join("")}
+        </select></div>
+    </div>
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn btn--primary" id="ep-submit">
+        <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
+        <span class="btn-label">Save</span>
+      </button>
+    </div>
+  `);
+  document.getElementById("ep-submit").addEventListener("click", async () => {
+    const btn = document.getElementById("ep-submit");
+    const sp = btn.querySelector(".spinner"), lbl = btn.querySelector(".btn-label");
+    btn.disabled = true; sp.classList.remove("hidden"); lbl.textContent = "Saving…";
+    try {
+      await updateDoc(doc(db, "workplans", planId), {
+        title: document.getElementById("ep-title").value.trim(),
+        description: document.getElementById("ep-desc").value.trim() || null,
+        target: num(document.getElementById("ep-target").value),
+        budget: num(document.getElementById("ep-budget").value),
+        status: document.getElementById("ep-status").value,
+        updatedAt: serverTimestamp()
+      });
+      toast("Work plan updated","success");
+      closeModal();
+    } catch (err) {
+      toast(err.message||"Failed to save","error");
+      btn.disabled = false; sp.classList.add("hidden"); lbl.textContent = "Save";
+    }
+  });
+}
+function confirmDeletePlan(planId) {
+  const p = PLANS.find(x => x.id === planId);
+  if (!p) return;
+  if (!canDeletePlan(p)) { toast("You cannot delete this plan", "error"); return; }
+  openModal(`
+    <div class="modal__head">
+      <div><div class="modal__title">Delete work plan?</div>
+        <div class="modal__sub">This cannot be undone</div></div>
+      <button class="modal__close" data-close aria-label="Close"><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
+    </div>
+    <div class="modal__body">
+      <div class="alert alert--error" style="margin-bottom:0">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div>
+          <div style="font-weight:700;margin-bottom:6px">You are about to delete:</div>
+          <div style="font-size:15px;font-weight:700;color:var(--text)">${escapeHtml(p.workTypeName || p.title || "Untitled")}</div>
+          <div style="font-size:12.5px;color:var(--muted);margin-top:2px">${escapeHtml(planScopeLine(p))}</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn btn--danger" id="confirm-del">
+        <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
+        <span class="btn-label">Delete</span>
+      </button>
+    </div>
+  `);
+  document.getElementById("confirm-del").addEventListener("click", async () => {
+    const btn = document.getElementById("confirm-del");
+    const sp = btn.querySelector(".spinner"), lbl = btn.querySelector(".btn-label");
+    btn.disabled = true; sp.classList.remove("hidden"); lbl.textContent = "Deleting…";
+    try {
+      await deleteDoc(doc(db, "workplans", planId));
+      toast("Work plan removed","success");
+      closeModal();
+    } catch (err) {
+      toast(err.message||"Failed","error");
+      btn.disabled = false; sp.classList.add("hidden"); lbl.textContent = "Delete";
+    }
+  });
+}
+
+/* ============================================================
+   SUBSCRIPTIONS
+   ============================================================ */
+function subscribePlans() {
+  if (unsubPlans) unsubPlans();
+  let q = collection(db, "workplans");
+  if (!isSuper() && S?.region) {
+    q = query(q, where("regionCode", "==", S.region));
+  }
+  console.log("[workplans] subscribing plans:", isSuper() ? "all" : ("region=" + S.region));
+
+  unsubPlans = onSnapshot(q,
+    (snap) => {
+      PLANS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      console.log("[workplans] plans loaded:", PLANS.length,
+                  "| visible:", visiblePlans().length,
+                  "| mine:", myAllocationRows().length);
+      render();
+    },
+    (err) => {
+      console.warn("[workplans] plans subscription failed:", err.code, err.message);
+      const fallback = onSnapshot(collection(db, "workplans"),
+        (snap) => {
+          PLANS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          render();
+        },
+        (e2) => {
+          console.error("[workplans] fallback also failed:", e2.code, e2.message);
+          toast("workplans: " + (e2.code || e2.message), "error");
+        });
+      unsubPlans = fallback;
+    });
+}
+
+function subscribeUsers() {
+  if (unsubUsers) unsubUsers();
+  let q = collection(db, "users");
+  if (isRegionalAdmin() && S.region) q = query(q, where("region", "==", S.region));
+  else if ((isClusterDir() || isClusterAdmin()) && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
+  else if ((isWoredaCity() || isManager()) && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
+  unsubUsers = onSnapshot(q, (snap) => {
+    USERS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    render();
+  }, (err) => console.warn("[users]", err.code, err.message));
+}
+
+function subscribeClusters() {
+  if (unsubClusters) unsubClusters();
+  let q = collection(db, "clusters");
+  if (S?.region) q = query(q, where("regionCode","==",S.region));
+  unsubClusters = onSnapshot(q, (snap) => {
+    CLUSTERS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    render();
+  }, (err) => console.warn("[clusters]", err.code, err.message));
+}
+
+function subscribeSectors() {
+  if (unsubSectors) unsubSectors();
+  let q = collection(db, "sectors");
+  if (S?.region) q = query(q, where("regionCode", "==", S.region));
+  unsubSectors = onSnapshot(q,
+    (snap) => {
+      SECTORS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      render();
+    },
+    (err) => {
+      console.warn("[workplans] sectors onSnapshot error:", err.code, err.message);
+      const fq = S?.region
+        ? query(collection(db, "sectors"), where("regionCode", "==", S.region))
+        : collection(db, "sectors");
+      getDocs(fq).then(s => {
+        SECTORS = s.docs.map(d => ({ id:d.id, ...d.data() }));
+        render();
+      }).catch(e => console.error("[workplans] fallback failed:", e.code, e.message));
+    });
+}
+
+function subscribeDepartments() {
+  if (unsubDepartments) unsubDepartments();
+  let q = collection(db, "departments");
+  if (S?.region) q = query(q, where("regionCode", "==", S.region));
+  unsubDepartments = onSnapshot(q,
+    (snap) => {
+      DEPARTMENTS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      render();
+    },
+    (err) => console.warn("[workplans] departments onSnapshot error:", err.code, err.message));
+}
+
+/* ============================================================
+   SHELL BINDINGS
+   ============================================================ */
+document.getElementById("collapse-toggle").addEventListener("click", (e) => {
+  e.stopPropagation();
+  const c = !document.body.classList.contains("sidebar-collapsed");
+  document.body.classList.toggle("sidebar-collapsed", c);
+  try { localStorage.setItem("cs.sidebar", c ? "collapsed" : "expanded"); } catch (err) {}
+});
+document.getElementById("menu-toggle").addEventListener("click", () =>
+  document.body.classList.toggle("sidebar-open"));
+document.getElementById("overlay").addEventListener("click", () =>
+  document.body.classList.remove("sidebar-open"));
+document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const panel = btn.closest(".dropdown").querySelector("[data-dropdown-panel]");
+    const open = !panel.classList.contains("hidden");
+    document.querySelectorAll("[data-dropdown-panel]").forEach(p => p.classList.add("hidden"));
+    if (!open) panel.classList.remove("hidden");
+  });
+});
+document.addEventListener("click", () =>
+  document.querySelectorAll("[data-dropdown-panel]").forEach(p => p.classList.add("hidden")));
+try {
+  if (localStorage.getItem("cs.sidebar") === "collapsed") document.body.classList.add("sidebar-collapsed");
+} catch (e) {}
+
+let searchTimer;
+document.getElementById("search-input").addEventListener("input", (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { searchTerm = e.target.value; renderPlans(); }, 130);
+});
+document.getElementById("level-filter").addEventListener("change", (e) => {
+  filterLevel = e.target.value; renderPlans();
+});
+document.getElementById("status-filter").addEventListener("change", (e) => {
+  filterStatus = e.target.value; renderPlans();
+});
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+onAuthStateChanged(auth, async (user) => {
+  if (kick.done) return;
+  if (!user) { kick("no-user"); return; }
+
+  let userDoc = null;
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (snap.exists()) userDoc = snap.data();
+    if (userDoc && userDoc.active === false) { kick("inactive"); return; }
+  } catch (e) { console.warn("[user read]", e); }
+
+  S = {
+    uid: user.uid,
+    role: userDoc?.role || "employee",
+    email: user.email || "",
+    name: userDoc?.name || user.email?.split("@")[0] || "User",
+    photoURL: userDoc?.photoURL || null,
+    region: userDoc?.region || userDoc?.regionCode || "",
+    regionCode: userDoc?.regionCode || userDoc?.region || "",
+    clusterId: userDoc?.clusterId || "",
+    clusterName: userDoc?.clusterName || "",
+    woredaCode: userDoc?.woredaCode || "",
+    woredaName: userDoc?.woredaName || "",
+    sectorId: userDoc?.sectorId || "",
+    sectorName: userDoc?.sectorName || "",
+    departmentId: userDoc?.departmentId || "",
+    officeId: userDoc?.officeId || "",
+    isDirector: userDoc?.isDirector === true
+  };
+  console.log("[workplans] session:", {
+    role: S.role, region: S.region,
+    clusterId: S.clusterId, woredaCode: S.woredaCode
+  });
+
+  const allowed = ["super_admin","regional_admin","directorate","cluster_directorate","woreda_city","manager","admin","employee"];
+  if (!allowed.includes(S.role)) { window.location.replace("dashboard.html"); return; }
+
+  renderSidebar();
+  renderUser();
+  render();
+
+  try { await auth.currentUser?.getIdToken(true); } catch (e) {}
+  await new Promise(r => setTimeout(r, 200));
+
+  subscribeClusters();
+  subscribeSectors();
+  subscribeDepartments();
+  subscribeUsers();
+  subscribePlans();
+});
+
+console.log("[workplans] booted — pending pill clickable, banner removed");
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports — Civil Service MIS</title>
+<link rel="icon" type="image/png" href="../images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+(function headGuard() {
+  try {
+    if (sessionStorage.getItem("loggedIn") !== "true" || !sessionStorage.getItem("uid")) {
+      sessionStorage.clear();
+      sessionStorage.setItem("__redirectReason", "expired");
+      window.location.replace("../index.html");
+    }
+  } catch (e) { window.location.replace("../index.html"); }
+})();
+</script>
+<script type="importmap">
+{
+  "imports": {
+    "firebase/app":       "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js",
+    "firebase/auth":      "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js"
+  }
+}
+</script>
+<style>
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --primary:#0b5cab; --primary-dark:#073d75; --secondary:#0e7490;
+  --text:#172033; --text-soft:#344054; --muted:#6b7280; --muted-light:#98a2b3;
+  --border:#e5e7eb; --border-soft:#eef1f5;
+  --danger:#dc2626; --success:#067647; --warning:#b8860b; --bg:#f4f7fb; --bg-soft:#fbfcfe;
+  --violet:#5b21b6;
+  --sh-sm:0 1px 2px rgba(20,40,70,.04),0 1px 3px rgba(20,40,70,.06);
+  --sh-md:0 4px 12px rgba(20,40,70,.06),0 2px 4px rgba(20,40,70,.04);
+  --sh-lg:0 12px 32px rgba(20,40,70,.08),0 4px 8px rgba(20,40,70,.04);
+  --r-md:13px; --r-lg:20px; --r-full:999px;
+  --sidebar-w:272px; --topbar-h:76px;
+}
+html, body { height:100%; }
+body {
+  font-family:"Inter","Noto Sans Ethiopic",sans-serif;
+  background:radial-gradient(circle at 10% 20%, rgba(11,92,171,.09), transparent 35%),
+             radial-gradient(circle at 90% 80%, rgba(25,169,116,.09), transparent 35%),
+             var(--bg);
+  color:var(--text); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+img, svg { display:block; max-width:100%; }
+button, input, select, textarea { font:inherit; color:inherit; }
+button { cursor:pointer; background:none; border:none; }
+a { color:inherit; text-decoration:none; }
+h1,h2,h3,h4 { line-height:1.25; letter-spacing:-0.02em; font-weight:800; }
+:focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+.hidden { display:none !important; }
+
+.app { display:grid; grid-template-columns:var(--sidebar-w) 1fr; grid-template-rows:var(--topbar-h) 1fr;
+  grid-template-areas:"sidebar topbar" "sidebar main"; min-height:100vh;
+  transition:grid-template-columns .25s cubic-bezier(.4,0,.2,1); }
+body.sidebar-collapsed .app { grid-template-columns:88px 1fr; }
+
+.sidebar { grid-area:sidebar; position:sticky; top:0; height:100vh; width:var(--sidebar-w);
+  background:linear-gradient(145deg, #073d75 0%, #0b5cab 55%, #0e7490 100%);
+  color:#fff; display:flex; flex-direction:column; overflow:hidden;
+  transition:width .25s cubic-bezier(.4,0,.2,1); z-index:30; }
+body.sidebar-collapsed .sidebar { width:88px; }
+.sidebar::before { content:""; position:absolute; width:450px; height:450px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.10); right:-220px; top:-150px; pointer-events:none; }
+.sidebar__brand { position:relative; z-index:2; display:flex; align-items:center; gap:14px;
+  padding:22px; border-bottom:1px solid rgba(255,255,255,.10);
+  min-height:var(--topbar-h); flex-shrink:0; }
+.sidebar__logo { width:46px; height:46px; flex-shrink:0; border-radius:14px;
+  background:rgba(255,255,255,.97); box-shadow:0 10px 24px rgba(0,0,0,.18);
+  display:grid; place-items:center; padding:5px; }
+.sidebar__logo img { width:100%; height:100%; object-fit:contain; border-radius:9px; }
+.sidebar__identity { min-width:0; flex:1; opacity:1; transition:opacity .18s ease 60ms; white-space:nowrap; overflow:hidden; }
+body.sidebar-collapsed .sidebar__identity { opacity:0; pointer-events:none; }
+.sidebar__title { font-size:16px; font-weight:800; letter-spacing:-.3px; }
+.sidebar__subtitle { font-size:11px; opacity:.72; margin-top:3px; }
+.sidebar__collapse { position:absolute; right:-13px; top:50%; transform:translateY(-50%);
+  width:28px; height:28px; border-radius:50%; background:#fff; color:var(--primary-dark);
+  border:3px solid var(--bg); display:grid; place-items:center;
+  box-shadow:0 6px 14px rgba(0,0,0,.15); z-index:10; cursor:pointer; }
+.sidebar__collapse svg { width:13px; height:13px; stroke:currentColor; stroke-width:2.5;
+  fill:none; stroke-linecap:round; stroke-linejoin:round; transition:transform .25s; }
+body.sidebar-collapsed .sidebar__collapse svg { transform:rotate(180deg); }
+.sidebar__nav { position:relative; z-index:2; flex:1; padding:20px 14px; overflow-y:auto; overflow-x:hidden; }
+.sidebar__section { font-size:10.5px; font-weight:800; letter-spacing:.12em;
+  text-transform:uppercase; color:rgba(255,255,255,.45);
+  padding:18px 12px 8px; white-space:nowrap; overflow:hidden; transition:all .2s ease; }
+body.sidebar-collapsed .sidebar__section { height:6px; padding:0; opacity:0; margin-top:14px; margin-bottom:6px; }
+.nav-item { display:flex; align-items:center; gap:13px; padding:11px 13px; border-radius:12px;
+  font-size:14px; font-weight:600; color:rgba(255,255,255,.78);
+  margin-bottom:3px; transition:background .15s, color .15s;
+  white-space:nowrap; cursor:pointer; position:relative; }
+.nav-item:hover { background:rgba(255,255,255,.09); color:#fff; }
+.nav-item.is-active { background:rgba(255,255,255,.16); color:#fff; box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+.nav-item.is-active::before { content:""; position:absolute; left:-14px; top:50%; transform:translateY(-50%);
+  width:4px; height:24px; border-radius:0 4px 4px 0;
+  background:#58e6a7; box-shadow:0 0 12px rgba(88,230,167,.6); }
+.nav-item svg { width:20px; height:20px; flex-shrink:0; stroke:currentColor; stroke-width:1.85; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.nav-item__label { flex:1; overflow:hidden; text-overflow:ellipsis; transition:opacity .15s; }
+body.sidebar-collapsed .nav-item__label { opacity:0; pointer-events:none; }
+body.sidebar-collapsed .nav-item { justify-content:center; padding:12px; }
+.sidebar__footer { position:relative; z-index:2; padding:16px 20px;
+  border-top:1px solid rgba(255,255,255,.10);
+  font-size:11px; color:rgba(255,255,255,.55);
+  text-align:center; line-height:1.5; }
+
+.topbar { grid-area:topbar; background:rgba(255,255,255,.85);
+  backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:16px; padding:0 28px;
+  position:sticky; top:0; z-index:20; }
+.topbar__menu { display:none; width:42px; height:42px; border-radius:12px; color:var(--text);
+  align-items:center; justify-content:center; cursor:pointer; }
+.topbar__menu:hover { background:var(--border-soft); }
+.topbar__spacer { flex:1; }
+.topbar__actions { display:flex; align-items:center; gap:8px; }
+.icon-btn { width:44px; height:44px; border-radius:13px; display:inline-flex;
+  align-items:center; justify-content:center; color:var(--text-soft);
+  transition:background .15s; cursor:pointer; position:relative; }
+.icon-btn:hover { background:var(--border-soft); }
+.icon-btn svg { width:20px; height:20px; stroke:currentColor; stroke-width:1.85; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.icon-btn__badge { position:absolute; top:8px; right:8px; width:8px; height:8px; border-radius:50%;
+  background:#dc2626; border:2px solid #fff; display:none; }
+.icon-btn__badge.show { display:block; }
+.user-btn { display:flex; align-items:center; gap:11px;
+  padding:4px 14px 4px 4px; border-radius:var(--r-full);
+  background:var(--border-soft); cursor:pointer; transition:background .15s; }
+.user-btn:hover { background:#e4e9f1; }
+.user-btn__avatar { width:38px; height:38px; border-radius:50%;
+  background:linear-gradient(135deg, var(--primary), var(--secondary));
+  color:#fff; font-weight:800; font-size:13px;
+  display:grid; place-items:center; overflow:hidden; position:relative; }
+.user-btn__avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.user-btn__name { font-size:13px; font-weight:700; display:block; }
+.user-btn__role { font-size:11px; color:var(--muted); font-weight:600; }
+.dropdown { position:relative; }
+.dropdown__panel { position:absolute; right:0; top:calc(100% + 12px);
+  background:#fff; border:1px solid var(--border); border-radius:16px;
+  box-shadow:0 30px 60px rgba(20,40,70,.12); min-width:260px; padding:8px; z-index:50; }
+.dropdown__header { padding:12px 14px; border-bottom:1px solid var(--border-soft); margin-bottom:6px; }
+.dropdown__header strong { display:block; font-size:14px; font-weight:700; }
+.dropdown__header span { font-size:12px; color:var(--muted); }
+.dropdown__item { display:flex; align-items:center; gap:12px; width:100%;
+  padding:11px 14px; border-radius:10px; font-size:14px; font-weight:500;
+  color:var(--text-soft); text-align:left; cursor:pointer; }
+.dropdown__item:hover { background:var(--border-soft); color:var(--text); }
+.dropdown__item svg { width:17px; height:17px; stroke:currentColor; stroke-width:2; fill:none; }
+.dropdown__divider { height:1px; background:var(--border-soft); margin:6px 0; }
+.dropdown__item--danger { color:var(--danger); }
+
+.main { grid-area:main; padding:32px; overflow-x:hidden; }
+.page-head { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:22px; flex-wrap:wrap; }
+.page-head__title { font-size:32px; font-weight:800; letter-spacing:-1.2px; margin-bottom:6px; }
+.page-head__sub { font-size:15px; color:var(--muted); }
+.page-head__actions { display:flex; gap:10px; flex-wrap:wrap; }
+.scope-badge { display:inline-flex; align-items:center; gap:8px;
+  padding:8px 14px; border-radius:var(--r-full);
+  background:linear-gradient(135deg, #eaf3fc, #fff);
+  border:1px solid #bdd7f2; color:var(--primary-dark);
+  font-size:12.5px; font-weight:700; margin-top:8px; }
+.scope-badge svg { width:15px; height:15px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.scope-badge--super   { background:linear-gradient(135deg, #f0eaff, #fff); border-color:#ddd2fb; color:#5b21b6; }
+.scope-badge--hrm     { background:linear-gradient(135deg, #ecfdf3, #fff); border-color:#abefc6; color:#067647; }
+.scope-badge--cluster { background:linear-gradient(135deg, #eaf3fc, #fff); border-color:#bdd7f2; color:#0b5cab; }
+.scope-badge--office  { background:linear-gradient(135deg, #fdf5e0, #fff); border-color:#f0dcb0; color:#b8860b; }
+.scope-badge--mgr     { background:linear-gradient(135deg, #e0f5f7, #fff); border-color:#a3dfe6; color:#0e7490; }
+.scope-badge--self    { background:linear-gradient(135deg, #f1f5f9, #fff); border-color:#cbd5e1; color:#334155; }
+
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  height:46px; padding:0 20px; border-radius:13px;
+  border:1px solid #d9dee7; background:#fff;
+  color:var(--text-soft); font-size:14px; font-weight:700;
+  white-space:nowrap; cursor:pointer; transition:all .15s; }
+.btn:hover { background:var(--bg-soft); border-color:#b9c7d9; }
+.btn svg { width:17px; height:17px; stroke:currentColor; stroke-width:2.2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.btn--primary { background:linear-gradient(135deg, #0b5cab, #0e7490); border:none; color:#fff;
+  box-shadow:0 10px 22px rgba(11,92,171,.22); }
+.btn--primary:hover { background:linear-gradient(135deg, #073d75, #0b5cab); transform:translateY(-1px); }
+.btn--sm { height:38px; padding:0 14px; font-size:13px; border-radius:10px; }
+.btn--sm svg { width:15px; height:15px; }
+.btn--icon { width:38px; padding:0; }
+.btn:disabled { opacity:.55; pointer-events:none; }
+
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:24px; }
+.stat { position:relative; background:#fff; border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:18px; box-shadow:var(--sh-sm);
+  overflow:hidden; transition:box-shadow .2s, transform .2s; }
+.stat:hover { box-shadow:var(--sh-lg); transform:translateY(-3px); }
+.stat::before { content:""; position:absolute; top:0; left:0; right:0; height:4px;
+  background:var(--c1, var(--primary)); border-radius:var(--r-lg) var(--r-lg) 0 0; }
+.stat--blue   { --c1:linear-gradient(90deg, #0b5cab, #0e7490); --ic:#eaf3fc; --ifc:#0b5cab; }
+.stat--green  { --c1:linear-gradient(90deg, #19a974, #34c78e); --ic:#e7f7f0; --ifc:#128a5c; }
+.stat--gold   { --c1:linear-gradient(90deg, #d4a017, #e8b84b); --ic:#fdf5e0; --ifc:#b8860b; }
+.stat--red    { --c1:linear-gradient(90deg, #dc2626, #e74c5c); --ic:#fef3f2; --ifc:#b42318; }
+.stat--violet { --c1:linear-gradient(90deg, #6d28d9, #a78bfa); --ic:#f0eaff; --ifc:#5b21b6; }
+.stat--teal   { --c1:linear-gradient(90deg, #0e7490, #4dd4c4); --ic:#e0f5f7; --ifc:#0e7490; }
+.stat__head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+.stat__label { font-size:12.5px; color:var(--muted); font-weight:600; }
+.stat__icon { width:40px; height:40px; border-radius:12px; background:var(--ic); color:var(--ifc);
+  display:grid; place-items:center; }
+.stat__icon svg { width:19px; height:19px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.stat__value { font-size:26px; font-weight:800; letter-spacing:-1px; line-height:1; }
+.stat__sub { font-size:11.5px; color:var(--muted); margin-top:6px; }
+
+.toolbar { display:flex; gap:12px; align-items:center; margin-bottom:20px; flex-wrap:wrap;
+  background:#fff; border:1px solid var(--border); border-radius:16px; padding:14px 18px;
+  box-shadow:var(--sh-sm); }
+.toolbar__group { display:flex; gap:8px; align-items:center; }
+.toolbar__label { font-size:12px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--muted); }
+.toolbar__filter { height:44px; padding:0 36px 0 14px; border:1px solid #d9dee7; border-radius:11px;
+  background:#fbfcfe; font-size:13.5px; font-weight:600; color:var(--text-soft);
+  cursor:pointer; appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat; background-position:right 12px center; min-width:150px; }
+.toolbar__filter:focus { outline:none; border-color:#70a8d9; box-shadow:0 0 0 4px rgba(11,92,171,.08); }
+.toolbar input[type="date"] { height:44px; padding:0 12px; border:1px solid #d9dee7;
+  border-radius:11px; background:#fbfcfe; font-size:13.5px; font-weight:600; color:var(--text-soft); }
+.toolbar input[type="date"]:focus { outline:none; border-color:#70a8d9; box-shadow:0 0 0 4px rgba(11,92,171,.08); }
+.toolbar__count { font-size:13px; font-weight:700; color:var(--muted); padding:0 8px; margin-left:auto; }
+
+.tabs { display:flex; gap:6px; margin-bottom:20px; background:#fff; border:1px solid var(--border);
+  border-radius:14px; padding:6px; box-shadow:var(--sh-sm); overflow-x:auto; }
+.tab { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:10px;
+  font-size:13.5px; font-weight:700; color:var(--muted); white-space:nowrap;
+  cursor:pointer; transition:all .15s; }
+.tab:hover { background:var(--border-soft); color:var(--text); }
+.tab.is-active { background:linear-gradient(135deg, #0b5cab, #0e7490); color:#fff;
+  box-shadow:0 6px 14px rgba(11,92,171,.22); }
+.tab__count { display:inline-flex; align-items:center; justify-content:center;
+  min-width:22px; height:20px; padding:0 6px; border-radius:999px;
+  background:rgba(0,0,0,.08); font-size:11px; font-weight:800; }
+.tab.is-active .tab__count { background:rgba(255,255,255,.24); }
+
+/* ── Report section ── */
+.section { background:#fff; border:1px solid var(--border); border-radius:16px;
+  box-shadow:var(--sh-sm); overflow:hidden; margin-bottom:22px; }
+.section__head { padding:18px 22px; background:linear-gradient(135deg,#f8fbff,#fff);
+  border-bottom:1px solid var(--border); display:flex; justify-content:space-between;
+  align-items:center; gap:16px; flex-wrap:wrap; }
+.section__title { font-size:15px; font-weight:800; letter-spacing:-.3px; display:flex; align-items:center; gap:10px; }
+.section__title svg { width:18px; height:18px; stroke:var(--primary); stroke-width:2.2; fill:none; }
+.section__sub { font-size:12.5px; color:var(--muted); margin-top:3px; }
+.section__body { padding:20px 22px; }
+.section__body--flush { padding:0; }
+
+/* ── Chart bars (no external lib) ── */
+.chart { display:flex; align-items:flex-end; gap:10px; height:180px;
+  padding:10px 4px 26px; position:relative; }
+.chart__col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:6px; }
+.chart__bar { width:100%; min-height:2px; border-radius:8px 8px 3px 3px;
+  background:linear-gradient(180deg, #4a9de0, #0b5cab); transition:height .4s; position:relative; }
+.chart__bar--green  { background:linear-gradient(180deg,#34c78e,#19a974); }
+.chart__bar--gold   { background:linear-gradient(180deg,#e8b84b,#d4a017); }
+.chart__bar--red    { background:linear-gradient(180deg,#e74c5c,#dc2626); }
+.chart__bar--violet { background:linear-gradient(180deg,#a78bfa,#6d28d9); }
+.chart__bar--teal   { background:linear-gradient(180deg,#4dd4c4,#0e7490); }
+.chart__bar::after { content:attr(data-val); position:absolute; top:-22px; left:50%;
+  transform:translateX(-50%); font-size:11px; font-weight:800;
+  color:var(--text); white-space:nowrap; }
+.chart__label { font-size:11px; font-weight:700; color:var(--muted); white-space:nowrap; }
+
+/* ── Data table ── */
+table.data { width:100%; border-collapse:collapse; }
+table.data thead th { text-align:left; padding:12px 18px; background:var(--bg-soft);
+  font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--muted); border-bottom:1px solid var(--border); white-space:nowrap; }
+table.data thead th.num { text-align:right; }
+table.data tbody td { padding:12px 18px; border-bottom:1px solid var(--border-soft);
+  font-size:13.5px; color:var(--text-soft); vertical-align:middle; }
+table.data tbody tr:last-child td { border-bottom:none; }
+table.data tbody tr:hover { background:var(--bg-soft); }
+table.data td.num { text-align:right; font-family:ui-monospace,Menlo,Consolas,monospace; font-weight:700; }
+table.data tr.totals { background:#f8fafc; font-weight:800; }
+table.data tr.totals td { border-top:2px solid var(--border); color:var(--text); }
+
+/* ── Distribution bars ── */
+.dist-row { display:flex; align-items:center; gap:12px; padding:10px 0;
+  border-bottom:1px solid var(--border-soft); font-size:13px; }
+.dist-row:last-child { border-bottom:none; }
+.dist-label { font-weight:700; color:var(--text); min-width:130px; }
+.dist-bar { flex:1; height:10px; border-radius:5px; background:var(--border-soft); overflow:hidden; }
+.dist-fill { height:100%; border-radius:5px; transition:width .4s; }
+.dist-val { font-family:ui-monospace,monospace; font-weight:800; font-size:12.5px;
+  min-width:70px; text-align:right; color:var(--text); }
+
+.user-cell { display:flex; align-items:center; gap:12px; }
+.user-avatar { width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg, #eaf3fc, #bdd7f2);
+  color:var(--primary-dark); font-weight:800; font-size:12px;
+  display:grid; place-items:center; flex-shrink:0;
+  overflow:hidden; position:relative; }
+.user-avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.user-cell__main { min-width:0; }
+.user-cell__name { font-weight:700; color:var(--text); font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.user-cell__meta { font-size:11.5px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.tag { display:inline-flex; align-items:center; gap:5px;
+  padding:4px 11px; border-radius:var(--r-full);
+  font-size:11.5px; font-weight:800; letter-spacing:.01em; text-transform:uppercase; }
+.tag--green  { background:#ecfdf3; color:#067647; }
+.tag--red    { background:#fef3f2; color:#b42318; }
+.tag--gold   { background:#fdf5e0; color:#b8860b; }
+.tag--gray   { background:var(--border-soft); color:var(--text-soft); }
+.tag--blue   { background:#eaf3fc; color:#0b5cab; }
+.tag--violet { background:#f0eaff; color:#5b21b6; }
+.tag--teal   { background:#e0f5f7; color:#0e7490; }
+
+.empty { padding:60px 24px; text-align:center; color:var(--muted); }
+.empty svg { width:52px; height:52px; margin:0 auto 14px; stroke:#cbd5e1; stroke-width:1.4; fill:none; }
+.empty h3 { font-size:17px; font-weight:800; color:var(--text); margin-bottom:6px; }
+.empty p { font-size:13.5px; max-width:420px; margin:0 auto; }
+
+.spinner { width:16px; height:16px; border:2px solid currentColor;
+  border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.skeleton-row { height:60px; background:linear-gradient(90deg,#eef1f5 25%,#f8fafc 50%,#eef1f5 75%);
+  background-size:200% 100%; animation:shimmer 1.4s infinite; border-bottom:1px solid var(--border-soft); }
+@keyframes shimmer { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
+
+.overlay { display:none; position:fixed; inset:0; background:rgba(13,21,32,.45); z-index:25; }
+body.sidebar-open .overlay { display:block; }
+
+.toast-wrap { position:fixed; top:24px; right:24px; z-index:300;
+  display:flex; flex-direction:column; gap:10px; pointer-events:none;
+  max-width:calc(100vw - 48px); }
+.toast { background:var(--text); color:#fff; padding:13px 18px; border-radius:12px;
+  box-shadow:0 12px 32px rgba(20,40,70,.2); font-size:13.5px; font-weight:600;
+  display:flex; align-items:center; gap:12px; pointer-events:auto;
+  animation:toastIn .22s cubic-bezier(.4,0,.2,1); max-width:400px; }
+@keyframes toastIn { from { opacity:0; transform:translateX(24px); } to { opacity:1; transform:translateX(0); } }
+.toast--success { background:#067647; }
+.toast--error { background:#b42318; }
+.toast--info { background:#0b5cab; }
+.toast svg { width:17px; height:17px; stroke:currentColor; stroke-width:2.5; fill:none; flex-shrink:0; }
+
+@media (max-width:900px) {
+  .app { grid-template-columns:1fr !important; grid-template-areas:"topbar" "main"; }
+  .sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w) !important;
+    transform:translateX(-100%); transition:transform .28s; z-index:40; }
+  body.sidebar-open .sidebar { transform:translateX(0); }
+  .sidebar__collapse { display:none; }
+  .topbar__menu { display:inline-flex; }
+  .user-btn__name, .user-btn__role { display:none; }
+  .user-btn { padding:4px; }
+  .main { padding:18px; }
+  .page-head__title { font-size:24px; letter-spacing:-1px; }
+  .toolbar__count { display:none; }
+  .section__head, .section__body { padding-left:16px; padding-right:16px; }
+  table.data thead th, table.data tbody td { padding:10px 12px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay" id="overlay"></div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <div class="sidebar__logo">
+        <img src="../images/logo.png" alt=""
+             onerror="this.parentElement.innerHTML='<span style=&quot;color:#0b5cab;font-weight:800;font-size:18px&quot;>CS</span>'">
+      </div>
+      <div class="sidebar__identity">
+        <div class="sidebar__title">Civil Service</div>
+        <div class="sidebar__subtitle">Management Information System</div>
+      </div>
+      <button class="sidebar__collapse" id="collapse-toggle" aria-label="Toggle sidebar">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <nav class="sidebar__nav" id="sidebar-nav"></nav>
+    <div class="sidebar__footer">
+      <div>© 2026 Civil Service MIS</div>
+      <div style="margin-top:3px;opacity:.7">Eng. Abdi Furgasa</div>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <button class="topbar__menu" id="menu-toggle" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="topbar__spacer"></div>
+    <div class="topbar__actions">
+      <a href="notifications.html" class="icon-btn" aria-label="Notifications">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="icon-btn__badge" id="notif-badge"></span>
+      </a>
+      <div class="dropdown">
+        <button class="user-btn" data-dropdown-toggle>
+          <span class="user-btn__avatar" id="user-avatar">–</span>
+          <span class="user-btn__meta">
+            <span class="user-btn__name" id="user-name">Loading…</span>
+            <span class="user-btn__role" id="user-role">–</span>
+          </span>
+        </button>
+        <div class="dropdown__panel hidden" data-dropdown-panel>
+          <div class="dropdown__header">
+            <strong id="dd-name">—</strong>
+            <span id="dd-email">—</span>
+          </div>
+          <a class="dropdown__item" href="dashboard.html">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <span>Dashboard</span>
+          </a>
+          <div class="dropdown__divider"></div>
+          <button class="dropdown__item dropdown__item--danger" id="logout-btn">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span>Sign out</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <h1 class="page-head__title">Reports</h1>
+        <p class="page-head__sub" id="page-sub">Aggregated insights for your scope</p>
+        <div id="scope-badge"></div>
+      </div>
+      <div class="page-head__actions" id="head-actions">
+        <button class="btn" id="export-btn">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Period controls -->
+    <div class="toolbar">
+      <div class="toolbar__group">
+        <span class="toolbar__label">Period</span>
+        <select class="toolbar__filter" id="period-preset">
+          <option value="7d">Last 7 days</option>
+          <option value="30d" selected>Last 30 days</option>
+          <option value="q">This quarter</option>
+          <option value="y">This year</option>
+          <option value="custom">Custom range…</option>
+        </select>
+      </div>
+      <div class="toolbar__group hidden" id="custom-range">
+        <span class="toolbar__label">From</span>
+        <input type="date" id="range-from">
+        <span class="toolbar__label">To</span>
+        <input type="date" id="range-to">
+      </div>
+      <div class="toolbar__group" id="scope-controls"></div>
+      <span class="toolbar__count" id="record-count"></span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="tabs">
+      <button class="tab is-active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="attendance">Attendance</button>
+      <button class="tab" data-tab="leave">Leave</button>
+      <button class="tab" data-tab="worklogs">Work Logs</button>
+      <button class="tab" data-tab="payroll">Payroll</button>
+      <button class="tab" data-tab="budget">Budget</button>
+      <button class="tab" data-tab="training">Training</button>
+      <button class="tab" data-tab="performance">Performance</button>
+      <button class="tab" data-tab="staff">Staff</button>
+    </div>
+
+    <!-- Content -->
+    <div id="content">
+      <div class="section">
+        <div class="section__body">
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp } from "firebase/app";
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
+import {
+  getFirestore, doc, getDoc, collection, query, where, getDocs,
+  onSnapshot, orderBy, limit
+} from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyASE2f6DVivrH7koQXAFZeOrj6Wng45Uq4",
+  authDomain: "civil-service-system-f2d46.firebaseapp.com",
+  projectId: "civil-service-system-f2d46",
+  storageBucket: "civil-service-system-f2d46.firebasestorage.app",
+  messagingSenderId: "12482599055",
+  appId: "1:12482599055:web:4daa6a56cc9674c15cf8fa"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ============================================================
+   GUARD
+   ============================================================ */
+const INDEX_URL = "../index.html";
+function kick(reason) {
+  if (kick.done) return;
+  kick.done = true;
+  try { sessionStorage.clear(); if (reason === "expired") sessionStorage.setItem("__redirectReason","expired"); } catch (e) {}
+  signOut(auth).catch(() => {}).finally(() => window.location.replace(INDEX_URL));
+  setTimeout(() => window.location.replace(INDEX_URL), 800);
+}
+(function preCheck() {
+  let ok = false;
+  try { ok = sessionStorage.getItem("loggedIn") === "true" && !!sessionStorage.getItem("uid"); } catch (e) {}
+  if (!ok) kick("no-session");
+})();
+window.addEventListener("storage", (e) => { if (e.key === "loggedIn" && e.newValue !== "true") kick("cross-tab"); });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  if (kick.done) return;
+  if (!auth.currentUser || sessionStorage.getItem("loggedIn") !== "true") kick("hidden-expired");
+});
+setInterval(() => { if (kick.done) return; if (!auth.currentUser) kick("heartbeat"); }, 60000);
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest("#logout-btn");
+  if (!btn) return;
+  e.preventDefault();
+  try { sessionStorage.clear(); } catch (err) {}
+  try { await signOut(auth); } catch (err) {}
+  window.location.replace(INDEX_URL);
+});
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let S = null;
+let ACTIVE_TAB = "overview";
+let PERIOD = { from: null, to: null };
+
+// Cached raw data — loaded once per subscription
+let DATA = {
+  users: [],
+  employees: [],
+  clusters: [],
+  offices: [],
+  departments: [],
+  workLogs: [],
+  leaveRequests: [],
+  payslips: [],
+  payrollRuns: [],
+  budgets: [],
+  expenses: [],
+  enrollments: [],
+  courses: [],
+  reviews: [],
+  attendance: []
+};
+
+/* ============================================================
+   PERMISSIONS
+   ============================================================ */
+const ROLE_LABELS = {
+  super_admin: "Super Admin", admin: "Cluster Admin", hrm: "HR Manager",
+  finance: "Finance Officer", manager: "Manager", employee: "Employee"
+};
+const roleLabel = (r) => ROLE_LABELS[r] || (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+
+const isSuper   = () => S?.role === "super_admin";
+const isHRM     = () => S?.role === "hrm";
+const isAdmin   = () => S?.role === "admin";
+const isFinance = () => S?.role === "finance";
+const isMgr     = () => S?.role === "manager";
+const isEmp     = () => S?.role === "employee";
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const escapeHtml = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g,
+  (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const initials = (n) => (n || "?").split(/\s+/).slice(0,2).map(s => s[0]).join("").toUpperCase();
+const todayISO = () => new Date().toISOString().slice(0,10);
+const fmtDate = (iso) => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" });
+};
+const fmtNum = (n) => Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const fmtMoney = (n) => {
+  const v = Number(n || 0);
+  if (!isFinite(v)) return "0 ETB";
+  return v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " ETB";
+};
+const toDate = (v) => {
+  if (!v) return null;
+  if (v.toDate) return v.toDate();
+  const d = new Date(v);
+  return isNaN(d) ? null : d;
+};
+const inRange = (dateVal) => {
+  if (!dateVal) return false;
+  const d = toDate(dateVal) || new Date(dateVal);
+  if (isNaN(d)) return false;
+  const from = PERIOD.from ? new Date(PERIOD.from) : null;
+  const to   = PERIOD.to   ? new Date(PERIOD.to)   : null;
+  if (from && d < from) return false;
+  if (to) { const t = new Date(to); t.setHours(23,59,59,999); if (d > t) return false; }
+  return true;
+};
+
+function toast(msg, type="success") {
+  const wrap = document.getElementById("toast-wrap");
+  const el = document.createElement("div");
+  el.className = "toast toast--" + type;
+  const icon = type === "error" ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' : '<polyline points="20 6 9 17 4 12"/>';
+  el.innerHTML = `<svg viewBox="0 0 24 24">${icon}</svg><span>${escapeHtml(msg)}</span>`;
+  wrap.appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; }, 4200);
+  setTimeout(() => el.remove(), 4600);
+}
+
+/* ============================================================
+   PERIOD LOGIC
+   ============================================================ */
+function applyPreset(preset) {
+  const now = new Date();
+  if (preset === "7d") {
+    const from = new Date(now); from.setDate(from.getDate() - 6); from.setHours(0,0,0,0);
+    PERIOD.from = from.toISOString().slice(0,10);
+    PERIOD.to = now.toISOString().slice(0,10);
+  } else if (preset === "30d") {
+    const from = new Date(now); from.setDate(from.getDate() - 29); from.setHours(0,0,0,0);
+    PERIOD.from = from.toISOString().slice(0,10);
+    PERIOD.to = now.toISOString().slice(0,10);
+  } else if (preset === "q") {
+    const q = Math.floor(now.getMonth() / 3);
+    const start = new Date(now.getFullYear(), q * 3, 1);
+    const end = new Date(now.getFullYear(), q * 3 + 3, 0);
+    PERIOD.from = start.toISOString().slice(0,10);
+    PERIOD.to = end.toISOString().slice(0,10);
+  } else if (preset === "y") {
+    PERIOD.from = `${now.getFullYear()}-01-01`;
+    PERIOD.to = `${now.getFullYear()}-12-31`;
+  }
+  document.getElementById("range-from").value = PERIOD.from || "";
+  document.getElementById("range-to").value = PERIOD.to || "";
+}
+
+/* ============================================================
+   SCOPE
+   ============================================================ */
+function scopeLabel() {
+  if (isSuper())  return { txt: "Full system — every region", cls: "scope-badge--super" };
+  if (isHRM())    return { txt: "Organisation-wide (HR)",    cls: "scope-badge--hrm" };
+  if (isFinance() && S.officeId) return { txt: "Your office only", cls: "scope-badge--office" };
+  if (isAdmin())  return { txt: "Your cluster",              cls: "scope-badge--cluster" };
+  if (isMgr())    return { txt: "Your team + self",          cls: "scope-badge--mgr" };
+  return { txt: "You only", cls: "scope-badge--self" };
+}
+
+function scopeFilter(arr, mapFn) {
+  // Generic scope filter — each record mapped to { uid, officeId, clusterId, empId }
+  const meta = mapFn || ((x) => ({
+    uid: x.uid,
+    empId: x.empId,
+    officeId: x.officeId,
+    clusterId: x.clusterId,
+    managerId: x.managerId
+  }));
+  if (isSuper() || isHRM()) return arr;
+  if (isFinance() && S.officeId) {
+    return arr.filter(x => {
+      const m = meta(x);
+      return m.officeId === S.officeId;
+    });
+  }
+  if (isAdmin()) {
+    return arr.filter(x => {
+      const m = meta(x);
+      return m.clusterId === S.clusterId;
+    });
+  }
+  if (isMgr()) {
+    return arr.filter(x => {
+      const m = meta(x);
+      return m.uid === S.uid || m.managerId === S.uid;
+    });
+  }
+  // Employee: only own
+  return arr.filter(x => {
+    const m = meta(x);
+    return m.uid === S.uid || m.empId === S.empId;
+  });
+}
+
+/* ============================================================
+   SHELL
+   ============================================================ */
+const NAV = [
+  { section:"Overview", items:[
+    { key:"dashboard", label:"Dashboard", href:"dashboard.html", icon:"grid", roles:["*"] },
+    { key:"mywork",    label:"My Work",    href:"mywork.html",    icon:"clipboard", roles:["*"] }
+  ]},
+  { section:"Organization", items:[
+    { key:"users",       label:"Users & Staff", href:"users.html",       icon:"users",    roles:["super_admin","admin","hrm"] },
+    { key:"departments", label:"Directorates",  href:"departments.html", icon:"building", roles:["super_admin","admin","hrm","manager"] }
+  ]},
+  { section:"Human Resources", items:[
+    { key:"recruitment", label:"Recruitment", href:"recruitment.html", icon:"userPlus", roles:["super_admin","hrm","admin"] },
+    { key:"training",    label:"Training",    href:"training.html",    icon:"book",     roles:["super_admin","hrm","admin","manager","employee"] },
+    { key:"performance", label:"Performance", href:"performance.html", icon:"target",   roles:["super_admin","hrm","admin","manager","employee"] }
+  ]},
+  { section:"Operations", items:[
+    { key:"attendance",  label:"Attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","admin","hrm","manager","employee"] },
+    { key:"leave",       label:"Leave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","admin","hrm","manager","employee"] }
+  ]},
+  { section:"Finance", items:[
+    { key:"payroll",     label:"Payroll",     href:"payroll.html",  icon:"wallet", roles:["super_admin","finance","admin"] },
+    { key:"budget",      label:"Budget",      href:"budget.html",   icon:"chart",  roles:["super_admin","finance"] }
+  ]},
+  { section:"Administration", items:[
+    { key:"offices",       label:"Offices",       href:"offices.html",       icon:"building", roles:["super_admin","admin"] },
+    { key:"reports",       label:"Reports",       href:"reports.html",       icon:"chart",    roles:["*"] },
+    { key:"notifications", label:"Notifications", href:"notifications.html", icon:"bell",     roles:["*"] },
+    { key:"settings",      label:"Settings",      href:"settings.html",      icon:"settings", roles:["*"] }
+  ]}
+];
+
+const ICONS = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  userPlus:'<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>',
+  building:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  wallet:'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',
+  target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  clipboard:'<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>',
+  trendingUp:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  award:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>',
+  dollar:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+  folder:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  inbox:'<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'
+};
+
+function renderSidebar() {
+  const nav = document.getElementById("sidebar-nav");
+  nav.innerHTML = "";
+  for (const group of NAV) {
+    const vis = group.items.filter(it => it.roles.includes("*") || it.roles.includes(S.role));
+    if (!vis.length) continue;
+    const sec = document.createElement("div");
+    sec.className = "sidebar__section";
+    sec.textContent = group.section;
+    nav.appendChild(sec);
+    for (const item of vis) {
+      const a = document.createElement("a");
+      a.className = "nav-item" + (item.key === "reports" ? " is-active" : "");
+      a.href = item.href;
+      a.innerHTML = `<svg viewBox="0 0 24 24">${ICONS[item.icon]}</svg>
+                     <span class="nav-item__label">${item.label}</span>`;
+      nav.appendChild(a);
+    }
+  }
+}
+function renderUser() {
+  const avatar = document.getElementById("user-avatar");
+  if (S.photoURL) avatar.innerHTML = `<img src="${escapeHtml(S.photoURL)}" alt="">`;
+  else avatar.textContent = initials(S.name);
+  document.getElementById("user-name").textContent = S.name;
+  document.getElementById("user-role").textContent = roleLabel(S.role);
+  document.getElementById("dd-name").textContent = S.name;
+  document.getElementById("dd-email").textContent = S.email;
+}
+function renderScopeBadge() {
+  const el = document.getElementById("scope-badge");
+  const s = scopeLabel();
+  el.innerHTML = `<span class="scope-badge ${s.cls}">
+    <svg viewBox="0 0 24 24">${ICONS.shield}</svg> ${escapeHtml(s.txt)}
+  </span>`;
+}
+function renderScopeControls() {
+  const host = document.getElementById("scope-controls");
+  // Super admin / HRM can pick cluster; cluster admin picks office
+  if (isSuper() || isHRM()) {
+    host.innerHTML = `
+      <span class="toolbar__label">Cluster</span>
+      <select class="toolbar__filter" id="cluster-pick">
+        <option value="">All clusters</option>
+        ${DATA.clusters.map(c => `<option value="${c.id}">${escapeHtml((c.code ? c.code + " · " : "") + c.name)}</option>`).join("")}
+      </select>`;
+  } else if (isAdmin()) {
+    host.innerHTML = `
+      <span class="toolbar__label">Office</span>
+      <select class="toolbar__filter" id="office-pick">
+        <option value="">All offices in cluster</option>
+        ${DATA.offices.filter(o => o.clusterId === S.clusterId).map(o => `<option value="${o.id}">${escapeHtml((o.code ? o.code + " · " : "") + o.name)}</option>`).join("")}
+      </select>`;
+  } else {
+    host.innerHTML = "";
+  }
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+function renderTabs() {
+  document.querySelectorAll(".tab").forEach(t => {
+    t.classList.toggle("is-active", t.dataset.tab === ACTIVE_TAB);
+  });
+}
+
+/* ============================================================
+   DATA LOAD
+   ============================================================ */
+async function loadAll() {
+  const load = async (colName) => {
+    try {
+      const snap = await getDocs(collection(db, colName));
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch (e) {
+      console.warn("[load]", colName, e.code, e.message);
+      return [];
+    }
+  };
+
+  const [users, employees, clusters, offices, departments, workLogs,
+         leaveRequests, payslips, payrollRuns, budgets, expenses,
+         enrollments, courses, reviews] = await Promise.all([
+    load("users"), load("employees"), load("clusters"), load("offices"),
+    load("departments"), load("workLogs"), load("leaveRequests"),
+    load("payslips"), load("payrollRuns"), load("budgets"), load("expenses"),
+    load("enrollments"), load("courses"), load("performanceReviews")
+  ]);
+
+  DATA = { users, employees, clusters, offices, departments, workLogs,
+           leaveRequests, payslips, payrollRuns, budgets, expenses,
+           enrollments, courses, reviews, attendance: [] };
+
+  renderScopeControls();
+  renderContent();
+}
+
+/* ============================================================
+   CONTENT ROUTER
+   ============================================================ */
+function renderContent() {
+  const el = document.getElementById("content");
+  switch (ACTIVE_TAB) {
+    case "overview":    el.innerHTML = renderOverview();    break;
+    case "attendance":  el.innerHTML = renderAttendance();  break;
+    case "leave":       el.innerHTML = renderLeave();       break;
+    case "worklogs":    el.innerHTML = renderWorkLogs();    break;
+    case "payroll":     el.innerHTML = renderPayroll();     break;
+    case "budget":      el.innerHTML = renderBudget();      break;
+    case "training":    el.innerHTML = renderTraining();    break;
+    case "performance": el.innerHTML = renderPerformance(); break;
+    case "staff":       el.innerHTML = renderStaff();       break;
+    default:            el.innerHTML = `<div class="empty"><h3>Coming soon</h3></div>`;
+  }
+  wireActions();
+}
+
+/* ============================================================
+   TAB 1 — OVERVIEW
+   ============================================================ */
+function renderOverview() {
+  const emps       = scopeFilter(DATA.employees);
+  const logs       = scopeFilter(DATA.workLogs).filter(l => inRange(l.createdAt || l.date));
+  const leaves     = scopeFilter(DATA.leaveRequests).filter(l => inRange(l.appliedAt));
+  const payslips   = scopeFilter(DATA.payslips).filter(p => inRange(p.createdAt));
+  const budgets    = scopeFilter(DATA.budgets);
+  const expenses   = scopeFilter(DATA.expenses).filter(e => inRange(e.date || e.recordedAt));
+  const enrolls    = scopeFilter(DATA.enrollments).filter(e => inRange(e.enrolledAt));
+  const reviews    = scopeFilter(DATA.reviews).filter(r => inRange(r.createdAt));
+
+  const totalPayroll = payslips.reduce((s, p) => s + Number(p.net || 0), 0);
+  const totalBudget  = budgets.reduce((s, b) => s + Number(b.allocated || 0), 0);
+  const totalSpent   = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const totalHours   = logs.reduce((s, l) => s + Number(l.hoursSpent || 0), 0);
+
+  return `
+    <div class="section">
+      <div class="section__head">
+        <div>
+          <div class="section__title">
+            <svg viewBox="0 0 24 24">${ICONS.chart}</svg> Overview
+          </div>
+          <div class="section__sub">Everything in your scope · ${fmtDate(PERIOD.from)} → ${fmtDate(PERIOD.to)}</div>
+        </div>
+      </div>
+      <div class="section__body">
+        <div class="stats" style="margin-bottom:0">
+          ${statCard("Staff",         emps.length,                "stat--blue",   "users")}
+          ${statCard("Work Logs",     logs.length,                "stat--violet", "clipboard", fmtNum(totalHours) + " hours")}
+          ${statCard("Leave Requests",leaves.length,              "stat--gold",   "calendar")}
+          ${statCard("Payslips",      payslips.length,            "stat--teal",   "dollar", fmtMoney(totalPayroll))}
+          ${statCard("Budgets",       budgets.length,             "stat--green",  "folder", fmtMoney(totalBudget))}
+          ${statCard("Expenses",      expenses.length,            "stat--red",    "dollar", fmtMoney(totalSpent))}
+          ${statCard("Trainings",     enrolls.length,             "stat--blue",   "book")}
+          ${statCard("Reviews",       reviews.length,             "stat--gold",   "award")}
+        </div>
+      </div>
+    </div>
+  `;
+}
+function statCard(label, value, cls, iconKey, sub) {
+  return `
+    <div class="stat ${cls}">
+      <div class="stat__head">
+        <span class="stat__label">${escapeHtml(label)}</span>
+        <span class="stat__icon"><svg viewBox="0 0 24 24">${ICONS[iconKey]}</svg></span>
+      </div>
+      <div class="stat__value">${escapeHtml(String(value))}</div>
+      ${sub ? `<div class="stat__sub">${escapeHtml(sub)}</div>` : ""}
+    </div>`;
+}
+
+/* ============================================================
+   TAB 2 — ATTENDANCE
+   ============================================================ */
+function renderAttendance() {
+  // Placeholder: derive from workLogs until attendance collection exists
+  const logs = scopeFilter(DATA.workLogs).filter(l => inRange(l.date));
+  const byDay = {};
+  logs.forEach(l => { byDay[l.date] = (byDay[l.date] || 0) + 1; });
+  const days = Object.keys(byDay).sort();
+
+  if (!days.length) {
+    return `<div class="section">
+      <div class="section__head"><div class="section__title"><svg viewBox="0 0 24 24">${ICONS.clock}</svg> Attendance</div></div>
+      <div class="section__body">
+        <div class="empty">
+          <svg viewBox="0 0 24 24">${ICONS.inbox}</svg>
+          <h3>No attendance data</h3>
+          <p>No attendance records in this period for your scope.</p>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const max = Math.max(...days.map(d => byDay[d]), 1);
+  const sum = days.reduce((s, d) => s + byDay[d], 0);
+
+  return `
+    <div class="section">
+      <div class="section__head">
+        <div>
+          <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.clock}</svg> Attendance trend</div>
+          <div class="section__sub">Work logs per day</div>
+        </div>
+      </div>
+      <div class="section__body">
+        <div class="chart">
+          ${days.slice(-14).map(d => `
+            <div class="chart__col">
+              <div class="chart__bar" style="height:${Math.round((byDay[d] / max) * 100)}%" data-val="${byDay[d]}"></div>
+              <div class="chart__label">${d.slice(5)}</div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.chart}</svg> Summary</div>
+      </div>
+      <div class="section__body">
+        <div class="dist-row">
+          <span class="dist-label">Days with logs</span>
+          <div class="dist-bar"><div class="dist-fill" style="width:100%;background:#0b5cab"></div></div>
+          <span class="dist-val">${days.length}</span>
+        </div>
+        <div class="dist-row">
+          <span class="dist-label">Total logs</span>
+          <div class="dist-bar"><div class="dist-fill" style="width:100%;background:#0e7490"></div></div>
+          <span class="dist-val">${sum}</span>
+        </div>
+        <div class="dist-row">
+          <span class="dist-label">Avg / day</span>
+          <div class="dist-bar"><div class="dist-fill" style="width:100%;background:#19a974"></div></div>
+          <span class="dist-val">${(sum / days.length).toFixed(1)}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   TAB 3 — LEAVE
+   ============================================================ */
+function renderLeave() {
+  const leaves = scopeFilter(DATA.leaveRequests).filter(l => inRange(l.appliedAt));
+  if (!leaves.length) {
+    return `<div class="section"><div class="section__body">
+      <div class="empty">
+        <svg viewBox="0 0 24 24">${ICONS.calendar}</svg>
+        <h3>No leave requests</h3>
+        <p>No leave requests in this period for your scope.</p>
+      </div>
+    </div></div>`;
+  }
+  const byStatus = { pending:0, approved:0, rejected:0, cancelled:0 };
+  leaves.forEach(l => { if (byStatus[l.status] != null) byStatus[l.status]++; });
+  const byType = {};
+  leaves.forEach(l => {
+    const t = l.typeLabel || l.typeId || "Other";
+    byType[t] = (byType[t] || 0) + 1;
+  });
+  const maxType = Math.max(...Object.values(byType), 1);
+
+  return `
+    <div class="section">
+      <div class="section__head">
+        <div>
+          <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.calendar}</svg> Leave summary</div>
+          <div class="section__sub">${leaves.length} requests in this period</div>
+        </div>
+      </div>
+      <div class="section__body">
+        <div class="dist-row">
+          <span class="dist-label">Pending</span>
+          <div class="dist-bar"><div class="dist-fill" style="width:${leaves.length ? (byStatus.pending/leaves.length)*100 : 0}%;background:#d4a017"></div></div>
+          <span class="dist-val">${byStatus.pending}</span>
+        </div>
+        <div class="dist-row">
+          <span class="dist-label">Approved</span>
+          <div class="dist-bar"><div class="dist-fill" style="width:${leaves.length ? (byStatus.approved/leaves.length)*100 : 0}%;background:#19a974"></div></div>
+          <span class="dist-val">${byStatus.approved}</span>
+        </div>
+        <div class="dist-row">
+          <span class="dist-label">Rejected</span>
+          <div class="dist-bar"><div class="dist-fill" style="width:${leaves.length ? (byStatus.rejected/leaves.length)*100 : 0}%;background:#dc2626"></div></div>
+          <span class="dist-val">${byStatus.rejected}</span>
+        </div>
+        <div class="dist-row">
+          <span class="dist-label">Cancelled</span>
+          <div class="dist-bar"><div class="dist-fill" style="width:${leaves.length ? (byStatus.cancelled/leaves.length)*100 : 0}%;background:#6b7280"></div></div>
+          <span class="dist-val">${byStatus.cancelled}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.folder}</svg> By leave type</div>
+      </div>
+      <div class="section__body">
+        ${Object.entries(byType).sort((a,b) => b[1]-a[1]).map(([t, n]) => `
+          <div class="dist-row">
+            <span class="dist-label">${escapeHtml(t)}</span>
+            <div class="dist-bar"><div class="dist-fill" style="width:${(n/maxType)*100}%;background:#0b5cab"></div></div>
+            <span class="dist-val">${n}</span>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.clipboard}</svg> Detail</div>
+      </div>
+      <div class="section__body section__body--flush">
+        <div style="overflow-x:auto">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Type</th>
+                <th>From → To</th>
+                <th class="num">Days</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${leaves.slice(0, 50).map(l => `
+                <tr>
+                  <td>${escapeHtml(l.employeeName || l.empId || "—")}</td>
+                  <td>${escapeHtml(l.typeLabel || l.typeId || "—")}</td>
+                  <td>${escapeHtml(fmtDate(l.from))} → ${escapeHtml(fmtDate(l.to))}</td>
+                  <td class="num">${l.days || "—"}</td>
+                  <td>${tagFor(l.status)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   TAB 4 — WORK LOGS
+   ============================================================ */
+function renderWorkLogs() {
+  const logs = scopeFilter(DATA.workLogs).filter(l => inRange(l.date || l.createdAt));
+  if (!logs.length) {
+    return `<div class="section"><div class="section__body">
+      <div class="empty">
+        <svg viewBox="0 0 24 24">${ICONS.clipboard}</svg>
+        <h3>No work logs</h3>
+        <p>No work logs in this period for your scope.</p>
+      </div>
+    </div></div>`;
+  }
+  const totalHours = logs.reduce((s, l) => s + Number(l.hoursSpent || 0), 0);
+  const byStatus = { done:0, in_progress:0, blocked:0, skipped:0 };
+  logs.forEach(l => { if (byStatus[l.status] != null) byStatus[l.status]++; });
+
+  // Group by person
+  const byPerson = {};
+  logs.forEach(l => {
+    const name = l.userName || l.uid;
+    if (!byPerson[name]) byPerson[name] = { hours: 0, count: 0, uid: l.uid };
+    byPerson[name].hours += Number(l.hoursSpent || 0);
+    byPerson[name].count++;
+  });
+  const personRows = Object.entries(byPerson)
+    .sort((a,b) => b[1].hours - a[1].hours)
+    .slice(0, 20);
+  const maxHours = Math.max(...personRows.map(([,v]) => v.hours), 1);
+
+  return `
+    <div class="stats">
+      ${statCard("Total Logs",   logs.length,                  "stat--blue",   "clipboard")}
+      ${statCard("Total Hours",  totalHours.toFixed(1),        "stat--violet", "clock")}
+      ${statCard("Done",         byStatus.done,                "stat--green",  "check")}
+      ${statCard("In Progress",  byStatus.in_progress,         "stat--gold",   "clock")}
+      ${statCard("Blocked",      byStatus.blocked,             "stat--red",    "alert")}
+    </div>
+
+    ${(isSuper() || isHRM() || isAdmin() || isMgr()) ? `
+      <div class="section">
+        <div class="section__head">
+          <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.users}</svg> Hours by person</div>
+        </div>
+        <div class="section__body">
+          ${personRows.map(([name, v]) => `
+            <div class="dist-row">
+              <span class="dist-label">${escapeHtml(name.slice(0, 30))}</span>
+              <div class="dist-bar"><div class="dist-fill" style="width:${(v.hours/maxHours)*100}%;background:#0b5cab"></div></div>
+              <span class="dist-val">${v.hours.toFixed(1)}h · ${v.count}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    ` : ""}
+
+    <div class="section">
+      <div class="section__head">
+        <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.clipboard}</svg> Recent logs</div>
+      </div>
+      <div class="section__body section__body--flush">
+        <div style="overflow-x:auto">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Person</th>
+                <th>Work</th>
+                <th class="num">Hours</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${logs.slice(0, 100).map(l => `
+                <tr>
+                  <td>${escapeHtml(fmtDate(l.date))}</td>
+                  <td>${escapeHtml(l.userName || l.uid || "—")}</td>
+                  <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(l.description || "—")}</td>
+                  <td class="num">${l.hoursSpent || 0}</td>
+                  <td>${tagFor(l.status)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   TAB 5 — PAYROLL
+   ============================================================ */
+function renderPayroll() {
+  const slips = scopeFilter(DATA.payslips).filter(p => inRange(p.createdAt || p.month + "-01"));
+  if (!slips.length) {
+    return `<div class="section"><div class="section__body">
+      <div class="empty">
+        <svg viewBox="0 0 24 24">${ICONS.dollar}</svg>
+        <h3>No payslips</h3>
+        <p>No payroll records in this period for your scope.</p>
+      </div>
+    </div></div>`;
+  }
+
+  const totalNet = slips.reduce((s, p) => s + Number(p.net || 0), 0);
+  const totalGross = slips.reduce((s, p) => s + Number(p.gross || 0), 0);
+  const totalTax   = slips.reduce((s, p) => s + Number(p.tax || 0), 0);
+  const totalPension = slips.reduce((s, p) => s + Number(p.pension || 0), 0);
+  const byMonth = {};
+  slips.forEach(p => {
+    const m = p.month || "—";
+    if (!byMonth[m]) byMonth[m] = { net: 0, count: 0 };
+    byMonth[m].net += Number(p.net || 0);
+    byMonth[m].count++;
+  });
+  const months = Object.keys(byMonth).sort();
+  const maxNet = Math.max(...months.map(m => byMonth[m].net), 1);
+
+  return `
+    <div class="stats">
+      ${statCard("Payslips",     slips.length,        "stat--blue",   "clipboard")}
+      ${statCard("Gross total",  fmtMoney(totalGross),"stat--violet", "dollar")}
+      ${statCard("Net total",    fmtMoney(totalNet),  "stat--green",  "dollar")}
+      ${statCard("Tax",          fmtMoney(totalTax),  "stat--red",    "dollar")}
+      ${statCard("Pension",      fmtMoney(totalPension), "stat--gold","wallet")}
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.chart}</svg> Net pay by month</div>
+      </div>
+      <div class="section__body">
+        <div class="chart">
+          ${months.map(m => `
+            <div class="chart__col">
+              <div class="chart__bar chart__bar--green" style="height:${(byMonth[m].net / maxNet) * 100}%" data-val="${fmtMoney(byMonth[m].net).replace(' ETB','')}"></div>
+              <div class="chart__label">${escapeHtml(m)}</div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   TAB 6 — BUDGET
+   ============================================================ */
+function renderBudget() {
+  const budgets = scopeFilter(DATA.budgets);
+  const expenses = scopeFilter(DATA.expenses).filter(e => inRange(e.date || e.recordedAt));
+
+  if (!budgets.length && !expenses.length) {
+    return `<div class="section"><div class="section__body">
+      <div class="empty">
+        <svg viewBox="0 0 24 24">${ICONS.folder}</svg>
+        <h3>No budget data</h3>
+        <p>No budgets or expenses for your scope.</p>
+      </div>
+    </div></div>`;
+  }
+
+  const totalAlloc = budgets.reduce((s, b) => s + Number(b.allocated || 0), 0);
+  const totalSpent = budgets.reduce((s, b) => s + Number(b.spent || 0), 0);
+  const remaining = Math.max(0, totalAlloc - totalSpent);
+  const utilisation = totalAlloc ? Math.round((totalSpent / totalAlloc) * 100) : 0;
+
+  return `
+    <div class="stats">
+      ${statCard("Budgets",     budgets.length,           "stat--blue",   "folder")}
+      ${statCard("Allocated",   fmtMoney(totalAlloc),     "stat--violet", "wallet")}
+      ${statCard("Spent",       fmtMoney(totalSpent),     "stat--red",    "dollar")}
+      ${statCard("Remaining",   fmtMoney(remaining),      "stat--green",  "wallet")}
+      ${statCard("Utilisation", utilisation + "%",        "stat--gold",   "trendingUp")}
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.folder}</svg> Budget lines</div>
+        <div class="section__sub">${budgets.length} budget(s)</div>
+      </div>
+      <div class="section__body section__body--flush">
+        <div style="overflow-x:auto">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th class="num">Allocated</th>
+                <th class="num">Spent</th>
+                <th class="num">Remaining</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${budgets.map(b => {
+                const rem = Number(b.allocated || 0) - Number(b.spent || 0);
+                return `
+                  <tr>
+                    <td style="font-family:ui-monospace,monospace;font-size:12px">${escapeHtml(b.code || "—")}</td>
+                    <td>${escapeHtml(b.name || "—")}</td>
+                    <td>${escapeHtml(b.categoryLabel || b.categoryId || "—")}</td>
+                    <td class="num">${fmtNum(b.allocated)}</td>
+                    <td class="num">${fmtNum(b.spent)}</td>
+                    <td class="num" style="color:${rem < 0 ? "var(--danger)" : "var(--success)"}">${fmtNum(rem)}</td>
+                    <td>${tagFor(b.status)}</td>
+                  </tr>`;
+              }).join("")}
+              <tr class="totals">
+                <td colspan="3">TOTAL (${budgets.length})</td>
+                <td class="num">${fmtNum(totalAlloc)}</td>
+                <td class="num">${fmtNum(totalSpent)}</td>
+                <td class="num">${fmtNum(remaining)}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    ${expenses.length ? `
+      <div class="section">
+        <div class="section__head">
+          <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.dollar}</svg> Recent expenses</div>
+          <div class="section__sub">${expenses.length} in period</div>
+        </div>
+        <div class="section__body section__body--flush">
+          <div style="overflow-x:auto">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Budget</th>
+                  <th>Description</th>
+                  <th class="num">Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${expenses.slice(0, 50).map(e => `
+                  <tr>
+                    <td>${escapeHtml(fmtDate(e.date))}</td>
+                    <td style="font-family:ui-monospace,monospace;font-size:12px">${escapeHtml(e.budgetCode || "—")}</td>
+                    <td style="max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(e.description || "—")}</td>
+                    <td class="num">${fmtNum(e.amount)}</td>
+                    <td>${tagFor(e.status)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    ` : ""}
+  `;
+}
+
+/* ============================================================
+   TAB 7 — TRAINING
+   ============================================================ */
+function renderTraining() {
+  const enrolls = scopeFilter(DATA.enrollments).filter(e => inRange(e.enrolledAt));
+  if (!enrolls.length) {
+    return `<div class="section"><div class="section__body">
+      <div class="empty">
+        <svg viewBox="0 0 24 24">${ICONS.book}</svg>
+        <h3>No training enrollments</h3>
+        <p>No training records in this period for your scope.</p>
+      </div>
+    </div></div>`;
+  }
+  const byStatus = { enrolled:0, in_progress:0, completed:0, dropped:0, failed:0 };
+  enrolls.forEach(e => { if (byStatus[e.status] != null) byStatus[e.status]++; });
+  const byCourse = {};
+  enrolls.forEach(e => {
+    const t = e.courseTitle || e.courseId || "—";
+    if (!byCourse[t]) byCourse[t] = { n: 0, done: 0 };
+    byCourse[t].n++;
+    if (e.status === "completed") byCourse[t].done++;
+  });
+
+  return `
+    <div class="stats">
+      ${statCard("Enrollments",  enrolls.length,           "stat--blue",   "book")}
+      ${statCard("Completed",    byStatus.completed,       "stat--green",  "check")}
+      ${statCard("In progress",  byStatus.in_progress,     "stat--gold",   "clock")}
+      ${statCard("Dropped",      byStatus.dropped,         "stat--red",    "alert")}
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.book}</svg> By course</div>
+      </div>
+      <div class="section__body">
+        ${Object.entries(byCourse).sort((a,b) => b[1].n - a[1].n).slice(0, 20).map(([t, v]) => `
+          <div class="dist-row">
+            <span class="dist-label">${escapeHtml(t.slice(0, 30))}</span>
+            <div class="dist-bar">
+              <div class="dist-fill" style="width:${v.n ? (v.done/v.n)*100 : 0}%;background:#19a974"></div>
+            </div>
+            <span class="dist-val">${v.done} / ${v.n}</span>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   TAB 8 — PERFORMANCE
+   ============================================================ */
+function renderPerformance() {
+  const reviews = scopeFilter(DATA.reviews).filter(r => inRange(r.createdAt));
+  if (!reviews.length) {
+    return `<div class="section"><div class="section__body">
+      <div class="empty">
+        <svg viewBox="0 0 24 24">${ICONS.award}</svg>
+        <h3>No performance reviews</h3>
+        <p>No reviews in this period for your scope.</p>
+      </div>
+    </div></div>`;
+  }
+  const scored = reviews.filter(r => r.finalScore != null);
+  const avg = scored.length ? scored.reduce((s, r) => s + Number(r.finalScore), 0) / scored.length : 0;
+
+  const buckets = { "0–39":0, "40–54":0, "55–69":0, "70–84":0, "85–100":0 };
+  scored.forEach(r => {
+    const s = Number(r.finalScore);
+    if (s < 40)      buckets["0–39"]++;
+    else if (s < 55) buckets["40–54"]++;
+    else if (s < 70) buckets["55–69"]++;
+    else if (s < 85) buckets["70–84"]++;
+    else             buckets["85–100"]++;
+  });
+  const maxBucket = Math.max(...Object.values(buckets), 1);
+
+  return `
+    <div class="stats">
+      ${statCard("Reviews",     reviews.length, "stat--blue",   "clipboard")}
+      ${statCard("Completed",   reviews.filter(r => r.status === "completed").length, "stat--green", "check")}
+      ${statCard("Avg. Score",  avg.toFixed(1) + " / 100", "stat--violet", "trendingUp")}
+    </div>
+
+    <div class="section">
+      <div class="section__head">
+        <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.chart}</svg> Score distribution</div>
+      </div>
+      <div class="section__body">
+        ${Object.entries(buckets).map(([k, v]) => `
+          <div class="dist-row">
+            <span class="dist-label">${escapeHtml(k)}</span>
+            <div class="dist-bar"><div class="dist-fill" style="width:${(v/maxBucket)*100}%;background:${k === "85–100" ? "#19a974" : k === "70–84" ? "#0e7490" : k === "55–69" ? "#d4a017" : "#dc2626"}"></div></div>
+            <span class="dist-val">${v}</span>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   TAB 9 — STAFF
+   ============================================================ */
+function renderStaff() {
+  const emps = scopeFilter(DATA.employees);
+  if (!emps.length) {
+    return `<div class="section"><div class="section__body">
+      <div class="empty">
+        <svg viewBox="0 0 24 24">${ICONS.users}</svg>
+        <h3>No staff</h3>
+        <p>No employees in your scope.</p>
+      </div>
+    </div></div>`;
+  }
+  const byGender = { M:0, F:0, other:0 };
+  emps.forEach(e => {
+    if (e.gender === "M") byGender.M++;
+    else if (e.gender === "F") byGender.F++;
+    else byGender.other++;
+  });
+  const byCluster = {};
+  emps.forEach(e => {
+    const k = e.clusterName || e.clusterId || "—";
+    byCluster[k] = (byCluster[k] || 0) + 1;
+  });
+  const maxCluster = Math.max(...Object.values(byCluster), 1);
+  const salaryTotal = emps.reduce((s, e) => s + Number(e.basicSalary || e.salary || 0), 0);
+
+  return `
+    <div class="stats">
+      ${statCard("Total staff",   emps.length,           "stat--blue",   "users")}
+      ${statCard("Male",          byGender.M,            "stat--teal",   "users")}
+      ${statCard("Female",        byGender.F,            "stat--violet", "users")}
+      ${statCard("Salary budget", fmtMoney(salaryTotal), "stat--gold",   "wallet", "monthly basic")}
+    </div>
+
+    ${Object.keys(byCluster).length > 1 ? `
+      <div class="section">
+        <div class="section__head">
+          <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.grid}</svg> By cluster</div>
+        </div>
+        <div class="section__body">
+          ${Object.entries(byCluster).sort((a,b) => b[1]-a[1]).map(([k,v]) => `
+            <div class="dist-row">
+              <span class="dist-label">${escapeHtml(k.slice(0, 30))}</span>
+              <div class="dist-bar"><div class="dist-fill" style="width:${(v/maxCluster)*100}%;background:#0b5cab"></div></div>
+              <span class="dist-val">${v}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    ` : ""}
+
+    <div class="section">
+      <div class="section__head">
+        <div class="section__title"><svg viewBox="0 0 24 24">${ICONS.users}</svg> Staff list</div>
+      </div>
+      <div class="section__body section__body--flush">
+        <div style="overflow-x:auto">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>Person</th>
+                <th>Employee ID</th>
+                <th>Position</th>
+                <th>Cluster</th>
+                <th>Office</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${emps.slice(0, 100).map(e => {
+                const name = e.fullName || [e.firstName, e.lastName].filter(Boolean).join(" ") || "—";
+                return `
+                  <tr>
+                    <td>
+                      <div class="user-cell">
+                        <div class="user-avatar">
+                          ${e.photoURL ? `<img src="${escapeHtml(e.photoURL)}" alt="">` : escapeHtml(initials(name))}
+                        </div>
+                        <div class="user-cell__main">
+                          <div class="user-cell__name">${escapeHtml(name)}</div>
+                          <div class="user-cell__meta">${escapeHtml(e.email || "")}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style="font-family:ui-monospace,monospace;font-size:12px">${escapeHtml(e.empId || "—")}</td>
+                    <td>${escapeHtml(e.position || "—")}</td>
+                    <td>${escapeHtml(e.clusterName || "—")}</td>
+                    <td>${escapeHtml(e.officeName || "—")}</td>
+                  </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   HELPERS — tag renderer
+   ============================================================ */
+function tagFor(status) {
+  const s = String(status || "").toLowerCase();
+  const map = {
+    pending:  { cls:"tag--gold",  label:"Pending"   },
+    approved: { cls:"tag--green", label:"Approved"  },
+    rejected: { cls:"tag--red",   label:"Rejected"  },
+    cancelled:{ cls:"tag--gray",  label:"Cancelled" },
+    paid:     { cls:"tag--teal",  label:"Paid"      },
+    completed:{ cls:"tag--green", label:"Completed" },
+    done:     { cls:"tag--green", label:"Done"      },
+    in_progress:{ cls:"tag--gold",label:"In progress" },
+    blocked:  { cls:"tag--red",   label:"Blocked"   },
+    skipped:  { cls:"tag--gray",  label:"Skipped"   },
+    draft:    { cls:"tag--gray",  label:"Draft"     },
+    active:   { cls:"tag--green", label:"Active"    },
+    closed:   { cls:"tag--blue",  label:"Closed"    },
+    exceeded: { cls:"tag--red",   label:"Exceeded"  },
+    on_hold:  { cls:"tag--gold",  label:"On hold"   },
+    enrolled: { cls:"tag--blue",  label:"Enrolled"  },
+    dropped:  { cls:"tag--red",   label:"Dropped"   },
+    failed:   { cls:"tag--gray",  label:"Failed"    }
+  };
+  const m = map[s] || { cls:"tag--gray", label: status || "—" };
+  return `<span class="tag ${m.cls}">${escapeHtml(m.label)}</span>`;
+}
+
+/* ============================================================
+   EXPORT CSV
+   ============================================================ */
+function wireActions() {
+  document.getElementById("export-btn")?.addEventListener("click", () => {
+    const csv = buildCSV();
+    if (!csv) { toast("Nothing to export", "error"); return; }
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `report-${ACTIVE_TAB}-${todayISO()}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast("CSV exported", "success");
+  });
+}
+
+function buildCSV() {
+  const quotes = (s) => `"${String(s == null ? "" : s).replace(/"/g, '""')}"`;
+  switch (ACTIVE_TAB) {
+    case "leave": {
+      const rows = scopeFilter(DATA.leaveRequests).filter(l => inRange(l.appliedAt));
+      if (!rows.length) return null;
+      const head = ["Employee","Emp ID","Type","From","To","Days","Status"];
+      const lines = [head.join(",")];
+      rows.forEach(l => lines.push([
+        quotes(l.employeeName), quotes(l.empId),
+        quotes(l.typeLabel || l.typeId),
+        quotes(l.from), quotes(l.to),
+        l.days || "", quotes(l.status)
+      ].join(",")));
+      return lines.join("\n");
+    }
+    case "worklogs": {
+      const rows = scopeFilter(DATA.workLogs).filter(l => inRange(l.date || l.createdAt));
+      if (!rows.length) return null;
+      const head = ["Date","Person","Work","Hours","Status"];
+      const lines = [head.join(",")];
+      rows.forEach(l => lines.push([
+        quotes(l.date), quotes(l.userName),
+        quotes(l.description),
+        l.hoursSpent || 0, quotes(l.status)
+      ].join(",")));
+      return lines.join("\n");
+    }
+    case "payroll": {
+      const rows = scopeFilter(DATA.payslips).filter(p => inRange(p.createdAt));
+      if (!rows.length) return null;
+      const head = ["Employee ID","Name","Month","Gross","Tax","Pension","Net","Status"];
+      const lines = [head.join(",")];
+      rows.forEach(p => lines.push([
+        quotes(p.empId), quotes(p.employeeName),
+        quotes(p.month),
+        p.gross || 0, p.tax || 0, p.pension || 0, p.net || 0,
+        quotes(p.status)
+      ].join(",")));
+      return lines.join("\n");
+    }
+    case "budget": {
+      const rows = scopeFilter(DATA.budgets);
+      if (!rows.length) return null;
+      const head = ["Code","Name","Category","Allocated","Spent","Remaining","Status"];
+      const lines = [head.join(",")];
+      rows.forEach(b => lines.push([
+        quotes(b.code), quotes(b.name),
+        quotes(b.categoryLabel || b.categoryId),
+        b.allocated || 0, b.spent || 0,
+        Number(b.allocated||0) - Number(b.spent||0),
+        quotes(b.status)
+      ].join(",")));
+      return lines.join("\n");
+    }
+    case "staff": {
+      const rows = scopeFilter(DATA.employees);
+      if (!rows.length) return null;
+      const head = ["Emp ID","Name","Position","Cluster","Office","Basic Salary"];
+      const lines = [head.join(",")];
+      rows.forEach(e => lines.push([
+        quotes(e.empId),
+        quotes(e.fullName || [e.firstName, e.lastName].filter(Boolean).join(" ")),
+        quotes(e.position),
+        quotes(e.clusterName),
+        quotes(e.officeName),
+        e.basicSalary || e.salary || 0
+      ].join(",")));
+      return lines.join("\n");
+    }
+    default:
+      return null;
+  }
+}
+
+/* ============================================================
+   SHELL
+   ============================================================ */
+document.getElementById("collapse-toggle").addEventListener("click", (e) => {
+  e.stopPropagation();
+  const c = !document.body.classList.contains("sidebar-collapsed");
+  document.body.classList.toggle("sidebar-collapsed", c);
+  try { localStorage.setItem("cs.sidebar", c ? "collapsed" : "expanded"); } catch (err) {}
+});
+document.getElementById("menu-toggle").addEventListener("click", () =>
+  document.body.classList.toggle("sidebar-open"));
+document.getElementById("overlay").addEventListener("click", () =>
+  document.body.classList.remove("sidebar-open"));
+document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const panel = btn.closest(".dropdown").querySelector("[data-dropdown-panel]");
+    const open = !panel.classList.contains("hidden");
+    document.querySelectorAll("[data-dropdown-panel]").forEach(p => p.classList.add("hidden"));
+    if (!open) panel.classList.remove("hidden");
+  });
+});
+document.addEventListener("click", () =>
+  document.querySelectorAll("[data-dropdown-panel]").forEach(p => p.classList.add("hidden")));
+try {
+  if (localStorage.getItem("cs.sidebar") === "collapsed") document.body.classList.add("sidebar-collapsed");
+} catch (e) {}
+
+/* Period controls */
+document.getElementById("period-preset").addEventListener("change", (e) => {
+  const v = e.target.value;
+  document.getElementById("custom-range").classList.toggle("hidden", v !== "custom");
+  if (v !== "custom") {
+    applyPreset(v);
+    renderContent();
+  }
+});
+document.getElementById("range-from").addEventListener("change", (e) => {
+  PERIOD.from = e.target.value;
+  renderContent();
+});
+document.getElementById("range-to").addEventListener("change", (e) => {
+  PERIOD.to = e.target.value;
+  renderContent();
+});
+
+/* Tabs */
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => {
+    ACTIVE_TAB = t.dataset.tab;
+    renderTabs();
+    renderContent();
+  });
+});
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+onAuthStateChanged(auth, async (user) => {
+  if (kick.done) return;
+  if (!user) { kick("no-user"); return; }
+
+  let userDoc = null;
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (snap.exists()) userDoc = snap.data();
+    if (userDoc && userDoc.active === false) { kick("inactive"); return; }
+  } catch (e) { console.warn("[user read]", e); }
+
+  S = {
+    uid: user.uid,
+    role: userDoc?.role || "employee",
+    email: user.email || "",
+    name: userDoc?.name || user.email?.split("@")[0] || "User",
+    photoURL: userDoc?.photoURL || null,
+    clusterId: userDoc?.clusterId || "",
+    officeId: userDoc?.officeId || "",
+    departmentId: userDoc?.departmentId || "",
+    empId: userDoc?.empId || userDoc?.employeeId || ""
+  };
+
+  renderSidebar();
+  renderUser();
+  renderScopeBadge();
+  renderTabs();
+  applyPreset("30d");
+
+  await loadAll();
+});
+
+console.log("[reports] booted — reports ready");
+</script>
+
+</body>
+</html>

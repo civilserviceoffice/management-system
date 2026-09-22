@@ -1,0 +1,1910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance — Civil Service MIS</title>
+<link rel="icon" type="image/png" href="../images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+(function headGuard() {
+  try {
+    if (sessionStorage.getItem("loggedIn") !== "true" || !sessionStorage.getItem("uid")) {
+      sessionStorage.clear();
+      sessionStorage.setItem("__redirectReason", "expired");
+      window.location.replace("../index.html");
+    }
+  } catch (e) { window.location.replace("../index.html"); }
+})();
+</script>
+<script type="importmap">
+{
+  "imports": {
+    "firebase/app":       "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js",
+    "firebase/auth":      "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js"
+  }
+}
+</script>
+<style>
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --primary:#0b5cab; --primary-dark:#073d75; --secondary:#0e7490;
+  --text:#172033; --text-soft:#344054; --muted:#6b7280; --muted-light:#98a2b3;
+  --border:#e5e7eb; --border-soft:#eef1f5;
+  --danger:#dc2626; --success:#067647; --warning:#b8860b; --bg:#f4f7fb; --bg-soft:#fbfcfe;
+  --violet:#5b21b6;
+  --sh-sm:0 1px 2px rgba(20,40,70,.04),0 1px 3px rgba(20,40,70,.06);
+  --sh-md:0 4px 12px rgba(20,40,70,.06),0 2px 4px rgba(20,40,70,.04);
+  --sh-lg:0 12px 32px rgba(20,40,70,.08),0 4px 8px rgba(20,40,70,.04);
+  --r-md:13px; --r-lg:20px; --r-full:999px;
+  --sidebar-w:272px; --topbar-h:76px;
+}
+html, body { height:100%; }
+body {
+  font-family:"Inter","Noto Sans Ethiopic",sans-serif;
+  background:radial-gradient(circle at 10% 20%, rgba(11,92,171,.09), transparent 35%),
+             radial-gradient(circle at 90% 80%, rgba(25,169,116,.09), transparent 35%),
+             var(--bg);
+  color:var(--text); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+img, svg { display:block; max-width:100%; }
+button, input, select, textarea { font:inherit; color:inherit; }
+button { cursor:pointer; background:none; border:none; }
+a { color:inherit; text-decoration:none; }
+h1,h2,h3,h4 { line-height:1.25; letter-spacing:-0.02em; font-weight:800; }
+:focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+.hidden { display:none !important; }
+
+.app { display:grid; grid-template-columns:var(--sidebar-w) 1fr; grid-template-rows:var(--topbar-h) 1fr;
+  grid-template-areas:"sidebar topbar" "sidebar main"; min-height:100vh;
+  transition:grid-template-columns .25s cubic-bezier(.4,0,.2,1); }
+body.sidebar-collapsed .app { grid-template-columns:88px 1fr; }
+
+.sidebar { grid-area:sidebar; position:sticky; top:0; height:100vh; width:var(--sidebar-w);
+  background:linear-gradient(145deg, #073d75 0%, #0b5cab 55%, #0e7490 100%);
+  color:#fff; display:flex; flex-direction:column; overflow:hidden;
+  transition:width .25s cubic-bezier(.4,0,.2,1); z-index:30; }
+body.sidebar-collapsed .sidebar { width:88px; }
+.sidebar::before { content:""; position:absolute; width:450px; height:450px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.10); right:-220px; top:-150px; pointer-events:none; }
+.sidebar__brand { position:relative; z-index:2; display:flex; align-items:center; gap:14px;
+  padding:22px; border-bottom:1px solid rgba(255,255,255,.10);
+  min-height:var(--topbar-h); flex-shrink:0; }
+.sidebar__logo { width:46px; height:46px; flex-shrink:0; border-radius:14px;
+  background:rgba(255,255,255,.97); box-shadow:0 10px 24px rgba(0,0,0,.18);
+  display:grid; place-items:center; padding:5px; }
+.sidebar__logo img { width:100%; height:100%; object-fit:contain; border-radius:9px; }
+.sidebar__identity { min-width:0; flex:1; opacity:1; transition:opacity .18s ease 60ms; white-space:nowrap; overflow:hidden; }
+body.sidebar-collapsed .sidebar__identity { opacity:0; pointer-events:none; }
+.sidebar__title { font-size:16px; font-weight:800; letter-spacing:-.3px; }
+.sidebar__subtitle { font-size:11px; opacity:.72; margin-top:3px; }
+.sidebar__collapse { position:absolute; right:-13px; top:50%; transform:translateY(-50%);
+  width:28px; height:28px; border-radius:50%; background:#fff; color:var(--primary-dark);
+  border:3px solid var(--bg); display:grid; place-items:center;
+  box-shadow:0 6px 14px rgba(0,0,0,.15); z-index:10; cursor:pointer; }
+.sidebar__collapse svg { width:13px; height:13px; stroke:currentColor; stroke-width:2.5;
+  fill:none; stroke-linecap:round; stroke-linejoin:round; transition:transform .25s; }
+body.sidebar-collapsed .sidebar__collapse svg { transform:rotate(180deg); }
+.sidebar__nav { position:relative; z-index:2; flex:1; padding:20px 14px; overflow-y:auto; overflow-x:hidden; }
+.sidebar__section { font-size:10.5px; font-weight:800; letter-spacing:.12em;
+  text-transform:uppercase; color:rgba(255,255,255,.45);
+  padding:18px 12px 8px; white-space:nowrap; overflow:hidden; transition:all .2s ease; }
+body.sidebar-collapsed .sidebar__section { height:6px; padding:0; opacity:0; margin-top:14px; margin-bottom:6px; }
+.nav-item { display:flex; align-items:center; gap:13px; padding:11px 13px; border-radius:12px;
+  font-size:14px; font-weight:600; color:rgba(255,255,255,.78);
+  margin-bottom:3px; transition:background .15s, color .15s;
+  white-space:nowrap; cursor:pointer; position:relative; }
+.nav-item:hover { background:rgba(255,255,255,.09); color:#fff; }
+.nav-item.is-active { background:rgba(255,255,255,.16); color:#fff; box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+.nav-item.is-active::before { content:""; position:absolute; left:-14px; top:50%; transform:translateY(-50%);
+  width:4px; height:24px; border-radius:0 4px 4px 0;
+  background:#58e6a7; box-shadow:0 0 12px rgba(88,230,167,.6); }
+.nav-item svg { width:20px; height:20px; flex-shrink:0; stroke:currentColor; stroke-width:1.85; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.nav-item__label { flex:1; overflow:hidden; text-overflow:ellipsis; transition:opacity .15s; }
+body.sidebar-collapsed .nav-item__label { opacity:0; pointer-events:none; }
+body.sidebar-collapsed .nav-item { justify-content:center; padding:12px; }
+.sidebar__footer { position:relative; z-index:2; padding:16px 20px;
+  border-top:1px solid rgba(255,255,255,.10);
+  font-size:11px; color:rgba(255,255,255,.55);
+  text-align:center; line-height:1.5; }
+
+.topbar { grid-area:topbar; background:rgba(255,255,255,.85);
+  backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:16px; padding:0 28px;
+  position:sticky; top:0; z-index:20; }
+.topbar__menu { display:none; width:42px; height:42px; border-radius:12px; color:var(--text);
+  align-items:center; justify-content:center; cursor:pointer; }
+.topbar__menu:hover { background:var(--border-soft); }
+.topbar__spacer { flex:1; }
+.topbar__actions { display:flex; align-items:center; gap:8px; }
+.icon-btn { width:44px; height:44px; border-radius:13px; display:inline-flex;
+  align-items:center; justify-content:center; color:var(--text-soft);
+  transition:background .15s; cursor:pointer; position:relative; }
+.icon-btn:hover { background:var(--border-soft); }
+.icon-btn svg { width:20px; height:20px; stroke:currentColor; stroke-width:1.85; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.icon-btn__badge { position:absolute; top:8px; right:8px; width:8px; height:8px; border-radius:50%;
+  background:#dc2626; border:2px solid #fff; display:none; }
+.icon-btn__badge.show { display:block; }
+.user-btn { display:flex; align-items:center; gap:11px;
+  padding:4px 14px 4px 4px; border-radius:var(--r-full);
+  background:var(--border-soft); cursor:pointer; transition:background .15s; }
+.user-btn:hover { background:#e4e9f1; }
+.user-btn__avatar { width:38px; height:38px; border-radius:50%;
+  background:linear-gradient(135deg, var(--primary), var(--secondary));
+  color:#fff; font-weight:800; font-size:13px;
+  display:grid; place-items:center; overflow:hidden; position:relative; }
+.user-btn__avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.user-btn__name { font-size:13px; font-weight:700; display:block; }
+.user-btn__role { font-size:11px; color:var(--muted); font-weight:600; }
+.dropdown { position:relative; }
+.dropdown__panel { position:absolute; right:0; top:calc(100% + 12px);
+  background:#fff; border:1px solid var(--border); border-radius:16px;
+  box-shadow:0 30px 60px rgba(20,40,70,.12); min-width:260px; padding:8px; z-index:50; }
+.dropdown__header { padding:12px 14px; border-bottom:1px solid var(--border-soft); margin-bottom:6px; }
+.dropdown__header strong { display:block; font-size:14px; font-weight:700; }
+.dropdown__header span { font-size:12px; color:var(--muted); }
+.dropdown__item { display:flex; align-items:center; gap:12px; width:100%;
+  padding:11px 14px; border-radius:10px; font-size:14px; font-weight:500;
+  color:var(--text-soft); text-align:left; cursor:pointer; }
+.dropdown__item:hover { background:var(--border-soft); color:var(--text); }
+.dropdown__item svg { width:17px; height:17px; stroke:currentColor; stroke-width:2; fill:none; }
+.dropdown__divider { height:1px; background:var(--border-soft); margin:6px 0; }
+.dropdown__item--danger { color:var(--danger); }
+
+.main { grid-area:main; padding:32px; overflow-x:hidden; }
+.page-head { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:22px; flex-wrap:wrap; }
+.page-head__title { font-size:32px; font-weight:800; letter-spacing:-1.2px; margin-bottom:6px; }
+.page-head__sub { font-size:15px; color:var(--muted); }
+.page-head__actions { display:flex; gap:10px; flex-wrap:wrap; }
+.scope-badge { display:inline-flex; align-items:center; gap:8px;
+  padding:8px 14px; border-radius:var(--r-full);
+  background:linear-gradient(135deg, #eaf3fc, #fff);
+  border:1px solid #bdd7f2; color:var(--primary-dark);
+  font-size:12.5px; font-weight:700; margin-top:8px; }
+.scope-badge svg { width:15px; height:15px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.scope-badge--super { background:linear-gradient(135deg, #f0eaff, #fff); border-color:#ddd2fb; color:#5b21b6; }
+.scope-badge--hrm   { background:linear-gradient(135deg, #ecfdf3, #fff); border-color:#abefc6; color:#067647; }
+.scope-badge--mgr   { background:linear-gradient(135deg, #e0f5f7, #fff); border-color:#a3dfe6; color:#0e7490; }
+
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  height:46px; padding:0 20px; border-radius:13px;
+  border:1px solid #d9dee7; background:#fff;
+  color:var(--text-soft); font-size:14px; font-weight:700;
+  white-space:nowrap; cursor:pointer; transition:all .15s; }
+.btn:hover { background:var(--bg-soft); border-color:#b9c7d9; }
+.btn svg { width:17px; height:17px; stroke:currentColor; stroke-width:2.2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.btn--primary { background:linear-gradient(135deg, #0b5cab, #0e7490); border:none; color:#fff;
+  box-shadow:0 10px 22px rgba(11,92,171,.22); }
+.btn--primary:hover { background:linear-gradient(135deg, #073d75, #0b5cab); transform:translateY(-1px); }
+.btn--danger { color:var(--danger); }
+.btn--danger:hover { background:#fef3f2; border-color:#f0a5ab; }
+.btn--success { color:var(--success); }
+.btn--success:hover { background:#ecfdf3; border-color:#abefc6; }
+.btn--sm { height:38px; padding:0 14px; font-size:13px; border-radius:10px; }
+.btn--sm svg { width:15px; height:15px; }
+.btn--icon { width:38px; padding:0; }
+.btn:disabled { opacity:.55; pointer-events:none; }
+
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:14px; margin-bottom:24px; }
+.stat { position:relative; background:#fff; border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:18px; box-shadow:var(--sh-sm);
+  overflow:hidden; transition:box-shadow .2s, transform .2s; }
+.stat:hover { box-shadow:var(--sh-lg); transform:translateY(-3px); }
+.stat::before { content:""; position:absolute; top:0; left:0; right:0; height:4px;
+  background:var(--c1, var(--primary)); border-radius:var(--r-lg) var(--r-lg) 0 0; }
+.stat--blue   { --c1:linear-gradient(90deg, #0b5cab, #0e7490); --ic:#eaf3fc; --ifc:#0b5cab; }
+.stat--green  { --c1:linear-gradient(90deg, #19a974, #34c78e); --ic:#e7f7f0; --ifc:#128a5c; }
+.stat--gold   { --c1:linear-gradient(90deg, #d4a017, #e8b84b); --ic:#fdf5e0; --ifc:#b8860b; }
+.stat--red    { --c1:linear-gradient(90deg, #dc2626, #e74c5c); --ic:#fef3f2; --ifc:#b42318; }
+.stat--violet { --c1:linear-gradient(90deg, #6d28d9, #a78bfa); --ic:#f0eaff; --ifc:#5b21b6; }
+.stat--teal   { --c1:linear-gradient(90deg, #0e7490, #4dd4c4); --ic:#e0f5f7; --ifc:#0e7490; }
+.stat__head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+.stat__label { font-size:12.5px; color:var(--muted); font-weight:600; }
+.stat__icon { width:40px; height:40px; border-radius:12px; background:var(--ic); color:var(--ifc);
+  display:grid; place-items:center; }
+.stat__icon svg { width:19px; height:19px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.stat__value { font-size:26px; font-weight:800; letter-spacing:-1px; line-height:1; }
+.stat__sub { font-size:11.5px; color:var(--muted); margin-top:6px; }
+
+.toolbar { display:flex; gap:12px; align-items:center; margin-bottom:20px; flex-wrap:wrap;
+  background:#fff; border:1px solid var(--border); border-radius:16px; padding:14px 18px;
+  box-shadow:var(--sh-sm); }
+.toolbar__search { flex:1; min-width:220px; position:relative; }
+.toolbar__search input { width:100%; height:44px; padding:0 14px 0 42px;
+  border:1px solid #d9dee7; border-radius:11px;
+  background:#fbfcfe; font-size:14px; transition:all .15s; }
+.toolbar__search input:focus { outline:none; background:#fff; border-color:#70a8d9; box-shadow:0 0 0 4px rgba(11,92,171,.08); }
+.toolbar__search svg { position:absolute; left:14px; top:50%; transform:translateY(-50%);
+  width:16px; height:16px; color:var(--muted-light); stroke:currentColor; stroke-width:2; fill:none; }
+.toolbar__filter { height:44px; padding:0 36px 0 14px; border:1px solid #d9dee7; border-radius:11px;
+  background:#fbfcfe; font-size:13.5px; font-weight:600; color:var(--text-soft);
+  cursor:pointer; appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat; background-position:right 12px center; min-width:140px; }
+.toolbar__filter:focus { outline:none; border-color:#70a8d9; box-shadow:0 0 0 4px rgba(11,92,171,.08); }
+.toolbar__count { font-size:13px; font-weight:700; color:var(--muted); padding:0 8px; margin-left:auto; }
+
+.tabs { display:flex; gap:6px; margin-bottom:20px; background:#fff; border:1px solid var(--border);
+  border-radius:14px; padding:6px; box-shadow:var(--sh-sm); overflow-x:auto; }
+.tab { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:10px;
+  font-size:13.5px; font-weight:700; color:var(--muted); white-space:nowrap;
+  cursor:pointer; transition:all .15s; }
+.tab:hover { background:var(--border-soft); color:var(--text); }
+.tab.is-active { background:linear-gradient(135deg, #0b5cab, #0e7490); color:#fff;
+  box-shadow:0 6px 14px rgba(11,92,171,.22); }
+.tab__count { display:inline-flex; align-items:center; justify-content:center;
+  min-width:22px; height:20px; padding:0 6px; border-radius:999px;
+  background:rgba(0,0,0,.08); font-size:11px; font-weight:800; }
+.tab.is-active .tab__count { background:rgba(255,255,255,.24); }
+
+.reviews-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:16px; }
+.review-card { background:#fff; border:1px solid var(--border); border-radius:var(--r-lg);
+  padding:20px; box-shadow:var(--sh-sm); transition:box-shadow .2s, transform .2s;
+  cursor:pointer; display:flex; flex-direction:column; gap:14px; }
+.review-card:hover { box-shadow:var(--sh-lg); transform:translateY(-3px); border-color:#bdd7f2; }
+.review-card__head { display:flex; align-items:center; gap:12px; }
+.review-card__avatar { width:48px; height:48px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg, #eaf3fc, #bdd7f2);
+  color:var(--primary-dark); font-weight:800; font-size:15px;
+  display:grid; place-items:center; overflow:hidden; position:relative; }
+.review-card__avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.review-card__name { font-size:15px; font-weight:800; color:var(--text); line-height:1.3; }
+.review-card__role { font-size:12px; color:var(--muted); margin-top:3px; }
+.review-card__cycle { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:5px;
+  font-weight:600; }
+.review-card__cycle svg { width:13px; height:13px; stroke:currentColor; stroke-width:2; fill:none; }
+
+.review-card__score { display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 14px; background:var(--bg-soft); border-radius:10px; }
+.review-card__score-main { display:flex; align-items:center; gap:10px; }
+.review-card__score-val { font-size:24px; font-weight:800; letter-spacing:-.6px; line-height:1; }
+.review-card__score-max { font-size:13px; color:var(--muted); font-weight:700; }
+.review-card__rating { display:flex; gap:2px; }
+.review-card__rating svg { width:16px; height:16px; stroke-width:1.8; fill:none; }
+
+.review-card__progress { display:flex; flex-direction:column; gap:6px; }
+.review-card__progress-label { display:flex; justify-content:space-between; font-size:11.5px;
+  color:var(--muted); font-weight:700; }
+.review-card__progress-bar { height:8px; border-radius:4px; background:var(--border-soft); overflow:hidden; }
+.review-card__progress-fill { height:100%; border-radius:4px; transition:width .4s; }
+
+.users-table { background:#fff; border:1px solid var(--border); border-radius:16px; overflow:hidden;
+  box-shadow:var(--sh-sm); }
+.users-table__scroll { overflow-x:auto; }
+table.data { width:100%; border-collapse:collapse; }
+table.data thead th { text-align:left; padding:14px 18px; background:var(--bg-soft);
+  font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--muted); border-bottom:1px solid var(--border); white-space:nowrap; }
+table.data tbody td { padding:14px 18px; border-bottom:1px solid var(--border-soft);
+  font-size:13.5px; color:var(--text-soft); vertical-align:middle; }
+table.data tbody tr:last-child td { border-bottom:none; }
+table.data tbody tr:hover { background:var(--bg-soft); }
+table.data td.num, table.data th.num { text-align:right; font-family:ui-monospace,"SF Mono",Menlo,monospace; font-weight:600; }
+table.data td.num--strong { text-align:right; font-family:ui-monospace,"SF Mono",Menlo,monospace; font-weight:800; color:var(--text); }
+
+.user-cell { display:flex; align-items:center; gap:12px; }
+.user-avatar { width:42px; height:42px; border-radius:50%;
+  background:linear-gradient(135deg, #eaf3fc, #bdd7f2);
+  color:var(--primary-dark); font-weight:800; font-size:13px;
+  display:grid; place-items:center; flex-shrink:0;
+  overflow:hidden; position:relative; }
+.user-avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.user-cell__main { min-width:0; }
+.user-cell__name { font-weight:700; color:var(--text); font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.user-cell__email { font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.tag { display:inline-flex; align-items:center; gap:5px;
+  padding:4px 11px; border-radius:var(--r-full);
+  font-size:11.5px; font-weight:800; letter-spacing:.01em; text-transform:uppercase; }
+.tag--green  { background:#ecfdf3; color:#067647; }
+.tag--red    { background:#fef3f2; color:#b42318; }
+.tag--gold   { background:#fdf5e0; color:#b8860b; }
+.tag--gray   { background:var(--border-soft); color:var(--text-soft); }
+.tag--blue   { background:#eaf3fc; color:#0b5cab; }
+.tag--violet { background:#f0eaff; color:#5b21b6; }
+.tag--teal   { background:#e0f5f7; color:#0e7490; }
+
+.cell-actions { display:flex; gap:4px; justify-content:flex-end; }
+
+.rating-input { display:flex; gap:8px; align-items:center; }
+.rating-input__star { width:28px; height:28px; stroke:#cbd5e1; stroke-width:1.6;
+  fill:none; cursor:pointer; transition:transform .15s; }
+.rating-input__star.is-on { fill:#d4a017; stroke:#d4a017; }
+.rating-input__star:hover { transform:scale(1.15); }
+.rating-input__label { font-size:13px; font-weight:700; color:var(--text-soft);
+  margin-left:10px; min-width:100px; }
+
+.goal-list { list-style:none; }
+.goal-item { padding:14px 16px; border-bottom:1px solid var(--border-soft);
+  display:flex; gap:12px; align-items:flex-start; }
+.goal-item:last-child { border-bottom:none; }
+.goal-item__status { width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  display:grid; place-items:center; margin-top:2px;
+  background:var(--border-soft); color:var(--muted); }
+.goal-item__status.is-done    { background:#19a974; color:#fff; }
+.goal-item__status.is-partial { background:#d4a017; color:#fff; }
+.goal-item__main { flex:1; min-width:0; }
+.goal-item__title { font-size:13.5px; font-weight:700; color:var(--text); }
+.goal-item__meta { font-size:11.5px; color:var(--muted); margin-top:4px;
+  display:flex; gap:12px; flex-wrap:wrap; }
+.goal-item__meta-item { display:inline-flex; align-items:center; gap:4px; font-weight:600; }
+.goal-item__meta-item svg { width:12px; height:12px; stroke:currentColor; stroke-width:2; fill:none; }
+
+.modal-backdrop { position:fixed; inset:0; z-index:200; background:rgba(15,23,42,.55);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  display:grid; place-items:center; padding:24px; animation:fadeIn .18s ease; overflow-y:auto; }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+.modal { background:#fff; border-radius:var(--r-lg); box-shadow:0 30px 60px rgba(20,40,70,.12);
+  width:100%; max-width:620px; max-height:92vh; display:flex; flex-direction:column;
+  animation:modalUp .22s cubic-bezier(.4,0,.2,1); margin:auto; }
+@keyframes modalUp { from { opacity:0; transform:translateY(14px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+.modal--lg { max-width:820px; }
+.modal--xl { max-width:1100px; }
+.modal__head { padding:24px 28px; border-bottom:1px solid var(--border-soft);
+  display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.modal__title { font-size:20px; font-weight:800; letter-spacing:-.4px; }
+.modal__sub { font-size:13.5px; color:var(--muted); margin-top:6px; line-height:1.5; }
+.modal__close { width:38px; height:38px; border-radius:10px; display:grid; place-items:center;
+  color:var(--muted); transition:background .15s; cursor:pointer; flex-shrink:0; }
+.modal__close:hover { background:var(--border-soft); color:var(--text); }
+.modal__close svg { width:18px; height:18px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.modal__body { padding:24px 28px; overflow-y:auto; flex:1; }
+.modal__foot { padding:18px 28px; border-top:1px solid var(--border-soft);
+  display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; align-items:center; }
+.modal__foot .spacer { flex:1; }
+
+.field { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; position:relative; }
+.field > label { font-size:13px; font-weight:700; color:var(--text-soft); }
+.field__required::after { content:" *"; color:var(--danger); }
+.field input, .field select, .field textarea {
+  width:100%; height:48px; padding:0 14px; border:1px solid #d9dee7; border-radius:11px;
+  background:#fbfcfe; font-size:14px; font-family:inherit; color:var(--text); transition:all .15s; }
+.field textarea { height:auto; min-height:90px; padding:12px 14px; resize:vertical; }
+.field select { appearance:none; padding-right:38px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat; background-position:right 14px center; }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline:none; background:#fff; border-color:#70a8d9; box-shadow:0 0 0 4px rgba(11,92,171,.08); }
+.field input:disabled, .field select:disabled { background:#f1f5f9; color:var(--muted); cursor:not-allowed; }
+.field__hint { font-size:12px; color:var(--muted); }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.field-row--3 { grid-template-columns:repeat(3, 1fr); }
+@media (max-width:700px) { .field-row, .field-row--3 { grid-template-columns:1fr; } }
+
+.review { background:#f8fafc; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.review__row { display:flex; gap:14px; padding:11px 16px; border-bottom:1px solid #eef2f7; font-size:13px; }
+.review__row:last-child { border-bottom:0; }
+.review__k { color:var(--muted); width:180px; flex-shrink:0; font-weight:700; font-size:12.5px; }
+.review__v { font-weight:600; word-break:break-word; flex:1; }
+
+.alert { display:flex; gap:12px; padding:13px 16px; border-radius:11px;
+  font-size:13px; line-height:1.55; margin-bottom:18px; border:1px solid transparent; }
+.alert svg { width:16px; height:16px; flex-shrink:0; margin-top:2px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.alert--error   { background:#fef3f2; color:#b42318; border-color:#fecdca; }
+.alert--info    { background:#eaf3fc; color:#0b5cab; border-color:#bdd7f2; }
+.alert--warning { background:#fdf5e0; color:#7a5210; border-color:#f0dcb0; }
+.alert--success { background:#ecfdf3; color:#067647; border-color:#abefc6; }
+
+.toast-wrap { position:fixed; top:24px; right:24px; z-index:300;
+  display:flex; flex-direction:column; gap:10px; pointer-events:none;
+  max-width:calc(100vw - 48px); }
+.toast { background:var(--text); color:#fff; padding:13px 18px; border-radius:12px;
+  box-shadow:0 12px 32px rgba(20,40,70,.2); font-size:13.5px; font-weight:600;
+  display:flex; align-items:center; gap:12px; pointer-events:auto;
+  animation:toastIn .22s cubic-bezier(.4,0,.2,1); max-width:400px; }
+@keyframes toastIn { from { opacity:0; transform:translateX(24px); } to { opacity:1; transform:translateX(0); } }
+.toast--success { background:#067647; }
+.toast--error { background:#b42318; }
+.toast--info { background:#0b5cab; }
+.toast svg { width:17px; height:17px; stroke:currentColor; stroke-width:2.5; fill:none; flex-shrink:0; }
+
+.spinner { width:16px; height:16px; border:2px solid currentColor;
+  border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.skeleton-row { height:70px; background:linear-gradient(90deg,#eef1f5 25%,#f8fafc 50%,#eef1f5 75%);
+  background-size:200% 100%; animation:shimmer 1.4s infinite; border-bottom:1px solid var(--border-soft); }
+@keyframes shimmer { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
+
+.overlay { display:none; position:fixed; inset:0; background:rgba(13,21,32,.45); z-index:25; }
+body.sidebar-open .overlay { display:block; }
+
+.perf-hero { background:linear-gradient(135deg,#f8fbff,#fff); border:1px solid var(--border);
+  border-radius:16px; padding:22px; margin-bottom:20px; }
+.perf-hero__top { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+.perf-hero__avatar { width:72px; height:72px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg, #eaf3fc, #bdd7f2);
+  color:var(--primary-dark); font-weight:800; font-size:24px;
+  display:grid; place-items:center; overflow:hidden; position:relative;
+  border:4px solid #fff; box-shadow:0 8px 22px rgba(11,92,171,.15); }
+.perf-hero__avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.perf-hero__name { font-size:22px; font-weight:800; letter-spacing:-.4px; }
+.perf-hero__role { font-size:13.5px; color:var(--muted); margin-top:4px; }
+.perf-hero__stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));
+  gap:12px; margin-top:18px; }
+.perf-hero__stat { background:#fff; border:1px solid var(--border); border-radius:10px; padding:12px; }
+.perf-hero__stat dt { font-size:10.5px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--muted); margin-bottom:5px; }
+.perf-hero__stat dd { font-size:20px; font-weight:800; letter-spacing:-.4px; line-height:1; }
+
+.section-title { font-size:12.5px; font-weight:800; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--muted); padding-bottom:8px; border-bottom:1px solid var(--border-soft); margin-bottom:14px; }
+
+.score-circle { width:80px; height:80px; position:relative; }
+.score-circle svg { width:100%; height:100%; transform:rotate(-90deg); }
+.score-circle__track { fill:none; stroke:var(--border-soft); stroke-width:7; }
+.score-circle__fill { fill:none; stroke-width:7; stroke-linecap:round; transition:stroke-dasharray .6s; }
+.score-circle__value { position:absolute; inset:0; display:grid; place-items:center;
+  font-size:22px; font-weight:800; letter-spacing:-.6px; }
+
+.kpi-list { list-style:none; }
+.kpi-item { padding:14px 16px; border-bottom:1px solid var(--border-soft);
+  display:flex; gap:14px; align-items:flex-start; }
+.kpi-item:last-child { border-bottom:none; }
+.kpi-item__main { flex:1; min-width:0; }
+.kpi-item__title { font-size:13.5px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.kpi-item__bar { height:8px; border-radius:4px; background:var(--border-soft); overflow:hidden; }
+.kpi-item__fill { height:100%; border-radius:4px; transition:width .4s; }
+.kpi-item__meta { font-size:11.5px; color:var(--muted); margin-top:6px;
+  display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.kpi-item__meta-item { font-weight:600; }
+
+@media (max-width:900px) {
+  .app { grid-template-columns:1fr !important; grid-template-areas:"topbar" "main"; }
+  .sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w) !important;
+    transform:translateX(-100%); transition:transform .28s; z-index:40; }
+  body.sidebar-open .sidebar { transform:translateX(0); }
+  .sidebar__collapse { display:none; }
+  .topbar__menu { display:inline-flex; }
+  .user-btn__name, .user-btn__role { display:none; }
+  .user-btn { padding:4px; }
+  .main { padding:18px; }
+  .page-head__title { font-size:24px; letter-spacing:-1px; }
+  .modal__head, .modal__body, .modal__foot { padding-left:18px; padding-right:18px; }
+  .toolbar__count { display:none; }
+  table.data thead th, table.data tbody td { padding:12px 14px; }
+  .reviews-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay" id="overlay"></div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <div class="sidebar__logo">
+        <img src="../images/logo.png" alt=""
+             onerror="this.parentElement.innerHTML='<span style=&quot;color:#0b5cab;font-weight:800;font-size:18px&quot;>CS</span>'">
+      </div>
+      <div class="sidebar__identity">
+        <div class="sidebar__title">Civil Service</div>
+        <div class="sidebar__subtitle">Management Information System</div>
+      </div>
+      <button class="sidebar__collapse" id="collapse-toggle" aria-label="Toggle sidebar">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <nav class="sidebar__nav" id="sidebar-nav"></nav>
+    <div class="sidebar__footer">
+      <div>© 2026 Civil Service MIS</div>
+      <div style="margin-top:3px;opacity:.7">Eng. Abdi Furgasa</div>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <button class="topbar__menu" id="menu-toggle" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="topbar__spacer"></div>
+    <div class="topbar__actions">
+      <a href="notifications.html" class="icon-btn" aria-label="Notifications">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="icon-btn__badge" id="notif-badge"></span>
+      </a>
+      <div class="dropdown">
+        <button class="user-btn" data-dropdown-toggle>
+          <span class="user-btn__avatar" id="user-avatar">–</span>
+          <span class="user-btn__meta">
+            <span class="user-btn__name" id="user-name">Loading…</span>
+            <span class="user-btn__role" id="user-role">–</span>
+          </span>
+        </button>
+        <div class="dropdown__panel hidden" data-dropdown-panel>
+          <div class="dropdown__header">
+            <strong id="dd-name">—</strong>
+            <span id="dd-email">—</span>
+          </div>
+          <a class="dropdown__item" href="dashboard.html">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            <span>Dashboard</span>
+          </a>
+          <div class="dropdown__divider"></div>
+          <button class="dropdown__item dropdown__item--danger" id="logout-btn">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span>Sign out</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <h1 class="page-head__title" id="page-title">Performance</h1>
+        <p class="page-head__sub" id="page-sub">Reviews, goals, and ratings</p>
+        <div id="scope-badge"></div>
+      </div>
+      <div class="page-head__actions" id="head-actions"></div>
+    </div>
+
+    <div id="view-list">
+      <section class="stats" id="stats"></section>
+      <div class="tabs" id="tabs"></div>
+      <div class="toolbar">
+        <div class="toolbar__search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="search-input" placeholder="Search by employee, position, cycle…">
+        </div>
+        <select class="toolbar__filter" id="cycle-filter">
+          <option value="">All cycles</option>
+        </select>
+        <select class="toolbar__filter" id="status-filter">
+          <option value="">All statuses</option>
+          <option value="draft">Draft</option>
+          <option value="in_progress">In progress</option>
+          <option value="submitted">Submitted</option>
+          <option value="acknowledged">Acknowledged</option>
+          <option value="completed">Completed</option>
+        </select>
+        <span class="toolbar__count" id="count-label"></span>
+      </div>
+      <div class="reviews-grid" id="reviews-grid">
+        <div class="skeleton-row" style="height:200px"></div>
+        <div class="skeleton-row" style="height:200px"></div>
+        <div class="skeleton-row" style="height:200px"></div>
+      </div>
+    </div>
+
+    <div id="view-detail" class="hidden"></div>
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp } from "firebase/app";
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+  collection, query, where, onSnapshot, serverTimestamp,
+  getDocs, addDoc
+} from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyASE2f6DVivrH7koQXAFZeOrj6Wng45Uq4",
+  authDomain: "civil-service-system-f2d46.firebaseapp.com",
+  projectId: "civil-service-system-f2d46",
+  storageBucket: "civil-service-system-f2d46.firebasestorage.app",
+  messagingSenderId: "12482599055",
+  appId: "1:12482599055:web:4daa6a56cc9674c15cf8fa"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ============================================================
+   GUARD
+   ============================================================ */
+const INDEX_URL = "../index.html";
+let unsubReviews = null, unsubEmployees = null;
+function kick(reason) {
+  if (kick.done) return;
+  kick.done = true;
+  try { sessionStorage.clear(); if (reason === "expired") sessionStorage.setItem("__redirectReason","expired"); } catch (e) {}
+  signOut(auth).catch(() => {}).finally(() => window.location.replace(INDEX_URL));
+  setTimeout(() => window.location.replace(INDEX_URL), 800);
+}
+(function preCheck() {
+  let ok = false;
+  try { ok = sessionStorage.getItem("loggedIn") === "true" && !!sessionStorage.getItem("uid"); } catch (e) {}
+  if (!ok) kick("no-session");
+})();
+window.addEventListener("storage", (e) => { if (e.key === "loggedIn" && e.newValue !== "true") kick("cross-tab"); });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  if (kick.done) return;
+  if (!auth.currentUser || sessionStorage.getItem("loggedIn") !== "true") kick("hidden-expired");
+});
+setInterval(() => { if (kick.done) return; if (!auth.currentUser) kick("heartbeat"); }, 60000);
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest("#logout-btn");
+  if (!btn) return;
+  e.preventDefault();
+  try { sessionStorage.clear(); } catch (err) {}
+  try { await signOut(auth); } catch (err) {}
+  window.location.replace(INDEX_URL);
+});
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let S = null;
+let REVIEWS = [];
+let EMPLOYEES = [];
+let employeesById = {};
+let employeesByUid = {};
+
+let searchTerm = "";
+let filterCycle = "";
+let filterStatus = "";
+let activeTab = "all";
+let currentView = "list";
+let currentReviewId = null;
+let currentReview = null;
+let detailTab = "scores";
+
+/* ============================================================
+   PERMISSIONS
+   ============================================================ */
+const ROLE_LABELS = {
+  super_admin: "Super Admin", admin: "Cluster Admin", hrm: "HR Manager",
+  finance: "Finance Officer", manager: "Manager", employee: "Employee"
+};
+const roleLabel = (r) => ROLE_LABELS[r] || (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+
+const isSuper   = () => S?.role === "super_admin";
+const isHRM     = () => S?.role === "hrm";
+const isAdmin   = () => S?.role === "admin";
+const isMgr     = () => S?.role === "manager";
+const isEmp     = () => S?.role === "employee";
+
+const canCreateReview = () => isSuper() || isHRM() || isAdmin() || isMgr();
+const canEditReview = (r) => {
+  if (!r) return false;
+  if (r.status === "completed" && !isSuper() && !isHRM()) return false;
+  if (isSuper() || isHRM() || isAdmin()) return true;
+  if (isMgr() && r.reviewerId === S.uid) return true;
+  return false;
+};
+const canDeleteReview = () => isSuper() || isHRM();
+const canSeeAll       = () => isSuper() || isHRM();
+
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
+const CYCLE_TYPES = [
+  { id:"annual",     label:"Annual" },
+  { id:"half_year",  label:"Half-year" },
+  { id:"quarterly",  label:"Quarterly" },
+  { id:"probation",  label:"Probation" },
+  { id:"special",    label:"Special review" }
+];
+const CYCLE_MAP = Object.fromEntries(CYCLE_TYPES.map(t => [t.id, t]));
+
+const REVIEW_STATUSES = [
+  { id:"draft",        label:"Draft",        cls:"tag--gray" },
+  { id:"in_progress",  label:"In progress",  cls:"tag--gold" },
+  { id:"submitted",    label:"Submitted",    cls:"tag--violet"},
+  { id:"acknowledged", label:"Acknowledged", cls:"tag--blue" },
+  { id:"completed",    label:"Completed",    cls:"tag--green"}
+];
+const STATUS_MAP = Object.fromEntries(REVIEW_STATUSES.map(s => [s.id, s]));
+
+const RATING_LABELS = ["", "Unsatisfactory", "Needs improvement", "Meets expectations", "Exceeds expectations", "Outstanding"];
+const RATING_COLORS = ["", "#dc2626", "#d4a017", "#0b5cab", "#0e7490", "#19a974"];
+
+const DEFAULT_CRITERIA = [
+  { id:"job_knowledge",   label:"Job knowledge & skills",       weight: 20 },
+  { id:"quality",         label:"Quality of work",              weight: 20 },
+  { id:"productivity",    label:"Productivity & efficiency",    weight: 15 },
+  { id:"initiative",      label:"Initiative & responsibility",  weight: 15 },
+  { id:"teamwork",        label:"Teamwork & collaboration",     weight: 15 },
+  { id:"discipline",      label:"Discipline & punctuality",     weight: 15 }
+];
+
+const RECOMMENDATIONS = [
+  { id:"promotion",       label:"Recommend for promotion" },
+  { id:"increment",       label:"Recommend for increment" },
+  { id:"training",        label:"Recommend for training" },
+  { id:"retain",          label:"Retain in current position" },
+  { id:"transfer",        label:"Recommend transfer" },
+  { id:"probation_extend",label:"Extend probation" },
+  { id:"termination",     label:"Recommend termination" }
+];
+const RECO_MAP = Object.fromEntries(RECOMMENDATIONS.map(r => [r.id, r]));
+
+/* ============================================================
+   ICONS
+   ============================================================ */
+const ICONS = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  userPlus:'<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>',
+  user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  building:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  wallet:'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',
+  target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+  trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  eye:'<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>',
+  alert:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  arrowLeft:'<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+  star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  trendingUp:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  trendingDown:'<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>',
+  award:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>',
+  barChart:'<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
+  clipBoard:'<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>',
+  send:'<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
+  fileCheck:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 16 12"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  info:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+  chevronRight:'<polyline points="9 18 15 12 9 6"/>'
+};
+
+/* ============================================================
+   NAV
+   ============================================================ */
+const NAV = [
+  { section:"Overview", items:[
+    { key:"dashboard", label:"Dashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
+  ]},
+  { section:"Organization", items:[
+    { key:"users",       label:"Users & Staff", href:"users.html",       icon:"users",    roles:["super_admin","admin","hrm"] },
+    { key:"departments", label:"Departments",   href:"departments.html", icon:"building", roles:["super_admin","admin","hrm","manager"] }
+  ]},
+  { section:"Human Resources", items:[
+    { key:"recruitment", label:"Recruitment", href:"recruitment.html", icon:"userPlus", roles:["super_admin","hrm","admin"] },
+    { key:"training",    label:"Training",    href:"training.html",    icon:"book",     roles:["super_admin","hrm","admin","manager","employee"] },
+    { key:"performance", label:"Performance", href:"performance.html", icon:"target",   roles:["super_admin","hrm","admin","manager","employee"] }
+  ]},
+  { section:"Operations", items:[
+    { key:"attendance",  label:"Attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","admin","hrm","manager","employee"] },
+    { key:"leave",       label:"Leave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","admin","hrm","manager","employee"] }
+  ]},
+  { section:"Finance", items:[
+    { key:"payroll",     label:"Payroll",     href:"payroll.html",  icon:"wallet", roles:["super_admin","finance","admin"] },
+    { key:"budget",      label:"Budget",      href:"budget.html",   icon:"chart",  roles:["super_admin","finance"] }
+  ]},
+  { section:"Administration", items:[
+    { key:"offices",       label:"Offices",       href:"offices.html",       icon:"building", roles:["super_admin","admin"] },
+    { key:"notifications", label:"Notifications", href:"notifications.html", icon:"bell",     roles:["*"] },
+    { key:"settings",      label:"Settings",      href:"settings.html",      icon:"settings", roles:["*"] }
+  ]}
+];
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const escapeHtml = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g,
+  (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const initials = (n) => (n || "?").split(/\s+/).slice(0,2).map(s => s[0]).join("").toUpperCase();
+const hasAccess = (item, role) => item.roles.includes("*") || item.roles.includes(role);
+const todayISO = () => new Date().toISOString().slice(0,10);
+const fmtDate = (iso) => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" });
+};
+const fmtDateTime = (ts) => {
+  if (!ts) return "—";
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  if (isNaN(d)) return "—";
+  return d.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" }) + " " +
+         d.toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
+};
+
+function toast(msg, type = "success") {
+  const wrap = document.getElementById("toast-wrap");
+  const el = document.createElement("div");
+  el.className = "toast toast--" + type;
+  const icon = type === "error" ? ICONS.alert : ICONS.check;
+  el.innerHTML = `<svg viewBox="0 0 24 24">${icon}</svg><span>${escapeHtml(msg)}</span>`;
+  wrap.appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; }, 4200);
+  setTimeout(() => el.remove(), 4600);
+}
+
+function computeWeightedScore(scores, criteria) {
+  if (!scores || !criteria) return 0;
+  let totalW = 0, sum = 0;
+  criteria.forEach(c => {
+    const v = scores[c.id];
+    if (v != null && !isNaN(v) && v > 0) {
+      const w = Number(c.weight || 0);
+      totalW += w;
+      sum += (Number(v) * w);
+    }
+  });
+  return totalW ? Math.round((sum / totalW) * 100) / 100 : 0;
+}
+function ratingLabel(v) {
+  const n = Math.round(v);
+  return RATING_LABELS[n] || "—";
+}
+function ratingColor(v) {
+  const n = Math.round(v);
+  return RATING_COLORS[n] || "#6b7280";
+}
+function scoreColor(pct) {
+  if (pct >= 85) return "#19a974";
+  if (pct >= 70) return "#0e7490";
+  if (pct >= 55) return "#d4a017";
+  if (pct >= 40) return "#db2777";
+  return "#dc2626";
+}
+
+/* ============================================================
+   SHELL
+   ============================================================ */
+function renderSidebar() {
+  const nav = document.getElementById("sidebar-nav");
+  nav.innerHTML = "";
+  for (const group of NAV) {
+    const vis = group.items.filter(it => hasAccess(it, S.role));
+    if (!vis.length) continue;
+    const sec = document.createElement("div");
+    sec.className = "sidebar__section";
+    sec.textContent = group.section;
+    nav.appendChild(sec);
+    for (const item of vis) {
+      const a = document.createElement("a");
+      a.className = "nav-item" + (item.key === "performance" ? " is-active" : "");
+      a.href = item.href;
+      a.innerHTML = `<svg viewBox="0 0 24 24">${ICONS[item.icon]}</svg>
+                     <span class="nav-item__label">${item.label}</span>`;
+      nav.appendChild(a);
+    }
+  }
+}
+function renderUser() {
+  const avatar = document.getElementById("user-avatar");
+  if (S.photoURL) {
+    avatar.innerHTML = `<img src="${escapeHtml(S.photoURL)}" alt="">`;
+  } else {
+    avatar.textContent = initials(S.name);
+  }
+  document.getElementById("user-name").textContent = S.name;
+  document.getElementById("user-role").textContent = roleLabel(S.role);
+  document.getElementById("dd-name").textContent = S.name;
+  document.getElementById("dd-email").textContent = S.email;
+}
+function renderScopeBadge() {
+  const el = document.getElementById("scope-badge");
+  if (isSuper()) {
+    el.innerHTML = `<span class="scope-badge scope-badge--super">
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Full system access — all reviews
+    </span>`;
+  } else if (isHRM()) {
+    el.innerHTML = `<span class="scope-badge scope-badge--hrm">
+      <svg viewBox="0 0 24 24">${ICONS.award}</svg> HR Manager — organisation-wide
+    </span>`;
+  } else if (isAdmin()) {
+    el.innerHTML = `<span class="scope-badge">
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Cluster admin — your cluster
+    </span>`;
+  } else if (isMgr()) {
+    el.innerHTML = `<span class="scope-badge scope-badge--mgr">
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> Manager — your team + self
+    </span>`;
+  } else {
+    el.innerHTML = `<span class="scope-badge">
+      <svg viewBox="0 0 24 24">${ICONS.star}</svg> My performance
+    </span>`;
+  }
+}
+
+/* ============================================================
+   VIEW SWITCHER
+   ============================================================ */
+function showListView() {
+  currentView = "list";
+  currentReviewId = null;
+  currentReview = null;
+  document.getElementById("view-list").classList.remove("hidden");
+  document.getElementById("view-detail").classList.add("hidden");
+  document.getElementById("page-title").textContent = "Performance";
+  document.getElementById("page-sub").textContent = "Reviews, goals, and ratings";
+  renderHeadActions();
+  render();
+}
+function showDetailView(reviewId) {
+  currentView = "detail";
+  currentReviewId = reviewId;
+  currentReview = REVIEWS.find(r => r.id === reviewId) || null;
+  document.getElementById("view-list").classList.add("hidden");
+  document.getElementById("view-detail").classList.remove("hidden");
+  document.getElementById("page-title").textContent = currentReview?.employeeName || "Review";
+  document.getElementById("page-sub").textContent = currentReview?.cycleName || "";
+  renderHeadActions();
+  renderDetail();
+}
+
+/* ============================================================
+   HEAD ACTIONS
+   ============================================================ */
+function renderHeadActions() {
+  const host = document.getElementById("head-actions");
+  const btns = [];
+  if (currentView === "list") {
+    if (canCreateReview()) {
+      btns.push(`<button class="btn btn--primary" id="new-review-btn">
+        <svg viewBox="0 0 24 24">${ICONS.plus}</svg> New Review
+      </button>`);
+    }
+  } else {
+    btns.push(`<button class="btn" id="back-btn">
+      <svg viewBox="0 0 24 24">${ICONS.arrowLeft}</svg> Back
+    </button>`);
+    if (canEditReview(currentReview) && currentReview?.status !== "acknowledged") {
+      btns.push(`<button class="btn btn--primary" id="edit-review-btn">
+        <svg viewBox="0 0 24 24">${ICONS.edit}</svg> Edit Review
+      </button>`);
+    }
+    if (canDeleteReview()) {
+      btns.push(`<button class="btn btn--danger" id="delete-review-btn">
+        <svg viewBox="0 0 24 24">${ICONS.trash}</svg> Delete
+      </button>`);
+    }
+  }
+  host.innerHTML = btns.join("");
+  document.getElementById("new-review-btn")?.addEventListener("click", () => openReviewForm());
+  document.getElementById("back-btn")?.addEventListener("click", showListView);
+  document.getElementById("edit-review-btn")?.addEventListener("click", () => {
+    const r = REVIEWS.find(x => x.id === currentReviewId);
+    if (r) openReviewForm(r);
+  });
+  document.getElementById("delete-review-btn")?.addEventListener("click", () => confirmDeleteReview(currentReviewId));
+}
+
+/* ============================================================
+   STATS
+   ============================================================ */
+function renderStats() {
+  const list = visibleReviews();
+  const inProgress = list.filter(r => r.status === "in_progress" || r.status === "draft").length;
+  const submitted  = list.filter(r => r.status === "submitted").length;
+  const completed  = list.filter(r => r.status === "completed").length;
+  const scored = list.filter(r => r.finalScore != null && r.finalScore > 0);
+  const avgScore = scored.length
+    ? Math.round((scored.reduce((s, r) => s + Number(r.finalScore || 0), 0) / scored.length) * 10) / 10
+    : 0;
+
+  document.getElementById("stats").innerHTML = `
+    ${statCard("Total Reviews", list.length, "stat--blue",  "clipBoard", "")}
+    ${statCard("In Progress",   inProgress,  "stat--gold",  "clock",     "")}
+    ${statCard("Submitted",     submitted,   "stat--violet","send",      "")}
+    ${statCard("Completed",     completed,   "stat--green", "check",     "")}
+    ${statCard("Avg. Score",    avgScore ? avgScore + " / 100" : "—", "stat--teal", "trendingUp", scored.length + " scored")}
+  `;
+}
+function statCard(label, value, cls, iconKey, sub) {
+  return `
+    <div class="stat ${cls}">
+      <div class="stat__head">
+        <span class="stat__label">${escapeHtml(label)}</span>
+        <span class="stat__icon"><svg viewBox="0 0 24 24">${ICONS[iconKey]}</svg></span>
+      </div>
+      <div class="stat__value">${escapeHtml(String(value))}</div>
+      ${sub ? `<div class="stat__sub">${escapeHtml(sub)}</div>` : ""}
+    </div>`;
+}
+
+/* ============================================================
+   VISIBILITY
+   ============================================================ */
+function visibleReviews() {
+  if (!S) return [];
+  if (canSeeAll()) return REVIEWS;
+  if (isAdmin()) return REVIEWS.filter(r => r.clusterId === S.clusterId);
+  if (isMgr()) return REVIEWS.filter(r => r.reviewerId === S.uid || r.uid === S.uid);
+  return REVIEWS.filter(r => r.uid === S.uid);
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+function renderTabs() {
+  const host = document.getElementById("tabs");
+  const base = visibleReviews();
+  const counts = {
+    all:         base.length,
+    in_progress: base.filter(r => r.status === "in_progress" || r.status === "draft").length,
+    submitted:   base.filter(r => r.status === "submitted").length,
+    completed:   base.filter(r => r.status === "completed").length,
+    mine:        base.filter(r => r.uid === S.uid).length
+  };
+  const tabs = [
+    { key:"all",         label:"All" },
+    { key:"in_progress", label:"In progress" },
+    { key:"submitted",   label:"Submitted" },
+    { key:"completed",   label:"Completed" },
+    { key:"mine",        label:"My Reviews" }
+  ];
+  host.innerHTML = tabs.map(t => `
+    <button class="tab ${activeTab === t.key ? "is-active" : ""}" data-tab="${t.key}">
+      ${escapeHtml(t.label)}
+      <span class="tab__count">${counts[t.key]}</span>
+    </button>
+  `).join("");
+  host.querySelectorAll(".tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeTab = btn.dataset.tab;
+      renderTabs();
+      renderReviewsGrid();
+    });
+  });
+}
+function renderCycleFilter() {
+  const sel = document.getElementById("cycle-filter");
+  const current = sel.value;
+  const cycles = Array.from(new Set(visibleReviews().map(r => r.cycleName).filter(Boolean))).sort().reverse();
+  sel.innerHTML = `<option value="">All cycles</option>` +
+    cycles.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  sel.value = current;
+}
+
+/* ============================================================
+   REVIEWS GRID
+   ============================================================ */
+function filteredReviews() {
+  const s = searchTerm.trim().toLowerCase();
+  return visibleReviews()
+    .slice()
+    .sort((a,b) => {
+      const ta = a.updatedAt?.toDate?.()?.getTime?.() || a.createdAt?.toDate?.()?.getTime?.() || 0;
+      const tb = b.updatedAt?.toDate?.()?.getTime?.() || b.createdAt?.toDate?.()?.getTime?.() || 0;
+      return tb - ta;
+    })
+    .filter(r => {
+      if (activeTab === "in_progress" && !["draft","in_progress"].includes(r.status)) return false;
+      if (activeTab === "submitted"   && r.status !== "submitted") return false;
+      if (activeTab === "completed"   && r.status !== "completed") return false;
+      if (activeTab === "mine"        && r.uid !== S.uid)          return false;
+      if (filterCycle  && r.cycleName !== filterCycle)  return false;
+      if (filterStatus && r.status !== filterStatus)    return false;
+      if (s) {
+        const hay = [r.employeeName, r.empId, r.position, r.cycleName, r.reviewerName]
+          .filter(Boolean).join(" ").toLowerCase();
+        if (!hay.includes(s)) return false;
+      }
+      return true;
+    });
+}
+function statusTag(status) {
+  const m = STATUS_MAP[status] || { cls:"tag--gray", label: status || "—" };
+  return `<span class="tag ${m.cls}">${escapeHtml(m.label)}</span>`;
+}
+function starsHtml(rating, { size = 16 } = {}) {
+  const n = Math.round(Number(rating) || 0);
+  return `<span class="review-card__rating">${
+    [1,2,3,4,5].map(i =>
+      `<svg viewBox="0 0 24 24" style="width:${size}px;height:${size}px;${
+        i <= n ? `fill:#d4a017;stroke:#d4a017` : `stroke:#cbd5e1`
+      }">${ICONS.star}</svg>`
+    ).join("")
+  }</span>`;
+}
+
+function renderReviewsGrid() {
+  const host = document.getElementById("reviews-grid");
+  if (!host) return;
+  const list = filteredReviews();
+  const total = visibleReviews().length;
+  const countEl = document.getElementById("count-label");
+  if (countEl) countEl.textContent = list.length + " / " + total;
+
+  if (!total) {
+    host.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:60px 24px;color:var(--muted);
+                  background:#fff;border:1px solid var(--border);border-radius:16px">
+        <div style="font-size:44px;margin-bottom:12px;opacity:.4">⭐</div>
+        <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px">
+          No performance reviews yet
+        </div>
+        <div style="font-size:13.5px;line-height:1.6;max-width:520px;margin:0 auto">
+          ${canCreateReview()
+            ? "Click <strong>New Review</strong> to start a performance review."
+            : "No reviews are visible for your role."}
+        </div>
+      </div>`;
+    return;
+  }
+  if (!list.length) {
+    host.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:48px 20px;color:var(--muted);
+                  background:#fff;border:1px solid var(--border);border-radius:16px">
+        No reviews match your search or filters.
+      </div>`;
+    return;
+  }
+
+  host.innerHTML = list.map(r => {
+    const emp = employeesByUid[r.uid] || employeesById[r.employeeId] || null;
+    const photo = r.employeePhoto || emp?.photoURL;
+    const name = r.employeeName || emp?.fullName || [emp?.firstName, emp?.lastName].filter(Boolean).join(" ") || "Employee";
+    const avatar = photo ? `<img src="${escapeHtml(photo)}" alt="">` : escapeHtml(initials(name));
+    const score = r.finalScore != null ? Number(r.finalScore) : null;
+    const sc = score != null && score > 0 ? scoreColor(score) : "#6b7280";
+    const pct = score != null ? Math.min(100, Math.max(0, score)) : 0;
+
+    return `
+      <div class="review-card" data-review-id="${r.id}">
+        <div class="review-card__head">
+          <div class="review-card__avatar">${avatar}</div>
+          <div style="flex:1;min-width:0">
+            <div class="review-card__name">${escapeHtml(name)}</div>
+            <div class="review-card__role">${escapeHtml(r.position || emp?.position || "—")}</div>
+          </div>
+          ${statusTag(r.status)}
+        </div>
+
+        <div class="review-card__cycle">
+          <svg viewBox="0 0 24 24">${ICONS.calendar}</svg>
+          ${escapeHtml(r.cycleName || "—")}
+        </div>
+
+        ${score != null && score > 0 ? `
+          <div class="review-card__score">
+            <div class="review-card__score-main">
+              <div class="review-card__score-val" style="color:${sc}">${score.toFixed(1)}</div>
+              <div class="review-card__score-max">/ 100</div>
+            </div>
+            ${starsHtml(score / 20)}
+          </div>
+          <div class="review-card__progress">
+            <div class="review-card__progress-label">
+              <span>${escapeHtml(ratingLabel(score / 20))}</span>
+              <span>${Math.round(pct)}%</span>
+            </div>
+            <div class="review-card__progress-bar">
+              <div class="review-card__progress-fill" style="width:${pct}%;background:${sc}"></div>
+            </div>
+          </div>
+        ` : `
+          <div style="padding:14px;background:var(--bg-soft);border-radius:10px;
+                      font-size:12.5px;color:var(--muted);text-align:center;font-weight:600">
+            Not scored yet
+          </div>
+        `}
+      </div>`;
+  }).join("");
+
+  host.querySelectorAll("[data-review-id]").forEach(card => {
+    card.addEventListener("click", () => showDetailView(card.dataset.reviewId));
+  });
+}
+
+function render() {
+  if (currentView !== "list") return;
+  renderScopeBadge();
+  renderStats();
+  renderTabs();
+  renderCycleFilter();
+  renderReviewsGrid();
+}
+
+/* ============================================================
+   MODAL FRAMEWORK
+   ============================================================ */
+let escHandler = null;
+function openModal(html, { size = "" } = {}) {
+  closeModal();
+  const bd = document.createElement("div");
+  bd.className = "modal-backdrop";
+  bd.id = "modal-backdrop";
+  bd.innerHTML = `<div class="modal ${size ? "modal--" + size : ""}" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(bd);
+  bd.addEventListener("click", (e) => { if (e.target === bd) closeModal(); });
+  bd.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", closeModal));
+  escHandler = (e) => { if (e.key === "Escape") closeModal(); };
+  document.addEventListener("keydown", escHandler);
+  return bd;
+}
+function closeModal() {
+  const el = document.getElementById("modal-backdrop");
+  if (el) el.remove();
+  if (escHandler) { document.removeEventListener("keydown", escHandler); escHandler = null; }
+}
+
+/* ============================================================
+   REVIEW FORM (New / Edit)
+   ============================================================ */
+function openReviewForm(existing = null) {
+  const isEdit = !!existing;
+  if (isEdit && !canEditReview(existing)) { toast("You cannot edit this review", "error"); return; }
+  if (!isEdit && !canCreateReview()) { toast("You cannot create reviews", "error"); return; }
+
+  // Eligible employees
+  let eligibleEmps = EMPLOYEES.slice();
+  if (isMgr()) eligibleEmps = eligibleEmps.filter(e => e.managerId === S.uid || e.uid === S.uid);
+  if (isAdmin()) eligibleEmps = eligibleEmps.filter(e => e.clusterId === S.clusterId);
+  eligibleEmps = eligibleEmps.filter(e => e.status !== "inactive");
+
+  const criteria = existing?.criteria || DEFAULT_CRITERIA;
+
+  openModal(`
+    <div class="modal__head">
+      <div>
+        <div class="modal__title">${isEdit ? "Edit Performance Review" : "New Performance Review"}</div>
+        <div class="modal__sub">${isEdit ? "Update the review details." : "Start a new performance review for an employee."}</div>
+      </div>
+      <button class="modal__close" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24">${ICONS.x}</svg>
+      </button>
+    </div>
+    <div class="modal__body">
+      <div id="rf-error" class="alert alert--error" style="display:none">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div id="rf-error-msg" style="flex:1"></div>
+      </div>
+
+      <div class="field">
+        <label class="field__required">Employee</label>
+        ${isEdit
+          ? `<input value="${escapeHtml(existing.employeeName || "")}" disabled>`
+          : `<select id="rf-employee">
+              <option value="">— Choose an employee —</option>
+              ${eligibleEmps.map(e => `
+                <option value="${e.id}">
+                  ${escapeHtml(e.fullName || [e.firstName, e.lastName].filter(Boolean).join(" "))} · ${escapeHtml(e.empId || "")}
+                </option>`).join("")}
+            </select>`}
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field__required">Cycle name</label>
+          <input id="rf-cycleName" value="${escapeHtml(existing?.cycleName || (new Date().getFullYear() + " Annual Review"))}" placeholder="e.g. 2026 Annual Review">
+        </div>
+        <div class="field">
+          <label class="field__required">Review type</label>
+          <select id="rf-cycleType">
+            ${CYCLE_TYPES.map(t => `<option value="${t.id}" ${existing?.cycleType === t.id ? "selected" : ""}>${t.label}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field__required">Period start</label>
+          <input id="rf-periodStart" type="date" value="${escapeHtml(existing?.periodStart || todayISO())}">
+        </div>
+        <div class="field">
+          <label class="field__required">Period end</label>
+          <input id="rf-periodEnd" type="date" value="${escapeHtml(existing?.periodEnd || "")}">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Reviewer</label>
+        <input value="${escapeHtml(existing?.reviewerName || S.name)}" disabled>
+        <p class="field__hint">You are the reviewer for this review.</p>
+      </div>
+
+      <div class="field">
+        <label>Status</label>
+        <select id="rf-status">
+          ${REVIEW_STATUSES.map(s => `<option value="${s.id}" ${(existing?.status || "draft") === s.id ? "selected" : ""}>${s.label}</option>`).join("")}
+        </select>
+      </div>
+
+      <div class="section-title" style="margin-top:22px">Performance criteria</div>
+      <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr>
+              <th style="padding:10px 14px;background:var(--bg-soft);font-size:11px;
+                         font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+                         color:var(--muted);text-align:left;border-bottom:1px solid var(--border)">Criterion</th>
+              <th style="padding:10px 14px;background:var(--bg-soft);font-size:11px;
+                         font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+                         color:var(--muted);text-align:center;border-bottom:1px solid var(--border);width:70px">Weight</th>
+              <th style="padding:10px 14px;background:var(--bg-soft);font-size:11px;
+                         font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+                         color:var(--muted);text-align:center;border-bottom:1px solid var(--border);width:230px">Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${criteria.map(c => {
+              const val = existing?.scores?.[c.id] || 0;
+              return `
+                <tr>
+                  <td style="padding:12px 14px;border-bottom:1px solid var(--border-soft);
+                             font-weight:600;color:var(--text-soft)">
+                    ${escapeHtml(c.label)}
+                  </td>
+                  <td style="padding:12px 14px;border-bottom:1px solid var(--border-soft);
+                             text-align:center;font-family:ui-monospace,monospace;
+                             color:var(--muted);font-weight:700">${c.weight}%</td>
+                  <td style="padding:12px 14px;border-bottom:1px solid var(--border-soft)">
+                    <div class="rating-input" data-criterion="${c.id}">
+                      ${[1,2,3,4,5].map(n => `
+                        <svg class="rating-input__star ${n <= val ? "is-on" : ""}"
+                             data-star="${n}" viewBox="0 0 24 24">${ICONS.star}</svg>
+                      `).join("")}
+                      <span class="rating-input__label" data-rating-label>${escapeHtml(ratingLabel(val))}</span>
+                    </div>
+                  </td>
+                </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:14px;padding:12px 16px;background:linear-gradient(135deg,#f8fbff,#fff);
+                  border:1px solid #bdd7f2;border-radius:11px;display:flex;
+                  justify-content:space-between;align-items:center">
+        <span style="font-size:12.5px;font-weight:800;text-transform:uppercase;
+                     letter-spacing:.06em;color:var(--primary-dark)">Weighted score</span>
+        <span style="font-size:22px;font-weight:800;color:var(--primary-dark);
+                     font-family:ui-monospace,monospace" id="rf-live-score">0.0</span>
+      </div>
+
+      <div class="field" style="margin-top:20px">
+        <label>Strengths</label>
+        <textarea id="rf-strengths" placeholder="What did the employee do well?">${escapeHtml(existing?.strengths || "")}</textarea>
+      </div>
+
+      <div class="field">
+        <label>Areas for improvement</label>
+        <textarea id="rf-improvements" placeholder="Where can the employee improve?">${escapeHtml(existing?.improvements || "")}</textarea>
+      </div>
+
+      <div class="field">
+        <label>Goals for next period</label>
+        <textarea id="rf-goals" placeholder="Specific goals for the next review period…">${escapeHtml(existing?.goals || "")}</textarea>
+      </div>
+
+      <div class="field">
+        <label>Manager's overall comments</label>
+        <textarea id="rf-comments" placeholder="Overall summary…">${escapeHtml(existing?.comments || "")}</textarea>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Recommendation</label>
+          <select id="rf-recommendation">
+            <option value="">— None —</option>
+            ${RECOMMENDATIONS.map(rec => `<option value="${rec.id}" ${existing?.recommendation === rec.id ? "selected" : ""}>${rec.label}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field">
+          <label>Overall rating (1–5)</label>
+          <select id="rf-overallRating">
+            <option value="">— Auto from score —</option>
+            ${[1,2,3,4,5].map(n => `<option value="${n}" ${existing?.overallRating === n ? "selected" : ""}>${n} — ${RATING_LABELS[n]}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn btn--primary" id="rf-submit">
+        <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
+        <span class="btn-label">${isEdit ? "Save changes" : "Create review"}</span>
+      </button>
+    </div>
+  `, { size: "lg" });
+
+  const scoreMap = {};
+  criteria.forEach(c => { scoreMap[c.id] = Number(existing?.scores?.[c.id] || 0); });
+
+  const updateLiveScore = () => {
+    const s = computeWeightedScore(scoreMap, criteria);
+    const el = document.getElementById("rf-live-score");
+    if (el) {
+      el.textContent = s.toFixed(1);
+      el.style.color = scoreColor(s);
+    }
+  };
+  updateLiveScore();
+
+  document.querySelectorAll(".rating-input").forEach(group => {
+    const criterionId = group.dataset.criterion;
+    const labelEl = group.querySelector("[data-rating-label]");
+    group.querySelectorAll("[data-star]").forEach(star => {
+      star.addEventListener("click", () => {
+        const n = Number(star.dataset.star);
+        scoreMap[criterionId] = n;
+        group.querySelectorAll("[data-star]").forEach(s => {
+          s.classList.toggle("is-on", Number(s.dataset.star) <= n);
+        });
+        if (labelEl) labelEl.textContent = ratingLabel(n);
+        updateLiveScore();
+      });
+    });
+  });
+
+  document.getElementById("rf-submit").addEventListener("click", async () => {
+    const errBox = document.getElementById("rf-error");
+    const errMsg = document.getElementById("rf-error-msg");
+    const btn = document.getElementById("rf-submit");
+    const spinner = btn.querySelector(".spinner");
+    const label = btn.querySelector(".btn-label");
+    errBox.style.display = "none";
+
+    let employee = null;
+    if (!isEdit) {
+      const empId = document.getElementById("rf-employee").value;
+      employee = eligibleEmps.find(e => e.id === empId);
+      if (!employee) { errBox.style.display="flex"; errMsg.textContent = "Please choose an employee."; return; }
+    } else {
+      employee = employeesByUid[existing.uid] || employeesById[existing.employeeId] || { fullName: existing.employeeName };
+    }
+
+    const cycleName = document.getElementById("rf-cycleName").value.trim();
+    const cycleType = document.getElementById("rf-cycleType").value;
+    const periodStart = document.getElementById("rf-periodStart").value;
+    const periodEnd = document.getElementById("rf-periodEnd").value;
+    const status = document.getElementById("rf-status").value;
+    const strengths = document.getElementById("rf-strengths").value.trim();
+    const improvements = document.getElementById("rf-improvements").value.trim();
+    const goals = document.getElementById("rf-goals").value.trim();
+    const comments = document.getElementById("rf-comments").value.trim();
+    const recommendation = document.getElementById("rf-recommendation").value;
+    const overallRatingRaw = document.getElementById("rf-overallRating").value;
+
+    if (!cycleName) { errBox.style.display="flex"; errMsg.textContent = "Cycle name is required."; return; }
+    if (!periodStart || !periodEnd) { errBox.style.display="flex"; errMsg.textContent = "Both period dates are required."; return; }
+    if (periodEnd < periodStart) { errBox.style.display="flex"; errMsg.textContent = "Period end must be after period start."; return; }
+
+    const scoredCount = Object.values(scoreMap).filter(v => v > 0).length;
+    if (status !== "draft" && scoredCount === 0) {
+      errBox.style.display="flex"; errMsg.textContent = "Please score at least one criterion before submitting."; return;
+    }
+
+    const finalScore = computeWeightedScore(scoreMap, criteria);
+    const overallRating = overallRatingRaw
+      ? Number(overallRatingRaw)
+      : (finalScore ? Math.round(finalScore / 20) : 0);
+
+    const clusterId = employee.clusterId || null;
+    const clusterName = employee.clusterName || null;
+
+    const payload = {
+      cycleName, cycleType,
+      periodStart, periodEnd,
+      status,
+      criteria,
+      scores: scoreMap,
+      finalScore,
+      overallRating,
+      ratingLabel: ratingLabel(overallRating),
+      strengths: strengths || null,
+      improvements: improvements || null,
+      goals: goals || null,
+      comments: comments || null,
+      recommendation: recommendation || null,
+      updatedAt: serverTimestamp(),
+      updatedBy: S.uid,
+      updatedByName: S.name
+    };
+
+    btn.disabled = true; spinner.classList.remove("hidden");
+    const old = label.textContent; label.textContent = isEdit ? "Saving…" : "Creating…";
+    try {
+      if (isEdit) {
+        await updateDoc(doc(db, "performanceReviews", existing.id), payload);
+        toast("Review updated", "success");
+      } else {
+        await addDoc(collection(db, "performanceReviews"), {
+          ...payload,
+          uid: employee.uid || null,
+          employeeId: employee.id,
+          empId: employee.empId || "",
+          employeeName: employee.fullName || [employee.firstName, employee.lastName].filter(Boolean).join(" "),
+          employeePhoto: employee.photoURL || null,
+          position: employee.position || null,
+          clusterId, clusterName,
+          departmentId: employee.departmentId || null,
+          departmentName: employee.departmentName || null,
+          managerId: employee.managerId || null,
+          reviewerId: S.uid,
+          reviewerName: S.name,
+          createdAt: serverTimestamp(),
+          createdBy: S.uid
+        });
+        toast("Review created", "success");
+      }
+      closeModal();
+    } catch (err) {
+      console.error(err);
+      errBox.style.display = "flex";
+      errMsg.textContent = (err.code ? err.code + " — " : "") + (err.message || "Could not save review.");
+      btn.disabled = false; spinner.classList.add("hidden");
+      label.textContent = old;
+    }
+  });
+}
+
+/* ============================================================
+   DELETE REVIEW
+   ============================================================ */
+function confirmDeleteReview(id) {
+  const r = REVIEWS.find(x => x.id === id);
+  if (!r) return;
+  if (!canDeleteReview()) { toast("Only Super Admin or HR Manager can delete reviews", "error"); return; }
+  const name = r.employeeName || "Employee";
+
+  openModal(`
+    <div class="modal__head">
+      <div>
+        <div class="modal__title">Delete performance review?</div>
+        <div class="modal__sub">${escapeHtml(name)} · ${escapeHtml(r.cycleName || "")}</div>
+      </div>
+      <button class="modal__close" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24">${ICONS.x}</svg>
+      </button>
+    </div>
+    <div class="modal__body">
+      <div class="alert alert--error" style="margin-bottom:0">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div>
+          <div style="font-weight:700;margin-bottom:6px">This will permanently remove:</div>
+          <div>The performance review for <strong>${escapeHtml(name)}</strong> — ${escapeHtml(r.cycleName || "")}.</div>
+          <div style="margin-top:10px;font-size:12.5px">This action cannot be undone.</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancel</button>
+      <button class="btn btn--danger" id="dr-submit">
+        <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
+        <span class="btn-label">Delete review</span>
+      </button>
+    </div>
+  `);
+
+  document.getElementById("dr-submit").addEventListener("click", async () => {
+    const btn = document.getElementById("dr-submit");
+    const spinner = btn.querySelector(".spinner");
+    const label = btn.querySelector(".btn-label");
+    btn.disabled = true; spinner.classList.remove("hidden");
+    const old = label.textContent; label.textContent = "Deleting…";
+    try {
+      await deleteDoc(doc(db, "performanceReviews", id));
+      toast("Review deleted", "success");
+      closeModal();
+      showListView();
+    } catch (err) {
+      console.error(err);
+      toast(err.message || "Could not delete", "error");
+      btn.disabled = false; spinner.classList.add("hidden");
+      label.textContent = old;
+    }
+  });
+}
+
+/* ============================================================
+   DETAIL VIEW
+   ============================================================ */
+function renderDetail() {
+  if (!currentReview) return;
+  const r = currentReview;
+  const host = document.getElementById("view-detail");
+  const emp = employeesByUid[r.uid] || employeesById[r.employeeId] || null;
+  const name = r.employeeName || emp?.fullName || "Employee";
+  const photo = r.employeePhoto || emp?.photoURL;
+  const avatar = photo ? `<img src="${escapeHtml(photo)}" alt="">` : escapeHtml(initials(name));
+  const score = r.finalScore != null ? Number(r.finalScore) : 0;
+  const sc = scoreColor(score);
+  const rating = r.overallRating || (score ? Math.round(score / 20) : 0);
+
+  const CIRC = 2 * Math.PI * 34;
+  const dash = (score / 100) * CIRC;
+
+  host.innerHTML = `
+    <div class="perf-hero">
+      <div class="perf-hero__top">
+        <div class="perf-hero__avatar">${avatar}</div>
+        <div style="flex:1;min-width:0">
+          <div class="perf-hero__name">${escapeHtml(name)}</div>
+          <div class="perf-hero__role">
+            ${escapeHtml(r.position || emp?.position || "—")}${r.empId ? " · " + escapeHtml(r.empId) : ""}
+          </div>
+        </div>
+        ${statusTag(r.status)}
+      </div>
+
+      <div class="perf-hero__stats">
+        <div class="perf-hero__stat"><dt>Cycle</dt><dd style="font-size:14px">${escapeHtml(r.cycleName || "—")}</dd></div>
+        <div class="perf-hero__stat"><dt>Type</dt><dd style="font-size:14px">${escapeHtml(CYCLE_MAP[r.cycleType]?.label || r.cycleType || "—")}</dd></div>
+        <div class="perf-hero__stat"><dt>Period</dt><dd style="font-size:13px;font-weight:700">${escapeHtml(fmtDate(r.periodStart))} → ${escapeHtml(fmtDate(r.periodEnd))}</dd></div>
+        <div class="perf-hero__stat"><dt>Reviewer</dt><dd style="font-size:13px;font-weight:700">${escapeHtml(r.reviewerName || "—")}</dd></div>
+        <div class="perf-hero__stat"><dt>Rating</dt><dd style="color:${ratingColor(rating)}">${rating}/5</dd></div>
+        <div class="perf-hero__stat"><dt>Score</dt><dd style="color:${sc}">${score.toFixed(1)}</dd></div>
+      </div>
+    </div>
+
+    <div class="tabs" id="detail-tabs">
+      <button class="tab ${detailTab === "scores" ? "is-active" : ""}" data-dtab="scores">Scores</button>
+      <button class="tab ${detailTab === "feedback" ? "is-active" : ""}" data-dtab="feedback">Feedback</button>
+      <button class="tab ${detailTab === "meta" ? "is-active" : ""}" data-dtab="meta">Details</button>
+    </div>
+
+    <div id="detail-body"></div>
+  `;
+
+  document.querySelectorAll("[data-dtab]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      detailTab = btn.dataset.dtab;
+      renderDetail();
+    });
+  });
+
+  const body = document.getElementById("detail-body");
+
+  if (detailTab === "scores") {
+    const criteria = r.criteria || DEFAULT_CRITERIA;
+    const scores = r.scores || {};
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 280px;gap:20px" class="detail-scores-grid">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden">
+          <div style="padding:14px 18px;background:var(--bg-soft);border-bottom:1px solid var(--border);
+                      font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+                      color:var(--muted)">Evaluation criteria</div>
+          <ul class="kpi-list">
+            ${criteria.map(c => {
+              const v = Number(scores[c.id] || 0);
+              const pct = (v / 5) * 100;
+              const color = ratingColor(v);
+              return `
+                <li class="kpi-item">
+                  <div class="kpi-item__main">
+                    <div class="kpi-item__title">${escapeHtml(c.label)}
+                      <span style="font-size:11px;color:var(--muted);font-weight:600;margin-left:8px">weight ${c.weight}%</span>
+                    </div>
+                    <div class="kpi-item__bar">
+                      <div class="kpi-item__fill" style="width:${pct}%;background:${color}"></div>
+                    </div>
+                    <div class="kpi-item__meta">
+                      <span class="kpi-item__meta-item">${escapeHtml(ratingLabel(v))}</span>
+                      <span class="kpi-item__meta-item" style="color:${color};font-weight:800">${v}/5</span>
+                    </div>
+                  </div>
+                </li>`;
+            }).join("")}
+          </ul>
+        </div>
+
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px;
+                    display:flex;flex-direction:column;align-items:center;gap:16px">
+          <div class="score-circle">
+            <svg viewBox="0 0 80 80">
+              <circle class="score-circle__track" cx="40" cy="40" r="34"/>
+              <circle class="score-circle__fill" cx="40" cy="40" r="34"
+                      stroke="${sc}"
+                      stroke-dasharray="${dash} ${CIRC}"/>
+            </svg>
+            <div class="score-circle__value" style="color:${sc}">${score.toFixed(0)}</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:13.5px;font-weight:800;color:${ratingColor(rating)}">
+              ${escapeHtml(ratingLabel(rating))}
+            </div>
+            ${starsHtml(rating, { size: 18 })}
+          </div>
+          ${r.recommendation ? `
+            <div style="margin-top:10px;padding:10px 14px;background:#eaf3fc;border-radius:10px;
+                        font-size:12.5px;font-weight:700;color:var(--primary-dark);text-align:center">
+              ${escapeHtml(RECO_MAP[r.recommendation]?.label || r.recommendation)}
+            </div>` : ""}
+        </div>
+      </div>
+
+      <style>
+      @media (max-width:800px) { .detail-scores-grid { grid-template-columns:1fr !important; } }
+      </style>`;
+  } else if (detailTab === "feedback") {
+    body.innerHTML = `
+      <div class="review" style="margin-bottom:18px">
+        <div class="review__row"><span class="review__k">Strengths</span><span class="review__v" style="white-space:pre-wrap">${escapeHtml(r.strengths || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Areas for improvement</span><span class="review__v" style="white-space:pre-wrap">${escapeHtml(r.improvements || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Goals for next period</span><span class="review__v" style="white-space:pre-wrap">${escapeHtml(r.goals || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Overall comments</span><span class="review__v" style="white-space:pre-wrap">${escapeHtml(r.comments || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Recommendation</span><span class="review__v">${escapeHtml(RECO_MAP[r.recommendation]?.label || "—")}</span></div>
+      </div>
+
+      ${canEditReview(r) ? `
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${r.status === "submitted" ? `
+            <button class="btn btn--primary" id="d-acknowledge">
+              <svg viewBox="0 0 24 24">${ICONS.check}</svg> Acknowledge
+            </button>` : ""}
+          ${r.status === "acknowledged" ? `
+            <button class="btn btn--primary" id="d-complete">
+              <svg viewBox="0 0 24 24">${ICONS.fileCheck}</svg> Mark completed
+            </button>` : ""}
+        </div>
+      ` : ""}
+    `;
+    document.getElementById("d-acknowledge")?.addEventListener("click", () => setReviewStatus(r.id, "acknowledged"));
+    document.getElementById("d-complete")?.addEventListener("click", () => setReviewStatus(r.id, "completed"));
+  } else {
+    body.innerHTML = `
+      <div class="review">
+        <div class="review__row"><span class="review__k">Employee</span><span class="review__v">${escapeHtml(name)}</span></div>
+        <div class="review__row"><span class="review__k">Employee ID</span><span class="review__v">${escapeHtml(r.empId || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Position</span><span class="review__v">${escapeHtml(r.position || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Cluster</span><span class="review__v">${escapeHtml(r.clusterName || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Department</span><span class="review__v">${escapeHtml(r.departmentName || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Manager</span><span class="review__v">${escapeHtml(r.managerId ? (employeesByUid[r.managerId]?.fullName || "—") : "—")}</span></div>
+        <div class="review__row"><span class="review__k">Reviewer</span><span class="review__v">${escapeHtml(r.reviewerName || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Cycle</span><span class="review__v">${escapeHtml(r.cycleName || "—")} (${escapeHtml(CYCLE_MAP[r.cycleType]?.label || r.cycleType || "—")})</span></div>
+        <div class="review__row"><span class="review__k">Period</span><span class="review__v">${escapeHtml(fmtDate(r.periodStart))} → ${escapeHtml(fmtDate(r.periodEnd))}</span></div>
+        <div class="review__row"><span class="review__k">Created</span><span class="review__v">${escapeHtml(fmtDateTime(r.createdAt))}</span></div>
+        <div class="review__row"><span class="review__k">Last updated</span><span class="review__v">${escapeHtml(fmtDateTime(r.updatedAt))}${r.updatedByName ? " · " + escapeHtml(r.updatedByName) : ""}</span></div>
+      </div>
+    `;
+  }
+}
+
+async function setReviewStatus(reviewId, status) {
+  const r = REVIEWS.find(x => x.id === reviewId);
+  if (!r) return;
+  if (!canEditReview(r)) return toast("Not allowed", "error");
+  try {
+    const patch = {
+      status,
+      updatedAt: serverTimestamp(),
+      updatedBy: S.uid,
+      updatedByName: S.name
+    };
+    if (status === "acknowledged") { patch.acknowledgedAt = serverTimestamp(); patch.acknowledgedBy = S.uid; }
+    if (status === "completed")    { patch.completedAt = serverTimestamp();    patch.completedBy = S.uid;    }
+    await updateDoc(doc(db, "performanceReviews", reviewId), patch);
+    toast("Review marked as " + status.replace("_", " "), "success");
+  } catch (err) {
+    console.error(err);
+    toast("Could not update status", "error");
+  }
+}
+
+/* ============================================================
+   SUBSCRIPTIONS
+   ============================================================ */
+function subscribeReviews() {
+  if (unsubReviews) unsubReviews();
+  unsubReviews = onSnapshot(collection(db, "performanceReviews"), (snap) => {
+    REVIEWS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (currentView === "list") render();
+    else renderDetail();
+  }, (err) => {
+    console.warn("[reviews]", err.code, err.message);
+    const host = document.getElementById("reviews-grid");
+    if (host) {
+      host.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px 20px;color:var(--danger);
+                                    background:#fff;border:1px solid var(--border);border-radius:16px">
+        Could not load reviews: ${escapeHtml(err.code || "")} — ${escapeHtml(err.message || "")}
+      </div>`;
+    }
+  });
+}
+function subscribeEmployees() {
+  if (unsubEmployees) unsubEmployees();
+  unsubEmployees = onSnapshot(collection(db, "employees"), (snap) => {
+    EMPLOYEES = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    employeesById = {};
+    employeesByUid = {};
+    EMPLOYEES.forEach(e => {
+      employeesById[e.id] = e;
+      if (e.uid) employeesByUid[e.uid] = e;
+    });
+    if (currentView === "list") render();
+    else renderDetail();
+    if (S && !S.photoURL) {
+      const mine = employeesByUid[S.uid];
+      if (mine?.photoURL) {
+        S.photoURL = mine.photoURL;
+        renderUser();
+      }
+    }
+  }, (err) => console.warn("[employees]", err.code, err.message));
+}
+
+/* ============================================================
+   SHELL
+   ============================================================ */
+document.getElementById("collapse-toggle").addEventListener("click", (e) => {
+  e.stopPropagation();
+  const c = !document.body.classList.contains("sidebar-collapsed");
+  document.body.classList.toggle("sidebar-collapsed", c);
+  try { localStorage.setItem("cs.sidebar", c ? "collapsed" : "expanded"); } catch (err) {}
+});
+document.getElementById("menu-toggle").addEventListener("click", () =>
+  document.body.classList.toggle("sidebar-open"));
+document.getElementById("overlay").addEventListener("click", () =>
+  document.body.classList.remove("sidebar-open"));
+document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const panel = btn.closest(".dropdown").querySelector("[data-dropdown-panel]");
+    const open = !panel.classList.contains("hidden");
+    document.querySelectorAll("[data-dropdown-panel]").forEach(p => p.classList.add("hidden"));
+    if (!open) panel.classList.remove("hidden");
+  });
+});
+document.addEventListener("click", () =>
+  document.querySelectorAll("[data-dropdown-panel]").forEach(p => p.classList.add("hidden")));
+try {
+  if (localStorage.getItem("cs.sidebar") === "collapsed") document.body.classList.add("sidebar-collapsed");
+} catch (e) {}
+
+let searchTimer;
+document.getElementById("search-input").addEventListener("input", (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { searchTerm = e.target.value; renderReviewsGrid(); }, 130);
+});
+document.getElementById("cycle-filter").addEventListener("change", (e) => {
+  filterCycle = e.target.value; renderReviewsGrid();
+});
+document.getElementById("status-filter").addEventListener("change", (e) => {
+  filterStatus = e.target.value; renderReviewsGrid();
+});
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+onAuthStateChanged(auth, async (user) => {
+  if (kick.done) return;
+  if (!user) { kick("no-user"); return; }
+
+  let userDoc = null;
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (snap.exists()) userDoc = snap.data();
+    if (userDoc && userDoc.active === false) { kick("inactive"); return; }
+  } catch (e) { console.warn("[user read]", e); }
+
+  S = {
+    uid: user.uid,
+    role: userDoc?.role || "employee",
+    email: user.email || "",
+    name: userDoc?.name || user.email?.split("@")[0] || "User",
+    photoURL: userDoc?.photoURL || null,
+    clusterId: userDoc?.clusterId || "",
+    officeId: userDoc?.officeId || "",
+    departmentId: userDoc?.departmentId || "",
+    empId: userDoc?.empId || userDoc?.employeeId || ""
+  };
+
+  renderSidebar();
+  renderUser();
+  renderScopeBadge();
+  renderHeadActions();
+
+  subscribeEmployees();
+  subscribeReviews();
+});
+
+console.log("[performance] booted — performance ready");
+</script>
+
+</body>
+</html>
