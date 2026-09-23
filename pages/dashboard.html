@@ -29,7 +29,8 @@
     if (localStorage.getItem("cs.compact") === "true") document.documentElement.classList.add("compact-mode");
     const lang = localStorage.getItem("cs.language") || "en";
     document.documentElement.setAttribute("data-lang", lang);
-    if (lang === "am") document.documentElement.setAttribute("data-ethiopic", "true");
+    document.documentElement.setAttribute("lang", lang === "am" ? "am" : (lang === "om" ? "om" : "en"));
+    if (lang === "am" || lang === "om") document.documentElement.setAttribute("data-ethiopic", lang === "am" ? "true" : "false");
   } catch (e) {}
 })();
 </script>
@@ -424,8 +425,8 @@ body.sidebar-open .overlay { display:block; }
              onerror="this.parentElement.innerHTML='<span style=&quot;color:#0b5cab;font-weight:800;font-size:18px&quot;>CS</span>'">
       </div>
       <div class="sidebar__identity">
-        <div class="sidebar__title">Civil Service</div>
-        <div class="sidebar__subtitle">Management Information System</div>
+        <div class="sidebar__title" id="brand-title">Civil Service</div>
+        <div class="sidebar__subtitle" id="brand-subtitle">Management Information System</div>
       </div>
       <button class="sidebar__collapse" id="collapse-toggle" aria-label="Toggle sidebar">
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
@@ -433,7 +434,7 @@ body.sidebar-open .overlay { display:block; }
     </div>
     <nav class="sidebar__nav" id="sidebar-nav"></nav>
     <div class="sidebar__footer">
-      <div>© 2026 Civil Service MIS</div>
+      <div id="footer-copy">© 2026 Civil Service MIS</div>
       <div style="margin-top:3px;opacity:.7">Eng. Abdi Furgasa</div>
     </div>
   </aside>
@@ -449,7 +450,7 @@ body.sidebar-open .overlay { display:block; }
     </button>
     <div class="topbar__spacer"></div>
     <div class="topbar__actions">
-      <a href="notifications.html" class="icon-btn" aria-label="Notifications">
+      <a href="notifications.html" class="icon-btn" aria-label="Notifications" id="notif-btn">
         <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span class="icon-btn__badge" id="notif-badge"></span>
       </a>
@@ -468,16 +469,16 @@ body.sidebar-open .overlay { display:block; }
           </div>
           <a class="dropdown__item" href="profile.html">
             <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <span>Profile</span>
+            <span data-i18n="profile">Profile</span>
           </a>
           <a class="dropdown__item" href="settings.html">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            <span>Settings</span>
+            <span data-i18n="settings">Settings</span>
           </a>
           <div class="dropdown__divider"></div>
           <button class="dropdown__item dropdown__item--danger" id="logout-btn">
             <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            <span>Sign out</span>
+            <span data-i18n="signOut">Sign out</span>
           </button>
         </div>
       </div>
@@ -498,33 +499,33 @@ body.sidebar-open .overlay { display:block; }
 
     <section class="stats" id="stats"></section>
 
-    <div class="section-title" id="hierarchy-title" style="display:none">Organisation at a glance</div>
+    <div class="section-title" id="hierarchy-title" style="display:none" data-i18n="orgAtGlance">Organisation at a glance</div>
     <section class="hierarchy-grid" id="hierarchy" style="display:none; margin-bottom:24px"></section>
 
     <section class="grid-2" id="row-chart-activity" style="display:none">
       <div class="card" id="card-chart">
         <div class="card__head">
           <div>
-            <div class="card__title" id="chart-title">Attendance Trend</div>
-            <div class="card__sub" id="chart-sub">Last 7 days</div>
+            <div class="card__title" id="chart-title" data-i18n="attendanceTrend">Attendance Trend</div>
+            <div class="card__sub" id="chart-sub" data-i18n="last7Days">Last 7 days</div>
           </div>
           <span class="tag tag--green" id="chart-tag">—</span>
         </div>
         <div class="card__body">
-          <div class="chart" id="chart"><div class="chart-empty">Loading…</div></div>
+          <div class="chart" id="chart"><div class="chart-empty" data-i18n="loading">Loading…</div></div>
         </div>
       </div>
 
       <div class="card" id="card-activity">
         <div class="card__head">
           <div>
-            <div class="card__title">Recent Activity</div>
-            <div class="card__sub" id="activity-sub">Latest updates in your scope</div>
+            <div class="card__title" data-i18n="recentActivity">Recent Activity</div>
+            <div class="card__sub" id="activity-sub" data-i18n="latestUpdates">Latest updates in your scope</div>
           </div>
         </div>
         <div class="card__body card__body--flush">
           <ul class="list" id="activity">
-            <li class="list-empty">Loading…</li>
+            <li class="list-empty" data-i18n="loading">Loading…</li>
           </ul>
         </div>
       </div>
@@ -533,7 +534,7 @@ body.sidebar-open .overlay { display:block; }
     <section class="grid-2" id="row-actions-pending" style="display:none">
       <div class="card" id="card-quick">
         <div class="card__head">
-          <div class="card__title">Quick Actions</div>
+          <div class="card__title" data-i18n="quickActions">Quick Actions</div>
         </div>
         <div class="card__body">
           <div class="quick" id="quick-actions"></div>
@@ -543,14 +544,14 @@ body.sidebar-open .overlay { display:block; }
       <div class="card" id="card-side">
         <div class="card__head">
           <div>
-            <div class="card__title" id="pending-title">Pending Approvals</div>
-            <div class="card__sub" id="pending-sub">Awaiting your action</div>
+            <div class="card__title" id="pending-title" data-i18n="pendingApprovals">Pending Approvals</div>
+            <div class="card__sub" id="pending-sub" data-i18n="awaitingAction">Awaiting your action</div>
           </div>
-          <a href="leave.html" id="pending-link" class="card__title" style="font-size:13px;color:var(--primary);font-weight:700">View all →</a>
+          <a href="leave.html" id="pending-link" class="card__title" style="font-size:13px;color:var(--primary);font-weight:700" data-i18n="viewAll">View all →</a>
         </div>
         <div class="card__body card__body--flush">
           <ul class="list" id="pending">
-            <li class="list-empty">Loading…</li>
+            <li class="list-empty" data-i18n="loading">Loading…</li>
           </ul>
         </div>
       </div>
@@ -563,8 +564,254 @@ import { initializeApp } from "firebase/app";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import {
   getFirestore, doc, getDoc, collection, query, where, orderBy,
-  limit, getDocs, getCountFromServer, onSnapshot, serverTimestamp
+  limit, getDocs, getCountFromServer
 } from "firebase/firestore";
+
+/* ============================================================
+   I18N DICTIONARY
+   ============================================================ */
+const I18N = {
+  en: {
+    brandTitle: "Civil Service",
+    brandSubtitle: "Management Information System",
+    footerCopy: "© 2026 Civil Service MIS",
+    dashboard: "Dashboard", nationalDashboard: "National Dashboard",
+    regionDashboard: "Region Dashboard", clusterDashboard: "Cluster Dashboard",
+    hrDashboard: "HR Dashboard", financeDashboard: "Finance Dashboard",
+    directorateDashboard: "Directorate Dashboard", woredaDashboard: "Woreda Dashboard",
+    managerDashboard: "Manager Dashboard", myDashboard: "My Dashboard",
+    welcomeBack: "Welcome back", profile: "Profile", settings: "Settings", signOut: "Sign out",
+    overview: "Overview", organization: "Organization",
+    usersStaff: "Users & Staff", directorates: "Directorates",
+    workPlansSection: "Work Plans", workPlans: "Work Plans",
+    humanResources: "Human Resources", recruitment: "Recruitment", training: "Training", performance: "Performance",
+    operations: "Operations", attendance: "Attendance", leave: "Leave",
+    finance: "Finance", payroll: "Payroll", budget: "Budget",
+    administration: "Administration", offices: "Offices", reports: "Reports",
+    notifications: "Notifications",
+    orgAtGlance: "Organisation at a glance",
+    attendanceTrend: "Attendance Trend", last7Days: "Last 7 days",
+    monthlyPayroll: "Monthly Payroll", last7Months: "Last 7 months",
+    recentActivity: "Recent Activity", latestUpdates: "Latest updates in your scope",
+    quickActions: "Quick Actions", pendingApprovals: "Pending Approvals",
+    awaitingAction: "Awaiting your action", viewAll: "View all →",
+    loading: "Loading…", noDataYet: "No data yet",
+    noActivity: "No activity yet in your scope", nothingPending: "Nothing pending",
+    error: "Error", noData: "No data",
+    // Stat card labels
+    regions: "Regions", regionalAdmins: "Regional Admins",
+    clusters: "Clusters", woredasCities: "Woredas / Cities",
+    employees: "Employees", payrollThisMonth: "Payroll (this month)",
+    pendingLeave: "Pending Leave", clusterDirectorates: "Cluster Directorates",
+    totalEmployees: "Total Employees", payrollHeadcount: "Payroll Headcount",
+    pendingPayments: "Pending Payments", budgetUtilisation: "Budget Utilisation",
+    myDirectorateStaff: "My Directorate Staff", myWorkPlans: "My Work Plans",
+    presentToday: "Present Today", pendingItems: "Pending Items",
+    officesInMyWoreda: "Offices in my woreda", staffInMyWoreda: "Staff in my woreda",
+    myTeam: "My Team", onLeave: "On Leave",
+    myAttendanceMonth: "My Attendance (month)", myLeaveRequests: "My Leave Requests",
+    myPendingRequests: "My Pending Requests", latestPayslip: "Latest Payslip",
+    // Hierarchy cards
+    allRegions: "All {n} regions", fullNationalCoverage: "Full national coverage",
+    yourRegion: "Your region", regionalDirectorates: "Regional Directorates",
+    regionLevelDepartments: "Region-level departments",
+    clusterDirectoratesCard: "Cluster Directorates",
+    clusterLevelDepartments: "Cluster-level departments",
+    administrativeClusters: "Administrative clusters",
+    acrossAllClusters: "Across all clusters", governmentOffices: "Government offices",
+    totalStaff: "Total staff", allDirectorates: "All directorates",
+    // Roles
+    role_super_admin: "Super Admin", role_regional_admin: "Regional Admin",
+    role_admin: "Cluster Admin", role_directorate: "Regional Directorate",
+    role_cluster_directorate: "Cluster Directorate", role_woreda_city: "Woreda / City",
+    role_hrm: "HR Manager", role_finance: "Finance Officer",
+    role_manager: "Manager", role_employee: "Employee",
+    // Badges
+    fullSystemAllRegions: "Full system — all regions",
+    regionalAdmin: "Regional Admin", hrManagerOrgWide: "HR Manager — organisation-wide",
+    clusterAdmin: "Cluster Admin", woredaCity: "Woreda / City", manager: "Manager",
+    employee: "Employee", allRegions: "All Regions", hrOrgWide: "HR — Organisation-wide",
+    // Buttons
+    addOffice: "Add Office", addDirectorate: "Add Directorate", addCluster: "Add Cluster",
+    addPerson: "Add Person", runPayroll: "Run Payroll", requestLeave: "Request Leave",
+    addRegion: "Add Region", addStaff: "Add Staff", reviewLeave: "Review Leave",
+    budgets: "Budgets", myPayslip: "My Payslip",
+    // Pending
+    teamApprovals: "Team Approvals", clusterApprovals: "Cluster Approvals",
+    regionApprovals: "Region Approvals", directorateApprovals: "Directorate Approvals",
+    woredaApprovals: "Woreda Approvals", budgetBreakdown: "Budget Breakdown",
+    allocatedVsSpent: "Allocated vs spent", utilisation: "Utilisation",
+    noBudgetsDefined: "No budgets defined",
+    // Chart
+    present: "present", couldNotLoad: "Could not load attendance",
+    // Weekdays
+    mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun",
+    // Months
+    jan: "Jan", feb: "Feb", mar: "Mar", apr: "Apr", may: "May", jun: "Jun",
+    jul: "Jul", aug: "Aug", sep: "Sep", oct: "Oct", nov: "Nov", dec: "Dec"
+  },
+  om: {
+    brandTitle: "Tajaajila Hawaasaa",
+    brandSubtitle: "Sirna Odeeffannoo Bulchiinsaa",
+    footerCopy: "© 2026 SIM Tajaajila Hawaasaa",
+    dashboard: "Daashboordii", nationalDashboard: "Daashboordii Biyyaalessaa",
+    regionDashboard: "Daashboordii Naannoo", clusterDashboard: "Daashboordii Garee",
+    hrDashboard: "Daashboordii HR", financeDashboard: "Daashboordii Faayinaansii",
+    directorateDashboard: "Daashboordii Qaama", woredaDashboard: "Daashboordii Aanaa",
+    managerDashboard: "Daashboordii Bulchaa", myDashboard: "Daashboordii Koo",
+    welcomeBack: "Baga nagaan deebi'te", profile: "Profaayilii", settings: "Qindaa'ina",
+    signOut: "Ba'i",
+    overview: "Waliigala", organization: "Dhaabbata",
+    usersStaff: "Fayyadamtoota fi Hojjettoota", directorates: "Qaamolee",
+    workPlansSection: "Karoora Hojii", workPlans: "Karoora Hojii",
+    humanResources: "Rakkoo Namoomaa", recruitment: "Qaccee", training: "Leenjii", performance: "Raawwii",
+    operations: "Hojimaata", attendance: "Argannoo", leave: "Boqonnaa",
+    finance: "Faayinaansii", payroll: "Kaffaltii Hojjettootaa", budget: "Baajata",
+    administration: "Bulchiinsa", offices: "Waajjiraalee", reports: "Gabaasaalee",
+    notifications: "Beeksisaalee",
+    orgAtGlance: "Dhaabbata ilaalcha gabaabaa",
+    attendanceTrend: "Adeemsa Argannoo", last7Days: "Guyyoota 7 darban",
+    monthlyPayroll: "Kaffaltii Ji'aa", last7Months: "Ji'oota 7 darban",
+    recentActivity: "Sochii Dhiyoo", latestUpdates: "Haaromsa dhiyoo naannoo keetii",
+    quickActions: "Gochaalee Saffisaa", pendingApprovals: "Mirkaneessaa Eegaa",
+    awaitingAction: "Gocha kee eegaa", viewAll: "Hunda ilaali →",
+    loading: "Fe'aa jira…", noDataYet: "Ragaan hin jiru",
+    noActivity: "Sochiin naannoo keetii hin jiru", nothingPending: "Wanti eegaa hin jiru",
+    error: "Dogoggora", noData: "Ragaan hin jiru",
+    regions: "Naannoolee", regionalAdmins: "Bulchitoota Naannoo",
+    clusters: "Gareewwan", woredasCities: "Aanaalee / Magaalaalee",
+    employees: "Hojjettoota", payrollThisMonth: "Kaffaltii (ji'a kana)",
+    pendingLeave: "Boqonnaa Eegaa", clusterDirectorates: "Qaamolee Garee",
+    totalEmployees: "Hojjettoota Waliigalaa", payrollHeadcount: "Lakkoofsa Kaffaltii",
+    pendingPayments: "Kaffaltiiwwan Eegaa", budgetUtilisation: "Itti Fayyadama Baajataa",
+    myDirectorateStaff: "Hojjettoota Qaamaa Koo", myWorkPlans: "Karoora Hojii Koo",
+    presentToday: "Har'a Argannoo", pendingItems: "Wanti Eegaa",
+    officesInMyWoreda: "Waajjiraalee Aanaa Koo", staffInMyWoreda: "Hojjettoota Aanaa Koo",
+    myTeam: "Garee Koo", onLeave: "Boqonnaa Irra Jiru",
+    myAttendanceMonth: "Argannoo Koo (ji'a)", myLeaveRequests: "Gaaffii Boqonnaa Koo",
+    myPendingRequests: "Gaaffii Koo Eegaa", latestPayslip: "Waraqaa Kaffaltii Dhiyoo",
+    allRegions: "Naannoolee {n} hunda", fullNationalCoverage: "Hammata biyyaalessaa",
+    yourRegion: "Naannoo keetii", regionalDirectorates: "Qaamolee Naannoo",
+    regionLevelDepartments: "Qaamolee sadarkaa naannoo",
+    clusterDirectoratesCard: "Qaamolee Garee",
+    clusterLevelDepartments: "Qaamolee sadarkaa garee",
+    administrativeClusters: "Gareewwan bulchiinsaa",
+    acrossAllClusters: "Gareewwan hunda keessatti", governmentOffices: "Waajjiraalee mootummaa",
+    totalStaff: "Hojjettoota waliigalaa", allDirectorates: "Qaamolee hunda",
+    role_super_admin: "Bulchaa Olaanaa", role_regional_admin: "Bulchaa Naannoo",
+    role_admin: "Bulchaa Garee", role_directorate: "Qaama Naannoo",
+    role_cluster_directorate: "Qaama Garee", role_woreda_city: "Aanaa / Magaalaa",
+    role_hrm: "Bulchaa HR", role_finance: "Ogeessa Faayinaansii",
+    role_manager: "Bulchaa", role_employee: "Hojjetaa",
+    fullSystemAllRegions: "Sirna guutuu — naannoolee hunda",
+    regionalAdmin: "Bulchaa Naannoo", hrManagerOrgWide: "Bulchaa HR — dhaabbata guutuu",
+    clusterAdmin: "Bulchaa Garee", woredaCity: "Aanaa / Magaalaa", manager: "Bulchaa",
+    employee: "Hojjetaa", allRegions: "Naannoolee Hunda", hrOrgWide: "HR — Dhaabbata guutuu",
+    addOffice: "Waajjira Dabali", addDirectorate: "Qaama Dabali", addCluster: "Garee Dabali",
+    addPerson: "Nama Dabali", runPayroll: "Kaffaltii Baasi", requestLeave: "Boqonnaa Gaafadhu",
+    addRegion: "Naannoo Dabali", addStaff: "Hojjetaa Dabali", reviewLeave: "Boqonnaa Ilaali",
+    budgets: "Baajataalee", myPayslip: "Waraqaa Kaffaltii Koo",
+    teamApprovals: "Mirkaneessaa Garee", clusterApprovals: "Mirkaneessaa Garee",
+    regionApprovals: "Mirkaneessaa Naannoo", directorateApprovals: "Mirkaneessaa Qaamaa",
+    woredaApprovals: "Mirkaneessaa Aanaa", budgetBreakdown: "Hir'ina Baajataa",
+    allocatedVsSpent: "Ramadame vs Baafame", utilisation: "Itti Fayyadama",
+    noBudgetsDefined: "Baajanni hin ibsamne",
+    present: "argame", couldNotLoad: "Argannoo fe'uu hin dandeenye",
+    mon: "Wiix", tue: "Qib", wed: "Rob", thu: "Kam", fri: "Jim", sat: "San", sun: "Dil",
+    jan: "Ama", feb: "Gur", mar: "Bit", apr: "Elb", may: "Cam", jun: "Wax",
+    jul: "Ado", aug: "Hag", sep: "Ful", oct: "Onk", nov: "Sad", dec: "Mud"
+  },
+  am: {
+    brandTitle: "የመንግስት ሰራተኛ",
+    brandSubtitle: "የአስተዳደር መረጃ ስርዓት",
+    footerCopy: "© 2026 የመንግስት ሰራተኛ MIS",
+    dashboard: "ዳሽቦርድ", nationalDashboard: "ብሔራዊ ዳሽቦርድ",
+    regionDashboard: "የክልል ዳሽቦርድ", clusterDashboard: "የክላስተር ዳሽቦርድ",
+    hrDashboard: "የሰው ኃይል ዳሽቦርድ", financeDashboard: "የፋይናንስ ዳሽቦርድ",
+    directorateDashboard: "የዳይሬክቶሬት ዳሽቦርድ", woredaDashboard: "የወረዳ ዳሽቦርድ",
+    managerDashboard: "የሥራ አስኪያጅ ዳሽቦርድ", myDashboard: "የእኔ ዳሽቦርድ",
+    welcomeBack: "እንኳን ደህና ተመለሱ", profile: "መገለጫ", settings: "ቅንብሮች",
+    signOut: "ውጣ",
+    overview: "አጠቃላይ እይታ", organization: "ድርጅት",
+    usersStaff: "ተጠቃሚዎች እና ሰራተኞች", directorates: "ዳይሬክቶሬቶች",
+    workPlansSection: "የሥራ እቅዶች", workPlans: "የሥራ እቅዶች",
+    humanResources: "የሰው ኃይል", recruitment: "ቅጥር", training: "ስልጠና", performance: "አፈጻጸም",
+    operations: "ክንውኖች", attendance: "መገኘት", leave: "ፈቃድ",
+    finance: "ፋይናንስ", payroll: "ደመወዝ", budget: "በጀት",
+    administration: "አስተዳደር", offices: "ቢሮዎች", reports: "ሪፖርቶች",
+    notifications: "ማሳወቂያዎች",
+    orgAtGlance: "ድርጅቱ በጨረፍታ",
+    attendanceTrend: "የመገኘት አዝማሚያ", last7Days: "ያለፉት 7 ቀናት",
+    monthlyPayroll: "ወርሃዊ ደመወዝ", last7Months: "ያለፉት 7 ወራት",
+    recentActivity: "የቅርብ ጊዜ እንቅስቃሴ", latestUpdates: "በአካባቢዎ የቅርብ ጊዜ ዝመናዎች",
+    quickActions: "ፈጣን እርምጃዎች", pendingApprovals: "በመጠበቅ ላይ ያሉ ማጽደቆች",
+    awaitingAction: "እርምጃዎን በመጠበቅ ላይ", viewAll: "ሁሉንም ይመልከቱ →",
+    loading: "በመጫን ላይ…", noDataYet: "እስካሁን መረጃ የለም",
+    noActivity: "በአካባቢዎ እንቅስቃሴ የለም", nothingPending: "በመጠበቅ ላይ ያለ ነገር የለም",
+    error: "ስህተት", noData: "መረጃ የለም",
+    regions: "ክልሎች", regionalAdmins: "የክልል አስተዳዳሪዎች",
+    clusters: "ክላስተሮች", woredasCities: "ወረዳዎች / ከተሞች",
+    employees: "ሰራተኞች", payrollThisMonth: "ደመወዝ (በዚህ ወር)",
+    pendingLeave: "በመጠበቅ ላይ ያለ ፈቃድ", clusterDirectorates: "የክላስተር ዳይሬክቶሬቶች",
+    totalEmployees: "ጠቅላላ ሰራተኞች", payrollHeadcount: "የደመወዝ ቁጥር",
+    pendingPayments: "በመጠበቅ ላይ ያሉ ክፍያዎች", budgetUtilisation: "የበጀት አጠቃቀም",
+    myDirectorateStaff: "የእኔ ዳይሬክቶሬት ሰራተኞች", myWorkPlans: "የእኔ የሥራ እቅዶች",
+    presentToday: "ዛሬ የተገኙ", pendingItems: "በመጠበቅ ላይ ያሉ ነገሮች",
+    officesInMyWoreda: "በእኔ ወረዳ ያሉ ቢሮዎች", staffInMyWoreda: "በእኔ ወረዳ ያሉ ሰራተኞች",
+    myTeam: "የእኔ ቡድን", onLeave: "ፈቃድ ላይ",
+    myAttendanceMonth: "የእኔ መገኘት (ወር)", myLeaveRequests: "የእኔ የፈቃድ ጥያቄዎች",
+    myPendingRequests: "በመጠበቅ ላይ ያሉ ጥያቄዎቼ", latestPayslip: "የቅርብ ጊዜ የደመወዝ ወረቀት",
+    allRegions: "ሁሉም {n} ክልሎች", fullNationalCoverage: "ሙሉ ብሔራዊ ሽፋን",
+    yourRegion: "የእርስዎ ክልል", regionalDirectorates: "የክልል ዳይሬክቶሬቶች",
+    regionLevelDepartments: "የክልል ደረጃ ክፍሎች",
+    clusterDirectoratesCard: "የክላስተር ዳይሬክቶሬቶች",
+    clusterLevelDepartments: "የክላስተር ደረጃ ክፍሎች",
+    administrativeClusters: "የአስተዳደር ክላስተሮች",
+    acrossAllClusters: "በሁሉም ክላስተሮች ውስጥ", governmentOffices: "የመንግስት ቢሮዎች",
+    totalStaff: "ጠቅላላ ሰራተኞች", allDirectorates: "ሁሉም ዳይሬክቶሬቶች",
+    role_super_admin: "ዋና አስተዳዳሪ", role_regional_admin: "የክልል አስተዳዳሪ",
+    role_admin: "የክላስተር አስተዳዳሪ", role_directorate: "የክልል ዳይሬክቶሬት",
+    role_cluster_directorate: "የክላስተር ዳይሬክቶሬት", role_woreda_city: "ወረዳ / ከተማ",
+    role_hrm: "የሰው ኃይል ሥራ አስኪያጅ", role_finance: "የፋይናንስ ኦፊሰር",
+    role_manager: "ሥራ አስኪያጅ", role_employee: "ሰራተኛ",
+    fullSystemAllRegions: "ሙሉ ስርዓት — ሁሉም ክልሎች",
+    regionalAdmin: "የክልል አስተዳዳሪ", hrManagerOrgWide: "የሰው ኃይል ሥራ አስኪያጅ — በድርጅቱ ሁሉ",
+    clusterAdmin: "የክላስተር አስተዳዳሪ", woredaCity: "ወረዳ / ከተማ", manager: "ሥራ አስኪያጅ",
+    employee: "ሰራተኛ", allRegions: "ሁሉም ክልሎች", hrOrgWide: "HR — በድርጅቱ ሁሉ",
+    addOffice: "ቢሮ ጨምር", addDirectorate: "ዳይሬክቶሬት ጨምር", addCluster: "ክላስተር ጨምር",
+    addPerson: "ሰው ጨምር", runPayroll: "ደመወዝ አስኪድ", requestLeave: "ፈቃድ ጠይቅ",
+    addRegion: "ክልል ጨምር", addStaff: "ሰራተኛ ጨምር", reviewLeave: "ፈቃድ ገምግም",
+    budgets: "በጀቶች", myPayslip: "የእኔ የደመወዝ ወረቀት",
+    teamApprovals: "የቡድን ማጽደቆች", clusterApprovals: "የክላስተር ማጽደቆች",
+    regionApprovals: "የክልል ማጽደቆች", directorateApprovals: "የዳይሬክቶሬት ማጽደቆች",
+    woredaApprovals: "የወረዳ ማጽደቆች", budgetBreakdown: "የበጀት ዝርዝር",
+    allocatedVsSpent: "የተመደበ vs የወጣ", utilisation: "አጠቃቀም",
+    noBudgetsDefined: "በጀቶች አልተገለጹም",
+    present: "ተገኝቷል", couldNotLoad: "መገኘትን መጫን አልተቻለም",
+    mon: "ሰኞ", tue: "ማክሰ", wed: "ረቡ", thu: "ሐሙ", fri: "ዓርብ", sat: "ቅዳሜ", sun: "እሁድ",
+    jan: "ጃን", feb: "ፌብ", mar: "ማርች", apr: "ኤፕሪ", may: "ሜይ", jun: "ጁን",
+    jul: "ጁላይ", aug: "ኦገስ", sep: "ሴፕ", oct: "ኦክቶ", nov: "ኖቬ", dec: "ዲሴ"
+  }
+};
+
+let LANG = "en";
+function t(key, vars) {
+  const dict = I18N[LANG] || I18N.en;
+  let s = dict[key] || I18N.en[key] || key;
+  if (vars) Object.keys(vars).forEach(k => { s = s.replace("{"+k+"}", vars[k]); });
+  return s;
+}
+
+function applyStaticI18n() {
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    el.textContent = t(key);
+  });
+  // Brand, footer
+  const bt = document.getElementById("brand-title"); if (bt) bt.textContent = t("brandTitle");
+  const bs = document.getElementById("brand-subtitle"); if (bs) bs.textContent = t("brandSubtitle");
+  const fc = document.getElementById("footer-copy"); if (fc) fc.textContent = t("footerCopy");
+}
 
 const firebaseConfig = {
   apiKey: "AIzaSyASE2f6DVivrH7koQXAFZeOrj6Wng45Uq4",
@@ -582,19 +829,32 @@ const db = getFirestore(app);
    REGIONS
    ============================================================ */
 const REGIONS = [
-  { code:"01", en:"Tigray" }, { code:"02", en:"Afar" },
-  { code:"03", en:"Amhara" }, { code:"04", en:"Oromia" },
-  { code:"05", en:"Somali" }, { code:"06", en:"Benishangul-Gumuz" },
-  { code:"07", en:"South Nations (SNNPR)" }, { code:"08", en:"Gambella" },
-  { code:"09", en:"Harari" }, { code:"10", en:"Sidama" },
-  { code:"11", en:"South West Ethiopia" }, { code:"12", en:"Dire Dawa" },
-  { code:"13", en:"Addis Ababa" }, { code:"14", en:"Central Ethiopia" },
-  { code:"15", en:"South Ethiopia" }
+  { code:"01", en:"Tigray", am:"ትግራይ", om:"Tigraay" },
+  { code:"02", en:"Afar", am:"አፋር", om:"Afar" },
+  { code:"03", en:"Amhara", am:"አማራ", om:"Amaaraa" },
+  { code:"04", en:"Oromia", am:"ኦሮሚያ", om:"Oromiyaa" },
+  { code:"05", en:"Somali", am:"ሶማሌ", om:"Somaalee" },
+  { code:"06", en:"Benishangul-Gumuz", am:"ቤንሻንጉል-ጉሙዝ", om:"Benishaangul-Gumuz" },
+  { code:"07", en:"South Nations (SNNPR)", am:"ደቡብ ብሔሮች (ደብብ)", om:"Sabaa Kibbaa (SNNPR)" },
+  { code:"08", en:"Gambella", am:"ጋምቤላ", om:"Gambellaa" },
+  { code:"09", en:"Harari", am:"ሐረሪ", om:"Haraarii" },
+  { code:"10", en:"Sidama", am:"ሲዳማ", om:"Sidaamaa" },
+  { code:"11", en:"South West Ethiopia", am:"ደቡብ ምዕራብ ኢትዮጵያ", om:"Kibba Dhihaa Itoophiyaa" },
+  { code:"12", en:"Dire Dawa", am:"ድሬዳዋ", om:"Diree Dawaa" },
+  { code:"13", en:"Addis Ababa", am:"አዲስ አበባ", om:"Finfinnee" },
+  { code:"14", en:"Central Ethiopia", am:"መካከለኛው ኢትዮጵያ", om:"Itoophiyaa Giddugaleessaa" },
+  { code:"15", en:"South Ethiopia", am:"ደቡብ ኢትዮጵያ", om:"Itoophiyaa Kibbaa" }
 ];
-const regionName = (code) => REGIONS.find(x => x.code === code)?.en || "";
+const regionName = (code) => {
+  const r = REGIONS.find(x => x.code === code);
+  if (!r) return "";
+  return LANG === "am" ? r.am : (LANG === "om" ? r.om : r.en);
+};
 const regionLabel = (code) => {
   const r = REGIONS.find(x => x.code === code);
-  return r ? r.code + " — " + r.en : (code || "—");
+  if (!r) return code || "—";
+  const name = LANG === "am" ? r.am : (LANG === "om" ? r.om : r.en);
+  return r.code + " — " + name;
 };
 
 /* ============================================================
@@ -639,13 +899,17 @@ document.addEventListener("click", async (e) => {
    ROLE CONSTANTS
    ============================================================ */
 const ROLE_LABELS = {
-  super_admin: "Super Admin", regional_admin: "Regional Admin",
-  admin: "Cluster Admin", directorate: "Regional Directorate",
-  cluster_directorate: "Cluster Directorate", woreda_city: "Woreda / City",
-  hrm: "HR Manager", finance: "Finance Officer",
-  manager: "Manager", employee: "Employee"
+  super_admin: "role_super_admin", regional_admin: "role_regional_admin",
+  admin: "role_admin", directorate: "role_directorate",
+  cluster_directorate: "role_cluster_directorate", woreda_city: "role_woreda_city",
+  hrm: "role_hrm", finance: "role_finance",
+  manager: "role_manager", employee: "role_employee"
 };
-const roleLabel = (r) => ROLE_LABELS[r] || (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+const roleLabel = (r) => {
+  const key = ROLE_LABELS[r];
+  if (key) return t(key);
+  return (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+};
 
 const isSuper = () => S?.role === "super_admin";
 const isRegionalAdmin = () => S?.role === "regional_admin";
@@ -662,39 +926,30 @@ const isEmployee = () => S?.role === "employee";
    ============================================================ */
 function scopeConstraints() {
   if (!S) return [];
-
   if (isSuper())    return [];
   if (isHRM())      return [];
-
-  if (isRegionalAdmin()) {
-    return [where("regionCode", "==", S.regionCode)];
-  }
-
+  if (isRegionalAdmin()) return [where("regionCode", "==", S.regionCode)];
   if (isClusterAdmin() || S.role === "cluster_directorate") {
     if (S.clusterId) return [where("clusterId", "==", S.clusterId)];
     return [where("regionCode", "==", S.regionCode)];
   }
-
   if (isDirectorate()) {
     if (S.officeId)       return [where("officeId",     "==", S.officeId)];
     if (S.departmentId)   return [where("departmentId", "==", S.departmentId)];
     if (S.clusterId)      return [where("clusterId",    "==", S.clusterId)];
     return [where("regionCode", "==", S.regionCode)];
   }
-
   if (isWoredaCity()) {
     if (S.officeId)      return [where("officeId",   "==", S.officeId)];
     if (S.woredaCode)    return [where("woredaCode", "==", S.woredaCode)];
     return [where("clusterId", "==", S.clusterId)];
   }
-
   if (isManager()) {
     if (S.officeId)      return [where("officeId",     "==", S.officeId)];
     if (S.departmentId)  return [where("departmentId", "==", S.departmentId)];
     if (S.woredaCode)    return [where("woredaCode",   "==", S.woredaCode)];
     return [where("clusterId", "==", S.clusterId)];
   }
-
   return [where("empId", "==", S.empId)];
 }
 
@@ -750,37 +1005,37 @@ const ICONS = {
 };
 
 /* ============================================================
-   NAV — My Work removed
+   NAV
    ============================================================ */
 const NAV = [
-  { section:"Overview", items:[
-    { key:"dashboard", label:"Dashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
+  { section:"overview", items:[
+    { key:"dashboard", labelKey:"dashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
   ]},
-  { section:"Organization", items:[
-    { key:"users",       label:"Users & Staff", href:"users.html",       icon:"users",    roles:["super_admin","regional_admin","admin","hrm"] },
-    { key:"departments", label:"Directorates",  href:"departments.html", icon:"org",      roles:["super_admin","regional_admin","admin","hrm","manager","directorate","cluster_directorate"] }
+  { section:"organization", items:[
+    { key:"users",       labelKey:"usersStaff",   href:"users.html",       icon:"users",    roles:["super_admin","regional_admin","admin","hrm"] },
+    { key:"departments", labelKey:"directorates", href:"departments.html", icon:"org",      roles:["super_admin","regional_admin","admin","hrm","manager","directorate","cluster_directorate"] }
   ]},
-  { section:"Work Plans", items:[
-    { key:"workplans",   label:"Work Plans",   href:"workplans.html",   icon:"fileText", roles:["super_admin","regional_admin","directorate","admin","cluster_directorate","woreda_city"] }
+  { section:"workPlansSection", items:[
+    { key:"workplans",   labelKey:"workPlans",   href:"workplans.html",   icon:"fileText", roles:["super_admin","regional_admin","directorate","admin","cluster_directorate","woreda_city"] }
   ]},
-  { section:"Human Resources", items:[
-    { key:"recruitment", label:"Recruitment", href:"recruitment.html", icon:"userPlus", roles:["super_admin","regional_admin","hrm","admin"] },
-    { key:"training",    label:"Training",    href:"training.html",    icon:"book",     roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] },
-    { key:"performance", label:"Performance", href:"performance.html", icon:"target",   roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] }
+  { section:"humanResources", items:[
+    { key:"recruitment", labelKey:"recruitment", href:"recruitment.html", icon:"userPlus", roles:["super_admin","regional_admin","hrm","admin"] },
+    { key:"training",    labelKey:"training",    href:"training.html",    icon:"book",     roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] },
+    { key:"performance", labelKey:"performance", href:"performance.html", icon:"target",   roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] }
   ]},
-  { section:"Operations", items:[
-    { key:"attendance",  label:"Attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] },
-    { key:"leave",       label:"Leave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] }
+  { section:"operations", items:[
+    { key:"attendance",  labelKey:"attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] },
+    { key:"leave",       labelKey:"leave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] }
   ]},
-  { section:"Finance", items:[
-    { key:"payroll",     label:"Payroll",     href:"payroll.html",  icon:"wallet", roles:["super_admin","regional_admin","finance","admin"] },
-    { key:"budget",      label:"Budget",      href:"budget.html",   icon:"chart",  roles:["super_admin","regional_admin","finance"] }
+  { section:"finance", items:[
+    { key:"payroll",     labelKey:"payroll",     href:"payroll.html",  icon:"wallet", roles:["super_admin","regional_admin","finance","admin"] },
+    { key:"budget",      labelKey:"budget",      href:"budget.html",   icon:"chart",  roles:["super_admin","regional_admin","finance"] }
   ]},
-  { section:"Administration", items:[
-    { key:"offices",       label:"Offices",       href:"offices.html",       icon:"building", roles:["super_admin","regional_admin","admin"] },
-    { key:"reports",       label:"Reports",       href:"reports.html",       icon:"fileText", roles:["*"] },
-    { key:"notifications", label:"Notifications", href:"notifications.html", icon:"bell",     roles:["*"] },
-    { key:"settings",      label:"Settings",      href:"settings.html",      icon:"settings", roles:["*"] }
+  { section:"administration", items:[
+    { key:"offices",       labelKey:"offices",       href:"offices.html",       icon:"building", roles:["super_admin","regional_admin","admin"] },
+    { key:"reports",       labelKey:"reports",       href:"reports.html",       icon:"fileText", roles:["*"] },
+    { key:"notifications", labelKey:"notifications", href:"notifications.html", icon:"bell",     roles:["*"] },
+    { key:"settings",      labelKey:"settings",      href:"settings.html",      icon:"settings", roles:["*"] }
   ]}
 ];
 
@@ -800,17 +1055,6 @@ const money = (n) => {
   return "ETB " + v;
 };
 
-function toast(msg, type="success") {
-  const wrap = document.getElementById("toast-wrap");
-  const el = document.createElement("div");
-  el.className = "toast toast--" + type;
-  const icon = type === "error" ? ICONS.alert : ICONS.check;
-  el.innerHTML = `<svg viewBox="0 0 24 24">${icon}</svg><span>${escapeHtml(msg)}</span>`;
-  wrap.appendChild(el);
-  setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; }, 4200);
-  setTimeout(() => el.remove(), 4600);
-}
-
 /* ============================================================
    SIDEBAR + USER
    ============================================================ */
@@ -822,15 +1066,16 @@ function renderSidebar() {
     if (!vis.length) continue;
     const sec = document.createElement("div");
     sec.className = "sidebar__section";
-    sec.textContent = group.section;
+    sec.textContent = t(group.section);
     nav.appendChild(sec);
     for (const item of vis) {
       const a = document.createElement("a");
       a.className = "nav-item" + (item.key === "dashboard" ? " is-active" : "");
       a.href = item.href;
-      a.setAttribute("data-tooltip", item.label);
+      const label = t(item.labelKey);
+      a.setAttribute("data-tooltip", label);
       a.innerHTML = `<svg viewBox="0 0 24 24">${ICONS[item.icon]}</svg>
-                     <span class="nav-item__label">${item.label}</span>`;
+                     <span class="nav-item__label">${escapeHtml(label)}</span>`;
       nav.appendChild(a);
     }
   }
@@ -852,19 +1097,19 @@ function renderScopeBadge() {
   const el = document.getElementById("scope-badge");
   if (isSuper()) {
     el.innerHTML = `<span class="scope-badge scope-badge--super">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Full system — all regions
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${t("fullSystemAllRegions")}
     </span>`;
   } else if (isRegionalAdmin()) {
     el.innerHTML = `<span class="scope-badge scope-badge--regional">
-      <svg viewBox="0 0 24 24">${ICONS.pin}</svg> Regional Admin · ${escapeHtml(regionLabel(S.regionCode))}
+      <svg viewBox="0 0 24 24">${ICONS.pin}</svg> ${t("regionalAdmin")} · ${escapeHtml(regionLabel(S.regionCode))}
     </span>`;
   } else if (isHRM()) {
     el.innerHTML = `<span class="scope-badge scope-badge--cluster">
-      <svg viewBox="0 0 24 24">${ICONS.users}</svg> HR Manager — organisation-wide
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("hrManagerOrgWide")}
     </span>`;
   } else if (isClusterAdmin()) {
     el.innerHTML = `<span class="scope-badge scope-badge--cluster">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Cluster Admin · ${escapeHtml(S.clusterName || "—")}
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${t("clusterAdmin")} · ${escapeHtml(S.clusterName || "—")}
     </span>`;
   } else if (isDirectorate()) {
     const parts = [];
@@ -876,15 +1121,15 @@ function renderScopeBadge() {
     </span>`;
   } else if (isWoredaCity()) {
     el.innerHTML = `<span class="scope-badge scope-badge--office">
-      <svg viewBox="0 0 24 24">${ICONS.building}</svg> Woreda / City · ${escapeHtml(S.woredaName || "—")}
+      <svg viewBox="0 0 24 24">${ICONS.building}</svg> ${t("woredaCity")} · ${escapeHtml(S.woredaName || "—")}
     </span>`;
   } else if (isManager()) {
     el.innerHTML = `<span class="scope-badge scope-badge--office">
-      <svg viewBox="0 0 24 24">${ICONS.users}</svg> Manager · ${escapeHtml(S.officeName || S.departmentName || "—")}
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("manager")} · ${escapeHtml(S.officeName || S.departmentName || "—")}
     </span>`;
   } else {
     el.innerHTML = `<span class="scope-badge scope-badge--office">
-      <svg viewBox="0 0 24 24">${ICONS.user}</svg> Employee · ${escapeHtml(S.officeName || S.departmentName || "—")}
+      <svg viewBox="0 0 24 24">${ICONS.user}</svg> ${t("employee")} · ${escapeHtml(S.officeName || S.departmentName || "—")}
     </span>`;
   }
 }
@@ -897,13 +1142,13 @@ function renderBreadcrumb() {
   const items = [];
 
   if (isSuper()) {
-    el.innerHTML = `<span class="breadcrumb__item is-active">All Regions</span>`;
+    el.innerHTML = `<span class="breadcrumb__item is-active">${t("allRegions")}</span>`;
     return;
   }
   if (isHRM()) {
-    el.innerHTML = `<span class="breadcrumb__item is-active">All Regions</span>
+    el.innerHTML = `<span class="breadcrumb__item is-active">${t("allRegions")}</span>
       <span class="breadcrumb__arrow">›</span>
-      <span class="breadcrumb__item">HR — Organisation-wide</span>`;
+      <span class="breadcrumb__item">${t("hrOrgWide")}</span>`;
     return;
   }
 
@@ -931,28 +1176,28 @@ function renderHeadActions() {
   const host = document.getElementById("head-actions");
   const btns = [];
   if (isSuper()) {
-    btns.push({ label:"Add Office", href:"offices.html", primary:true });
-    btns.push({ label:"Users & Staff", href:"users.html" });
+    btns.push({ labelKey:"addOffice", href:"offices.html", primary:true });
+    btns.push({ labelKey:"usersStaff", href:"users.html" });
   } else if (isRegionalAdmin()) {
-    btns.push({ label:"Add Directorate", href:"departments.html", primary:true });
-    btns.push({ label:"Add Cluster", href:"offices.html" });
+    btns.push({ labelKey:"addDirectorate", href:"departments.html", primary:true });
+    btns.push({ labelKey:"addCluster", href:"offices.html" });
   } else if (isClusterAdmin()) {
-    btns.push({ label:"Add Person", href:"users.html", primary:true });
-    btns.push({ label:"Directorates", href:"departments.html" });
+    btns.push({ labelKey:"addPerson", href:"users.html", primary:true });
+    btns.push({ labelKey:"directorates", href:"departments.html" });
   } else if (isHRM()) {
-    btns.push({ label:"Users & Staff", href:"users.html", primary:true });
-    btns.push({ label:"Reports", href:"reports.html" });
+    btns.push({ labelKey:"usersStaff", href:"users.html", primary:true });
+    btns.push({ labelKey:"reports", href:"reports.html" });
   } else if (isFinance()) {
-    btns.push({ label:"Run Payroll", href:"payroll.html", primary:true });
-    btns.push({ label:"Budget", href:"budget.html" });
+    btns.push({ labelKey:"runPayroll", href:"payroll.html", primary:true });
+    btns.push({ labelKey:"budget", href:"budget.html" });
   } else if (isDirectorate() || isWoredaCity()) {
-    btns.push({ label:"Work Plans", href:"workplans.html", primary:true });
+    btns.push({ labelKey:"workPlans", href:"workplans.html", primary:true });
   } else {
-    btns.push({ label:"Request Leave", href:"leave.html", primary:true });
+    btns.push({ labelKey:"requestLeave", href:"leave.html", primary:true });
   }
   host.innerHTML = btns.map(b => `
     <a class="btn ${b.primary ? "btn--primary" : ""} btn--sm" href="${b.href}">
-      ${escapeHtml(b.label)}
+      ${escapeHtml(t(b.labelKey))}
     </a>
   `).join("");
 }
@@ -960,11 +1205,11 @@ function renderHeadActions() {
 /* ============================================================
    STATS
    ============================================================ */
-function statCard(id, label, cls, iconKey, hint) {
+function statCard(id, labelKey, cls, iconKey, hint) {
   return `
     <div class="stat stat--${cls}" data-stat="${id}">
       <div class="stat__head">
-        <div class="stat__label">${escapeHtml(label)}</div>
+        <div class="stat__label">${escapeHtml(t(labelKey))}</div>
         <div class="stat__icon"><svg viewBox="0 0 24 24">${ICONS[iconKey]}</svg></div>
       </div>
       <div class="stat__value" id="${id}">…</div>
@@ -982,81 +1227,81 @@ async function renderStats() {
 
   if (isSuper()) {
     cards = [
-      { id:"s-regions",     label:"Regions",               icon:"pin",       color:"violet" },
-      { id:"s-regadmins",   label:"Regional Admins",       icon:"shield",    color:"gold" },
-      { id:"s-depts",       label:"Directorates",          icon:"org",       color:"teal" },
-      { id:"s-clusters",    label:"Clusters",              icon:"cluster",   color:"blue" },
-      { id:"s-woredas",     label:"Woredas / Cities",      icon:"pin",       color:"pink" },
-      { id:"s-offices",     label:"Offices",               icon:"building",  color:"green" },
-      { id:"s-emps",        label:"Employees",             icon:"users",     color:"blue" },
-      { id:"s-plans",       label:"Work Plans",            icon:"clipboard", color:"violet" }
+      { id:"s-regions",     labelKey:"regions",             icon:"pin",       color:"violet" },
+      { id:"s-regadmins",   labelKey:"regionalAdmins",      icon:"shield",    color:"gold" },
+      { id:"s-depts",       labelKey:"directorates",        icon:"org",       color:"teal" },
+      { id:"s-clusters",    labelKey:"clusters",            icon:"cluster",   color:"blue" },
+      { id:"s-woredas",     labelKey:"woredasCities",       icon:"pin",       color:"pink" },
+      { id:"s-offices",     labelKey:"offices",             icon:"building",  color:"green" },
+      { id:"s-emps",        labelKey:"employees",           icon:"users",     color:"blue" },
+      { id:"s-plans",       labelKey:"workPlans",           icon:"clipboard", color:"violet" }
     ];
   } else if (isRegionalAdmin()) {
     cards = [
-      { id:"s-depts",       label:"Directorates",          icon:"org",       color:"teal" },
-      { id:"s-cldept",      label:"Cluster Directorates",  icon:"org",       color:"violet" },
-      { id:"s-clusters",    label:"Clusters",              icon:"cluster",   color:"blue" },
-      { id:"s-woredas",     label:"Woredas / Cities",      icon:"pin",       color:"pink" },
-      { id:"s-offices",     label:"Offices",               icon:"building",  color:"green" },
-      { id:"s-emps",        label:"Employees",             icon:"users",     color:"gold" },
-      { id:"s-plans",       label:"Work Plans",            icon:"clipboard", color:"violet" },
-      { id:"s-payroll",     label:"Payroll (this month)",  icon:"wallet",    color:"red" }
+      { id:"s-depts",       labelKey:"directorates",        icon:"org",       color:"teal" },
+      { id:"s-cldept",      labelKey:"clusterDirectorates", icon:"org",       color:"violet" },
+      { id:"s-clusters",    labelKey:"clusters",            icon:"cluster",   color:"blue" },
+      { id:"s-woredas",     labelKey:"woredasCities",       icon:"pin",       color:"pink" },
+      { id:"s-offices",     labelKey:"offices",             icon:"building",  color:"green" },
+      { id:"s-emps",        labelKey:"employees",           icon:"users",     color:"gold" },
+      { id:"s-plans",       labelKey:"workPlans",           icon:"clipboard", color:"violet" },
+      { id:"s-payroll",     labelKey:"payrollThisMonth",    icon:"wallet",    color:"red" }
     ];
   } else if (isClusterAdmin()) {
     cards = [
-      { id:"s-depts",       label:"Cluster Directorates",  icon:"org",       color:"violet" },
-      { id:"s-woredas",     label:"Woredas / Cities",      icon:"pin",       color:"pink" },
-      { id:"s-offices",     label:"Offices",               icon:"building",  color:"green" },
-      { id:"s-emps",        label:"Employees",             icon:"users",     color:"blue" },
-      { id:"s-plans",       label:"Work Plans",            icon:"clipboard", color:"teal" },
-      { id:"s-pending",     label:"Pending Leave",         icon:"clock",     color:"red" }
+      { id:"s-depts",       labelKey:"clusterDirectorates", icon:"org",       color:"violet" },
+      { id:"s-woredas",     labelKey:"woredasCities",       icon:"pin",       color:"pink" },
+      { id:"s-offices",     labelKey:"offices",             icon:"building",  color:"green" },
+      { id:"s-emps",        labelKey:"employees",           icon:"users",     color:"blue" },
+      { id:"s-plans",       labelKey:"workPlans",           icon:"clipboard", color:"teal" },
+      { id:"s-pending",     labelKey:"pendingLeave",        icon:"clock",     color:"red" }
     ];
   } else if (isHRM()) {
     cards = [
-      { id:"s-emps",        label:"Total Employees",       icon:"users",     color:"green" },
-      { id:"s-depts",       label:"Directorates",          icon:"org",       color:"teal" },
-      { id:"s-clusters",    label:"Clusters",              icon:"cluster",   color:"blue" },
-      { id:"s-offices",     label:"Offices",               icon:"building",  color:"pink" },
-      { id:"s-pending",     label:"Pending Leave",         icon:"clock",     color:"red" }
+      { id:"s-emps",        labelKey:"totalEmployees",      icon:"users",     color:"green" },
+      { id:"s-depts",       labelKey:"directorates",        icon:"org",       color:"teal" },
+      { id:"s-clusters",    labelKey:"clusters",            icon:"cluster",   color:"blue" },
+      { id:"s-offices",     labelKey:"offices",             icon:"building",  color:"pink" },
+      { id:"s-pending",     labelKey:"pendingLeave",        icon:"clock",     color:"red" }
     ];
   } else if (isFinance()) {
     cards = [
-      { id:"s-payroll",     label:"Payroll (this month)",  icon:"wallet",    color:"gold" },
-      { id:"s-headcount",   label:"Payroll Headcount",     icon:"users",     color:"blue" },
-      { id:"s-pending",     label:"Pending Payments",      icon:"clock",     color:"red" },
-      { id:"s-budget",      label:"Budget Utilisation",    icon:"pieChart",  color:"violet" }
+      { id:"s-payroll",     labelKey:"payrollThisMonth",    icon:"wallet",    color:"gold" },
+      { id:"s-headcount",   labelKey:"payrollHeadcount",    icon:"users",     color:"blue" },
+      { id:"s-pending",     labelKey:"pendingPayments",     icon:"clock",     color:"red" },
+      { id:"s-budget",      labelKey:"budgetUtilisation",   icon:"pieChart",  color:"violet" }
     ];
   } else if (isDirectorate()) {
     cards = [
-      { id:"s-dir-staff",   label:"My Directorate Staff",  icon:"users",     color:"blue" },
-      { id:"s-dir-plans",   label:"My Work Plans",         icon:"clipboard", color:"violet" },
-      { id:"s-dir-present", label:"Present Today",         icon:"check",     color:"green" },
-      { id:"s-dir-pending", label:"Pending Items",         icon:"clock",     color:"red" }
+      { id:"s-dir-staff",   labelKey:"myDirectorateStaff",  icon:"users",     color:"blue" },
+      { id:"s-dir-plans",   labelKey:"myWorkPlans",         icon:"clipboard", color:"violet" },
+      { id:"s-dir-present", labelKey:"presentToday",        icon:"check",     color:"green" },
+      { id:"s-dir-pending", labelKey:"pendingItems",        icon:"clock",     color:"red" }
     ];
   } else if (isWoredaCity()) {
     cards = [
-      { id:"s-wor-offices", label:"Offices in my woreda",  icon:"building",  color:"blue" },
-      { id:"s-wor-staff",   label:"Staff in my woreda",    icon:"users",     color:"green" },
-      { id:"s-wor-present", label:"Present Today",         icon:"check",     color:"teal" },
-      { id:"s-wor-pending", label:"Pending Approvals",     icon:"clock",     color:"red" }
+      { id:"s-wor-offices", labelKey:"officesInMyWoreda",   icon:"building",  color:"blue" },
+      { id:"s-wor-staff",   labelKey:"staffInMyWoreda",     icon:"users",     color:"green" },
+      { id:"s-wor-present", labelKey:"presentToday",        icon:"check",     color:"teal" },
+      { id:"s-wor-pending", labelKey:"pendingApprovals",    icon:"clock",     color:"red" }
     ];
   } else if (isManager()) {
     cards = [
-      { id:"s-myteam",      label:"My Team",               icon:"users",     color:"blue" },
-      { id:"s-present",     label:"Present Today",         icon:"check",     color:"green" },
-      { id:"s-onleave",     label:"On Leave",              icon:"calendar",  color:"gold" },
-      { id:"s-pending",     label:"Pending Approvals",     icon:"clock",     color:"red" }
+      { id:"s-myteam",      labelKey:"myTeam",              icon:"users",     color:"blue" },
+      { id:"s-present",     labelKey:"presentToday",        icon:"check",     color:"green" },
+      { id:"s-onleave",     labelKey:"onLeave",             icon:"calendar",  color:"gold" },
+      { id:"s-pending",     labelKey:"pendingApprovals",    icon:"clock",     color:"red" }
     ];
   } else {
     cards = [
-      { id:"s-myattend",    label:"My Attendance (month)", icon:"check",     color:"green" },
-      { id:"s-myleave",     label:"My Leave Requests",     icon:"calendar",  color:"gold" },
-      { id:"s-mypending",   label:"My Pending Requests",   icon:"clock",     color:"red" },
-      { id:"s-mypay",       label:"Latest Payslip",        icon:"dollar",    color:"teal" }
+      { id:"s-myattend",    labelKey:"myAttendanceMonth",   icon:"check",     color:"green" },
+      { id:"s-myleave",     labelKey:"myLeaveRequests",     icon:"calendar",  color:"gold" },
+      { id:"s-mypending",   labelKey:"myPendingRequests",   icon:"clock",     color:"red" },
+      { id:"s-mypay",       labelKey:"latestPayslip",       icon:"dollar",    color:"teal" }
     ];
   }
 
-  host.innerHTML = cards.map(c => statCard(c.id, c.label, c.color, c.icon)).join("");
+  host.innerHTML = cards.map(c => statCard(c.id, c.labelKey, c.color, c.icon)).join("");
   await loadStatValues();
 }
 
@@ -1240,16 +1485,16 @@ async function renderHierarchy() {
   if (isSuper()) {
     cards.push({
       icon:"pin", cls:"violet",
-      name:`All ${REGIONS.length} regions`,
-      meta:`Full national coverage`,
-      value:REGIONS.length,
+      name: t("allRegions", { n: REGIONS.length }),
+      meta: t("fullNationalCoverage"),
+      value: REGIONS.length,
       href:"offices.html"
     });
   } else if (isRegionalAdmin()) {
     cards.push({
       icon:"pin", cls:"gold",
-      name:regionLabel(S.regionCode),
-      meta:"Your region",
+      name: regionLabel(S.regionCode),
+      meta: t("yourRegion"),
       value:"1",
       href:"offices.html"
     });
@@ -1262,8 +1507,8 @@ async function renderHierarchy() {
     const snap = await getDocs(dq);
     cards.push({
       icon:"org", cls:"violet",
-      name:"Regional Directorates",
-      meta:"Region-level departments",
+      name: t("regionalDirectorates"),
+      meta: t("regionLevelDepartments"),
       value:snap.size,
       href:"departments.html"
     });
@@ -1276,8 +1521,8 @@ async function renderHierarchy() {
     const snap = await getDocs(dq);
     cards.push({
       icon:"org", cls:"teal",
-      name:"Cluster Directorates",
-      meta:"Cluster-level departments",
+      name: t("clusterDirectoratesCard"),
+      meta: t("clusterLevelDepartments"),
       value:snap.size,
       href:"departments.html"
     });
@@ -1285,8 +1530,8 @@ async function renderHierarchy() {
 
   cards.push({
     icon:"cluster", cls:"blue",
-    name:"Clusters",
-    meta:"Administrative clusters",
+    name: t("clusters"),
+    meta: t("administrativeClusters"),
     value:clusters.length,
     href:"offices.html"
   });
@@ -1295,8 +1540,8 @@ async function renderHierarchy() {
   clusters.forEach(c => woredaTotal += (c.woredas || []).length);
   cards.push({
     icon:"pin", cls:"pink",
-    name:"Woredas / Cities",
-    meta:"Across all clusters",
+    name: t("woredasCities"),
+    meta: t("acrossAllClusters"),
     value:woredaTotal,
     href:"offices.html"
   });
@@ -1308,8 +1553,8 @@ async function renderHierarchy() {
     const snap = await getDocs(oq);
     cards.push({
       icon:"building", cls:"green",
-      name:"Offices",
-      meta:"Government offices",
+      name: t("offices"),
+      meta: t("governmentOffices"),
       value:snap.size,
       href:"offices.html"
     });
@@ -1322,8 +1567,8 @@ async function renderHierarchy() {
     const snap = await getCountFromServer(eq);
     cards.push({
       icon:"users", cls:"blue",
-      name:"Employees",
-      meta:"Total staff",
+      name: t("employees"),
+      meta: t("totalStaff"),
       value:snap.data().count,
       href:"users.html"
     });
@@ -1336,8 +1581,8 @@ async function renderHierarchy() {
     const snap = await getCountFromServer(pq);
     cards.push({
       icon:"clipboard", cls:"violet",
-      name:"Work Plans",
-      meta:"All directorates",
+      name: t("workPlans"),
+      meta: t("allDirectorates"),
       value:snap.data().count,
       href:"workplans.html"
     });
@@ -1388,7 +1633,14 @@ async function renderChartActivityPending() {
   if (showSide) await renderPending();
 }
 
-/* ---------- FIXED: attendance trend ---------- */
+function getWeekdayLabels() {
+  return [t("mon"), t("tue"), t("wed"), t("thu"), t("fri"), t("sat"), t("sun")];
+}
+function getMonthLabels() {
+  return [t("jan"), t("feb"), t("mar"), t("apr"), t("may"), t("jun"),
+          t("jul"), t("aug"), t("sep"), t("oct"), t("nov"), t("dec")];
+}
+
 async function renderChart() {
   const chart = document.getElementById("chart");
   const titleEl = document.getElementById("chart-title");
@@ -1396,17 +1648,18 @@ async function renderChart() {
   const tagEl = document.getElementById("chart-tag");
 
   const m = new Date().toISOString().slice(0,7);
-  const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const days = getWeekdayLabels();
 
   if (isFinance()) {
-    titleEl.textContent = "Monthly Payroll";
-    subEl.textContent = "Last 7 months";
+    titleEl.textContent = t("monthlyPayroll");
+    subEl.textContent = t("last7Months");
     const labels = [], values = [];
     const now = new Date();
     const months = [];
+    const monthShort = getMonthLabels();
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({ ym: d.toISOString().slice(0,7), label: d.toLocaleString("en", { month: "short" }) });
+      months.push({ ym: d.toISOString().slice(0,7), label: monthShort[d.getMonth()] });
     }
     for (const mo of months) {
       labels.push(mo.label);
@@ -1419,12 +1672,9 @@ async function renderChart() {
     return;
   }
 
-  titleEl.textContent = "Attendance Trend";
-  subEl.textContent = "Last 7 days";
+  titleEl.textContent = t("attendanceTrend");
+  subEl.textContent = t("last7Days");
 
-  // FIX 1: use the flat "attendance" collection (same as scopedCount uses)
-  // FIX 2: don't use `in` filter server-side — filter status client-side to avoid
-  //        needing composite indexes with the scope constraints.
   const startISO = new Date(Date.now() - 6*24*60*60*1000).toISOString().slice(0,10);
   const base = collection(db, "attendance");
   const constraints = [ where("date", ">=", startISO) ];
@@ -1436,10 +1686,9 @@ async function renderChart() {
     snap.forEach(d => {
       const x = d.data();
       if (!x || !x.date) return;
-      if (!["present","late","field"].includes(x.status)) return;   // filter client-side
+      if (!["present","late","field"].includes(x.status)) return;
       byDate[x.date] = (byDate[x.date] || 0) + 1;
     });
-
     const labels = [], values = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -1447,13 +1696,12 @@ async function renderChart() {
       labels.push(days[(d.getDay()+6)%7]);
       values.push(byDate[d.toISOString().slice(0,10)] || 0);
     }
-    drawChart(chart, labels, values, "present");
+    drawChart(chart, labels, values, t("present"));
   } catch (e) {
-    // FIX 3: surface the real error instead of silently showing "No data yet"
     console.error("[chart] attendance query failed:", e.code, e.message);
-    chart.innerHTML = `<div class="chart-empty">Could not load attendance (${escapeHtml(e.code || "error")})</div>`;
+    chart.innerHTML = `<div class="chart-empty">${escapeHtml(t("couldNotLoad"))} (${escapeHtml(e.code || "error")})</div>`;
     tagEl.className = "tag tag--red";
-    tagEl.textContent = "Error";
+    tagEl.textContent = t("error");
   }
 }
 
@@ -1462,9 +1710,9 @@ function drawChart(chart, labels, values, unit) {
   const hasData = values.some(v => v > 0);
   const tag = document.getElementById("chart-tag");
   if (!hasData) {
-    chart.innerHTML = `<div class="chart-empty">No data yet</div>`;
+    chart.innerHTML = `<div class="chart-empty">${escapeHtml(t("noDataYet"))}</div>`;
     tag.className = "tag tag--gray";
-    tag.textContent = "No data";
+    tag.textContent = t("noData");
     return;
   }
   chart.innerHTML = values.map((v,i) => {
@@ -1488,7 +1736,8 @@ async function renderActivity() {
         const e = d.data();
         events.push({
           name: fullName(e),
-          action: "joined as " + (e.position || "Employee") +
+          action: (LANG === "am" ? "ተቀላቅሏል" : LANG === "om" ? "makama galeera" : "joined as")
+                  + " " + (e.position || t("employee")) +
                   (e.departmentName ? " · " + e.departmentName :
                    e.officeName     ? " · " + e.officeName : ""),
           photoURL: e.photoURL,
@@ -1509,8 +1758,9 @@ async function renderActivity() {
     snap.forEach(d => {
       const r = d.data();
       events.push({
-        name: r.employeeName || r.empId || "Employee",
-        action: "requested leave · " + (r.days || 0) + " day(s)",
+        name: r.employeeName || r.empId || t("employee"),
+        action: (LANG === "am" ? "ፈቃድ ጠይቋል" : LANG === "om" ? "boqonnaa gaafateera" : "requested leave")
+                + " · " + (r.days || 0) + " " + (LANG === "am" ? "ቀን" : LANG === "om" ? "guyyaa" : "day(s)"),
         at: r.appliedAt
       });
     });
@@ -1523,8 +1773,9 @@ async function renderActivity() {
       snap.forEach(d => {
         const p = d.data();
         events.push({
-          name: p.title || p.workTypeName || "Work plan",
-          action: "created by " + (p.departmentName || p.sectorName || "directorate") + " · " + (p.status || "draft"),
+          name: p.title || p.workTypeName || t("workPlans"),
+          action: (LANG === "am" ? "ፈጠረ" : LANG === "om" ? "uumee" : "created by")
+                  + " " + (p.departmentName || p.sectorName || t("directorates")) + " · " + (p.status || "draft"),
           at: p.createdAt
         });
       });
@@ -1543,7 +1794,7 @@ async function renderActivity() {
   if (!top.length) {
     host.innerHTML = `<li class="list-empty">
       <svg viewBox="0 0 24 24">${ICONS.inbox}</svg>
-      <div>No activity yet in your scope</div></li>`;
+      <div>${escapeHtml(t("noActivity"))}</div></li>`;
     return;
   }
 
@@ -1567,49 +1818,49 @@ async function renderQuickActions() {
   const a = [];
 
   if (isSuper()) {
-    a.push({ label:"Add Region", href:"offices.html", icon:"pin" });
-    a.push({ label:"Add Cluster", href:"offices.html", icon:"cluster" });
-    a.push({ label:"Users & Staff", href:"users.html", icon:"users" });
-    a.push({ label:"Directorates", href:"departments.html", icon:"org" });
-    a.push({ label:"Work Plans", href:"workplans.html", icon:"clipboard" });
-    a.push({ label:"Reports", href:"reports.html", icon:"fileText" });
+    a.push({ labelKey:"addRegion", href:"offices.html", icon:"pin" });
+    a.push({ labelKey:"addCluster", href:"offices.html", icon:"cluster" });
+    a.push({ labelKey:"usersStaff", href:"users.html", icon:"users" });
+    a.push({ labelKey:"directorates", href:"departments.html", icon:"org" });
+    a.push({ labelKey:"workPlans", href:"workplans.html", icon:"clipboard" });
+    a.push({ labelKey:"reports", href:"reports.html", icon:"fileText" });
   } else if (isRegionalAdmin()) {
-    a.push({ label:"Add Directorate", href:"departments.html", icon:"org" });
-    a.push({ label:"Add Cluster", href:"offices.html", icon:"cluster" });
-    a.push({ label:"Add Staff", href:"users.html", icon:"userPlus" });
-    a.push({ label:"Work Plans", href:"workplans.html", icon:"clipboard" });
-    a.push({ label:"Reports", href:"reports.html", icon:"fileText" });
-    a.push({ label:"Settings", href:"settings.html", icon:"settings" });
+    a.push({ labelKey:"addDirectorate", href:"departments.html", icon:"org" });
+    a.push({ labelKey:"addCluster", href:"offices.html", icon:"cluster" });
+    a.push({ labelKey:"addStaff", href:"users.html", icon:"userPlus" });
+    a.push({ labelKey:"workPlans", href:"workplans.html", icon:"clipboard" });
+    a.push({ labelKey:"reports", href:"reports.html", icon:"fileText" });
+    a.push({ labelKey:"settings", href:"settings.html", icon:"settings" });
   } else if (isClusterAdmin()) {
-    a.push({ label:"Add Directorate", href:"departments.html", icon:"org" });
-    a.push({ label:"Add Office", href:"offices.html", icon:"building" });
-    a.push({ label:"Add Staff", href:"users.html", icon:"userPlus" });
-    a.push({ label:"Work Plans", href:"workplans.html", icon:"clipboard" });
-    a.push({ label:"Reports", href:"reports.html", icon:"fileText" });
+    a.push({ labelKey:"addDirectorate", href:"departments.html", icon:"org" });
+    a.push({ labelKey:"addOffice", href:"offices.html", icon:"building" });
+    a.push({ labelKey:"addStaff", href:"users.html", icon:"userPlus" });
+    a.push({ labelKey:"workPlans", href:"workplans.html", icon:"clipboard" });
+    a.push({ labelKey:"reports", href:"reports.html", icon:"fileText" });
   } else if (isHRM()) {
-    a.push({ label:"Users & Staff", href:"users.html", icon:"users" });
-    a.push({ label:"Recruitment", href:"recruitment.html", icon:"userPlus" });
-    a.push({ label:"Review Leave", href:"leave.html", icon:"calendar" });
-    a.push({ label:"Reports", href:"reports.html", icon:"fileText" });
+    a.push({ labelKey:"usersStaff", href:"users.html", icon:"users" });
+    a.push({ labelKey:"recruitment", href:"recruitment.html", icon:"userPlus" });
+    a.push({ labelKey:"reviewLeave", href:"leave.html", icon:"calendar" });
+    a.push({ labelKey:"reports", href:"reports.html", icon:"fileText" });
   } else if (isFinance()) {
-    a.push({ label:"Run Payroll", href:"payroll.html", icon:"wallet" });
-    a.push({ label:"Budgets", href:"budget.html", icon:"chart" });
-    a.push({ label:"Reports", href:"reports.html", icon:"fileText" });
-    a.push({ label:"Settings", href:"settings.html", icon:"settings" });
+    a.push({ labelKey:"runPayroll", href:"payroll.html", icon:"wallet" });
+    a.push({ labelKey:"budgets", href:"budget.html", icon:"chart" });
+    a.push({ labelKey:"reports", href:"reports.html", icon:"fileText" });
+    a.push({ labelKey:"settings", href:"settings.html", icon:"settings" });
   } else if (isDirectorate() || isWoredaCity()) {
-    a.push({ label:"Work Plans", href:"workplans.html", icon:"clipboard" });
-    a.push({ label:"Attendance", href:"attendance.html", icon:"clock" });
-    a.push({ label:"Leave", href:"leave.html", icon:"calendar" });
+    a.push({ labelKey:"workPlans", href:"workplans.html", icon:"clipboard" });
+    a.push({ labelKey:"attendance", href:"attendance.html", icon:"clock" });
+    a.push({ labelKey:"leave", href:"leave.html", icon:"calendar" });
   } else {
-    a.push({ label:"Request Leave", href:"leave.html", icon:"calendar" });
-    a.push({ label:"My Payslip", href:"payroll.html", icon:"dollar" });
-    a.push({ label:"Attendance", href:"attendance.html", icon:"clock" });
+    a.push({ labelKey:"requestLeave", href:"leave.html", icon:"calendar" });
+    a.push({ labelKey:"myPayslip", href:"payroll.html", icon:"dollar" });
+    a.push({ labelKey:"attendance", href:"attendance.html", icon:"clock" });
   }
 
   host.innerHTML = a.map(x => `
     <a class="quick__item" href="${x.href}">
       <span class="quick__icon"><svg viewBox="0 0 24 24">${ICONS[x.icon]}</svg></span>
-      <span class="quick__label">${escapeHtml(x.label)}</span>
+      <span class="quick__label">${escapeHtml(t(x.labelKey))}</span>
     </a>
   `).join("");
 }
@@ -1621,8 +1872,8 @@ async function renderPending() {
   const link = document.getElementById("pending-link");
 
   if (isFinance()) {
-    title.textContent = "Budget Breakdown";
-    sub.textContent = "Allocated vs spent";
+    title.textContent = t("budgetBreakdown");
+    sub.textContent = t("allocatedVsSpent");
     if (link) link.style.display = "none";
 
     try {
@@ -1630,7 +1881,7 @@ async function renderPending() {
       if (snap.empty) {
         host.innerHTML = `<li class="list-empty">
           <svg viewBox="0 0 24 24">${ICONS.pieChart}</svg>
-          <div>No budgets defined</div></li>`;
+          <div>${escapeHtml(t("noBudgetsDefined"))}</div></li>`;
         return;
       }
       const rows = [];
@@ -1645,7 +1896,7 @@ async function renderPending() {
       host.innerHTML = `
         <li style="padding:18px 24px 0">
           <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">
-            <span>Utilisation</span><span>${pct}%</span>
+            <span>${escapeHtml(t("utilisation"))}</span><span>${pct}%</span>
           </div>
           <div style="height:10px;border-radius:6px;background:var(--border-soft);overflow:hidden">
             <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#0b5cab,#0e7490)"></div>
@@ -1655,7 +1906,7 @@ async function renderPending() {
           <li class="list__item">
             <div class="list__main">
               <div class="list__title">${escapeHtml(r.name)}</div>
-              <div class="list__meta">${money(r.spent)} of ${money(r.allocated)}</div>
+              <div class="list__meta">${money(r.spent)} / ${money(r.allocated)}</div>
             </div>
             <span class="tag ${r.spent > r.allocated ? "tag--red" : "tag--green"}">
               ${r.allocated ? Math.round((r.spent / r.allocated) * 100) : 0}%
@@ -1663,17 +1914,17 @@ async function renderPending() {
           </li>`).join("")}`;
       return;
     } catch (e) {
-      host.innerHTML = `<li class="list-empty">No budgets defined</li>`;
+      host.innerHTML = `<li class="list-empty">${escapeHtml(t("noBudgetsDefined"))}</li>`;
       return;
     }
   }
 
-  if (isManager()) title.textContent = "Team Approvals";
-  else if (isClusterAdmin()) title.textContent = "Cluster Approvals";
-  else if (isRegionalAdmin()) title.textContent = "Region Approvals";
-  else if (isDirectorate()) title.textContent = "Directorate Approvals";
-  else if (isWoredaCity()) title.textContent = "Woreda Approvals";
-  else title.textContent = "Pending Approvals";
+  if (isManager()) title.textContent = t("teamApprovals");
+  else if (isClusterAdmin()) title.textContent = t("clusterApprovals");
+  else if (isRegionalAdmin()) title.textContent = t("regionApprovals");
+  else if (isDirectorate()) title.textContent = t("directorateApprovals");
+  else if (isWoredaCity()) title.textContent = t("woredaApprovals");
+  else title.textContent = t("pendingApprovals");
 
   try {
     const constraints = [
@@ -1686,25 +1937,25 @@ async function renderPending() {
     if (snap.empty) {
       host.innerHTML = `<li class="list-empty">
         <svg viewBox="0 0 24 24">${ICONS.inbox}</svg>
-        <div>Nothing pending</div></li>`;
+        <div>${escapeHtml(t("nothingPending"))}</div></li>`;
       return;
     }
     host.innerHTML = snap.docs.map(d => {
       const r = d.data();
-      const name = r.employeeName || r.empId || "Employee";
+      const name = r.employeeName || r.empId || t("employee");
       return `
         <li class="list__item">
           <div class="list__avatar">${initials(name)}</div>
           <div class="list__main">
             <div class="list__title">${escapeHtml(name)}</div>
-            <div class="list__meta">${escapeHtml(r.typeId || "Leave")} · ${r.days || "—"} day(s)</div>
+            <div class="list__meta">${escapeHtml(r.typeId || t("leave"))} · ${r.days || "—"} ${LANG === "am" ? "ቀን" : LANG === "om" ? "guyyaa" : "day(s)"}</div>
           </div>
-          <span class="tag tag--gold">Pending</span>
+          <span class="tag tag--gold">${LANG === "am" ? "በመጠበቅ" : LANG === "om" ? "Eegaa" : "Pending"}</span>
         </li>`;
     }).join("");
   } catch (e) {
     console.warn("[pending]", e.code);
-    host.innerHTML = `<li class="list-empty">Nothing pending</li>`;
+    host.innerHTML = `<li class="list-empty">${escapeHtml(t("nothingPending"))}</li>`;
   }
 }
 
@@ -1746,6 +1997,12 @@ onAuthStateChanged(auth, async (user) => {
   if (kick.done) return;
   if (!user) { kick("no-user"); return; }
 
+  // Read language from localStorage
+  try { LANG = localStorage.getItem("cs.language") || "en"; } catch (e) { LANG = "en"; }
+  if (!I18N[LANG]) LANG = "en";
+
+  applyStaticI18n();
+
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
     if (snap.exists()) myDoc = snap.data();
@@ -1779,24 +2036,24 @@ onAuthStateChanged(auth, async (user) => {
     woreda: S.woredaName,
     office: S.officeName,
     department: S.departmentName,
-    empId: S.empId
+    empId: S.empId,
+    lang: LANG
   });
 
   const greeting = document.getElementById("greeting");
   const first = S.name.split(" ")[0] || "";
-  greeting.textContent = "Welcome back" + (first ? ", " + first : "");
+  greeting.textContent = t("welcomeBack") + (first ? ", " + first : "");
 
   const titleEl = document.getElementById("page-title");
-  if (isSuper()) titleEl.textContent = "National Dashboard";
-  else if (isRegionalAdmin()) titleEl.textContent = regionName(S.regionCode) + " Region Dashboard";
-  else if (isClusterAdmin()) titleEl.textContent = (S.clusterName || "Cluster") + " Dashboard";
-  else if (isHRM()) titleEl.textContent = "HR Dashboard";
-  else if (isFinance()) titleEl.textContent = "Finance Dashboard";
-  else if (isDirectorate()) titleEl.textContent =
-    (S.departmentName || S.clusterName || "Directorate") + " Dashboard";
-  else if (isWoredaCity()) titleEl.textContent = (S.woredaName || "Woreda") + " Dashboard";
-  else if (isManager()) titleEl.textContent = "Manager Dashboard";
-  else titleEl.textContent = "My Dashboard";
+  if (isSuper()) titleEl.textContent = t("nationalDashboard");
+  else if (isRegionalAdmin()) titleEl.textContent = regionName(S.regionCode) + " " + t("regionDashboard");
+  else if (isClusterAdmin()) titleEl.textContent = (S.clusterName || t("clusterDashboard"));
+  else if (isHRM()) titleEl.textContent = t("hrDashboard");
+  else if (isFinance()) titleEl.textContent = t("financeDashboard");
+  else if (isDirectorate()) titleEl.textContent = (S.departmentName || S.clusterName || t("directorateDashboard"));
+  else if (isWoredaCity()) titleEl.textContent = (S.woredaName || t("woredaDashboard"));
+  else if (isManager()) titleEl.textContent = t("managerDashboard");
+  else titleEl.textContent = t("myDashboard");
 
   renderSidebar();
   renderUser();
@@ -1815,7 +2072,7 @@ onAuthStateChanged(auth, async (user) => {
   await renderHierarchy();
   await renderChartActivityPending();
 
-  console.log("[dashboard] booted for role:", S.role);
+  console.log("[dashboard] booted for role:", S.role, "lang:", LANG);
 });
 </script>
 
