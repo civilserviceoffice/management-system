@@ -30,7 +30,7 @@
     const lang = localStorage.getItem("cs.language") || "en";
     document.documentElement.setAttribute("data-lang", lang);
     document.documentElement.setAttribute("lang", lang === "am" ? "am" : (lang === "om" ? "om" : "en"));
-    if (lang === "am" || lang === "om") document.documentElement.setAttribute("data-ethiopic", lang === "am" ? "true" : "false");
+    if (lang === "am") document.documentElement.setAttribute("data-ethiopic", "true");
   } catch (e) {}
 })();
 </script>
@@ -450,7 +450,7 @@ body.sidebar-open .overlay { display:block; }
     </button>
     <div class="topbar__spacer"></div>
     <div class="topbar__actions">
-      <a href="notifications.html" class="icon-btn" aria-label="Notifications" id="notif-btn">
+      <a href="notifications.html" class="icon-btn" aria-label="Notifications">
         <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span class="icon-btn__badge" id="notif-badge"></span>
       </a>
@@ -598,7 +598,6 @@ const I18N = {
     loading: "Loading…", noDataYet: "No data yet",
     noActivity: "No activity yet in your scope", nothingPending: "Nothing pending",
     error: "Error", noData: "No data",
-    // Stat card labels
     regions: "Regions", regionalAdmins: "Regional Admins",
     clusters: "Clusters", woredasCities: "Woredas / Cities",
     employees: "Employees", payrollThisMonth: "Payroll (this month)",
@@ -611,8 +610,7 @@ const I18N = {
     myTeam: "My Team", onLeave: "On Leave",
     myAttendanceMonth: "My Attendance (month)", myLeaveRequests: "My Leave Requests",
     myPendingRequests: "My Pending Requests", latestPayslip: "Latest Payslip",
-    // Hierarchy cards
-    allRegions: "All {n} regions", fullNationalCoverage: "Full national coverage",
+    allRegionsN: "All {n} regions", fullNationalCoverage: "Full national coverage",
     yourRegion: "Your region", regionalDirectorates: "Regional Directorates",
     regionLevelDepartments: "Region-level departments",
     clusterDirectoratesCard: "Cluster Directorates",
@@ -620,35 +618,30 @@ const I18N = {
     administrativeClusters: "Administrative clusters",
     acrossAllClusters: "Across all clusters", governmentOffices: "Government offices",
     totalStaff: "Total staff", allDirectorates: "All directorates",
-    // Roles
     role_super_admin: "Super Admin", role_regional_admin: "Regional Admin",
     role_admin: "Cluster Admin", role_directorate: "Regional Directorate",
     role_cluster_directorate: "Cluster Directorate", role_woreda_city: "Woreda / City",
     role_hrm: "HR Manager", role_finance: "Finance Officer",
     role_manager: "Manager", role_employee: "Employee",
-    // Badges
     fullSystemAllRegions: "Full system — all regions",
     regionalAdmin: "Regional Admin", hrManagerOrgWide: "HR Manager — organisation-wide",
     clusterAdmin: "Cluster Admin", woredaCity: "Woreda / City", manager: "Manager",
     employee: "Employee", allRegions: "All Regions", hrOrgWide: "HR — Organisation-wide",
-    // Buttons
     addOffice: "Add Office", addDirectorate: "Add Directorate", addCluster: "Add Cluster",
     addPerson: "Add Person", runPayroll: "Run Payroll", requestLeave: "Request Leave",
     addRegion: "Add Region", addStaff: "Add Staff", reviewLeave: "Review Leave",
     budgets: "Budgets", myPayslip: "My Payslip",
-    // Pending
     teamApprovals: "Team Approvals", clusterApprovals: "Cluster Approvals",
     regionApprovals: "Region Approvals", directorateApprovals: "Directorate Approvals",
     woredaApprovals: "Woreda Approvals", budgetBreakdown: "Budget Breakdown",
     allocatedVsSpent: "Allocated vs spent", utilisation: "Utilisation",
     noBudgetsDefined: "No budgets defined",
-    // Chart
     present: "present", couldNotLoad: "Could not load attendance",
-    // Weekdays
     mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun",
-    // Months
     jan: "Jan", feb: "Feb", mar: "Mar", apr: "Apr", may: "May", jun: "Jun",
-    jul: "Jul", aug: "Aug", sep: "Sep", oct: "Oct", nov: "Nov", dec: "Dec"
+    jul: "Jul", aug: "Aug", sep: "Sep", oct: "Oct", nov: "Nov", dec: "Dec",
+    joinedAs: "joined as", requestedLeave: "requested leave", createdBy: "created by",
+    day: "day(s)"
   },
   om: {
     brandTitle: "Tajaajila Hawaasaa",
@@ -690,7 +683,7 @@ const I18N = {
     myTeam: "Garee Koo", onLeave: "Boqonnaa Irra Jiru",
     myAttendanceMonth: "Argannoo Koo (ji'a)", myLeaveRequests: "Gaaffii Boqonnaa Koo",
     myPendingRequests: "Gaaffii Koo Eegaa", latestPayslip: "Waraqaa Kaffaltii Dhiyoo",
-    allRegions: "Naannoolee {n} hunda", fullNationalCoverage: "Hammata biyyaalessaa",
+    allRegionsN: "Naannoolee {n} hunda", fullNationalCoverage: "Hammata biyyaalessaa",
     yourRegion: "Naannoo keetii", regionalDirectorates: "Qaamolee Naannoo",
     regionLevelDepartments: "Qaamolee sadarkaa naannoo",
     clusterDirectoratesCard: "Qaamolee Garee",
@@ -719,7 +712,9 @@ const I18N = {
     present: "argame", couldNotLoad: "Argannoo fe'uu hin dandeenye",
     mon: "Wiix", tue: "Qib", wed: "Rob", thu: "Kam", fri: "Jim", sat: "San", sun: "Dil",
     jan: "Ama", feb: "Gur", mar: "Bit", apr: "Elb", may: "Cam", jun: "Wax",
-    jul: "Ado", aug: "Hag", sep: "Ful", oct: "Onk", nov: "Sad", dec: "Mud"
+    jul: "Ado", aug: "Hag", sep: "Ful", oct: "Onk", nov: "Sad", dec: "Mud",
+    joinedAs: "makama galeera", requestedLeave: "boqonnaa gaafateera", createdBy: "uumee",
+    day: "guyyaa"
   },
   am: {
     brandTitle: "የመንግስት ሰራተኛ",
@@ -761,7 +756,7 @@ const I18N = {
     myTeam: "የእኔ ቡድን", onLeave: "ፈቃድ ላይ",
     myAttendanceMonth: "የእኔ መገኘት (ወር)", myLeaveRequests: "የእኔ የፈቃድ ጥያቄዎች",
     myPendingRequests: "በመጠበቅ ላይ ያሉ ጥያቄዎቼ", latestPayslip: "የቅርብ ጊዜ የደመወዝ ወረቀት",
-    allRegions: "ሁሉም {n} ክልሎች", fullNationalCoverage: "ሙሉ ብሔራዊ ሽፋን",
+    allRegionsN: "ሁሉም {n} ክልሎች", fullNationalCoverage: "ሙሉ ብሔራዊ ሽፋን",
     yourRegion: "የእርስዎ ክልል", regionalDirectorates: "የክልል ዳይሬክቶሬቶች",
     regionLevelDepartments: "የክልል ደረጃ ክፍሎች",
     clusterDirectoratesCard: "የክላስተር ዳይሬክቶሬቶች",
@@ -790,7 +785,9 @@ const I18N = {
     present: "ተገኝቷል", couldNotLoad: "መገኘትን መጫን አልተቻለም",
     mon: "ሰኞ", tue: "ማክሰ", wed: "ረቡ", thu: "ሐሙ", fri: "ዓርብ", sat: "ቅዳሜ", sun: "እሁድ",
     jan: "ጃን", feb: "ፌብ", mar: "ማርች", apr: "ኤፕሪ", may: "ሜይ", jun: "ጁን",
-    jul: "ጁላይ", aug: "ኦገስ", sep: "ሴፕ", oct: "ኦክቶ", nov: "ኖቬ", dec: "ዲሴ"
+    jul: "ጁላይ", aug: "ኦገስ", sep: "ሴፕ", oct: "ኦክቶ", nov: "ኖቬ", dec: "ዲሴ",
+    joinedAs: "ተቀላቅሏል", requestedLeave: "ፈቃድ ጠይቋል", createdBy: "ፈጠረ",
+    day: "ቀን"
   }
 };
 
@@ -807,7 +804,6 @@ function applyStaticI18n() {
     const key = el.getAttribute("data-i18n");
     el.textContent = t(key);
   });
-  // Brand, footer
   const bt = document.getElementById("brand-title"); if (bt) bt.textContent = t("brandTitle");
   const bs = document.getElementById("brand-subtitle"); if (bs) bs.textContent = t("brandSubtitle");
   const fc = document.getElementById("footer-copy"); if (fc) fc.textContent = t("footerCopy");
@@ -967,6 +963,41 @@ async function scopedCount(collName, extra = []) {
     console.warn("[count]", collName, e.code, e.message);
     return 0;
   }
+}
+
+/* Count attendance records for a specific date (reads nested path) */
+async function countAttendanceForDate(isoDate, statuses = ["present","late","field"]) {
+  const ym = isoDate.slice(0,7);
+  const base = collection(db, "attendance", ym, "records");
+  const constraints = [ where("date","==",isoDate) ];
+  scopeConstraints().forEach(c => constraints.push(c));
+  try {
+    const snap = await getDocs(query(base, ...constraints));
+    let n = 0;
+    snap.forEach(d => {
+      const x = d.data();
+      if (statuses.includes(x.status)) n++;
+    });
+    return n;
+  } catch (e) {
+    console.warn("[att-count]", e.code);
+    return 0;
+  }
+}
+
+/* Count employee's own attendance for current month (nested path) */
+async function countMyMonthAttendance(empId) {
+  const ym = new Date().toISOString().slice(0,7);
+  const base = collection(db, "attendance", ym, "records");
+  try {
+    const snap = await getDocs(query(base, where("employeeId","==",empId)));
+    let n = 0;
+    snap.forEach(d => {
+      const x = d.data();
+      if (["present","late","field"].includes(x.status)) n++;
+    });
+    return n;
+  } catch (e) { return 0; }
 }
 
 /* ============================================================
@@ -1403,9 +1434,7 @@ async function loadStatValues() {
   if (isDirectorate()) {
     setStat("s-dir-staff", await scopedCount("employees"));
     setStat("s-dir-plans", await scopedCount("workplans"));
-    setStat("s-dir-present", await scopedCount("attendance", [
-      where("date","==",today), where("status","in",["present","late","field"])
-    ]));
+    setStat("s-dir-present", await countAttendanceForDate(today));
     setStat("s-dir-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
@@ -1413,30 +1442,23 @@ async function loadStatValues() {
   if (isWoredaCity()) {
     setStat("s-wor-offices", await scopedCount("offices"));
     setStat("s-wor-staff", await scopedCount("employees"));
-    setStat("s-wor-present", await scopedCount("attendance", [
-      where("date","==",today), where("status","in",["present","late","field"])
-    ]));
+    setStat("s-wor-present", await countAttendanceForDate(today));
     setStat("s-wor-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
 
   if (isManager()) {
     setStat("s-myteam", await scopedCount("employees"));
-    setStat("s-present", await scopedCount("attendance", [
-      where("date","==",today), where("status","in",["present","late","field"])
-    ]));
-    setStat("s-onleave", await scopedCount("attendance", [
-      where("date","==",today), where("status","==","leave")
-    ]));
+    setStat("s-present", await countAttendanceForDate(today));
+    setStat("s-onleave", await countAttendanceForDate(today, ["leave"]));
     setStat("s-pending", await scopedCount("leaveRequests", [
       where("managerId","==",S.uid), where("status","==","pending")
     ]));
     return;
   }
 
-  setStat("s-myattend", await scopedCount("attendance", [
-    where("empId","==",S.empId), where("status","in",["present","late","field"])
-  ]));
+  // Employee self
+  setStat("s-myattend", await countMyMonthAttendance(S.empId));
   setStat("s-myleave", await scopedCount("leaveRequests", [where("empId","==",S.empId)]));
   setStat("s-mypending", await scopedCount("leaveRequests", [
     where("empId","==",S.empId), where("status","==","pending")
@@ -1485,7 +1507,7 @@ async function renderHierarchy() {
   if (isSuper()) {
     cards.push({
       icon:"pin", cls:"violet",
-      name: t("allRegions", { n: REGIONS.length }),
+      name: t("allRegionsN", { n: REGIONS.length }),
       meta: t("fullNationalCoverage"),
       value: REGIONS.length,
       href:"offices.html"
@@ -1647,16 +1669,16 @@ async function renderChart() {
   const subEl = document.getElementById("chart-sub");
   const tagEl = document.getElementById("chart-tag");
 
-  const m = new Date().toISOString().slice(0,7);
   const days = getWeekdayLabels();
 
+  /* ---------- Finance: monthly payroll ---------- */
   if (isFinance()) {
     titleEl.textContent = t("monthlyPayroll");
     subEl.textContent = t("last7Months");
     const labels = [], values = [];
     const now = new Date();
-    const months = [];
     const monthShort = getMonthLabels();
+    const months = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       months.push({ ym: d.toISOString().slice(0,7), label: monthShort[d.getMonth()] });
@@ -1672,31 +1694,53 @@ async function renderChart() {
     return;
   }
 
+  /* ---------- Attendance trend (nested subcollection) ---------- */
   titleEl.textContent = t("attendanceTrend");
   subEl.textContent = t("last7Days");
 
-  const startISO = new Date(Date.now() - 6*24*60*60*1000).toISOString().slice(0,10);
-  const base = collection(db, "attendance");
-  const constraints = [ where("date", ">=", startISO) ];
-  scopeConstraints().forEach(c => constraints.push(c));
+  // Build the last 7 days (oldest → newest)
+  const dayList = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    dayList.push(d.toISOString().slice(0,10));
+  }
+
+  // Group by month bucket — attendance data lives at attendance/{YYYY-MM}/records
+  const buckets = {};
+  dayList.forEach(iso => {
+    const ym = iso.slice(0,7);
+    if (!buckets[ym]) buckets[ym] = [];
+    buckets[ym].push(iso);
+  });
+
+  const byDate = {};
+  dayList.forEach(iso => byDate[iso] = 0);
 
   try {
-    const snap = await getDocs(query(base, ...constraints));
-    const byDate = {};
-    snap.forEach(d => {
-      const x = d.data();
-      if (!x || !x.date) return;
-      if (!["present","late","field"].includes(x.status)) return;
-      byDate[x.date] = (byDate[x.date] || 0) + 1;
-    });
-    const labels = [], values = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      labels.push(days[(d.getDay()+6)%7]);
-      values.push(byDate[d.toISOString().slice(0,10)] || 0);
+    for (const ym of Object.keys(buckets)) {
+      const base = collection(db, "attendance", ym, "records");
+      const constraints = [];
+      scopeConstraints().forEach(c => constraints.push(c));
+      const q = constraints.length ? query(base, ...constraints) : base;
+
+      const snap = await getDocs(q);
+      snap.forEach(d => {
+        const x = d.data();
+        if (!x || !x.date) return;
+        if (!dayList.includes(x.date)) return;
+        if (!["present","late","field"].includes(x.status)) return;
+        byDate[x.date] = (byDate[x.date] || 0) + 1;
+      });
     }
+
+    const labels = dayList.map(iso => {
+      const d = new Date(iso + "T00:00:00");
+      return days[(d.getDay()+6)%7];
+    });
+    const values = dayList.map(iso => byDate[iso] || 0);
     drawChart(chart, labels, values, t("present"));
+
   } catch (e) {
     console.error("[chart] attendance query failed:", e.code, e.message);
     chart.innerHTML = `<div class="chart-empty">${escapeHtml(t("couldNotLoad"))} (${escapeHtml(e.code || "error")})</div>`;
@@ -1736,8 +1780,7 @@ async function renderActivity() {
         const e = d.data();
         events.push({
           name: fullName(e),
-          action: (LANG === "am" ? "ተቀላቅሏል" : LANG === "om" ? "makama galeera" : "joined as")
-                  + " " + (e.position || t("employee")) +
+          action: t("joinedAs") + " " + (e.position || t("employee")) +
                   (e.departmentName ? " · " + e.departmentName :
                    e.officeName     ? " · " + e.officeName : ""),
           photoURL: e.photoURL,
@@ -1759,8 +1802,7 @@ async function renderActivity() {
       const r = d.data();
       events.push({
         name: r.employeeName || r.empId || t("employee"),
-        action: (LANG === "am" ? "ፈቃድ ጠይቋል" : LANG === "om" ? "boqonnaa gaafateera" : "requested leave")
-                + " · " + (r.days || 0) + " " + (LANG === "am" ? "ቀን" : LANG === "om" ? "guyyaa" : "day(s)"),
+        action: t("requestedLeave") + " · " + (r.days || 0) + " " + t("day"),
         at: r.appliedAt
       });
     });
@@ -1774,8 +1816,7 @@ async function renderActivity() {
         const p = d.data();
         events.push({
           name: p.title || p.workTypeName || t("workPlans"),
-          action: (LANG === "am" ? "ፈጠረ" : LANG === "om" ? "uumee" : "created by")
-                  + " " + (p.departmentName || p.sectorName || t("directorates")) + " · " + (p.status || "draft"),
+          action: t("createdBy") + " " + (p.departmentName || p.sectorName || t("directorates")) + " · " + (p.status || "draft"),
           at: p.createdAt
         });
       });
@@ -1948,7 +1989,7 @@ async function renderPending() {
           <div class="list__avatar">${initials(name)}</div>
           <div class="list__main">
             <div class="list__title">${escapeHtml(name)}</div>
-            <div class="list__meta">${escapeHtml(r.typeId || t("leave"))} · ${r.days || "—"} ${LANG === "am" ? "ቀን" : LANG === "om" ? "guyyaa" : "day(s)"}</div>
+            <div class="list__meta">${escapeHtml(r.typeId || t("leave"))} · ${r.days || "—"} ${t("day")}</div>
           </div>
           <span class="tag tag--gold">${LANG === "am" ? "በመጠበቅ" : LANG === "om" ? "Eegaa" : "Pending"}</span>
         </li>`;
@@ -1997,10 +2038,9 @@ onAuthStateChanged(auth, async (user) => {
   if (kick.done) return;
   if (!user) { kick("no-user"); return; }
 
-  // Read language from localStorage
+  // Read language
   try { LANG = localStorage.getItem("cs.language") || "en"; } catch (e) { LANG = "en"; }
   if (!I18N[LANG]) LANG = "en";
-
   applyStaticI18n();
 
   try {
