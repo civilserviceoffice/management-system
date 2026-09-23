@@ -1388,6 +1388,7 @@ async function renderChartActivityPending() {
   if (showSide) await renderPending();
 }
 
+/* ---------- FIXED: attendance trend ---------- */
 async function renderChart() {
   const chart = document.getElementById("chart");
   const titleEl = document.getElementById("chart-title");
@@ -1421,23 +1422,24 @@ async function renderChart() {
   titleEl.textContent = "Attendance Trend";
   subEl.textContent = "Last 7 days";
 
+  // FIX 1: use the flat "attendance" collection (same as scopedCount uses)
+  // FIX 2: don't use `in` filter server-side — filter status client-side to avoid
+  //        needing composite indexes with the scope constraints.
   const startISO = new Date(Date.now() - 6*24*60*60*1000).toISOString().slice(0,10);
-  const base = collection(db, "attendance", m, "records");
-  const constraints = [
-    where("date", ">=", startISO),
-    where("status", "in", ["present","late","field"])
-  ];
-  const scope = scopeConstraints();
-  scope.forEach(c => constraints.push(c));
+  const base = collection(db, "attendance");
+  const constraints = [ where("date", ">=", startISO) ];
+  scopeConstraints().forEach(c => constraints.push(c));
 
   try {
     const snap = await getDocs(query(base, ...constraints));
     const byDate = {};
     snap.forEach(d => {
       const x = d.data();
-      if (!x.date) return;
+      if (!x || !x.date) return;
+      if (!["present","late","field"].includes(x.status)) return;   // filter client-side
       byDate[x.date] = (byDate[x.date] || 0) + 1;
     });
+
     const labels = [], values = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -1447,10 +1449,11 @@ async function renderChart() {
     }
     drawChart(chart, labels, values, "present");
   } catch (e) {
-    console.warn("[chart]", e.code, e.message);
-    chart.innerHTML = `<div class="chart-empty">No data yet</div>`;
-    tagEl.className = "tag tag--gray";
-    tagEl.textContent = "No data";
+    // FIX 3: surface the real error instead of silently showing "No data yet"
+    console.error("[chart] attendance query failed:", e.code, e.message);
+    chart.innerHTML = `<div class="chart-empty">Could not load attendance (${escapeHtml(e.code || "error")})</div>`;
+    tagEl.className = "tag tag--red";
+    tagEl.textContent = "Error";
   }
 }
 
