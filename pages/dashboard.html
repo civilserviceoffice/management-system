@@ -85,8 +85,6 @@ html.theme-dark .scope-badge--regional { background:linear-gradient(135deg,#3a2e
 html.theme-dark .scope-badge--cluster { background:linear-gradient(135deg,#1a3a2a,#0f172a); border-color:#2a5f3d; color:#6ee7b7; }
 html.theme-dark .scope-badge--office { background:linear-gradient(135deg,#1e293b,#0f172a); border-color:#334155; color:#cbd5e1; }
 html.theme-dark .chart-empty, html.theme-dark .list-empty { color:#94a3b8; }
-html.theme-dark .hierarchy-node { background:#111a2c; border-color:#1e293b; }
-html.theme-dark .hierarchy-node:hover { background:#0f172a; border-color:#334155; }
 html.theme-dark .breadcrumb__item { background:#1a2433; color:#c5cdd9; }
 html.theme-dark .breadcrumb__item.is-active { background:linear-gradient(135deg,#0b5cab,#0e7490); color:#fff; }
 
@@ -225,6 +223,21 @@ body.sidebar-collapsed .sidebar__footer::after { content:"©"; display:block; fo
 .dropdown__item svg { width:17px; height:17px; stroke:currentColor; stroke-width:2; fill:none; }
 .dropdown__divider { height:1px; background:var(--border-soft); margin:6px 0; }
 .dropdown__item--danger { color:var(--danger); }
+
+/* Language switcher */
+.lang-btn { display:inline-flex; align-items:center; gap:7px;
+  height:44px; padding:0 12px; border-radius:13px;
+  background:transparent; color:var(--text-soft);
+  font-size:12px; font-weight:800; letter-spacing:.06em;
+  cursor:pointer; transition:background .15s; }
+.lang-btn:hover { background:var(--border-soft); }
+.lang-btn svg { width:18px; height:18px; stroke:currentColor; stroke-width:1.85; fill:none; }
+.lang-btn__code { text-transform:uppercase; }
+.lang-item { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.lang-item__flag { font-size:15px; }
+.lang-item__check { width:15px; height:15px; stroke:currentColor; stroke-width:2.5; fill:none; opacity:0; }
+.lang-item.is-on .lang-item__check { opacity:1; }
+.lang-item.is-on { background:var(--border-soft); color:var(--primary); font-weight:700; }
 
 .main { grid-area:main; padding:32px; overflow-x:hidden; }
 .page-head { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:28px; flex-wrap:wrap; }
@@ -450,6 +463,33 @@ body.sidebar-open .overlay { display:block; }
     </button>
     <div class="topbar__spacer"></div>
     <div class="topbar__actions">
+
+      <!-- ===== Language switcher ===== -->
+      <div class="dropdown">
+        <button class="lang-btn" data-lang-toggle aria-label="Language">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span class="lang-btn__code" id="lang-label">EN</span>
+        </button>
+        <div class="dropdown__panel hidden" data-lang-panel style="min-width:200px">
+          <button class="dropdown__item lang-item" data-set-lang="en">
+            <span><span class="lang-item__flag">🇬🇧</span> English</span>
+            <svg class="lang-item__check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="dropdown__item lang-item" data-set-lang="om">
+            <span><span class="lang-item__flag">🇪🇹</span> Afaan Oromoo</span>
+            <svg class="lang-item__check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="dropdown__item lang-item" data-set-lang="am">
+            <span><span class="lang-item__flag">🇪🇹</span> አማርኛ</span>
+            <svg class="lang-item__check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </div>
+
       <a href="notifications.html" class="icon-btn" aria-label="Notifications">
         <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span class="icon-btn__badge" id="notif-badge"></span>
@@ -965,39 +1005,60 @@ async function scopedCount(collName, extra = []) {
   }
 }
 
-/* Count attendance records for a specific date (reads nested path) */
+/* ============================================================
+   ATTENDANCE COUNTERS (nested path, client-side date filter)
+   ============================================================ */
+
+/**
+ * Count attendance records for a specific date.
+ * Reads attendance/{YYYY-MM}/records, applies scope constraints server-side,
+ * but filters date + status client-side to avoid composite indexes.
+ */
 async function countAttendanceForDate(isoDate, statuses = ["present","late","field"]) {
   const ym = isoDate.slice(0,7);
   const base = collection(db, "attendance", ym, "records");
-  const constraints = [ where("date","==",isoDate) ];
+  const constraints = [];
   scopeConstraints().forEach(c => constraints.push(c));
   try {
-    const snap = await getDocs(query(base, ...constraints));
+    const q = constraints.length ? query(base, ...constraints) : base;
+    const snap = await getDocs(q);
     let n = 0;
     snap.forEach(d => {
       const x = d.data();
-      if (statuses.includes(x.status)) n++;
+      if (!x || x.date !== isoDate) return;         // date filter in JS
+      if (!statuses.includes(x.status)) return;      // status filter in JS
+      n++;
     });
+    console.log("[att-count]", isoDate, "ym=", ym, "constraints=", constraints.length, "->", n);
     return n;
   } catch (e) {
-    console.warn("[att-count]", e.code);
+    console.warn("[att-count] FAILED", isoDate, e.code, e.message);
     return 0;
   }
 }
 
-/* Count employee's own attendance for current month (nested path) */
+/**
+ * Count employee's own attendance for current month.
+ * Reads attendance/{YYYY-MM}/records, filters by employeeId client-side.
+ */
 async function countMyMonthAttendance(empId) {
+  if (!empId) return 0;
   const ym = new Date().toISOString().slice(0,7);
   const base = collection(db, "attendance", ym, "records");
   try {
-    const snap = await getDocs(query(base, where("employeeId","==",empId)));
+    const snap = await getDocs(base);
     let n = 0;
     snap.forEach(d => {
       const x = d.data();
-      if (["present","late","field"].includes(x.status)) n++;
+      if (x.employeeId !== empId) return;
+      if (!["present","late","field"].includes(x.status)) return;
+      n++;
     });
     return n;
-  } catch (e) { return 0; }
+  } catch (e) {
+    console.warn("[my-att]", e.code);
+    return 0;
+  }
 }
 
 /* ============================================================
@@ -1698,7 +1759,6 @@ async function renderChart() {
   titleEl.textContent = t("attendanceTrend");
   subEl.textContent = t("last7Days");
 
-  // Build the last 7 days (oldest → newest)
   const dayList = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
@@ -1706,7 +1766,6 @@ async function renderChart() {
     dayList.push(d.toISOString().slice(0,10));
   }
 
-  // Group by month bucket — attendance data lives at attendance/{YYYY-MM}/records
   const buckets = {};
   dayList.forEach(iso => {
     const ym = iso.slice(0,7);
@@ -2016,6 +2075,8 @@ document.getElementById("overlay").addEventListener("click", () =>
 document.getElementById("sidebar-nav").addEventListener("click", (e) => {
   if (e.target.closest(".nav-item")) document.body.classList.remove("sidebar-open");
 });
+
+/* User dropdown */
 document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -2025,8 +2086,36 @@ document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
     if (!open) panel.classList.remove("hidden");
   });
 });
+
+/* Language dropdown */
+function updateLangUI() {
+  const label = document.getElementById("lang-label");
+  if (label) label.textContent = LANG.toUpperCase();
+  document.querySelectorAll("[data-set-lang]").forEach(btn => {
+    btn.classList.toggle("is-on", btn.dataset.setLang === LANG);
+  });
+}
+document.querySelectorAll("[data-lang-toggle]").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const panel = btn.closest(".dropdown").querySelector("[data-lang-panel]");
+    const open = !panel.classList.contains("hidden");
+    document.querySelectorAll("[data-dropdown-panel], [data-lang-panel]").forEach(p => p.classList.add("hidden"));
+    if (!open) panel.classList.remove("hidden");
+  });
+});
+document.querySelectorAll("[data-set-lang]").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const lang = btn.dataset.setLang;
+    try { localStorage.setItem("cs.language", lang); } catch (err) {}
+    // Reload so all dynamic content re-renders in the new language
+    window.location.reload();
+  });
+});
 document.addEventListener("click", () =>
-  document.querySelectorAll("[data-dropdown-panel]").forEach(p => p.classList.add("hidden")));
+  document.querySelectorAll("[data-dropdown-panel], [data-lang-panel]").forEach(p => p.classList.add("hidden")));
+
 try {
   if (localStorage.getItem("cs.sidebar") === "collapsed") document.body.classList.add("sidebar-collapsed");
 } catch (e) {}
@@ -2042,6 +2131,7 @@ onAuthStateChanged(auth, async (user) => {
   try { LANG = localStorage.getItem("cs.language") || "en"; } catch (e) { LANG = "en"; }
   if (!I18N[LANG]) LANG = "en";
   applyStaticI18n();
+  updateLangUI();
 
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
