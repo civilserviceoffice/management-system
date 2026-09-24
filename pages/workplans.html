@@ -835,7 +835,7 @@ const normalizeWoredas = (list) => (list || []).map(w => {
 }).filter(w => w.code || w.name);
 
 /* ============================================================
-   DATE HELPERS — for the year → Q → M → W → D cascade
+   DATE HELPERS
    ============================================================ */
 function ymd(d) {
   const y = d.getFullYear();
@@ -1137,10 +1137,15 @@ function isPureStaff() {
   return isStaff() && !isTeamLeader() && !isManager() && !isWoredaCity();
 }
 
+/* ★ FIXED: cluster admin now correctly returns "cluster" so their
+   Break-down button dispatches to the cluster cascade wizard.
+   ★ NEW: employees get their own "staff" level so they can plan
+   their own days from a bulk staff allocation. */
 function myLevel() {
   if (isRegionalDir()) return "regional";
-  if (isClusterDir())  return "cluster";
+  if (isClusterDir() || isClusterAdmin()) return "cluster";
   if (isWoredaCity() || isManager() || isTeamLeader()) return "woreda";
+  if (isStaff()) return "staff";
   if (isSuper() || isRegionalAdmin()) return "regional";
   return null;
 }
@@ -1166,7 +1171,7 @@ function myScope() {
 function canCreateAtMyLevel() {
   if (isSuper() || isRegionalAdmin()) return true;
   if (isRegionalDir() && S.region) return true;
-  if (isClusterDir() && S.clusterId) return true;
+  if ((isClusterDir() || isClusterAdmin()) && S.clusterId) return true;
   if (isWoredaCity() && S.woredaCode) return true;
   return false;
 }
@@ -1205,8 +1210,6 @@ function allocMatchesMyWoreda(p, a) {
   return false;
 }
 
-/* ★ FIXED: team leaders can now also match woreda allocations so they can
-   receive the cluster → woreda handoff and further break it down to staff. */
 function allocMatchesMyTeam(p, a) {
   if (!a) return false;
   if (a.targetType === "staff"      && a.targetId === S.uid)          return true;
@@ -1251,10 +1254,11 @@ function findMyPendingAllocation(p) {
     if (a.childPlanId) continue;
     if ((isClusterDir() || isClusterAdmin()) && a.targetType === "cluster" && a.targetId === S.clusterId)
       return { alloc:a, forLevel:"cluster" };
-    /* ★ FIXED: team leaders are woreda-level recipients too. */
     if ((isWoredaCity() || isManager() || isTeamLeader()) && allocMatchesMyWoreda(p, a))
       return { alloc:a, forLevel:"woreda" };
     if (isTeamLeader() && allocMatchesMyTeam(p, a))
+      return { alloc:a, forLevel:"staff" };
+    if (isStaff() && allocMatchesMeAsStaff(p, a))
       return { alloc:a, forLevel:"staff" };
   }
   return null;
@@ -1317,7 +1321,6 @@ function myAllocationRows() {
       if ((isClusterDir() || isClusterAdmin()) && a.targetType === "cluster" && a.targetId === S.clusterId) {
         out.push({ plan: p, alloc: a, forLevel: "cluster" });
       }
-      /* ★ FIXED: team leaders included here too. */
       if ((isWoredaCity() || isManager() || isTeamLeader()) && allocMatchesMyWoreda(p, a)) {
         out.push({ plan: p, alloc: a, forLevel: "woreda" });
       }
@@ -1349,13 +1352,12 @@ function pendingAllocations() {
   return out;
 }
 
-/* ★ FIXED: prefer the flat dayIndex (which the wizard actually writes),
-   then fall back to walking periodBreakdown for legacy plans. */
+/* ★ FIXED: prefer the flat dayIndex (which the wizard writes),
+   fall back to walking periodBreakdown for legacy plans. */
 function myDaySchedules() {
   const out = [];
   if (!S || !isStaff()) return out;
   for (const p of visiblePlans()) {
-    /* Preferred source: flat dayIndex written by the cascade wizard. */
     if (Array.isArray(p.dayIndex) && p.dayIndex.length) {
       for (const d of p.dayIndex) {
         if (d.assignedTo === S.uid || d.assignedToId === S.uid) {
@@ -1364,7 +1366,6 @@ function myDaySchedules() {
       }
       continue;
     }
-    /* Fallback: walk the periodBreakdown tree. */
     const breakdown = p.periodBreakdown;
     if (!breakdown || !breakdown.quarters) continue;
     for (const q of breakdown.quarters) {
@@ -1372,14 +1373,7 @@ function myDaySchedules() {
         for (const w of (m.weeks || [])) {
           for (const d of (w.days || [])) {
             if (d.assignedTo === S.uid || d.assignedToId === S.uid) {
-              out.push({
-                plan: p,
-                quarter: q,
-                month: m,
-                week: w,
-                day: d,
-                date: d.date
-              });
+              out.push({ plan: p, quarter: q, month: m, week: w, day: d, date: d.date });
             }
           }
         }
@@ -1563,7 +1557,7 @@ function statCard(label, value, cls, iconKey) {
 }
 
 /* ============================================================
-   MY ALLOCATIONS TABLE (for cluster/woreda/team-lead)
+   MY ALLOCATIONS TABLE
    ============================================================ */
 function renderMyAllocationsTable() {
   const rows = myAllocationRows();
@@ -1683,13 +1677,12 @@ function renderMyAllocationsTable() {
 }
 
 /* ============================================================
-   MY DAILY SCHEDULE (for employees)
+   MY DAILY SCHEDULE
    ============================================================ */
 function renderMyDailySchedule() {
   const rows = myDaySchedules();
   if (!rows.length) return "";
 
-  /* Group by month-year from the date */
   const byMonth = new Map();
   rows.forEach(r => {
     const m = String(r.date).slice(0,7);
@@ -1715,7 +1708,6 @@ function renderMyDailySchedule() {
     const d0 = parseYmd(ymKey + "-01");
     const monthLabel = d0.toLocaleString("en-US", { month: "long", year: "numeric" });
 
-    /* group by week within the month */
     const byWeek = new Map();
     list.forEach(r => {
       const wk = r.week?.fromDate || r.date.slice(0,7);
@@ -1825,12 +1817,6 @@ function renderPlans() {
   const countEl = document.getElementById("count-label");
   if (countEl) countEl.textContent = list.length + " / " + total;
 
-  /* ==========================================================
-     SCOPED VIEWERS
-     - Employees (pure staff): show their DAILY SCHEDULE first
-       and their allocations list.
-     - Cluster / Woreda / Manager / Team Leader: show allocations.
-     ========================================================== */
   if (isScopedViewer()) {
     const scheduleHtml = isStaff() ? renderMyDailySchedule() : "";
     const tableHtml = renderMyAllocationsTable();
@@ -1840,7 +1826,9 @@ function renderPlans() {
         ? "Once your director splits a plan to your department, it will appear here."
         : isClusterDir() || isClusterAdmin()
           ? "Once your regional director splits a regional plan to your cluster, it will appear here."
-          : "Once your director splits a plan to you, it will appear here.";
+          : isStaff()
+            ? "Once your woreda manager assigns work to you, it will appear here."
+            : "Once your director splits a plan to you, it will appear here.";
       host.innerHTML = `
         <div class="empty-state">
           <div class="empty-state__icon">📭</div>
@@ -1881,9 +1869,6 @@ function renderPlans() {
     return;
   }
 
-  /* ==========================================================
-     REGIONAL / REGIONAL-ADMIN / SUPER-ADMIN
-     ========================================================== */
   const sectorList = allVisibleSectors();
 
   if (!sectorList.length && !total) {
@@ -2064,7 +2049,9 @@ function planCard(p) {
           <strong>Action needed:</strong> you were allocated
           <strong>${fmtNum(mine.alloc.target)} ${escapeHtml(p.unit || "")}</strong>
           and <strong>${fmtMoney(mine.alloc.budget)} ETB</strong>.
-          Break this down to ${mine.forLevel === "cluster" ? "woredas" : "staff"}.
+          ${mine.forLevel === "cluster" ? "Break this down to woredas."
+           : isStaff() ? "Plan your own days."
+           : "Break this down to staff."}
         </div>
       </div>`
     : "";
@@ -2359,11 +2346,15 @@ async function openPlanCreation() {
     const pending = pendingAllocations().filter(p => p.forLevel === "woreda");
     if (!pending.length) { toast("No allocation waiting for your woreda.", "error"); return; }
     openBreakdownWizard(pending[0].parent, pending[0].alloc);
+  } else if (level === "staff") {
+    const pending = pendingAllocations().filter(p => p.forLevel === "staff");
+    if (!pending.length) { toast("No allocation waiting for you.", "error"); return; }
+    openBreakdownWizard(pending[0].parent, pending[0].alloc);
   }
 }
 
 /* ============================================================
-   REGIONAL WIZARD — unchanged, creates yearly regional plan
+   REGIONAL WIZARD
    ============================================================ */
 function openRegionalPlanWizard() {
   const regionClusters = CLUSTERS.filter(c => c.regionCode === S.region);
@@ -2902,15 +2893,595 @@ function openSplitRegionalPlan(planId) {
    ============================================================ */
 function openBreakdownWizard(parentPlan, alloc) {
   const level = myLevel();
+  console.log("[breakdown] role=", S.role, "level=", level,
+              "alloc=", alloc?.targetType, alloc?.targetId);
+
   if (level === "cluster") return openCascadeBreakdown(parentPlan, alloc, "cluster");
-  if (level === "woreda")  return openCascadeBreakdown(parentPlan, alloc, "woreda");
-  toast("You cannot break this plan down.", "error");
+  if (level === "woreda")  return openWoredaSplitWizard(parentPlan, alloc);
+  if (level === "staff")   return openSelfBreakdown(parentPlan, alloc);
+
+  toast(`Breakdown not available for role "${S.role}". Contact your administrator.`, "error");
 }
 
 /* ============================================================
-   CASCADE BREAKDOWN WIZARD
+   WOREDA SPLIT WIZARD — bulk assign to staff (no day calendar)
+   Each employee plans their own days afterwards.
+   ============================================================ */
+function openWoredaSplitWizard(parentPlan, alloc) {
+  const employees = USERS.filter(u =>
+    u.woredaCode === S.woredaCode && u.active !== false &&
+    ["employee","team_leader","manager","woreda_city"].includes(u.role)
+  );
+
+  if (!employees.length) {
+    toast("No active staff found in your woreda / city yet. Add staff first.", "error");
+    return;
+  }
+
+  const totalTarget = num(alloc.target);
+  const totalBudget = num(alloc.budget);
+  const unit = parentPlan.unit || "";
+
+  openWizard({
+    title: "Assign Work to Staff",
+    subtitle: `${parentPlan.workTypeName || parentPlan.title || ""} · ${parentPlan.year || ""}`,
+    finishLabel: "Send to Staff",
+    successMessage: "Sent. Each employee will now plan their own days.",
+    size: "lg",
+    initial: {
+      target: totalTarget,
+      budget: totalBudget,
+      unit,
+      allocations: employees.map(u => ({
+        targetType: "staff",
+        targetId: u.id,
+        targetName: u.name || u.email,
+        target: "",
+        budget: ""
+      }))
+    },
+    steps: [{
+      label: "Assign",
+      title: "Split amount & budget across staff",
+      render: (d) => `
+        <div class="alert alert--info">
+          <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+          <div>Splitting <strong>${fmtNum(totalTarget)} ${escapeHtml(unit)}</strong>
+            and <strong>${fmtMoney(totalBudget)} ETB</strong>
+            across ${employees.length} staff in your woreda.</div>
+        </div>
+        <table class="alloc-table">
+          <thead><tr>
+            <th>Staff</th>
+            <th style="width:140px">Amount</th>
+            <th style="width:160px">Budget (ETB)</th>
+          </tr></thead>
+          <tbody>${d.allocations.map((a,i) => `
+            <tr>
+              <td><strong>${escapeHtml(a.targetName)}</strong></td>
+              <td><input data-alloc-target="${i}" type="number" min="0" step="0.01"
+                    value="${escapeHtml(a.target||"")}" placeholder="0"></td>
+              <td><input data-alloc-budget="${i}" type="number" min="0" step="1"
+                    value="${escapeHtml(a.budget||"")}" placeholder="0"></td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+        ${allocSummary(totalTarget, d.allocations)}`,
+      validate: (d) => {
+        const sumT = d.allocations.reduce((s,a) => s + num(a.target), 0);
+        const sumB = d.allocations.reduce((s,a) => s + num(a.budget), 0);
+        if (Math.abs(sumT - totalTarget) > 0.01)
+          return `Amounts sum to ${fmtNum(sumT)} but total is ${fmtNum(totalTarget)}.`;
+        if (Math.abs(sumB - totalBudget) > 0.01)
+          return `Budgets sum to ${fmtMoney(sumB)} but total is ${fmtMoney(totalBudget)}.`;
+        return null;
+      },
+      after: (root, data) => {
+        root.querySelectorAll("[data-alloc-target]").forEach(inp => {
+          inp.addEventListener("input", () => {
+            data.allocations[Number(inp.dataset.allocTarget)].target = inp.value;
+            const s = root.querySelector(".alloc-sum");
+            if (s) s.outerHTML = allocSummary(data.target, data.allocations);
+          });
+        });
+        root.querySelectorAll("[data-alloc-budget]").forEach(inp => {
+          inp.addEventListener("input", () => {
+            data.allocations[Number(inp.dataset.allocBudget)].budget = inp.value;
+            const s = root.querySelector(".alloc-sum");
+            if (s) s.outerHTML = allocSummary(data.target, data.allocations);
+          });
+        });
+      }
+    }],
+    onFinish: async (d) => {
+      const allocs = d.allocations
+        .filter(a => num(a.target) > 0 || num(a.budget) > 0)
+        .map(a => ({
+          targetType: "staff",
+          targetId:   a.targetId,
+          targetName: a.targetName,
+          target:     num(a.target),
+          budget:     num(a.budget),
+          childPlanId: null
+        }));
+
+      const year = num(parentPlan.year) || new Date().getFullYear();
+      const payload = {
+        level: "woreda",
+        parentPlanId: parentPlan.id,
+        workTypeId: parentPlan.workTypeId || null,
+        workTypeName: parentPlan.workTypeName || null,
+        workTypeLoad: parentPlan.workTypeLoad || null,
+        workTypeLoadPercent: parentPlan.workTypeLoadPercent || null,
+        workTypeLoadLabel: parentPlan.workTypeLoadLabel || null,
+        workTypeMeasure: parentPlan.workTypeMeasure || null,
+        title: `${parentPlan.workTypeName || parentPlan.title || "Work"} — ${S.woredaName || "Woreda"} breakdown`,
+        description: parentPlan.description || null,
+        unit: parentPlan.unit || null,
+        target: totalTarget,
+        budget: totalBudget,
+        year,
+        period: "yearly",
+        status: "active",
+        fromDate: parentPlan.fromDate || (year + "-01-01"),
+        toDate:   parentPlan.toDate   || (year + "-12-31"),
+        regionCode: S.region,
+        sectorId: parentPlan.sectorId || null,
+        sectorName: parentPlan.sectorName || null,
+        departmentId: parentPlan.departmentId || null,
+        departmentName: parentPlan.departmentName || null,
+        teamLeaderId: parentPlan.teamLeaderId || null,
+        teamLeaderName: parentPlan.teamLeaderName || null,
+        clusterId: S.clusterId || null,
+        clusterName: S.clusterName || null,
+        woredaCode: S.woredaCode || null,
+        woredaName: S.woredaName || null,
+        allocations: allocs,
+        createdBy: S.uid, createdByName: S.name, createdByRole: S.role,
+        createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+      };
+
+      const ref = await addDoc(collection(db, "workplans"), payload);
+
+      // Mark my woreda allocation on the parent (cluster) plan as split
+      const parentAllocs = (parentPlan.allocations || []).map(a => {
+        if (a.targetType === "woreda" && allocMatchesMyWoreda(parentPlan, a))
+          return Object.assign({}, a, { childPlanId: ref.id });
+        return a;
+      });
+      await updateDoc(doc(db, "workplans", parentPlan.id), {
+        allocations: parentAllocs, updatedAt: serverTimestamp()
+      });
+
+      try {
+        await addDoc(collection(db, "notifications"), {
+          type: "workplan_split_to_staff",
+          title: "Work assigned to staff",
+          body: `${S.name} assigned ${allocs.length} staff member(s) from "${parentPlan.workTypeName || parentPlan.title}".`,
+          forRoles: ["super_admin","regional_admin","cluster_directorate","woreda_city","team_leader","employee"],
+          link: "workplans.html", read: false,
+          createdAt: serverTimestamp(), createdBy: S.uid
+        });
+      } catch (e) {}
+    }
+  });
+}
+
+/* ============================================================
+   SELF BREAKDOWN — employee plans their own days
+   ============================================================ */
+function openSelfBreakdown(parentPlan, alloc) {
+  const year = num(parentPlan.year) || new Date().getFullYear();
+  const yearFrom = parentPlan.fromDate || (year + "-01-01");
+  const yearTo   = parentPlan.toDate   || (year + "-12-31");
+  const totalTarget = num(alloc.target);
+  const totalBudget = num(alloc.budget);
+  const unit = parentPlan.unit || "";
+
+  function buildCascade() {
+    const quarters = quarterRanges(year).map(q => ({
+      label: q.label, fromDate: q.fromDate, toDate: q.toDate,
+      target: 0, budget: 0,
+      months: monthRangesForQuarter(q).map(m => ({
+        label: m.label, shortLabel: m.shortLabel,
+        fromDate: m.fromDate, toDate: m.toDate,
+        target: 0, budget: 0,
+        weeks: weekRangesForMonth(m).map(w => ({
+          label: w.label, isExtra: !!w.isExtra,
+          fromDate: w.fromDate, toDate: w.toDate,
+          target: 0, budget: 0,
+          days: dayRangesForWeek(w).map(d => ({
+            label: d.label, shortLabel: d.shortLabel,
+            date: d.date, target: 0, budget: 0
+          }))
+        }))
+      }))
+    }));
+    const qT = totalTarget / 4, qB = totalBudget / 4;
+    quarters.forEach(q => {
+      q.target = qT; q.budget = qB;
+      const mT = q.target / q.months.length, mB = q.budget / q.months.length;
+      q.months.forEach(m => {
+        m.target = mT; m.budget = mB;
+        const wT = m.target / m.weeks.length, wB = m.budget / m.weeks.length;
+        m.weeks.forEach(w => {
+          w.target = wT; w.budget = wB;
+          const dT = w.target / w.days.length, dB = w.budget / w.days.length;
+          w.days.forEach(d => { d.target = dT; d.budget = dB; });
+        });
+      });
+    });
+    return { quarters };
+  }
+
+  const data = {
+    title: (parentPlan.workTypeName || parentPlan.title || "Work plan") + " — my days",
+    description: parentPlan.description || "",
+    cascade: buildCascade()
+  };
+
+  function recalcFromDays(cascade) {
+    cascade.quarters.forEach(q => {
+      let qt = 0, qb = 0;
+      q.months.forEach(m => {
+        let mt = 0, mb = 0;
+        m.weeks.forEach(w => {
+          let wt = 0, wb = 0;
+          w.days.forEach(d => { wt += num(d.target); wb += num(d.budget); });
+          w.target = wt; w.budget = wb;
+          mt += wt; mb += wb;
+        });
+        m.target = mt; m.budget = mb;
+        qt += mt; qb += mb;
+      });
+      q.target = qt; q.budget = qb;
+    });
+  }
+
+  function cascadeTotalHtml(cascade, label) {
+    const sumT = cascade.quarters.reduce((s,q) => s + num(q.target), 0);
+    const sumB = cascade.quarters.reduce((s,q) => s + num(q.budget), 0);
+    const okT = Math.abs(sumT - totalTarget) < 0.01;
+    const okB = Math.abs(sumB - totalBudget) < 0.01;
+    return `<div class="cascade-total">
+      <div class="cascade-total__item"><span class="cascade-total__label">My total</span>
+        <span class="cascade-total__value">${fmtNum(totalTarget)} ${escapeHtml(unit)}</span></div>
+      <div class="cascade-total__item"><span class="cascade-total__label">Sum of ${escapeHtml(label)}</span>
+        <span class="cascade-total__value ${okT?"ok":"bad"}">${fmtNum(sumT)} ${okT?"✓":"✗"}</span></div>
+      <div class="cascade-total__item"><span class="cascade-total__label">My budget</span>
+        <span class="cascade-total__value">${fmtMoney(totalBudget)} ETB</span></div>
+      <div class="cascade-total__item"><span class="cascade-total__label">Sum of ${escapeHtml(label)} budgets</span>
+        <span class="cascade-total__value ${okB?"ok":"bad"}">${fmtMoney(sumB)} ETB ${okB?"✓":"✗"}</span></div>
+    </div>`;
+  }
+
+  function quarterRow(q, qi) {
+    return `<div class="cascade-row">
+      <span class="cascade-row__label">${escapeHtml(q.label)}</span>
+      <input type="date" data-field="q-from" data-q="${qi}" value="${escapeHtml(q.fromDate)}">
+      <span class="cascade-row__sep">→</span>
+      <input type="date" data-field="q-to" data-q="${qi}" value="${escapeHtml(q.toDate)}">
+      <input type="number" data-field="q-target" data-q="${qi}" value="${escapeHtml(q.target)}" min="0" step="0.01">
+      <input type="number" data-field="q-budget" data-q="${qi}" value="${escapeHtml(q.budget)}" min="0" step="1">
+    </div>`;
+  }
+  function monthRow(m, qi, mi) {
+    return `<div class="cascade-row">
+      <span class="cascade-row__label">${escapeHtml(m.shortLabel)}</span>
+      <input type="date" data-field="m-from" data-q="${qi}" data-m="${mi}" value="${escapeHtml(m.fromDate)}">
+      <span class="cascade-row__sep">→</span>
+      <input type="date" data-field="m-to" data-q="${qi}" data-m="${mi}" value="${escapeHtml(m.toDate)}">
+      <input type="number" data-field="m-target" data-q="${qi}" data-m="${mi}" value="${escapeHtml(m.target)}" min="0" step="0.01">
+      <input type="number" data-field="m-budget" data-q="${qi}" data-m="${mi}" value="${escapeHtml(m.budget)}" min="0" step="1">
+    </div>`;
+  }
+  function weekRow(w, qi, mi, wi) {
+    return `<div class="cascade-row">
+      <span class="cascade-row__label">${escapeHtml(w.label)}</span>
+      <input type="date" data-field="w-from" data-q="${qi}" data-m="${mi}" data-w="${wi}" value="${escapeHtml(w.fromDate)}">
+      <span class="cascade-row__sep">→</span>
+      <input type="date" data-field="w-to" data-q="${qi}" data-m="${mi}" data-w="${wi}" value="${escapeHtml(w.toDate)}">
+      <input type="number" data-field="w-target" data-q="${qi}" data-m="${mi}" data-w="${wi}" value="${escapeHtml(w.target)}" min="0" step="0.01">
+      <input type="number" data-field="w-budget" data-q="${qi}" data-m="${mi}" data-w="${wi}" value="${escapeHtml(w.budget)}" min="0" step="1">
+    </div>`;
+  }
+  function dayRow(dd, qi, mi, wi, di) {
+    return `<div class="cascade-row cascade-row--day">
+      <span class="cascade-row__label">${escapeHtml(dd.shortLabel)}</span>
+      <input type="date" data-field="d-date" data-q="${qi}" data-m="${mi}" data-w="${wi}" data-d="${di}" value="${escapeHtml(dd.date)}">
+      <span class="cascade-row__sep">•</span>
+      <span style="font-size:11.5px;color:var(--muted);font-family:ui-monospace,monospace">${escapeHtml(dd.date)}</span>
+      <input type="number" data-field="d-target" data-q="${qi}" data-m="${mi}" data-w="${wi}" data-d="${di}" value="${escapeHtml(dd.target)}" min="0" step="0.01">
+      <input type="number" data-field="d-budget" data-q="${qi}" data-m="${mi}" data-w="${wi}" data-d="${di}" value="${escapeHtml(dd.budget)}" min="0" step="1">
+    </div>`;
+  }
+
+  const steps = [
+    { label:"Confirm", title:"Confirm your breakdown title",
+      render: (d) => `
+        <div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+          <div>You received <strong>${fmtNum(totalTarget)} ${escapeHtml(unit)}</strong>
+          and <strong>${fmtMoney(totalBudget)} ETB</strong>. Split your work into
+          quarters → months → weeks → working days.</div></div>
+        <div class="field"><label class="field__required">Title</label>
+          <input data-field="title" value="${escapeHtml(d.title)}"></div>
+        <div class="field"><label>Description</label>
+          <textarea data-field="description">${escapeHtml(d.description)}</textarea></div>`,
+      validate: (d) => (d.title && d.title.trim().length >= 3) ? null : "Title is required."
+    },
+    { label:"4 Quarters", title:"Split the year into 4 quarters",
+      render: (d) => cascadeTotalHtml(d.cascade, "quarters") +
+        d.cascade.quarters.map((q,i) => `<div class="cascade-group">
+          <div class="cascade-group__head is-quarter">
+            <span class="cascade-badge cascade-badge--q">Quarter</span>
+            <div><div class="cascade-group__title">${escapeHtml(q.label)} — ${year}</div>
+            <div class="cascade-group__sub">${escapeHtml(q.fromDate)} → ${escapeHtml(q.toDate)}</div></div>
+          </div>
+          <div class="cascade-group__body">${quarterRow(q,i)}</div>
+        </div>`).join(""),
+      validate: (d) => {
+        const s = d.cascade.quarters.reduce((s,q) => s + num(q.target), 0);
+        if (Math.abs(s - totalTarget) > 0.01) return `Quarters sum to ${fmtNum(s)} but your total is ${fmtNum(totalTarget)}.`;
+        return null;
+      },
+      after: (root, data) => {
+        ["q-target","q-budget","q-from","q-to"].forEach(f => {
+          const key = f === "q-target" ? "target" : f === "q-budget" ? "budget"
+                     : f === "q-from" ? "fromDate" : "toDate";
+          root.querySelectorAll(`[data-field='${f}']`).forEach(inp => {
+            inp.addEventListener("input", () => {
+              data.cascade.quarters[Number(inp.dataset.q)][key] = inp.value;
+            });
+          });
+        });
+      }
+    },
+    { label:"3 Months", title:"Split each quarter into 3 months",
+      render: (d) => cascadeTotalHtml(d.cascade, "quarters") +
+        d.cascade.quarters.map((q,qi) => `<div class="cascade-group">
+          <div class="cascade-group__head is-quarter">
+            <span class="cascade-badge cascade-badge--q">${escapeHtml(q.label)}</span>
+            <div><div class="cascade-group__title">Months of ${escapeHtml(q.label)}</div>
+            <div class="cascade-group__sub">${fmtNum(q.target)} ${escapeHtml(unit)} · ${fmtMoney(q.budget)} ETB</div></div>
+          </div>
+          <div class="cascade-group__body">${q.months.map((m,mi) => monthRow(m,qi,mi)).join("")}</div>
+        </div>`).join(""),
+      validate: (d) => {
+        for (const q of d.cascade.quarters) {
+          const s = q.months.reduce((s,m) => s + num(m.target), 0);
+          if (Math.abs(s - num(q.target)) > 0.01)
+            return `${q.label} months sum to ${fmtNum(s)} but quarter is ${fmtNum(q.target)}.`;
+        }
+        return null;
+      },
+      after: (root, data) => {
+        ["m-target","m-budget","m-from","m-to"].forEach(f => {
+          const key = f === "m-target" ? "target" : f === "m-budget" ? "budget"
+                     : f === "m-from" ? "fromDate" : "toDate";
+          root.querySelectorAll(`[data-field='${f}']`).forEach(inp => {
+            inp.addEventListener("input", () => {
+              data.cascade.quarters[Number(inp.dataset.q)].months[Number(inp.dataset.m)][key] = inp.value;
+            });
+          });
+        });
+      }
+    },
+    { label:"4 Weeks", title:"Split each month into weeks (add extra weeks if needed)",
+      render: (d) => {
+        let html = cascadeTotalHtml(d.cascade, "quarters");
+        d.cascade.quarters.forEach((q,qi) => q.months.forEach((m,mi) => {
+          html += `<div class="cascade-group">
+            <div class="cascade-group__head is-month">
+              <span class="cascade-badge cascade-badge--m">${escapeHtml(m.shortLabel)}</span>
+              <div><div class="cascade-group__title">Weeks of ${escapeHtml(m.shortLabel)}</div>
+              <div class="cascade-group__sub">${fmtNum(m.target)} ${escapeHtml(unit)} · ${fmtMoney(m.budget)} ETB</div></div>
+            </div>
+            <div class="cascade-group__body">
+              ${m.weeks.map((w,wi) => weekRow(w,qi,mi,wi)).join("")}
+              ${m.weeks.length < 6 ? `<div class="cascade-actions">
+                <button type="button" class="cascade-add-week" data-add-week data-q="${qi}" data-m="${mi}">
+                  <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add additional week
+                </button></div>` : ""}
+            </div>
+          </div>`;
+        }));
+        return html;
+      },
+      validate: (d) => {
+        for (const q of d.cascade.quarters) for (const m of q.months) {
+          const s = m.weeks.reduce((s,w) => s + num(w.target), 0);
+          if (Math.abs(s - num(m.target)) > 0.01)
+            return `${m.shortLabel} weeks sum to ${fmtNum(s)} but month is ${fmtNum(m.target)}.`;
+        }
+        return null;
+      },
+      after: (root, data, refresh) => {
+        ["w-target","w-budget","w-from","w-to"].forEach(f => {
+          const key = f === "w-target" ? "target" : f === "w-budget" ? "budget"
+                     : f === "w-from" ? "fromDate" : "toDate";
+          root.querySelectorAll(`[data-field='${f}']`).forEach(inp => {
+            inp.addEventListener("input", () => {
+              data.cascade.quarters[Number(inp.dataset.q)]
+                .months[Number(inp.dataset.m)]
+                .weeks[Number(inp.dataset.w)][key] = inp.value;
+            });
+          });
+        });
+        root.querySelectorAll("[data-add-week]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const qi = Number(btn.dataset.q), mi = Number(btn.dataset.m);
+            const m = data.cascade.quarters[qi].months[mi];
+            const last = m.weeks[m.weeks.length - 1];
+            const start = addDays(last.toDate, 1);
+            const end = addDays(start, 6);
+            m.weeks.push({
+              label: "Week " + (m.weeks.length + 1),
+              isExtra: true,
+              fromDate: start,
+              toDate: end > m.toDate ? m.toDate : end,
+              target: 0, budget: 0,
+              days: dayRangesForWeek({ fromDate: start, toDate: end }).map(d => ({
+                label: d.label, shortLabel: d.shortLabel, date: d.date,
+                target: 0, budget: 0
+              }))
+            });
+            refresh();
+          });
+        });
+      }
+    },
+    { label:"5 Days", title:"Split each week into working days",
+      render: (d) => {
+        let html = cascadeTotalHtml(d.cascade, "quarters");
+        d.cascade.quarters.forEach((q,qi) => q.months.forEach((m,mi) => m.weeks.forEach((w,wi) => {
+          html += `<div class="cascade-group">
+            <div class="cascade-group__head is-week">
+              <span class="cascade-badge cascade-badge--w">${escapeHtml(w.label)}</span>
+              <div><div class="cascade-group__title">${escapeHtml(m.shortLabel)} · ${escapeHtml(w.label)}</div>
+              <div class="cascade-group__sub">${escapeHtml(w.fromDate)} → ${escapeHtml(w.toDate)} · ${fmtNum(w.target)} ${escapeHtml(unit)}</div></div>
+            </div>
+            <div class="cascade-group__body">${w.days.map((dd,di) => dayRow(dd,qi,mi,wi,di)).join("")}</div>
+          </div>`;
+        })));
+        return html;
+      },
+      validate: (d) => {
+        for (const q of d.cascade.quarters) for (const m of q.months) for (const w of m.weeks) {
+          const s = w.days.reduce((s,dd) => s + num(dd.target), 0);
+          if (Math.abs(s - num(w.target)) > 0.01)
+            return `${w.label}: days sum to ${fmtNum(s)} but week is ${fmtNum(w.target)}.`;
+        }
+        return null;
+      },
+      after: (root, data) => {
+        ["d-target","d-budget","d-date"].forEach(f => {
+          const key = f === "d-target" ? "target" : f === "d-budget" ? "budget" : "date";
+          root.querySelectorAll(`[data-field='${f}']`).forEach(inp => {
+            inp.addEventListener("input", () => {
+              data.cascade.quarters[Number(inp.dataset.q)]
+                .months[Number(inp.dataset.m)]
+                .weeks[Number(inp.dataset.w)]
+                .days[Number(inp.dataset.d)][key] = inp.value;
+            });
+          });
+        });
+      }
+    },
+    { label:"Review", title:"Review and create your day plan",
+      render: (d) => {
+        const c = d.cascade;
+        let tT = 0, tB = 0, nD = 0;
+        c.quarters.forEach(q => {
+          tT += num(q.target); tB += num(q.budget);
+          q.months.forEach(m => m.weeks.forEach(w => w.days.forEach(dd => {
+            if (num(dd.target) > 0) nD++;
+          })));
+        });
+        return `<div class="review" style="margin-bottom:18px">
+          <div class="review__row"><span class="review__k">Title</span>
+            <span class="review__v">${escapeHtml(d.title)}</span></div>
+          <div class="review__row"><span class="review__k">Year</span>
+            <span class="review__v">${year}</span></div>
+          <div class="review__row"><span class="review__k">Total amount</span>
+            <span class="review__v">${fmtNum(tT)} ${escapeHtml(unit)}</span></div>
+          <div class="review__row"><span class="review__k">Total budget</span>
+            <span class="review__v">${fmtMoney(tB)} ETB</span></div>
+          <div class="review__row"><span class="review__k">Working days</span>
+            <span class="review__v">${nD}</span></div>
+        </div>
+        <div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+          <div>All days are automatically assigned to you and will appear in
+          <strong>My Daily Work Schedule</strong>.</div></div>`;
+      }
+    }
+  ];
+
+  openWizard({
+    title: "Plan My Own Days",
+    subtitle: `${parentPlan.workTypeName || parentPlan.title || ""} · ${year}`,
+    finishLabel: "Save My Plan",
+    successMessage: "Your day plan is saved. Check My Daily Work Schedule.",
+    size: "xl",
+    initial: data,
+    steps,
+    onFinish: async (d) => {
+      recalcFromDays(d.cascade);
+
+      // Stamp assignedTo into the tree AND build the flat dayIndex
+      const dayIndex = [];
+      d.cascade.quarters.forEach(q => q.months.forEach(m => m.weeks.forEach(w => w.days.forEach(dd => {
+        dd.assignedTo = S.uid;
+        dd.assignedToName = S.name;
+        dayIndex.push({
+          date: dd.date,
+          target: num(dd.target),
+          budget: num(dd.budget),
+          assignedTo: S.uid,
+          assignedToName: S.name,
+          woredaCode: S.woredaCode || null,
+          woredaName: S.woredaName || null
+        });
+      }))));
+
+      const payload = {
+        level: "staff",
+        parentPlanId: parentPlan.id,
+        workTypeId: parentPlan.workTypeId || null,
+        workTypeName: parentPlan.workTypeName || null,
+        workTypeLoad: parentPlan.workTypeLoad || null,
+        workTypeLoadPercent: parentPlan.workTypeLoadPercent || null,
+        workTypeLoadLabel: parentPlan.workTypeLoadLabel || null,
+        workTypeMeasure: parentPlan.workTypeMeasure || null,
+        title: d.title.trim(),
+        description: (d.description || "").trim() || null,
+        unit: parentPlan.unit || null,
+        target: totalTarget,
+        budget: totalBudget,
+        year,
+        period: "yearly",
+        status: "active",
+        fromDate: yearFrom,
+        toDate: yearTo,
+        regionCode: S.region,
+        sectorId: parentPlan.sectorId || null,
+        sectorName: parentPlan.sectorName || null,
+        departmentId: parentPlan.departmentId || null,
+        departmentName: parentPlan.departmentName || null,
+        teamLeaderId: parentPlan.teamLeaderId || null,
+        teamLeaderName: parentPlan.teamLeaderName || null,
+        clusterId: S.clusterId || null,
+        clusterName: S.clusterName || null,
+        woredaCode: S.woredaCode || null,
+        woredaName: S.woredaName || null,
+        periodBreakdown: d.cascade,
+        dayIndex,
+        allocations: [],
+        createdBy: S.uid,
+        createdByName: S.name,
+        createdByRole: S.role,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      const ref = await addDoc(collection(db, "workplans"), payload);
+
+      // Mark my staff allocation on the parent (woreda) plan as split
+      const parentAllocs = (parentPlan.allocations || []).map(a => {
+        if (a.targetType === "staff" && a.targetId === S.uid)
+          return Object.assign({}, a, { childPlanId: ref.id });
+        return a;
+      });
+      await updateDoc(doc(db, "workplans", parentPlan.id), {
+        allocations: parentAllocs, updatedAt: serverTimestamp()
+      });
+    }
+  });
+}
+
+/* ============================================================
+   CASCADE BREAKDOWN WIZARD (cluster only now)
    Year → 4 Quarters → 3 Months → 4 Weeks (+ Add Week) → 5 Days
-   Then assign to Woredas (cluster) or Staff (woreda)
+   Then assign to Woredas
    ============================================================ */
 function openCascadeBreakdown(parentPlan, alloc, level) {
   const year = num(parentPlan.year) || new Date().getFullYear();
@@ -2924,7 +3495,6 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
   const cluster = CLUSTERS.find(c => c.id === S.clusterId);
   const woredas = isClusterScope ? normalizeWoredas(cluster?.woredas) : [];
 
-  /* ---------- build the cascade data structure ---------- */
   function buildCascade() {
     const quarters = quarterRanges(year).map(q => ({
       label: q.label,
@@ -2947,7 +3517,6 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
       }))
     }));
 
-    /* auto-split amounts equal-per-level */
     const qShareT = totalTarget / 4;
     const qShareB = totalBudget / 4;
     quarters.forEach(q => {
@@ -2973,15 +3542,11 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
     title: (parentPlan.workTypeName || parentPlan.title || "Work plan") + " — " + (parentPlan.year || year) + " breakdown",
     description: parentPlan.description || "",
     cascade: buildCascade(),
-    /* final-step allocation */
     assignTo: isClusterScope ? "woredas" : "staff",
-    /* For woreda: staff allocations per day (built later) */
-    staffByDay: {}, /* dateKey → { staffId, staffName } */
-    /* For cluster: woreda allocations per day (built later) */
-    woredaByDay: {} /* dateKey → { woredaCode, woredaName } */
+    staffByDay: {},
+    woredaByDay: {}
   };
 
-  /* ---------- helpers to recompute totals when the user edits ---------- */
   function recalcFromDays(cascade) {
     cascade.quarters.forEach(q => {
       let qt = 0, qb = 0;
@@ -2999,27 +3564,7 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
       q.target = qt; q.budget = qb;
     });
   }
-  function recalcFromWeeks(cascade) {
-    cascade.quarters.forEach(q => {
-      let qt = 0, qb = 0;
-      q.months.forEach(m => {
-        let mt = 0, mb = 0;
-        m.weeks.forEach(w => { mt += num(w.target); mb += num(w.budget); });
-        m.target = mt; m.budget = mb;
-        qt += mt; qb += mb;
-      });
-      q.target = qt; q.budget = qb;
-    });
-  }
-  function recalcFromMonths(cascade) {
-    cascade.quarters.forEach(q => {
-      let qt = 0, qb = 0;
-      q.months.forEach(m => { qt += num(m.target); qb += num(m.budget); });
-      q.target = qt; q.budget = qb;
-    });
-  }
 
-  /* ---------- render helpers ---------- */
   function cascadeTotalHtml(cascade, label) {
     const sumT = cascade.quarters.reduce((s,q) => s + num(q.target), 0);
     const sumB = cascade.quarters.reduce((s,q) => s + num(q.budget), 0);
@@ -3089,7 +3634,6 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
     </div>`;
   }
 
-  /* ---------- step renders ---------- */
   function renderConfirm(d) {
     return `<div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
       <div>You received <strong>${fmtNum(totalTarget)} ${escapeHtml(unit)}</strong> and <strong>${fmtMoney(totalBudget)} ETB</strong>. This wizard splits the yearly allocation into quarters, months, weeks and days. Every level uses date pickers.</div></div>
@@ -3101,7 +3645,7 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
         <div class="review__row"><span class="review__k">Source plan</span><span class="review__v">${escapeHtml(parentPlan.workTypeName || parentPlan.title || "—")}</span></div>
         <div class="review__row"><span class="review__k">Year</span><span class="review__v">${year}</span></div>
         <div class="review__row"><span class="review__k">Year range</span><span class="review__v">${escapeHtml(fmtDateDisplay(yearFrom))} → ${escapeHtml(fmtDateDisplay(yearTo))}</span></div>
-        <div class="review__row"><span class="review__k">Your scope</span><span class="review__v">${escapeHtml(isClusterScope ? (S.clusterName || "Cluster") : (S.woredaName || "Woreda / City"))}</span></div>
+        <div class="review__row"><span class="review__k">Your scope</span><span class="review__v">${escapeHtml(S.clusterName || "Cluster")}</span></div>
       </div>`;
   }
 
@@ -3139,7 +3683,7 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
     c.quarters.forEach((q, qi) => {
       q.months.forEach((m, mi) => {
         const wCount = m.weeks.length;
-        const canAddWeek = wCount < 6; /* allow up to 6 */
+        const canAddWeek = wCount < 6;
         html += `<div class="cascade-group">
           <div class="cascade-group__head is-month">
             <span class="cascade-badge cascade-badge--m">${escapeHtml(m.shortLabel)}</span>
@@ -3182,58 +3726,26 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
     return html;
   }
 
-  /* ---------- final assignment step ---------- */
   function renderAssign(d) {
-    if (isClusterScope) {
-      if (!woredas.length) {
-        return `<div class="alert alert--warning"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-          <div>No woredas / cities exist in your cluster yet. Ask your regional admin to add them.</div></div>`;
-      }
-      const flat = [];
-      d.cascade.quarters.forEach((q, qi) => q.months.forEach((m, mi) => m.weeks.forEach((w, wi) => w.days.forEach((dd, di) => {
-        flat.push({ qi, mi, wi, di, day: dd });
-      }))));
-      return `<div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-          <div>Assign each working day to a woreda / city. Leave days you want to keep at cluster level unassigned.</div></div>
-        <div style="max-height:420px;overflow-y:auto;padding-right:6px">
-          ${flat.map(item => {
-            const key = item.day.date;
-            const cur = d.woredaByDay[key] || {};
-            return `<div class="cascade-row" style="grid-template-columns:150px 1fr 100px">
-              <span class="cascade-row__label" style="font-family:ui-monospace,monospace;font-size:11.5px">${escapeHtml(fmtDateDisplay(item.day.date))}</span>
-              <select data-woreda-day="${escapeHtml(key)}">
-                <option value="">— Keep at cluster —</option>
-                ${woredas.map(w => `<option value="${escapeHtml(w.code)}" ${cur.woredaCode===w.code?"selected":""}>${escapeHtml(w.code)} — ${escapeHtml(w.name)}</option>`).join("")}
-              </select>
-              <span style="font-family:ui-monospace,monospace;font-weight:800;font-size:12px;text-align:right">${fmtNum(item.day.target)} <span style="color:var(--muted);font-weight:600">${escapeHtml(unit)}</span></span>
-            </div>`;
-          }).join("")}
-        </div>`;
-    }
-    /* Woreda: assign each day to a staff member */
-    const staffCandidates = USERS.filter(u =>
-      u.woredaCode === S.woredaCode && u.active !== false &&
-      ["employee","team_leader","manager","woreda_city"].includes(u.role)
-    );
-    if (!staffCandidates.length) {
+    if (!woredas.length) {
       return `<div class="alert alert--warning"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-          <div>No active staff found in your woreda / city yet. Add staff first on the Users & Staff page.</div></div>`;
+        <div>No woredas / cities exist in your cluster yet. Ask your regional admin to add them.</div></div>`;
     }
     const flat = [];
     d.cascade.quarters.forEach((q, qi) => q.months.forEach((m, mi) => m.weeks.forEach((w, wi) => w.days.forEach((dd, di) => {
       flat.push({ qi, mi, wi, di, day: dd });
     }))));
     return `<div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-        <div>Assign each working day to a staff member. Once assigned, the employee will see it in their <strong>My Work Plans</strong> page with the exact date and amount.</div></div>
+        <div>Assign each working day to a woreda / city. The woreda manager will then distribute the bulk to their staff.</div></div>
       <div style="max-height:420px;overflow-y:auto;padding-right:6px">
         ${flat.map(item => {
           const key = item.day.date;
-          const cur = d.staffByDay[key] || {};
+          const cur = d.woredaByDay[key] || {};
           return `<div class="cascade-row" style="grid-template-columns:150px 1fr 100px">
             <span class="cascade-row__label" style="font-family:ui-monospace,monospace;font-size:11.5px">${escapeHtml(fmtDateDisplay(item.day.date))}</span>
-            <select data-staff-day="${escapeHtml(key)}">
-              <option value="">— Unassigned —</option>
-              ${staffCandidates.map(u => `<option value="${u.id}" ${cur.staffId===u.id?"selected":""}>${escapeHtml(u.name || u.email)} — ${escapeHtml(roleLabel(u.role))}</option>`).join("")}
+            <select data-woreda-day="${escapeHtml(key)}">
+              <option value="">— Keep at cluster —</option>
+              ${woredas.map(w => `<option value="${escapeHtml(w.code)}" ${cur.woredaCode===w.code?"selected":""}>${escapeHtml(w.code)} — ${escapeHtml(w.name)}</option>`).join("")}
             </select>
             <span style="font-family:ui-monospace,monospace;font-weight:800;font-size:12px;text-align:right">${fmtNum(item.day.target)} <span style="color:var(--muted);font-weight:600">${escapeHtml(unit)}</span></span>
           </div>`;
@@ -3241,14 +3753,11 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
       </div>`;
   }
 
-  /* ---------- review step ---------- */
   function renderReview(d) {
     const c = d.cascade;
     let totalQ = 0, totalB = 0;
     c.quarters.forEach(q => { totalQ += num(q.target); totalB += num(q.budget); });
-    const assignedDays = isClusterScope
-      ? Object.values(d.woredaByDay || {}).filter(x => x && x.woredaCode).length
-      : Object.values(d.staffByDay  || {}).filter(x => x && x.staffId).length;
+    const assignedDays = Object.values(d.woredaByDay || {}).filter(x => x && x.woredaCode).length;
     const totalDays = c.quarters.reduce((s,q) =>
       s + q.months.reduce((s2,m) => s2 + m.weeks.reduce((s3,w) => s3 + w.days.length, 0), 0), 0);
 
@@ -3260,17 +3769,9 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
       <div class="review__row"><span class="review__k">Total quarters budget</span><span class="review__v">${fmtMoney(totalB)} ETB</span></div>
       <div class="review__row"><span class="review__k">Days in cascade</span><span class="review__v">${totalDays}</span></div>
       <div class="review__row"><span class="review__k">Assigned days</span><span class="review__v">${assignedDays} / ${totalDays} ${assignedDays === totalDays ? '<span style="color:var(--success)">✓</span>' : ''}</span></div>
-    </div>
-    <div style="font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">Quarters</div>
-    <div class="review" style="margin-bottom:18px">
-      ${c.quarters.map(q => `<div class="review__row">
-        <span class="review__k">${escapeHtml(q.label)}</span>
-        <span class="review__v">${escapeHtml(q.fromDate)} → ${escapeHtml(q.toDate)} · <strong>${fmtNum(q.target)} ${escapeHtml(unit)}</strong> · ${fmtMoney(q.budget)} ETB</span>
-      </div>`).join("")}
     </div>`;
   }
 
-  /* ---------- wizard steps ---------- */
   const steps = [
     { label:"Confirm",       title:"Confirm scope & title",
       render: renderConfirm,
@@ -3441,56 +3942,27 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
         });
       }
     },
-    { label: isClusterScope ? "Assign to Woredas" : "Assign to Staff",
-      title: isClusterScope ? "Assign each day to a woreda" : "Assign each day to a staff member",
+    { label: "Assign to Woredas",
+      title: "Assign each day to a woreda",
       render: renderAssign,
       validate: (d) => {
-        if (isClusterScope) {
-          if (!woredas.length) return "No woredas in this cluster yet. Ask your regional admin to add them.";
-        } else {
-          const staffCandidates = USERS.filter(u =>
-            u.woredaCode === S.woredaCode && u.active !== false &&
-            ["employee","team_leader","manager","woreda_city"].includes(u.role)
-          );
-          if (!staffCandidates.length) return "No active staff found in your woreda. Add staff first.";
-        }
+        if (!woredas.length) return "No woredas in this cluster yet. Ask your regional admin to add them.";
         return null;
       },
       after: (root, data) => {
-        if (isClusterScope) {
-          root.querySelectorAll("[data-woreda-day]").forEach(sel => {
-            sel.addEventListener("change", () => {
-              const key = sel.dataset.woredaDay;
-              const code = sel.value;
-              if (!code) {
-                delete data.woredaByDay[key];
-                return;
-              }
-              const w = woredas.find(x => x.code === code);
-              data.woredaByDay[key] = {
-                woredaCode: code,
-                woredaName: w ? w.name : code,
-                woredaNameFull: w ? (w.code + " — " + w.name) : code
-              };
-            });
+        root.querySelectorAll("[data-woreda-day]").forEach(sel => {
+          sel.addEventListener("change", () => {
+            const key = sel.dataset.woredaDay;
+            const code = sel.value;
+            if (!code) { delete data.woredaByDay[key]; return; }
+            const w = woredas.find(x => x.code === code);
+            data.woredaByDay[key] = {
+              woredaCode: code,
+              woredaName: w ? w.name : code,
+              woredaNameFull: w ? (w.code + " — " + w.name) : code
+            };
           });
-        } else {
-          root.querySelectorAll("[data-staff-day]").forEach(sel => {
-            sel.addEventListener("change", () => {
-              const key = sel.dataset.staffDay;
-              const id = sel.value;
-              if (!id) {
-                delete data.staffByDay[key];
-                return;
-              }
-              const u = USERS.find(x => x.id === id);
-              data.staffByDay[key] = {
-                staffId: id,
-                staffName: u ? (u.name || u.email) : id
-              };
-            });
-          });
-        }
+        });
       }
     },
     { label:"Review", title:"Review and create the breakdown plan",
@@ -3499,81 +3971,59 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
   ];
 
   openWizard({
-    title: isClusterScope ? "Cluster — Yearly Breakdown" : "Woreda / City — Yearly Breakdown",
+    title: "Cluster — Yearly Breakdown",
     subtitle: `${parentPlan.workTypeName || parentPlan.title || ""} · ${year}`,
     finishLabel: "Create Breakdown Plan",
-    successMessage: "Breakdown created — woredas / staff will now see their day allocations.",
+    successMessage: "Breakdown created — woredas will now see their day allocations.",
     size: "xl",
     initial: data,
     steps,
     onFinish: async (d) => {
-      /* Recalc all totals from days to be safe */
       recalcFromDays(d.cascade);
 
-      /* Build the child plan's allocations from the final assignment */
       let allocations = [];
-
-      if (isClusterScope) {
-        const byWoreda = new Map();
-        d.cascade.quarters.forEach(q => q.months.forEach(m => m.weeks.forEach(w => w.days.forEach(dd => {
-          const a = d.woredaByDay[dd.date];
-          if (!a || !a.woredaCode) return;
-          if (!byWoreda.has(a.woredaCode)) byWoreda.set(a.woredaCode, {
-            targetType:"woreda", targetId:a.woredaCode, targetName:a.woredaNameFull || a.woredaName,
-            target: 0, budget: 0, days: []
-          });
-          const entry = byWoreda.get(a.woredaCode);
-          entry.target += num(dd.target);
-          entry.budget += num(dd.budget);
-          entry.days.push({ date: dd.date, target: num(dd.target), budget: num(dd.budget) });
-        }))));
-        allocations = Array.from(byWoreda.values());
-      } else {
-        const byStaff = new Map();
-        d.cascade.quarters.forEach(q => q.months.forEach(m => m.weeks.forEach(w => w.days.forEach(dd => {
-          const a = d.staffByDay[dd.date];
-          if (!a || !a.staffId) return;
-          if (!byStaff.has(a.staffId)) byStaff.set(a.staffId, {
-            targetType:"staff", targetId:a.staffId, targetName:a.staffName,
-            target: 0, budget: 0, days: []
-          });
-          const entry = byStaff.get(a.staffId);
-          entry.target += num(dd.target);
-          entry.budget += num(dd.budget);
-          entry.days.push({ date: dd.date, target: num(dd.target), budget: num(dd.budget) });
-        }))));
-        allocations = Array.from(byStaff.values());
-      }
-
-      /* ★ FIXED: stamp the assignment back into the tree so the
-         periodBreakdown is consistent with the flat dayIndex. */
+      const byWoreda = new Map();
       d.cascade.quarters.forEach(q => q.months.forEach(m => m.weeks.forEach(w => w.days.forEach(dd => {
-        const a = isClusterScope ? d.woredaByDay[dd.date] : d.staffByDay[dd.date];
+        const a = d.woredaByDay[dd.date];
+        if (!a || !a.woredaCode) return;
+        if (!byWoreda.has(a.woredaCode)) byWoreda.set(a.woredaCode, {
+          targetType:"woreda", targetId:a.woredaCode, targetName:a.woredaNameFull || a.woredaName,
+          target: 0, budget: 0, days: []
+        });
+        const entry = byWoreda.get(a.woredaCode);
+        entry.target += num(dd.target);
+        entry.budget += num(dd.budget);
+        entry.days.push({ date: dd.date, target: num(dd.target), budget: num(dd.budget) });
+      }))));
+      allocations = Array.from(byWoreda.values());
+
+      // stamp
+      d.cascade.quarters.forEach(q => q.months.forEach(m => m.weeks.forEach(w => w.days.forEach(dd => {
+        const a = d.woredaByDay[dd.date];
         if (!a) return;
-        dd.assignedTo     = isClusterScope ? null : a.staffId;
-        dd.assignedToName = isClusterScope ? null : a.staffName;
-        dd.woredaCode     = isClusterScope ? a.woredaCode : null;
-        dd.woredaName     = isClusterScope ? a.woredaName : null;
+        dd.assignedTo = null;
+        dd.assignedToName = null;
+        dd.woredaCode = a.woredaCode;
+        dd.woredaName = a.woredaName;
       }))));
 
-      /* Flat dayIndex (used by employees to look up their days directly) */
       const dayIndex = [];
       d.cascade.quarters.forEach(q => q.months.forEach(m => m.weeks.forEach(w => w.days.forEach(dd => {
-        const a = isClusterScope ? d.woredaByDay[dd.date] : d.staffByDay[dd.date];
+        const a = d.woredaByDay[dd.date];
         if (!a) return;
         dayIndex.push({
           date: dd.date,
           target: num(dd.target),
           budget: num(dd.budget),
-          assignedTo: isClusterScope ? null : a.staffId,
-          assignedToName: isClusterScope ? null : a.staffName,
-          woredaCode: isClusterScope ? a.woredaCode : null,
-          woredaName: isClusterScope ? a.woredaName : null
+          assignedTo: null,
+          assignedToName: null,
+          woredaCode: a.woredaCode,
+          woredaName: a.woredaName
         });
       }))));
 
       const payload = {
-        level: isClusterScope ? "cluster" : "woreda",
+        level: "cluster",
         parentPlanId: parentPlan.id,
         workTypeId: parentPlan.workTypeId || null,
         workTypeName: parentPlan.workTypeName || null,
@@ -3595,8 +4045,8 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
         teamLeaderId: parentPlan.teamLeaderId || null,
         teamLeaderName: parentPlan.teamLeaderName || null,
         clusterId: S.clusterId, clusterName: cluster?.name || null,
-        woredaCode: isClusterScope ? null : S.woredaCode,
-        woredaName: isClusterScope ? null : S.woredaName,
+        woredaCode: null,
+        woredaName: null,
         periodBreakdown: d.cascade,
         dayIndex,
         allocations,
@@ -3606,28 +4056,21 @@ function openCascadeBreakdown(parentPlan, alloc, level) {
 
       const ref = await addDoc(collection(db, "workplans"), payload);
 
-      /* Mark the parent allocation as split */
       const parentAllocs = (parentPlan.allocations || []).map(a => {
-        if (isClusterScope) {
-          if (a.targetType === "cluster" && a.targetId === S.clusterId)
-            return Object.assign({}, a, { childPlanId: ref.id });
-        } else {
-          if (a.targetType === "woreda" && allocMatchesMyWoreda(parentPlan, a))
-            return Object.assign({}, a, { childPlanId: ref.id });
-        }
+        if (a.targetType === "cluster" && a.targetId === S.clusterId)
+          return Object.assign({}, a, { childPlanId: ref.id });
         return a;
       });
       await updateDoc(doc(db, "workplans", parentPlan.id), {
         allocations: parentAllocs, updatedAt: serverTimestamp()
       });
 
-      /* Notify */
       try {
         await addDoc(collection(db, "notifications"), {
-          type: isClusterScope ? "workplan_split_to_woredas" : "workplan_split_to_staff",
-          title: isClusterScope ? "Yearly plan broken down to woredas" : "Yearly plan broken down to staff",
+          type: "workplan_split_to_woredas",
+          title: "Yearly plan broken down to woredas",
           body: `${S.name} broke down "${parentPlan.workTypeName || parentPlan.title}" into ${d.cascade.quarters.length} quarters, and assigned ${dayIndex.length} working days.`,
-          forRoles: isClusterScope ? ["super_admin","regional_admin","cluster_directorate","woreda_city"] : ["super_admin","regional_admin","cluster_directorate","woreda_city","employee"],
+          forRoles: ["super_admin","regional_admin","cluster_directorate","woreda_city"],
           link: "workplans.html", read:false,
           createdAt: serverTimestamp(), createdBy: S.uid
         });
@@ -3646,7 +4089,6 @@ function openViewPlan(planId) {
   const mine = findMyPendingAllocation(p);
   const visibleAllocs = isScopedViewer() ? (mine ? [mine.alloc] : []) : (p.allocations || []);
 
-  /* For pure staff, render the day schedule inside the modal too */
   const staffDays = isStaff() && p.dayIndex
     ? p.dayIndex.filter(d => d.assignedTo === S.uid)
     : [];
@@ -3840,10 +4282,6 @@ function confirmDeletePlan(planId) {
 /* ============================================================
    SUBSCRIPTIONS
    ============================================================ */
-/* ★ FIXED: do not hard-filter by region for pure staff.
-   Region codes are inconsistent across documents ("04" vs "Oromia"),
-   and a staff member can only ever see plans directly allocated to
-   them, so filtering here just silently hides their work. */
 function subscribePlans() {
   if (unsubPlans) unsubPlans();
   let q = collection(db, "workplans");
@@ -3997,7 +4435,7 @@ onAuthStateChanged(auth, async (user) => {
   subscribePlans();
 });
 
-console.log("[workplans] booted — cascade breakdown wizard ready");
+console.log("[workplans] booted — full breakdown chain ready");
 </script>
 
 </body>
