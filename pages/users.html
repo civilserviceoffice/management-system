@@ -65,6 +65,7 @@ body {
   color:var(--text); font-size:15px; line-height:1.55;
   -webkit-font-smoothing:antialiased;
 }
+html[data-ethiopic="true"] body { font-family:"Noto Sans Ethiopic","Inter",sans-serif; }
 img, svg { display:block; max-width:100%; }
 button, input, select, textarea { font:inherit; color:inherit; }
 button { cursor:pointer; background:none; border:none; }
@@ -171,6 +172,15 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .btn--gold { background:linear-gradient(135deg,#d4a017,#e8b84b); border:none; color:#fff;
   box-shadow:0 10px 22px rgba(212,160,23,.22); }
 .btn--gold:hover { background:linear-gradient(135deg,#b8860b,#d4a017); }
+.btn--fp { background:linear-gradient(135deg, #6d28d9, #5b21b6); border:none; color:#fff;
+  box-shadow:0 10px 22px rgba(109,40,217,.28); position:relative; overflow:hidden; }
+.btn--fp:hover { background:linear-gradient(135deg, #5b21b6, #4c1d95); transform:translateY(-1px); }
+.btn--fp::before {
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,.18) 50%, transparent 70%);
+  transform:translateX(-100%); animation:shine 2.6s ease-in-out infinite; pointer-events:none;
+}
+@keyframes shine { 0%,60% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
 .btn--danger { color:var(--danger); }
 .btn--danger:hover { background:#fef3f2; border-color:#f0a5ab; }
 .btn--sm { height:38px; padding:0 14px; font-size:13px; border-radius:10px; }
@@ -231,17 +241,22 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   overflow:hidden; position:relative; }
 .user-avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .user-cell__main { min-width:0; }
-.user-cell__name { font-weight:700; color:var(--text); font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:6px; }
+.user-cell__name { font-weight:700; color:var(--text); font-size:14px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  display:flex; align-items:center; gap:6px; }
 .user-cell__email { font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .you-tag { display:inline-flex; align-items:center; padding:1px 7px; border-radius:999px;
-  background:#eaf3fc; color:#0b5cab; font-size:10px; font-weight:800;
-  text-transform:uppercase; }
+  background:#eaf3fc; color:#0b5cab; font-size:10px; font-weight:800; text-transform:uppercase; }
 .unassigned-tag { display:inline-flex; align-items:center; padding:1px 7px; border-radius:999px;
-  background:#fdf5e0; color:#7a5210; font-size:10px; font-weight:800;
-  text-transform:uppercase; letter-spacing:.03em; }
+  background:#fdf5e0; color:#7a5210; font-size:10px; font-weight:800; text-transform:uppercase; }
 .assigned-tag { display:inline-flex; align-items:center; padding:1px 7px; border-radius:999px;
-  background:#ecfdf3; color:#067647; font-size:10px; font-weight:800;
-  text-transform:uppercase; letter-spacing:.03em; }
+  background:#ecfdf3; color:#067647; font-size:10px; font-weight:800; text-transform:uppercase; }
+.fp-mini-badge { display:inline-flex; align-items:center; gap:3px;
+  padding:2px 6px; border-radius:6px;
+  background:var(--violet-soft); color:var(--violet);
+  font-size:9.5px; font-weight:800; letter-spacing:.04em;
+  text-transform:uppercase; }
+.fp-mini-badge svg { width:10px; height:10px; stroke:currentColor; stroke-width:2.2; fill:none; }
 .emp-id { font-family:ui-monospace,Menlo,Consolas,monospace; font-weight:700;
   color:var(--primary-dark); font-size:11.5px;
   padding:3px 8px; border-radius:6px; background:#f4f8fd;
@@ -387,44 +402,53 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .photo-upload__hint { font-size:11.5px; color:var(--muted); }
 .photo-upload__req { color:var(--danger); }
 
-/* Reassign photo picker */
-.reassign-photo {
-  display:flex; align-items:center; gap:18px;
-  padding:16px; background:linear-gradient(135deg,#f8fbff,#fff);
-  border:1px solid var(--border); border-radius:14px; margin-bottom:20px;
+/* ============================================================
+   FINGERPRINT CAPTURE (in wizard)
+   ============================================================ */
+.fp-capture {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:26px 20px 20px; text-align:center;
+  background:linear-gradient(135deg,#faf5ff,#fff);
+  border:1px solid var(--border); border-radius:18px;
+  margin-bottom:16px; position:relative; overflow:hidden;
 }
-.reassign-photo__circle {
-  width:90px; height:90px; border-radius:50%; flex-shrink:0;
-  background:linear-gradient(135deg,#eaf3fc,#bdd7f2);
-  display:grid; place-items:center; cursor:pointer;
-  overflow:hidden; position:relative;
-  border:3px solid #fff; box-shadow:0 6px 16px rgba(11,92,171,.16);
-  font-size:28px; font-weight:800; color:var(--primary-dark);
+.fp-capture::before {
+  content:""; position:absolute; inset:0;
+  background:radial-gradient(circle at 50% 20%, rgba(109,40,217,.08), transparent 60%);
+  pointer-events:none;
 }
-.reassign-photo__circle img {
-  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+.fp-capture__ring { position:relative; width:130px; height:130px; margin-bottom:22px; }
+.fp-capture__ring .fp-capture__icon {
+  position:absolute; inset:0; width:100%; height:100%;
+  stroke:var(--violet); stroke-width:1.5; fill:none;
+  transition:stroke .25s;
 }
-.reassign-photo__badge {
-  position:absolute; right:2px; bottom:2px;
-  width:26px; height:26px; border-radius:50%;
-  background:var(--primary); color:#fff;
-  display:grid; place-items:center;
-  box-shadow:0 3px 8px rgba(11,92,171,.4);
-  border:2px solid #fff;
+.fp-capture__ring::before, .fp-capture__ring::after {
+  content:""; position:absolute; inset:0; border-radius:50%;
+  border:2px solid var(--violet); opacity:0;
 }
-.reassign-photo__badge svg {
-  width:12px; height:12px; stroke:currentColor; stroke-width:2.4; fill:none;
+.fp-capture.is-scanning .fp-capture__ring::before { animation:fpPulse 1.6s ease-out infinite; }
+.fp-capture.is-scanning .fp-capture__ring::after { animation:fpPulse 1.6s ease-out .5s infinite; }
+.fp-capture.is-success .fp-capture__ring .fp-capture__icon { stroke:#067647; }
+.fp-capture.is-success .fp-capture__ring::before { border-color:#067647; opacity:.35; animation:none; }
+.fp-capture.is-error .fp-capture__ring .fp-capture__icon { stroke:#b42318; }
+.fp-capture.is-error .fp-capture__ring::before { border-color:#b42318; opacity:.35; animation:none; }
+@keyframes fpPulse {
+  0% { opacity:.7; transform:scale(.85); }
+  100% { opacity:0; transform:scale(1.35); }
 }
-.reassign-photo__main { flex:1; min-width:0; }
-.reassign-photo__title { font-size:14px; font-weight:800; color:var(--text); }
-.reassign-photo__hint { font-size:11.5px; color:var(--muted); margin-top:3px; }
-.reassign-photo__btn {
-  margin-top:8px; display:inline-flex; align-items:center; gap:6px;
-  padding:6px 12px; border:1px solid #d9dee7; border-radius:9px;
-  background:#fff; font-size:12px; font-weight:700; color:var(--text-soft);
-  cursor:pointer;
+.fp-capture__title { font-size:16px; font-weight:800; margin-bottom:6px; }
+.fp-capture__msg { font-size:13px; color:var(--muted); max-width:380px; line-height:1.55; }
+.fp-capture__badge {
+  display:inline-flex; align-items:center; gap:6px;
+  margin-top:16px; padding:6px 12px; border-radius:999px;
+  background:var(--violet-soft); color:var(--violet);
+  font-size:11.5px; font-weight:800; letter-spacing:.03em;
+  text-transform:uppercase;
 }
-.reassign-photo__btn:hover { background:var(--bg-soft); border-color:#b9c7d9; }
+.fp-capture__badge svg { width:13px; height:13px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.fp-capture.is-success .fp-capture__badge { background:#ecfdf3; color:#067647; }
+.fp-capture.is-error   .fp-capture__badge { background:#fef3f2; color:#b42318; }
 
 .review { background:#f8fafc; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .review__row { display:flex; gap:14px; padding:11px 16px; border-bottom:1px solid #eef2f7; font-size:13px; }
@@ -783,6 +807,81 @@ const HRM_SUBROLES = [
 ];
 
 /* ============================================================
+   FINGERPRINT / WEBAUTHN
+   ============================================================ */
+const FP_SUPPORTED = !!(window.PublicKeyCredential &&
+                        navigator.credentials &&
+                        navigator.credentials.create &&
+                        window.isSecureContext);
+
+function fpB64UrlEncode(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function fpRandomChallenge() {
+  return crypto.getRandomValues(new Uint8Array(32));
+}
+async function fpIsPlatformAuthenticatorAvailable() {
+  try {
+    if (!FP_SUPPORTED) return false;
+    if (!PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) return true;
+    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+  } catch (e) { return false; }
+}
+
+/**
+ * Register a new fingerprint credential for a person during the
+ * create-user wizard. Uses their National ID or a random value as the
+ * WebAuthn user.id (must be ≤ 64 bytes). Returns the credential ID.
+ */
+async function fpRegisterForPerson({ userId, userName, displayName }) {
+  if (!FP_SUPPORTED) throw new Error("WEBAUTHN_UNSUPPORTED");
+  const challenge = fpRandomChallenge();
+  const uidBytes = new TextEncoder().encode(userId.slice(0, 64));
+
+  const cred = await navigator.credentials.create({
+    publicKey: {
+      challenge,
+      rp: {
+        name: "Civil Service MIS",
+        id: location.hostname
+      },
+      user: {
+        id: uidBytes,
+        name: userName || userId,
+        displayName: displayName || userName || "Employee"
+      },
+      pubKeyCredParams: [
+        { type: "public-key", alg: -7 },   // ES256
+        { type: "public-key", alg: -257 }  // RS256
+      ],
+      authenticatorSelection: {
+        authenticatorAttachment: "platform",
+        userVerification: "required",
+        residentKey: "preferred",
+        requireResidentKey: false
+      },
+      timeout: 60000,
+      attestation: "none"
+    }
+  });
+  if (!cred) throw new Error("REGISTRATION_CANCELLED");
+
+  let transports = [];
+  try {
+    if (cred.response && cred.response.getTransports) {
+      transports = cred.response.getTransports();
+    }
+  } catch (e) {}
+
+  return {
+    credentialId: fpB64UrlEncode(cred.rawId),
+    transports,
+    rpId: location.hostname
+  };
+}
+
+/* ============================================================
    ICONS
    ============================================================ */
 const ICONS = {
@@ -819,7 +918,8 @@ const ICONS = {
   pin:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
   layers:'<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
   org:'<rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="9" y="15" width="6" height="6" rx="1"/><path d="M6 9v3h12V9"/><path d="M12 12v3"/>',
-  briefcase:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'
+  briefcase:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  fingerprint:'<path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>'
 };
 
 /* ============================================================
@@ -917,7 +1017,6 @@ function toast(msg, type = "success") {
   setTimeout(() => el.remove(), 4600);
 }
 
-/* Is a user already assigned (has role + placement)? */
 function isUserAlreadyAssigned(u, emp) {
   if (!u) return false;
   if (!u.role || u.role === "unassigned") return false;
@@ -1197,9 +1296,7 @@ function render() {
 /* ============================================================
    TABLE
    ============================================================ */
-function isAssigned(u, emp) {
-  return isUserAlreadyAssigned(u, emp);
-}
+function isAssigned(u, emp) { return isUserAlreadyAssigned(u, emp); }
 function filteredUsers() {
   const s = searchTerm.trim().toLowerCase();
   return visibleUsers()
@@ -1307,6 +1404,10 @@ function renderTable() {
     const canDel  = canDeleteUser(u);
     const canAssign = canAssignTo(u);
 
+    /* Fingerprint presence */
+    const fp = emp?.fingerprint;
+    const hasFp = !!(fp && fp.credentialId);
+
     const salary = emp?.basicSalary || emp?.salary || null;
     const salaryDisplay = salary
       ? `<span class="salary-cell">${escapeHtml(fmtMoney(salary))} <span style="color:var(--muted);font-weight:600">ETB</span></span>`
@@ -1354,6 +1455,7 @@ function renderTable() {
               <div class="user-cell__name">
                 ${escapeHtml(name)}
                 ${isSelf ? `<span class="you-tag">You</span>` : ""}
+                ${hasFp ? `<span class="fp-mini-badge" title="Fingerprint registered on a device"><svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> FP</span>` : ""}
               </div>
               <div class="user-cell__email">${escapeHtml(u.email || "—")}</div>
             </div>
@@ -1578,7 +1680,7 @@ function setupLiveDuplicate(root, inputId, type, label, onStatusChange) {
 }
 
 /* ============================================================
-   STEP 1 — CREATE USER WIZARD
+   STEP 1 — CREATE USER WIZARD (with fingerprint step)
    ============================================================ */
 function openCreateUserWizard() {
   if (!canAddStaff()) { toast("You cannot add staff", "error"); return; }
@@ -1593,6 +1695,7 @@ function openCreateUserWizard() {
     size: "lg",
     initial: { gender:"", country:"ET" },
     steps: [
+      /* ---------- PERSONAL ---------- */
       {
         label: "Personal", title: "Personal details",
         render: (d) => `
@@ -1718,6 +1821,8 @@ function openCreateUserWizard() {
           });
         }
       },
+
+      /* ---------- CONTACT ---------- */
       {
         label: "Contact", title: "Contact & address",
         render: (d) => `
@@ -1795,6 +1900,8 @@ function openCreateUserWizard() {
           });
         }
       },
+
+      /* ---------- LOGIN ---------- */
       {
         label: "Login", title: "Login credentials",
         render: (d) => `
@@ -1878,9 +1985,122 @@ function openCreateUserWizard() {
           });
         }
       },
+
+      /* ---------- FINGERPRINT (NEW) ---------- */
+      {
+        label: "Fingerprint", title: "Register fingerprint (optional)",
+        render: (d) => {
+          const hasCred = !!d._fingerprintCredentialId;
+          const supported = FP_SUPPORTED;
+          return `
+            <div class="fp-capture ${hasCred ? "is-success" : ""}" id="fp-capture">
+              <div class="fp-capture__ring">
+                <svg class="fp-capture__icon" viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
+              </div>
+              <div class="fp-capture__title">
+                ${hasCred ? "Fingerprint captured" : "Register fingerprint for this person"}
+              </div>
+              <div class="fp-capture__msg">
+                ${hasCred
+                  ? "The fingerprint credential has been registered on this device."
+                  : supported
+                    ? "Ask the person to place their finger on the sensor. Uses the device's built-in biometric (Touch ID, Windows Hello, USB reader)."
+                    : "Fingerprint capture is not available on this device or browser. You can skip this step and the person can register later."}
+              </div>
+              ${hasCred ? `
+                <div class="fp-capture__badge">
+                  <svg viewBox="0 0 24 24">${ICONS.check}</svg>
+                  Credential captured
+                </div>
+                <button type="button" class="btn btn--sm" id="fp-reset" style="margin-top:14px">
+                  <svg viewBox="0 0 24 24">${ICONS.trash}</svg> Remove &amp; re-scan
+                </button>
+              ` : supported ? `
+                <button type="button" class="btn btn--fp" id="fp-scan" style="margin-top:18px">
+                  <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
+                  Scan fingerprint
+                </button>
+              ` : `
+                <div class="alert alert--warning" style="margin-top:18px;margin-bottom:0;text-align:left">
+                  <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+                  <div>No biometric sensor available. The person can register their own fingerprint later from the <strong>Attendance</strong> page on a supported device.</div>
+                </div>
+              `}
+            </div>
+
+            <div class="alert alert--info" style="margin-top:14px">
+              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+              <div>
+                This step is <strong>optional</strong>. Nothing is sent to the server except the credential ID —
+                the fingerprint itself never leaves the device. If skipped, the user can self-register their
+                fingerprint on the attendance page later.
+              </div>
+            </div>
+          `;
+        },
+        validate: () => null,  // Optional — always valid
+        after: (root, data, refresh) => {
+          const scanBtn  = root.querySelector("#fp-scan");
+          const resetBtn = root.querySelector("#fp-reset");
+          const scanEl   = root.querySelector("#fp-capture");
+
+          scanBtn?.addEventListener("click", async () => {
+            if (!FP_SUPPORTED) { toast("Fingerprint not supported", "error"); return; }
+            if (!location.protocol.startsWith("https") && location.hostname !== "localhost") {
+              toast("Fingerprint requires HTTPS", "error"); return;
+            }
+            const available = await fpIsPlatformAuthenticatorAvailable();
+            if (!available) {
+              toast("No platform biometric available on this device", "error");
+              return;
+            }
+            scanEl.classList.remove("is-success", "is-error");
+            scanEl.classList.add("is-scanning");
+            const titleEl = scanEl.querySelector(".fp-capture__title");
+            const msgEl   = scanEl.querySelector(".fp-capture__msg");
+            titleEl.textContent = "Waiting for biometric…";
+            msgEl.textContent = "Follow the prompt on your device.";
+
+            try {
+              const natId = normalizeNationalId(data.nationalId || "");
+              const userId = natId || ("u" + Date.now().toString(36));
+              const userName = data.loginEmail || data.email || ("user-" + userId);
+              const displayName = [data.firstName, data.lastName].filter(Boolean).join(" ") || userName;
+
+              const reg = await fpRegisterForPerson({ userId, userName, displayName });
+              data._fingerprintCredentialId = reg.credentialId;
+              data._fingerprintTransports = reg.transports;
+              data._fingerprintRpId = reg.rpId;
+              toast("Fingerprint captured", "success");
+              refresh();
+            } catch (err) {
+              console.warn("[fp-scan]", err);
+              scanEl.classList.remove("is-scanning");
+              scanEl.classList.add("is-error");
+              titleEl.textContent = "Scan failed";
+              msgEl.textContent = err.name === "NotAllowedError"
+                ? "The person cancelled the biometric prompt, or the fingerprint was not recognised."
+                : (err.message || "Could not capture the fingerprint.");
+              toast(err.name === "NotAllowedError" ? "Scan cancelled" : (err.message || "Scan failed"), "error");
+              setTimeout(refresh, 1400);
+            }
+          });
+
+          resetBtn?.addEventListener("click", () => {
+            data._fingerprintCredentialId = null;
+            data._fingerprintTransports = null;
+            data._fingerprintRpId = null;
+            refresh();
+          });
+        }
+      },
+
+      /* ---------- REVIEW ---------- */
       {
         label: "Review", title: "Confirm and create account",
-        render: (d) => `
+        render: (d) => {
+          const hasFp = !!d._fingerprintCredentialId;
+          return `
           <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;
                       padding:16px;background:linear-gradient(135deg,#f8fbff,#fff);
                       border:1px solid var(--border);border-radius:14px">
@@ -1900,6 +2120,13 @@ function openCreateUserWizard() {
             <div class="review__row"><span class="review__k">Phone</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(formatPhoneDisplay(d.phone) || "—")}</span></div>
             <div class="review__row"><span class="review__k">Personal email</span><span class="review__v">${escapeHtml(d.email || "—")}</span></div>
             <div class="review__row"><span class="review__k">Login email</span><span class="review__v">${escapeHtml(d.loginEmail)}</span></div>
+            <div class="review__row"><span class="review__k">Fingerprint</span>
+              <span class="review__v">
+                ${hasFp
+                  ? `<span class="fp-mini-badge" style="background:#ecfdf3;color:#067647"><svg viewBox="0 0 24 24">${ICONS.check}</svg> REGISTERED</span>`
+                  : `<span style="color:var(--muted)">— skipped —</span>`}
+              </span>
+            </div>
           </div>
 
           <div class="alert alert--info" style="margin-top:16px">
@@ -1907,8 +2134,10 @@ function openCreateUserWizard() {
             <div>
               This creates the <strong>login account</strong> and a basic employee record with role
               <strong>Unassigned</strong>. You'll then be prompted to assign the role and work area.
+              ${hasFp ? " The fingerprint credential will be saved to the employee record." : ""}
             </div>
-          </div>`
+          </div>`;
+        }
       }
     ],
     onFinish: async (d) => {
@@ -1961,6 +2190,17 @@ function openCreateUserWizard() {
 
       const empRef = doc(collection(db, "employees"));
       try {
+        /* Fingerprint payload — only if captured */
+        const fingerprint = d._fingerprintCredentialId ? {
+          credentialId: d._fingerprintCredentialId,
+          transports: d._fingerprintTransports || [],
+          rpId: d._fingerprintRpId || location.hostname,
+          createdAt: serverTimestamp(),
+          lastUsedAt: null,
+          registeredBy: S.uid,
+          registeredByName: S.name
+        } : null;
+
         await setDoc(empRef, {
           empId: null, seq: null,
           firstName: d.firstName.trim(),
@@ -1987,6 +2227,7 @@ function openCreateUserWizard() {
           status: "unassigned",
           uid,
           active: true,
+          fingerprint,                          // ← fingerprint saved here
           createdAt: serverTimestamp(),
           createdBy: S.uid
         });
@@ -2008,6 +2249,7 @@ function openCreateUserWizard() {
           nationalId: natIdNorm, nationalIdNorm: natIdNorm,
           employeeId: empRef.id,
           active: true,
+          hasFingerprint: !!d._fingerprintCredentialId,   // ← quick flag for the table
           createdAt: serverTimestamp(),
           createdBy: S.uid
         });
@@ -2022,7 +2264,8 @@ function openCreateUserWizard() {
         await addDoc(collection(db, "notifications"), {
           type: "user_created",
           title: "New user account created",
-          body: `${nameEn} was created — role and work area pending.`,
+          body: `${nameEn} was created — role and work area pending.` +
+                (d._fingerprintCredentialId ? " Fingerprint registered." : ""),
           targetUid: uid,
           forRoles: ["super_admin", "regional_admin", "hrm", "admin"],
           link: "users.html",
@@ -2039,6 +2282,7 @@ function openCreateUserWizard() {
 
 /* ============================================================
    STEP 2 — ASSIGN / RE-ASSIGN ROLE & WORK AREA WIZARD
+   (unchanged from previous version)
    ============================================================ */
 function openAssignWizard(preselectedUserId = null) {
   if (!canAddStaff()) { toast("You cannot assign roles", "error"); return; }
@@ -2052,7 +2296,6 @@ function openAssignWizard(preselectedUserId = null) {
   const roleOptions = assignableRoles();
   const preselected = preselectedUserId ? USERS.find(u => u.id === preselectedUserId) : null;
 
-  /* ---------- string-concat helpers ---------- */
   function sectorOptionsHtml(selectedId) {
     let html = '<option value="">— Choose a sector —</option>';
     for (const s of regionSectors) {
@@ -2100,12 +2343,6 @@ function openAssignWizard(preselectedUserId = null) {
     return html;
   }
 
-  /* ============================================================
-     RE-ASSIGN STEP — conditionally inserted when the user is
-     already assigned. Shows full current details, asks for
-     confirmation, and collects clearance / transfer documents.
-     Now includes a photo upload + live preview.
-     ============================================================ */
   const reassignStep = {
     label: "Re-assign",
     title: "Confirm re-assignment & clearance",
@@ -2119,12 +2356,10 @@ function openAssignWizard(preselectedUserId = null) {
       const cluster = CLUSTERS.find(c => c.id === u.clusterId);
       const currentEmpId = emp?.empId || u.empId || "—";
 
-      /* Photo: use newly picked one if any, else current */
       const photoSrc = d._newPhoto || u.photoURL || emp?.photoURL || null;
 
       let html = '';
 
-      /* ---- Photo upload with live preview ---- */
       html += '<div class="reassign-photo">';
       html +=   '<div class="reassign-photo__circle" id="reassign-photo-circle">';
       if (photoSrc) {
@@ -2152,7 +2387,6 @@ function openAssignWizard(preselectedUserId = null) {
       html +=   '</div>';
       html += '</div>';
 
-      /* ---- Warning ---- */
       html += '<div class="alert alert--warning">';
       html += '<svg viewBox="0 0 24 24">' + ICONS.alert + '</svg>';
       html += '<div><strong>This user is already assigned.</strong> ';
@@ -2160,7 +2394,6 @@ function openAssignWizard(preselectedUserId = null) {
       html += 'Clearance and transfer documents are required for the audit trail.';
       html += '</div></div>';
 
-      /* ---- Current assignment details ---- */
       html += '<div style="font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">Current Assignment — full details</div>';
       html += '<div class="review" style="margin-bottom:18px">';
 
@@ -2217,7 +2450,6 @@ function openAssignWizard(preselectedUserId = null) {
       }
       html += '</div>';
 
-      /* ---- Confirmation ---- */
       const yesOn = d.reassign_confirmed === true;
       const noOn  = d.reassign_confirmed === false;
 
@@ -2236,7 +2468,6 @@ function openAssignWizard(preselectedUserId = null) {
       html += '</button>';
       html += '</div></div>';
 
-      /* ---- Clearance fields (shown only when confirmed) ---- */
       if (yesOn) {
         html += '<div style="margin-top:22px;padding-top:22px;border-top:1px solid var(--border-soft)">';
         html += '<div style="font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:14px">Clearance & transfer documents</div>';
@@ -2282,7 +2513,6 @@ function openAssignWizard(preselectedUserId = null) {
       return null;
     },
     after: (root, data, refresh) => {
-      /* ---- Photo upload + live preview ---- */
       const circle    = root.querySelector("#reassign-photo-circle");
       const input     = root.querySelector("#reassign-photo-input");
       const uploadBtn = root.querySelector("#reassign-photo-btn");
@@ -2319,7 +2549,6 @@ function openAssignWizard(preselectedUserId = null) {
         });
       }
 
-      /* ---- Yes / No ---- */
       root.querySelectorAll("[data-reassign-confirm]").forEach(btn => {
         btn.addEventListener("click", () => {
           const choice = btn.dataset.reassignConfirm;
@@ -2333,7 +2562,6 @@ function openAssignWizard(preselectedUserId = null) {
         });
       });
 
-      /* ---- Clearance letter upload ---- */
       const fileInput = root.querySelector("#reassign-file");
       if (fileInput) {
         fileInput.addEventListener("change", async () => {
@@ -2351,9 +2579,7 @@ function openAssignWizard(preselectedUserId = null) {
     }
   };
 
-  /* ---------- Base step list ---------- */
   const steps = [
-    /* ---------- 1. SELECT USER ---------- */
     {
       label: "Select User",
       title: "Select a user account",
@@ -2454,8 +2680,6 @@ function openAssignWizard(preselectedUserId = null) {
         if (preselected) setReassignStepFor(preselected.id);
       }
     },
-
-    /* ---------- 2. PLACEMENT ---------- */
     {
       label: "Placement",
       title: "Sector → Department → Regional / Cluster",
@@ -2483,7 +2707,6 @@ function openAssignWizard(preselectedUserId = null) {
             : '') +
           '</div></div>';
 
-        /* 1. Sector */
         html += '<div class="field"><label class="field__required">1. Sector</label>' +
           '<select data-field="sectorId" id="wiz-sector"' + (regionSectors.length ? "" : " disabled") + '>' +
             sectorOptionsHtml(d.sectorId) +
@@ -2496,7 +2719,6 @@ function openAssignWizard(preselectedUserId = null) {
         }
         html += '</div>';
 
-        /* 2. Department */
         html += '<div class="field"><label class="field__required">2. Department / Directorate</label>' +
           '<select data-field="departmentId" id="wiz-dept"' + (deptList.length ? "" : " disabled") + '>' +
             departmentOptionsHtml(d.sectorId, d.departmentId) +
@@ -2508,7 +2730,6 @@ function openAssignWizard(preselectedUserId = null) {
         }
         html += '</div>';
 
-        /* 3. Regional / Cluster */
         html += '<div class="field"><label class="field__required">3. Placement level</label>' +
           '<div style="display:flex;gap:8px">' +
             '<button type="button" class="placement-btn' + (!isCluster ? ' is-on' : '') + '" data-level="regional" style="flex:1">' +
@@ -2652,8 +2873,6 @@ function openAssignWizard(preselectedUserId = null) {
         if (ofSel) ofSel.addEventListener("change", () => { data.officeId = ofSel.value; });
       }
     },
-
-    /* ---------- 3. ROLE & PAY ---------- */
     {
       label: "Role & Pay",
       title: "Choose role and compensation",
@@ -2737,8 +2956,6 @@ function openAssignWizard(preselectedUserId = null) {
         roleSel.addEventListener("change", updateSub);
       }
     },
-
-    /* ---------- 4. REVIEW ---------- */
     {
       label: "Review",
       title: "Review the assignment",
@@ -2769,8 +2986,6 @@ function openAssignWizard(preselectedUserId = null) {
                            Number(d.positionAllowance || 0) + Number(d.otherAllowance || 0);
 
         const isReassign = isUserAlreadyAssigned(u, employeesByUid[u.id]);
-
-        /* Photo — new one takes priority */
         const reviewPhoto = d._newPhoto || u.photoURL || employeesByUid[u.id]?.photoURL || null;
 
         let html = '';
@@ -2856,7 +3071,6 @@ function openAssignWizard(preselectedUserId = null) {
     }
   ];
 
-  /* If preselected user is already assigned, add the reassign step up front */
   if (preselected && isUserAlreadyAssigned(preselected, employeesByUid[preselected.id])) {
     steps.splice(1, 0, reassignStep);
   }
@@ -2885,7 +3099,6 @@ function openAssignWizard(preselectedUserId = null) {
       housingAllowance: "",
       positionAllowance: "",
       otherAllowance: "",
-      /* reassign fields */
       reassign_confirmed: null,
       reassign_clearanceNumber: "",
       reassign_letterNumber: "",
@@ -2918,7 +3131,6 @@ function openAssignWizard(preselectedUserId = null) {
       const clusterCode = isCluster && cl ? (cl.code || "00") : "00";
       const woredaCode  = isWoredaStaff ? (d.woredaCode || "00") : "00";
 
-      /* ---- Was this a re-assignment? ---- */
       const isReassign = isUserAlreadyAssigned(u, emp);
       const previousEmpId = emp?.empId || u.empId || null;
 
@@ -2926,7 +3138,6 @@ function openAssignWizard(preselectedUserId = null) {
         throw new Error("Re-assignment requires confirmation and clearance documents.");
       }
 
-      /* ---- Generate new employee ID (new codes → new ID) ---- */
       const { empId, seq } = await generateEmployeeId({
         regionCode, sectorCode, clusterCode, departmentCode, woredaCode
       });
@@ -2936,7 +3147,6 @@ function openAssignWizard(preselectedUserId = null) {
         : "";
       const office = isWoredaStaff && d.officeId ? OFFICES.find(o => o.id === d.officeId) : null;
 
-      /* ---- Save transfer history BEFORE overwriting ---- */
       let historyRefId = null;
       if (isReassign) {
         try {
@@ -2994,7 +3204,6 @@ function openAssignWizard(preselectedUserId = null) {
         }
       }
 
-      /* ---- Update user doc ---- */
       const userPatch = {
         role: d.role,
         region: regionCode, regionCode, regionName: regionNameStr,
@@ -3017,7 +3226,6 @@ function openAssignWizard(preselectedUserId = null) {
         assignedAt: serverTimestamp(),
         assignedBy: S.uid
       };
-      /* Save new photo if uploaded during transfer */
       if (isReassign && d._newPhoto) {
         userPatch.photoURL = d._newPhoto;
       }
@@ -3031,7 +3239,6 @@ function openAssignWizard(preselectedUserId = null) {
       }
       await updateDoc(doc(db, "users", u.id), userPatch);
 
-      /* ---- Update employee doc ---- */
       if (emp) {
         const empPatch = {
           role: d.role,
@@ -3071,7 +3278,6 @@ function openAssignWizard(preselectedUserId = null) {
         await updateDoc(doc(db, "employees", emp.id), empPatch);
       }
 
-      /* ---- Notification ---- */
       try {
         await addDoc(collection(db, "notifications"), {
           type: isReassign ? "user_transferred" : "role_assigned",
@@ -3109,6 +3315,9 @@ function openViewModal(userId) {
   const dept = DEPARTMENTS.find(d => d.id === emp?.departmentId || d.id === u.departmentId);
   const sector = SECTORS.find(s => s.id === emp?.sectorId || s.id === u.sectorId);
 
+  const fp = emp?.fingerprint;
+  const hasFp = !!(fp && fp.credentialId);
+
   openModal(`
     <div class="modal__head">
       <div>
@@ -3137,6 +3346,7 @@ function openViewModal(userId) {
             <span class="tag ${u.active === false ? "tag--red" : "tag--green"}">
               ${u.active === false ? "Inactive" : "Active"}
             </span>
+            ${hasFp ? `<span class="fp-mini-badge"><svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> FINGERPRINT</span>` : ""}
           </div>
         </div>
       </div>
@@ -3154,6 +3364,16 @@ function openViewModal(userId) {
           ${emp.woredaName ? `<div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">${escapeHtml(emp.woredaName)}</span></div>` : ""}
           ${emp.officeName ? `<div class="review__row"><span class="review__k">Office</span><span class="review__v">${escapeHtml(emp.officeName)}</span></div>` : ""}
           ${emp.hireDate ? `<div class="review__row"><span class="review__k">Hire date</span><span class="review__v">${escapeHtml(emp.hireDate)}</span></div>` : ""}
+          <div class="review__row"><span class="review__k">Fingerprint</span>
+            <span class="review__v">
+              ${hasFp
+                ? `<span style="color:var(--success);font-weight:800">Registered</span>
+                   <span style="font-size:11.5px;color:var(--muted);margin-left:8px">
+                     ${fp.createdAt ? "· " + new Date(fp.createdAt.seconds ? fp.createdAt.seconds * 1000 : fp.createdAt).toLocaleString() : ""}
+                   </span>`
+                : `<span style="color:var(--muted)">Not registered</span>`}
+            </span>
+          </div>
         </div>
 
         ${basic || trans || house || pos || oth ? `
@@ -3192,7 +3412,7 @@ function openViewModal(userId) {
 }
 
 /* ============================================================
-   EDIT MODAL
+   EDIT MODAL (unchanged)
    ============================================================ */
 function openEditModal(userId) {
   const u = USERS.find(x => x.id === userId);
@@ -3365,7 +3585,7 @@ function openEditModal(userId) {
 }
 
 /* ============================================================
-   DELETE
+   DELETE (unchanged)
    ============================================================ */
 function confirmDelete(userId) {
   const u = USERS.find(x => x.id === userId);
@@ -3586,7 +3806,7 @@ onAuthStateChanged(auth, async (user) => {
   subscribeUsers();
 });
 
-console.log("[users] booted — assign wizard supports transfer with photo + clearance documents");
+console.log("[users] booted — create wizard includes optional fingerprint capture; assign wizard supports transfer");
 </script>
 
 </body>
