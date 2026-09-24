@@ -29,6 +29,7 @@
     if (localStorage.getItem("cs.compact") === "true") document.documentElement.classList.add("compact-mode");
     const lang = localStorage.getItem("cs.language") || "en";
     document.documentElement.setAttribute("data-lang", lang);
+    document.documentElement.setAttribute("lang", lang === "am" ? "am" : (lang === "om" ? "om" : "en"));
     if (lang === "am") document.documentElement.setAttribute("data-ethiopic", "true");
   } catch (e) {}
 })();
@@ -76,8 +77,6 @@ html.theme-dark .modal__head { border-bottom-color:#1e293b; }
 html.theme-dark .modal__foot { border-top-color:#1e293b; background:#111a2c; }
 html.theme-dark .field input, html.theme-dark .field select, html.theme-dark .field textarea,
 html.theme-dark .toolbar__search input, html.theme-dark .toolbar__filter { background:#111a2c; border-color:#1e293b; color:#e4e8f0; }
-html.theme-dark .steps { background:#111a2c; border-bottom-color:#1e293b; }
-html.theme-dark .step__num { background:#1a2433; color:#64748b; }
 html.theme-dark .dropdown__panel { background:#0f172a; border-color:#1e293b; }
 html.theme-dark .dropdown__item:hover { background:#1a2433; }
 html.theme-dark .btn { background:#1a2433; border-color:#1e293b; color:#c5cdd9; }
@@ -87,7 +86,6 @@ html.theme-dark .scope-badge { background:linear-gradient(135deg,#1a2433,#0f172a
 html.theme-dark .scope-badge--super { background:linear-gradient(135deg,#2a1e4a,#0f172a); border-color:#3d2a5f; color:#c4b5fd; }
 html.theme-dark .scope-badge--cluster { background:linear-gradient(135deg,#1a3a2a,#0f172a); border-color:#2a5f3d; color:#6ee7b7; }
 html.theme-dark .scope-badge--manager { background:linear-gradient(135deg,#1a3a3f,#0f172a); border-color:#2a5f6a; color:#67e8f9; }
-html.theme-dark .empty { background:#0f172a; }
 html.theme-dark .emp-avatar { background:linear-gradient(135deg,#1e3a5f,#2d4a72); color:#e4e8f0; }
 
 html.compact-mode { --pad-main:18px; --topbar-h:60px; }
@@ -162,6 +160,7 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .topbar__menu { display:none; width:42px; height:42px; border-radius:12px; color:var(--text);
   align-items:center; justify-content:center; cursor:pointer; }
 .topbar__spacer { flex:1; }
+.topbar__actions { display:flex; align-items:center; gap:8px; }
 .user-btn { display:flex; align-items:center; gap:11px;
   padding:4px 14px 4px 4px; border-radius:var(--r-full);
   background:var(--border-soft); cursor:pointer; transition:background .15s; }
@@ -186,6 +185,21 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .dropdown__item svg { width:17px; height:17px; stroke:currentColor; stroke-width:2; fill:none; }
 .dropdown__divider { height:1px; background:var(--border-soft); margin:6px 0; }
 .dropdown__item--danger { color:var(--danger); }
+
+/* Language switcher */
+.lang-btn { display:inline-flex; align-items:center; gap:7px;
+  height:44px; padding:0 12px; border-radius:13px;
+  background:transparent; color:var(--text-soft);
+  font-size:12px; font-weight:800; letter-spacing:.06em;
+  cursor:pointer; transition:background .15s; }
+.lang-btn:hover { background:var(--border-soft); }
+.lang-btn svg { width:18px; height:18px; stroke:currentColor; stroke-width:1.85; fill:none; }
+.lang-btn__code { text-transform:uppercase; }
+.lang-item { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.lang-item__flag { font-size:15px; }
+.lang-item__check { width:15px; height:15px; stroke:currentColor; stroke-width:2.5; fill:none; opacity:0; }
+.lang-item.is-on .lang-item__check { opacity:1; }
+.lang-item.is-on { background:var(--border-soft); color:var(--primary); font-weight:700; }
 
 .main { grid-area:main; padding:var(--pad-main); overflow-x:hidden; }
 .page-head { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:22px; flex-wrap:wrap; }
@@ -218,14 +232,10 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .btn--primary { background:linear-gradient(135deg, #0b5cab, #0e7490); border:none; color:#fff;
   box-shadow:0 10px 22px rgba(11,92,171,.22); }
 .btn--primary:hover { background:linear-gradient(135deg, #073d75, #0b5cab); }
-.btn--success { background:linear-gradient(135deg, #067647, #10b981); border:none; color:#fff;
-  box-shadow:0 10px 22px rgba(6,118,71,.22); }
 .btn--danger { color:var(--danger); }
 .btn--danger:hover { background:#fef3f2; border-color:#f0a5ab; }
 .btn--sm { height:38px; padding:0 14px; font-size:13px; border-radius:10px; }
 .btn--sm svg { width:15px; height:15px; }
-.btn--xs { height:32px; padding:0 10px; font-size:12px; border-radius:8px; gap:6px; }
-.btn--xs svg { width:13px; height:13px; }
 .btn--icon { width:38px; padding:0; }
 .btn:disabled { opacity:.55; pointer-events:none; }
 
@@ -307,21 +317,10 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .status-absent  { background:#fef3f2; color:#b42318; }
 .status-leave   { background:#eaf3fc; color:#0b5cab; }
 .status-field   { background:#f0eaff; color:#5b21b6; }
-.status-half    { background:#fdf2fa; color:#be185d; }
+.status-half_day { background:#fdf2fa; color:#be185d; }
 .status-weekend { background:var(--border-soft); color:var(--muted); }
 .status-holiday { background:#fff7ed; color:#c2410c; }
 .status-none    { background:var(--border-soft); color:var(--muted-light); }
-
-.tag { display:inline-flex; align-items:center; gap:4px;
-  padding:3px 10px; border-radius:var(--r-full);
-  font-size:11px; font-weight:800; text-transform:uppercase; }
-.tag--gray { background:var(--border-soft); color:var(--text-soft); }
-
-.empty { padding:70px 40px; text-align:center; background:var(--card-bg);
-  border:2px dashed var(--border); border-radius:var(--r-lg); }
-.empty svg { width:60px; height:60px; margin:0 auto 18px; stroke:#cbd5e1; stroke-width:1.2; fill:none; }
-.empty h3 { font-size:20px; font-weight:800; margin-bottom:8px; }
-.empty p { font-size:14.5px; color:var(--muted); margin-bottom:22px; }
 
 .modal-backdrop { position:fixed; inset:0; z-index:200; background:rgba(15,23,42,.55);
   backdrop-filter:blur(6px); display:grid; place-items:center; padding:24px; overflow-y:auto; }
@@ -347,9 +346,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   width:100%; height:48px; padding:0 14px; border:1px solid #d9dee7; border-radius:11px;
   background:var(--bg-soft); font-size:14px; color:var(--text); }
 .field textarea { height:auto; min-height:80px; padding:12px 14px; resize:vertical; }
-.field select { appearance:none; padding-right:38px;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-  background-repeat:no-repeat; background-position:right 14px center; }
 .field input:focus, .field select:focus, .field textarea:focus {
   outline:none; background:var(--card-bg); border-color:#70a8d9; box-shadow:0 0 0 4px rgba(11,92,171,.08); }
 .field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
@@ -384,8 +380,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .alert svg { width:16px; height:16px; flex-shrink:0; margin-top:2px; stroke:currentColor; stroke-width:2.2; fill:none; }
 .alert--error { background:#fef3f2; color:#b42318; border-color:#fecdca; }
 .alert--info { background:#eaf3fc; color:#0b5cab; border-color:#bdd7f2; }
-.alert--warning { background:#fdf5e0; color:#7a5210; border-color:#f0dcb0; }
-.alert--success { background:#ecfdf3; color:#067647; border-color:#abefc6; }
 
 .toast-wrap { position:fixed; top:24px; right:24px; z-index:300;
   display:flex; flex-direction:column; gap:10px; pointer-events:none; max-width:calc(100vw - 48px); }
@@ -436,8 +430,8 @@ body.sidebar-open .overlay { display:block; }
              onerror="this.parentElement.innerHTML='<span style=&quot;color:#0b5cab;font-weight:800;font-size:18px&quot;>CS</span>'">
       </div>
       <div class="sidebar__identity">
-        <div class="sidebar__title">Civil Service</div>
-        <div class="sidebar__subtitle">Management Information System</div>
+        <div class="sidebar__title" id="brand-title">Civil Service</div>
+        <div class="sidebar__subtitle" id="brand-subtitle">Management Information System</div>
       </div>
       <button class="sidebar__collapse" id="collapse-toggle">
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
@@ -445,7 +439,7 @@ body.sidebar-open .overlay { display:block; }
     </div>
     <nav class="sidebar__nav" id="sidebar-nav"></nav>
     <div class="sidebar__footer">
-      <div>© 2026 Civil Service MIS</div>
+      <div id="footer-copy">© 2026 Civil Service MIS</div>
       <div style="margin-top:3px;opacity:.7">Eng. Abdi Furgasa</div>
     </div>
   </aside>
@@ -461,6 +455,33 @@ body.sidebar-open .overlay { display:block; }
     </button>
     <div class="topbar__spacer"></div>
     <div class="topbar__actions">
+
+      <!-- Language switcher -->
+      <div class="dropdown">
+        <button class="lang-btn" data-lang-toggle aria-label="Language">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span class="lang-btn__code" id="lang-label">EN</span>
+        </button>
+        <div class="dropdown__panel hidden" data-lang-panel style="min-width:200px">
+          <button class="dropdown__item lang-item" data-set-lang="en">
+            <span><span class="lang-item__flag">🇬🇧</span> English</span>
+            <svg class="lang-item__check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="dropdown__item lang-item" data-set-lang="om">
+            <span><span class="lang-item__flag">🇪🇹</span> Afaan Oromoo</span>
+            <svg class="lang-item__check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="dropdown__item lang-item" data-set-lang="am">
+            <span><span class="lang-item__flag">🇪🇹</span> አማርኛ</span>
+            <svg class="lang-item__check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </div>
+
       <div class="dropdown">
         <button class="user-btn" data-dropdown-toggle>
           <span class="user-btn__avatar" id="user-avatar">–</span>
@@ -476,16 +497,16 @@ body.sidebar-open .overlay { display:block; }
           </div>
           <a class="dropdown__item" href="dashboard.html">
             <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-            <span>Dashboard</span>
+            <span data-i18n="dashboard">Dashboard</span>
           </a>
           <a class="dropdown__item" href="settings.html">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            <span>Settings</span>
+            <span data-i18n="settings">Settings</span>
           </a>
           <div class="dropdown__divider"></div>
           <button class="dropdown__item dropdown__item--danger" id="logout-btn">
             <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            <span>Sign out</span>
+            <span data-i18n="signOut">Sign out</span>
           </button>
         </div>
       </div>
@@ -495,19 +516,19 @@ body.sidebar-open .overlay { display:block; }
   <main class="main">
     <div class="page-head">
       <div>
-        <h1 class="page-head__title">Attendance</h1>
-        <p class="page-head__sub">Track daily presence, lateness, leave and field work</p>
+        <h1 class="page-head__title" data-i18n="pageTitle">Attendance</h1>
+        <p class="page-head__sub" data-i18n="pageSub">Track daily presence, lateness, leave and field work</p>
         <div id="scope-badge"></div>
       </div>
       <div class="page-head__actions" id="head-actions"></div>
     </div>
 
     <div class="chain">
-      <span class="chain__node">Region</span><span class="chain__arrow">›</span>
-      <span class="chain__node">Cluster</span><span class="chain__arrow">›</span>
-      <span class="chain__node">Office</span><span class="chain__arrow">›</span>
-      <span class="chain__node">Department</span><span class="chain__arrow">›</span>
-      <span class="chain__node hi">Employee Attendance</span>
+      <span class="chain__node" data-i18n="chainRegion">Region</span><span class="chain__arrow">›</span>
+      <span class="chain__node" data-i18n="chainCluster">Cluster</span><span class="chain__arrow">›</span>
+      <span class="chain__node" data-i18n="chainOffice">Office</span><span class="chain__arrow">›</span>
+      <span class="chain__node" data-i18n="chainDepartment">Department</span><span class="chain__arrow">›</span>
+      <span class="chain__node hi" data-i18n="chainEmployee">Employee Attendance</span>
     </div>
 
     <section class="stats" id="stats"></section>
@@ -516,29 +537,29 @@ body.sidebar-open .overlay { display:block; }
       <input class="toolbar__date" type="date" id="date-picker">
       <div class="toolbar__search">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="search-input" placeholder="Search employee by name or ID…">
+        <input id="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search employee by name or ID…">
       </div>
       <select class="toolbar__filter" id="region-filter">
-        <option value="">All regions</option>
+        <option value="" data-i18n="allRegions">All regions</option>
       </select>
       <select class="toolbar__filter" id="cluster-filter" disabled>
-        <option value="">All clusters</option>
+        <option value="" data-i18n="allClusters">All clusters</option>
       </select>
       <select class="toolbar__filter" id="office-filter" disabled>
-        <option value="">All offices</option>
+        <option value="" data-i18n="allOffices">All offices</option>
       </select>
       <select class="toolbar__filter" id="department-filter" disabled>
-        <option value="">All departments</option>
+        <option value="" data-i18n="allDepartments">All departments</option>
       </select>
       <select class="toolbar__filter" id="status-filter">
-        <option value="">All statuses</option>
-        <option value="present">Present</option>
-        <option value="late">Late</option>
-        <option value="absent">Absent</option>
-        <option value="leave">On Leave</option>
-        <option value="field">Field work</option>
-        <option value="half_day">Half day</option>
-        <option value="none">Unmarked</option>
+        <option value="" data-i18n="allStatuses">All statuses</option>
+        <option value="present"  data-i18n="st_present">Present</option>
+        <option value="late"     data-i18n="st_late">Late</option>
+        <option value="absent"   data-i18n="st_absent">Absent</option>
+        <option value="leave"    data-i18n="st_leave">On Leave</option>
+        <option value="field"    data-i18n="st_field">Field work</option>
+        <option value="half_day" data-i18n="st_half_day">Half day</option>
+        <option value="none"     data-i18n="st_none">Unmarked</option>
       </select>
       <span class="toolbar__count" id="count-label"></span>
     </div>
@@ -548,18 +569,18 @@ body.sidebar-open .overlay { display:block; }
         <table class="data">
           <thead>
             <tr>
-              <th>Employee</th>
-              <th>Employee ID</th>
-              <th>Department</th>
-              <th>Status</th>
-              <th>Check-in</th>
-              <th>Check-out</th>
-              <th>Notes</th>
-              <th style="width:100px;text-align:right">Actions</th>
+              <th data-i18n="thEmployee">Employee</th>
+              <th data-i18n="thEmployeeId">Employee ID</th>
+              <th data-i18n="thDepartment">Department</th>
+              <th data-i18n="thStatus">Status</th>
+              <th data-i18n="thCheckIn">Check-in</th>
+              <th data-i18n="thCheckOut">Check-out</th>
+              <th data-i18n="thNotes">Notes</th>
+              <th style="width:100px;text-align:right" data-i18n="thActions">Actions</th>
             </tr>
           </thead>
           <tbody id="att-tbody">
-            <tr><td colspan="8" style="text-align:center;padding:48px 20px;color:var(--muted)">Loading…</td></tr>
+            <tr><td colspan="8" style="text-align:center;padding:48px 20px;color:var(--muted)" data-i18n="loading">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -571,10 +592,214 @@ body.sidebar-open .overlay { display:block; }
 import { initializeApp } from "firebase/app";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
-  collection, query, where, orderBy, onSnapshot,
-  serverTimestamp, getDocs, limit
+  getFirestore, doc, getDoc, setDoc, deleteDoc,
+  collection, query, where, onSnapshot,
+  serverTimestamp, getDocs
 } from "firebase/firestore";
+
+/* ============================================================
+   I18N DICTIONARY
+   ============================================================ */
+const I18N = {
+  en: {
+    brandTitle:"Civil Service", brandSubtitle:"Management Information System",
+    footerCopy:"© 2026 Civil Service MIS",
+    dashboard:"Dashboard", settings:"Settings", signOut:"Sign out",
+    // Page
+    pageTitle:"Attendance",
+    pageSub:"Track daily presence, lateness, leave and field work",
+    // Chain
+    chainRegion:"Region", chainCluster:"Cluster", chainOffice:"Office",
+    chainDepartment:"Department", chainEmployee:"Employee Attendance",
+    // Nav sections
+    navOverview:"Overview", navOrganization:"Organization", navOperations:"Operations",
+    navFinance:"Finance", navAdministration:"Administration",
+    // Nav items
+    navDashboard:"Dashboard", navUsers:"Users & Staff", navDepartments:"Departments",
+    navAttendance:"Attendance", navLeave:"Leave", navPayroll:"Payroll", navBudget:"Budget",
+    navOffices:"Offices", navNotifications:"Notifications", navSettings:"Settings",
+    // Stats
+    statTotalEmployees:"Total Employees", statPresent:"Present", statLate:"Late",
+    statAbsent:"Absent", statOnLeave:"On Leave", statAttendanceRate:"Attendance Rate",
+    // Toolbar
+    searchPlaceholder:"Search employee by name or ID…",
+    allRegions:"All regions", allClusters:"All clusters", allOffices:"All offices",
+    allDepartments:"All departments", allStatuses:"All statuses",
+    // Status labels
+    st_present:"Present", st_late:"Late", st_absent:"Absent", st_leave:"On Leave",
+    st_field:"Field", st_half_day:"Half day", st_holiday:"Holiday", st_weekend:"Weekend",
+    st_none:"Unmarked",
+    // Table headers
+    thEmployee:"Employee", thEmployeeId:"Employee ID", thDepartment:"Department",
+    thStatus:"Status", thCheckIn:"Check-in", thCheckOut:"Check-out",
+    thNotes:"Notes", thActions:"Actions",
+    // Empty / loading
+    loading:"Loading…", noEmployeesScope:"No employees in your scope.",
+    noEmployeesFilter:"No employees match your filters.",
+    // Head actions
+    markToday:"Mark Today",
+    // Modal — single
+    modalMarkTitle:"Mark Attendance", modalStatusLabel:"Status",
+    modalCheckIn:"Check-in", modalCheckOut:"Check-out", modalNotes:"Notes",
+    modalNotesPlaceholder:"Optional — reason for late, absence, etc.",
+    modalCancel:"Cancel", modalSave:"Save", modalSaving:"Saving…",
+    modalClear:"Clear", modalClearConfirm:"Clear attendance for this day?",
+    // Modal — bulk
+    modalBulkSub:"{n} employees · {date}",
+    modalBulkHint:"Pick a status for each employee. You can set them all to <b>Present</b> in one click and then adjust individual cases.",
+    modalAllPrefix:"All", modalSaveAll:"Save All",
+    // Toasts
+    toastCannotMark:"You cannot mark this employee",
+    toastCannotBulk:"You cannot bulk-mark",
+    toastNothingToMark:"Nothing to mark",
+    toastCleared:"Attendance cleared",
+    toastSaved:"Attendance saved",
+    toastSavedMany:"{n} attendance records saved",
+    toastChooseStatus:"Please choose a status.",
+    // Scope badges
+    scopeSuper:"Full system access — all attendance",
+    scopeHrm:"HR Manager — organisation-wide",
+    scopeCluster:"Cluster admin",
+    scopeManager:"Manager — your team",
+    scopeEmployee:"Your own attendance",
+    // Roles
+    role_super_admin:"Super Admin", role_admin:"Cluster Admin",
+    role_hrm:"HR Manager", role_manager:"Manager", role_employee:"Employee",
+    role_finance:"Finance Officer",
+    // Days
+    day:"day", days:"days"
+  },
+  om: {
+    brandTitle:"Tajaajila Hawaasaa", brandSubtitle:"Sirna Odeeffannoo Bulchiinsaa",
+    footerCopy:"© 2026 SIM Tajaajila Hawaasaa",
+    dashboard:"Daashboordii", settings:"Qindaa'ina", signOut:"Ba'i",
+    pageTitle:"Argannoo",
+    pageSub:"Argannoo guyyaa, tursiisuu, boqonnaa fi hojii dirree hordofi",
+    chainRegion:"Naannoo", chainCluster:"Garee", chainOffice:"Waajjira",
+    chainDepartment:"Qaama", chainEmployee:"Argannoo Hojjetaa",
+    navOverview:"Waliigala", navOrganization:"Dhaabbata", navOperations:"Hojimaata",
+    navFinance:"Faayinaansii", navAdministration:"Bulchiinsa",
+    navDashboard:"Daashboordii", navUsers:"Fayyadamtoota fi Hojjettoota",
+    navDepartments:"Qaamolee", navAttendance:"Argannoo", navLeave:"Boqonnaa",
+    navPayroll:"Kaffaltii", navBudget:"Baajata", navOffices:"Waajjiraalee",
+    navNotifications:"Beeksisaalee", navSettings:"Qindaa'ina",
+    statTotalEmployees:"Hojjettoota Waliigalaa", statPresent:"Argaman",
+    statLate:"Tursiisan", statAbsent:"Hin argamne", statOnLeave:"Boqonnaa irra",
+    statAttendanceRate:"Safara Argannoo",
+    searchPlaceholder:"Hojjetaa maqaa ykn eenyummeessaa barbaadi…",
+    allRegions:"Naannoolee hunda", allClusters:"Gareewwan hunda",
+    allOffices:"Waajjiraalee hunda", allDepartments:"Qaamolee hunda",
+    allStatuses:"Haalota hunda",
+    st_present:"Argame", st_late:"Tursiise", st_absent:"Hin argamne",
+    st_leave:"Boqonnaa irra", st_field:"Dirree", st_half_day:"Walakkaa guyyaa",
+    st_holiday:"Ayyaana", st_weekend:"Sanbata fi Dilbata", st_none:"Hin galmeeffamne",
+    thEmployee:"Hojjetaa", thEmployeeId:"Eenyummeessaa Hojjetaa",
+    thDepartment:"Qaama", thStatus:"Haala", thCheckIn:"Seensa", thCheckOut:"Ba'insa",
+    thNotes:"Yaadannoo", thActions:"Gochaalee",
+    loading:"Fe'aa jira…", noEmployeesScope:"Naannoo keetii hojjettoonni hin jiran.",
+    noEmployeesFilter:"Hojjettoonni filannoo keetii waliin hin walsiman.",
+    markToday:"Har'a Galmeessi",
+    modalMarkTitle:"Argannoo Galmeessi", modalStatusLabel:"Haala",
+    modalCheckIn:"Seensa", modalCheckOut:"Ba'insa", modalNotes:"Yaadannoo",
+    modalNotesPlaceholder:"Filannoo — sababa tursiisuu, hafuu, fi kkf.",
+    modalCancel:"Haqi", modalSave:"Olkaa'i", modalSaving:"Olkaa'aa jira…",
+    modalClear:"Haqi", modalClearConfirm:"Argannoo guyyaa kanaa haquu?",
+    modalBulkSub:"Hojjettoota {n} · {date}",
+    modalBulkHint:"Hojjetaa tokkoon tokkoon haala filadhu. Hunda <b>Argame</b> gochuuf tuqaa tokkoon dandeessa, sana booda dhuunfaan sirreessi.",
+    modalAllPrefix:"Hunda", modalSaveAll:"Hunda Olkaa'i",
+    toastCannotMark:"Hojjetaa kana galmeessuu hin dandeessu",
+    toastCannotBulk:"Walumaagalatti galmeessuu hin dandeessu",
+    toastNothingToMark:"Wanti galmeessu hin jiru",
+    toastCleared:"Argannoon haqame",
+    toastSaved:"Argannoon olkaa'ame",
+    toastSavedMany:"Galmee argannoo {n} olkaa'ame",
+    toastChooseStatus:"Maaloo haala filadhu.",
+    scopeSuper:"Adeemsa sirna guutuu — argannoo hunda",
+    scopeHrm:"Bulchaa HR — dhaabbata guutuu",
+    scopeCluster:"Bulchaa Garee",
+    scopeManager:"Bulchaa — garee keetii",
+    scopeEmployee:"Argannoo keetii",
+    role_super_admin:"Bulchaa Olaanaa", role_admin:"Bulchaa Garee",
+    role_hrm:"Bulchaa HR", role_manager:"Bulchaa", role_employee:"Hojjetaa",
+    role_finance:"Ogeessa Faayinaansii",
+    day:"guyyaa", days:"guyyoota"
+  },
+  am: {
+    brandTitle:"የመንግስት ሰራተኛ", brandSubtitle:"የአስተዳደር መረጃ ስርዓት",
+    footerCopy:"© 2026 የመንግስት ሰራተኛ MIS",
+    dashboard:"ዳሽቦርድ", settings:"ቅንብሮች", signOut:"ውጣ",
+    pageTitle:"መገኘት",
+    pageSub:"የቀን መገኘት፣ ዘግይቶ መምጣት፣ ፈቃድ እና የመስክ ሥራ ይከታተሉ",
+    chainRegion:"ክልል", chainCluster:"ክላስተር", chainOffice:"ቢሮ",
+    chainDepartment:"ክፍል", chainEmployee:"የሰራተኛ መገኘት",
+    navOverview:"አጠቃላይ እይታ", navOrganization:"ድርጅት", navOperations:"ክንውኖች",
+    navFinance:"ፋይናንስ", navAdministration:"አስተዳደር",
+    navDashboard:"ዳሽቦርድ", navUsers:"ተጠቃሚዎች እና ሰራተኞች",
+    navDepartments:"ክፍሎች", navAttendance:"መገኘት", navLeave:"ፈቃድ",
+    navPayroll:"ደመወዝ", navBudget:"በጀት", navOffices:"ቢሮዎች",
+    navNotifications:"ማሳወቂያዎች", navSettings:"ቅንብሮች",
+    statTotalEmployees:"ጠቅላላ ሰራተኞች", statPresent:"የተገኙ",
+    statLate:"ዘግይተው", statAbsent:"የቀሩ", statOnLeave:"ፈቃድ ላይ",
+    statAttendanceRate:"የመገኘት መጠን",
+    searchPlaceholder:"ሰራተኛ በስም ወይም በመታወቂያ ይፈልጉ…",
+    allRegions:"ሁሉም ክልሎች", allClusters:"ሁሉም ክላስተሮች",
+    allOffices:"ሁሉም ቢሮዎች", allDepartments:"ሁሉም ክፍሎች",
+    allStatuses:"ሁሉም ሁኔታዎች",
+    st_present:"ተገኝቷል", st_late:"ዘግይቷል", st_absent:"ቀርቷል",
+    st_leave:"ፈቃድ ላይ", st_field:"የመስክ ሥራ", st_half_day:"ግማሽ ቀን",
+    st_holiday:"በዓል", st_weekend:"ቅዳሜና እሁድ", st_none:"ያልተመዘገበ",
+    thEmployee:"ሰራተኛ", thEmployeeId:"የሰራተኛ መታወቂያ",
+    thDepartment:"ክፍል", thStatus:"ሁኔታ", thCheckIn:"መግቢያ", thCheckOut:"መውጫ",
+    thNotes:"ማስታወሻ", thActions:"እርምጃዎች",
+    loading:"በመጫን ላይ…", noEmployeesScope:"በአካባቢዎ ሰራተኞች የሉም።",
+    noEmployeesFilter:"ከማጣሪያዎ ጋር የሚዛመዱ ሰራተኞች የለም።",
+    markToday:"ዛሬ አስመዝግብ",
+    modalMarkTitle:"መገኘት ያስመዝግቡ", modalStatusLabel:"ሁኔታ",
+    modalCheckIn:"መግቢያ", modalCheckOut:"መውጫ", modalNotes:"ማስታወሻ",
+    modalNotesPlaceholder:"አማራጭ — የዘግይቶ መምጣት፣ የመቅረት ምክንያት፣ ወዘተ.",
+    modalCancel:"ሰርዝ", modalSave:"አስቀምጥ", modalSaving:"በማስቀመጥ ላይ…",
+    modalClear:"አጽዳ", modalClearConfirm:"የዚህን ቀን መገኘት ያጽዱ?",
+    modalBulkSub:"{n} ሰራተኞች · {date}",
+    modalBulkHint:"ለእያንዳንዱ ሰራተኛ ሁኔታ ይምረጡ። ሁሉንም በአንድ ጠቅታ <b>ተገኝቷል</b> ማድረግ እና ከዚያ በኋላ በግለሰብ ማስተካከል ይችላሉ።",
+    modalAllPrefix:"ሁሉም", modalSaveAll:"ሁሉንም አስቀምጥ",
+    toastCannotMark:"ይህን ሰራተኛ ማስመዝገብ አይችሉም",
+    toastCannotBulk:"በጅምላ ማስመዝገብ አይችሉም",
+    toastNothingToMark:"የሚመዘገብ ነገር የለም",
+    toastCleared:"መገኘት ጸድቷል",
+    toastSaved:"መገኘት ተቀምጧል",
+    toastSavedMany:"{n} የመገኘት መዝገቦች ተቀምጠዋል",
+    toastChooseStatus:"እባክዎ ሁኔታ ይምረጡ።",
+    scopeSuper:"ሙሉ ስርዓት መዳረሻ — ሁሉም መገኘት",
+    scopeHrm:"የሰው ኃይል ሥራ አስኪያጅ — በድርጅቱ ሁሉ",
+    scopeCluster:"የክላስተር አስተዳዳሪ",
+    scopeManager:"ሥራ አስኪያጅ — የእርስዎ ቡድን",
+    scopeEmployee:"የእርስዎ መገኘት",
+    role_super_admin:"ዋና አስተዳዳሪ", role_admin:"የክላስተር አስተዳዳሪ",
+    role_hrm:"የሰው ኃይል ሥራ አስኪያጅ", role_manager:"ሥራ አስኪያጅ",
+    role_employee:"ሰራተኛ", role_finance:"የፋይናንስ ኦፊሰር",
+    day:"ቀን", days:"ቀናት"
+  }
+};
+
+let LANG = "en";
+function t(key, vars) {
+  const dict = I18N[LANG] || I18N.en;
+  let s = dict[key] || I18N.en[key] || key;
+  if (vars) Object.keys(vars).forEach(k => { s = s.replace("{"+k+"}", vars[k]); });
+  return s;
+}
+function applyStaticI18n() {
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    el.textContent = t(key);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
+  });
+  const bt = document.getElementById("brand-title"); if (bt) bt.textContent = t("brandTitle");
+  const bs = document.getElementById("brand-subtitle"); if (bs) bs.textContent = t("brandSubtitle");
+  const fc = document.getElementById("footer-copy"); if (fc) fc.textContent = t("footerCopy");
+}
 
 const firebaseConfig = {
   apiKey: "AIzaSyASE2f6DVivrH7koQXAFZeOrj6Wng45Uq4",
@@ -592,18 +817,27 @@ const db = getFirestore(app);
    REGIONS
    ============================================================ */
 const REGIONS = [
-  { code:"01", en:"Tigray" }, { code:"02", en:"Afar" },
-  { code:"03", en:"Amhara" }, { code:"04", en:"Oromia" },
-  { code:"05", en:"Somali" }, { code:"06", en:"Benishangul-Gumuz" },
-  { code:"07", en:"South Nations (SNNPR)" }, { code:"08", en:"Gambella" },
-  { code:"09", en:"Harari" }, { code:"10", en:"Sidama" },
-  { code:"11", en:"South West Ethiopia" }, { code:"12", en:"Dire Dawa" },
-  { code:"13", en:"Addis Ababa" }, { code:"14", en:"Central Ethiopia" },
-  { code:"15", en:"South Ethiopia" }
+  { code:"01", en:"Tigray", am:"ትግራይ", om:"Tigraay" },
+  { code:"02", en:"Afar", am:"አፋር", om:"Afar" },
+  { code:"03", en:"Amhara", am:"አማራ", om:"Amaaraa" },
+  { code:"04", en:"Oromia", am:"ኦሮሚያ", om:"Oromiyaa" },
+  { code:"05", en:"Somali", am:"ሶማሌ", om:"Somaalee" },
+  { code:"06", en:"Benishangul-Gumuz", am:"ቤንሻንጉል-ጉሙዝ", om:"Benishaangul-Gumuz" },
+  { code:"07", en:"South Nations (SNNPR)", am:"ደቡብ ብሔሮች (ደብብ)", om:"Sabaa Kibbaa (SNNPR)" },
+  { code:"08", en:"Gambella", am:"ጋምቤላ", om:"Gambellaa" },
+  { code:"09", en:"Harari", am:"ሐረሪ", om:"Haraarii" },
+  { code:"10", en:"Sidama", am:"ሲዳማ", om:"Sidaamaa" },
+  { code:"11", en:"South West Ethiopia", am:"ደቡብ ምዕራብ ኢትዮጵያ", om:"Kibba Dhihaa Itoophiyaa" },
+  { code:"12", en:"Dire Dawa", am:"ድሬዳዋ", om:"Diree Dawaa" },
+  { code:"13", en:"Addis Ababa", am:"አዲስ አበባ", om:"Finfinnee" },
+  { code:"14", en:"Central Ethiopia", am:"መካከለኛው ኢትዮጵያ", om:"Itoophiyaa Giddugaleessaa" },
+  { code:"15", en:"South Ethiopia", am:"ደቡብ ኢትዮጵያ", om:"Itoophiyaa Kibbaa" }
 ];
 const regionLabel = (code) => {
   const r = REGIONS.find(x => x.code === code);
-  return r ? r.code + " — " + r.en : (code || "—");
+  if (!r) return code || "—";
+  const name = LANG === "am" ? r.am : (LANG === "om" ? r.om : r.en);
+  return r.code + " — " + name;
 };
 
 /* ============================================================
@@ -630,8 +864,10 @@ function applyCompact(on) {
 }
 function applyLanguage(lang) {
   STATE.lang = lang || "en";
+  if (!I18N[STATE.lang]) STATE.lang = "en";
+  LANG = STATE.lang;
   document.documentElement.setAttribute("data-lang", STATE.lang);
-  document.documentElement.lang = STATE.lang;
+  document.documentElement.lang = STATE.lang === "am" ? "am" : (STATE.lang === "om" ? "om" : "en");
   if (STATE.lang === "am") document.documentElement.setAttribute("data-ethiopic","true");
   else document.documentElement.removeAttribute("data-ethiopic");
   try { localStorage.setItem("cs.language", STATE.lang); } catch(e) {}
@@ -694,7 +930,7 @@ let CLUSTERS = [];
 let OFFICES = [];
 let DEPARTMENTS = [];
 let EMPLOYEES = [];
-let ATTENDANCE = {};   // empDocId -> attendance record for the selected date
+let ATTENDANCE = {};
 
 let selectedDate = new Date().toISOString().slice(0,10);
 let searchTerm = "";
@@ -705,16 +941,17 @@ let filterDepartment = "";
 let filterStatus = "";
 
 const STATUSES = [
-  { key:"present",  label:"Present",   color:"#067647" },
-  { key:"late",     label:"Late",      color:"#b8860b" },
-  { key:"absent",   label:"Absent",    color:"#b42318" },
-  { key:"leave",    label:"On Leave",  color:"#0b5cab" },
-  { key:"field",    label:"Field",     color:"#5b21b6" },
-  { key:"half_day", label:"Half day",  color:"#be185d" },
-  { key:"holiday",  label:"Holiday",   color:"#c2410c" },
-  { key:"weekend",  label:"Weekend",   color:"#94a3b8" }
+  { key:"present",  color:"#067647" },
+  { key:"late",     color:"#b8860b" },
+  { key:"absent",   color:"#b42318" },
+  { key:"leave",    color:"#0b5cab" },
+  { key:"field",    color:"#5b21b6" },
+  { key:"half_day", color:"#be185d" },
+  { key:"holiday",  color:"#c2410c" },
+  { key:"weekend",  color:"#94a3b8" }
 ];
 const STATUS_MAP = Object.fromEntries(STATUSES.map(s => [s.key, s]));
+const statusLabel = (key) => t("st_" + key);
 
 /* ============================================================
    ICONS
@@ -727,47 +964,40 @@ const ICONS = {
   clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
   calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
   wallet:'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',
-  target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
-  book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
   chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
   bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
-  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
-  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 1 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
-  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
   check:'<polyline points="20 6 9 17 4 12"/>',
   x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
   edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
   trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
-  eye:'<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>',
   alert:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
-  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-  save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
-  list:'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'
 };
 
 /* ============================================================
    NAV
    ============================================================ */
 const NAV = [
-  { section:"Overview", items:[
-    { key:"dashboard", label:"Dashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
+  { section:"navOverview", items:[
+    { key:"dashboard", labelKey:"navDashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
   ]},
-  { section:"Organization", items:[
-    { key:"users",       label:"Users & Staff", href:"users.html",       icon:"users",    roles:["super_admin","admin","hrm"] },
-    { key:"departments", label:"Departments",   href:"departments.html", icon:"building", roles:["super_admin","admin","hrm","manager"] }
+  { section:"navOrganization", items:[
+    { key:"users",       labelKey:"navUsers",       href:"users.html",       icon:"users",    roles:["super_admin","admin","hrm"] },
+    { key:"departments", labelKey:"navDepartments", href:"departments.html", icon:"building", roles:["super_admin","admin","hrm","manager"] }
   ]},
-  { section:"Operations", items:[
-    { key:"attendance", label:"Attendance", href:"attendance.html", icon:"clock",    roles:["super_admin","admin","hrm","manager","employee"] },
-    { key:"leave",      label:"Leave",      href:"leave.html",      icon:"calendar", roles:["super_admin","admin","hrm","manager","employee"] }
+  { section:"navOperations", items:[
+    { key:"attendance", labelKey:"navAttendance", href:"attendance.html", icon:"clock",    roles:["super_admin","admin","hrm","manager","employee"] },
+    { key:"leave",      labelKey:"navLeave",      href:"leave.html",      icon:"calendar", roles:["super_admin","admin","hrm","manager","employee"] }
   ]},
-  { section:"Finance", items:[
-    { key:"payroll", label:"Payroll", href:"payroll.html", icon:"wallet", roles:["super_admin","finance","admin"] },
-    { key:"budget",  label:"Budget",  href:"budget.html",  icon:"chart",  roles:["super_admin","finance"] }
+  { section:"navFinance", items:[
+    { key:"payroll", labelKey:"navPayroll", href:"payroll.html", icon:"wallet", roles:["super_admin","finance","admin"] },
+    { key:"budget",  labelKey:"navBudget",  href:"budget.html",  icon:"chart",  roles:["super_admin","finance"] }
   ]},
-  { section:"Administration", items:[
-    { key:"offices",       label:"Offices",       href:"offices.html",       icon:"building", roles:["super_admin","admin"] },
-    { key:"notifications", label:"Notifications", href:"notifications.html", icon:"bell",     roles:["*"] },
-    { key:"settings",      label:"Settings",      href:"settings.html",      icon:"settings", roles:["*"] }
+  { section:"navAdministration", items:[
+    { key:"offices",       labelKey:"navOffices",       href:"offices.html",       icon:"building", roles:["super_admin","admin"] },
+    { key:"notifications", labelKey:"navNotifications", href:"notifications.html", icon:"bell",     roles:["*"] },
+    { key:"settings",      labelKey:"navSettings",      href:"settings.html",      icon:"settings", roles:["*"] }
   ]}
 ];
 
@@ -779,6 +1009,16 @@ const escapeHtml = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g,
 const initials = (n) => (n || "?").split(/\s+/).slice(0,2).map(s => s[0]).join("").toUpperCase();
 const hasAccess = (item, role) => item.roles.includes("*") || item.roles.includes(role);
 const fullName = (e) => e.fullName || [e.firstName, e.lastName].filter(Boolean).join(" ") || e.nameEn || e.email || "Employee";
+
+const ROLE_LABELS = {
+  super_admin:"role_super_admin", admin:"role_admin", hrm:"role_hrm",
+  manager:"role_manager", employee:"role_employee", finance:"role_finance"
+};
+const roleLabel = (r) => {
+  const key = ROLE_LABELS[r];
+  if (key) return t(key);
+  return (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+};
 
 function toast(msg, type="success") {
   const wrap = document.getElementById("toast-wrap");
@@ -842,14 +1082,14 @@ function renderSidebar() {
     if (!vis.length) continue;
     const sec = document.createElement("div");
     sec.className = "sidebar__section";
-    sec.textContent = group.section;
+    sec.textContent = t(group.section);
     nav.appendChild(sec);
     for (const item of vis) {
       const a = document.createElement("a");
       a.className = "nav-item" + (item.key === "attendance" ? " is-active" : "");
       a.href = item.href;
       a.innerHTML = `<svg viewBox="0 0 24 24">${ICONS[item.icon]}</svg>
-                     <span class="nav-item__label">${item.label}</span>`;
+                     <span class="nav-item__label">${escapeHtml(t(item.labelKey))}</span>`;
       nav.appendChild(a);
     }
   }
@@ -859,7 +1099,7 @@ function renderUser() {
   if (S.photoURL) av.innerHTML = `<img src="${escapeHtml(S.photoURL)}" alt="">`;
   else av.textContent = initials(S.name);
   document.getElementById("user-name").textContent = S.name;
-  document.getElementById("user-role").textContent = S.role.replace(/_/g," ").replace(/\b\w/g, c=>c.toUpperCase());
+  document.getElementById("user-role").textContent = roleLabel(S.role);
   document.getElementById("dd-name").textContent = S.name;
   document.getElementById("dd-email").textContent = S.email;
 }
@@ -867,24 +1107,24 @@ function renderScopeBadge() {
   const el = document.getElementById("scope-badge");
   if (isSuper()) {
     el.innerHTML = `<span class="scope-badge scope-badge--super">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Full system access — all attendance
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${t("scopeSuper")}
     </span>`;
   } else if (isHRM()) {
     el.innerHTML = `<span class="scope-badge scope-badge--cluster">
-      <svg viewBox="0 0 24 24">${ICONS.users}</svg> HR Manager — organisation-wide
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("scopeHrm")}
     </span>`;
   } else if (isAdmin()) {
     const c = CLUSTERS.find(x => x.id === S.clusterId);
     el.innerHTML = `<span class="scope-badge scope-badge--cluster">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Cluster admin · ${escapeHtml(c?.name || "—")}
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${t("scopeCluster")} · ${escapeHtml(c?.name || "—")}
     </span>`;
   } else if (isManager()) {
     el.innerHTML = `<span class="scope-badge scope-badge--manager">
-      <svg viewBox="0 0 24 24">${ICONS.users}</svg> Manager — your team
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("scopeManager")}
     </span>`;
   } else {
     el.innerHTML = `<span class="scope-badge">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Your own attendance
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${t("scopeEmployee")}
     </span>`;
   }
 }
@@ -893,7 +1133,7 @@ function renderHeadActions() {
   const btns = [];
   if (canMarkAttendance()) {
     btns.push(`<button class="btn btn--primary" id="mark-all-btn">
-      <svg viewBox="0 0 24 24">${ICONS.check}</svg> Mark Today
+      <svg viewBox="0 0 24 24">${ICONS.check}</svg> ${t("markToday")}
     </button>`);
   }
   host.innerHTML = btns.join("");
@@ -913,12 +1153,12 @@ function renderStats() {
   const rate = working ? Math.round((presentish / working) * 100) : 0;
 
   document.getElementById("stats").innerHTML = `
-    ${statCard("Total Employees", counts.total, "stat--blue", "users")}
-    ${statCard("Present",         counts.present, "stat--green", "check")}
-    ${statCard("Late",            counts.late, "stat--gold", "clock")}
-    ${statCard("Absent",          counts.absent, "stat--red", "alert")}
-    ${statCard("On Leave",        counts.leave, "stat--violet", "calendar")}
-    ${statCard("Attendance Rate", rate + "%", "stat--teal", "chart")}
+    ${statCard(t("statTotalEmployees"), counts.total, "stat--blue", "users")}
+    ${statCard(t("statPresent"),         counts.present, "stat--green", "check")}
+    ${statCard(t("statLate"),            counts.late, "stat--gold", "clock")}
+    ${statCard(t("statAbsent"),          counts.absent, "stat--red", "alert")}
+    ${statCard(t("statOnLeave"),         counts.leave, "stat--violet", "calendar")}
+    ${statCard(t("statAttendanceRate"),  rate + "%", "stat--teal", "chart")}
   `;
 }
 function statCard(label, value, cls, iconKey) {
@@ -932,7 +1172,6 @@ function statCard(label, value, cls, iconKey) {
     </div>`;
 }
 
-/* Stats use the same base scope as the table */
 function filteredEmployeesForStats() {
   const list = visibleEmployees();
   return list.filter(e => {
@@ -953,7 +1192,7 @@ function populateFilters() {
   const regionSel = document.getElementById("region-filter");
   const regionCodes = Array.from(new Set(emps.map(e => e.regionCode).filter(Boolean)))
     .sort((a,b) => String(a).localeCompare(String(b)));
-  regionSel.innerHTML = `<option value="">All regions</option>` +
+  regionSel.innerHTML = `<option value="">${escapeHtml(t("allRegions"))}</option>` +
     regionCodes.map(code =>
       `<option value="${escapeHtml(code)}" ${filterRegion===code?"selected":""}>
         ${escapeHtml(regionLabel(code))}
@@ -962,7 +1201,7 @@ function populateFilters() {
   const clusterSel = document.getElementById("cluster-filter");
   let clusterPool = visibleClusters();
   if (filterRegion) clusterPool = clusterPool.filter(c => c.regionCode === filterRegion);
-  clusterSel.innerHTML = `<option value="">All clusters</option>` +
+  clusterSel.innerHTML = `<option value="">${escapeHtml(t("allClusters"))}</option>` +
     clusterPool.map(c =>
       `<option value="${c.id}" ${filterCluster===c.id?"selected":""}>
         ${escapeHtml(c.code)} — ${escapeHtml(c.name)}
@@ -972,7 +1211,7 @@ function populateFilters() {
   const officeSel = document.getElementById("office-filter");
   let officePool = visibleOffices();
   if (filterCluster) officePool = officePool.filter(o => o.clusterId === filterCluster);
-  officeSel.innerHTML = `<option value="">All offices</option>` +
+  officeSel.innerHTML = `<option value="">${escapeHtml(t("allOffices"))}</option>` +
     officePool.sort((a,b)=>String(a.code).localeCompare(String(b.code))).map(o =>
       `<option value="${o.id}" ${filterOffice===o.id?"selected":""}>
         ${escapeHtml(o.code)} — ${escapeHtml(o.name)}
@@ -982,7 +1221,7 @@ function populateFilters() {
   const deptSel = document.getElementById("department-filter");
   let deptPool = visibleDepartments();
   if (filterOffice) deptPool = deptPool.filter(d => d.officeId === filterOffice);
-  deptSel.innerHTML = `<option value="">All departments</option>` +
+  deptSel.innerHTML = `<option value="">${escapeHtml(t("allDepartments"))}</option>` +
     deptPool.sort((a,b)=>String(a.code).localeCompare(String(b.code))).map(d =>
       `<option value="${d.id}" ${filterDepartment===d.id?"selected":""}>
         ${escapeHtml(d.code)} — ${escapeHtml(d.name)}
@@ -1003,7 +1242,6 @@ function filteredEmployees() {
     }
     return true;
   });
-  // Status filter
   if (filterStatus) {
     return list.filter(e => {
       const rec = ATTENDANCE[e.id];
@@ -1019,10 +1257,11 @@ function filteredEmployees() {
    ============================================================ */
 function statusPill(status) {
   if (!status) {
-    return `<span class="status-pill status-none" data-edit="1">— Unmarked</span>`;
+    return `<span class="status-pill status-none" data-edit="1">— ${escapeHtml(t("st_none"))}</span>`;
   }
-  const s = STATUS_MAP[status] || { key:"none", label:status };
-  return `<span class="status-pill status-${s.key}" data-edit="1">${escapeHtml(s.label)}</span>`;
+  const s = STATUS_MAP[status] || { key:"none" };
+  const label = STATUS_MAP[status] ? statusLabel(status) : status;
+  return `<span class="status-pill status-${s.key}" data-edit="1">${escapeHtml(label)}</span>`;
 }
 
 function renderTable() {
@@ -1033,13 +1272,13 @@ function renderTable() {
 
   if (!total) {
     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:48px 20px;color:var(--muted)">
-      No employees in your scope.
+      ${escapeHtml(t("noEmployeesScope"))}
     </td></tr>`;
     return;
   }
   if (!list.length) {
     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:48px 20px;color:var(--muted)">
-      No employees match your filters.
+      ${escapeHtml(t("noEmployeesFilter"))}
     </td></tr>`;
     return;
   }
@@ -1070,14 +1309,13 @@ function renderTable() {
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(rec?.notes || "—")}</td>
         <td style="text-align:right">
           ${editable ? `
-            <button class="btn btn--sm btn--icon" data-action="mark" data-id="${e.id}" title="Mark attendance">
+            <button class="btn btn--sm btn--icon" data-action="mark" data-id="${e.id}">
               <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
             </button>` : ""}
         </td>
       </tr>`;
   }).join("");
 
-  // Wire edit buttons
   tbody.querySelectorAll("[data-action='mark']").forEach(btn => {
     btn.addEventListener("click", ()=>openMarkSingleModal(btn.dataset.id));
   });
@@ -1127,21 +1365,21 @@ function closeModal() {
 }
 
 /* ============================================================
-   MARK SINGLE — modal to set status for one employee
+   MARK SINGLE
    ============================================================ */
 function openMarkSingleModal(empId) {
   const emp = EMPLOYEES.find(e => e.id === empId);
   if (!emp) return;
   const existing = ATTENDANCE[emp.id] || {};
   const editable = canMarkOthers() || emp.uid === S.uid;
-  if (!editable) { toast("You cannot mark this employee", "error"); return; }
+  if (!editable) { toast(t("toastCannotMark"), "error"); return; }
 
   let selectedStatus = existing.status || "present";
 
   openModal(`
     <div class="modal__head">
       <div>
-        <div class="modal__title">Mark Attendance</div>
+        <div class="modal__title">${escapeHtml(t("modalMarkTitle"))}</div>
         <div class="modal__sub">${escapeHtml(fullName(emp))} · ${escapeHtml(emp.empId || "—")} · ${escapeHtml(selectedDate)}</div>
       </div>
       <button class="modal__close" data-close><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
@@ -1153,41 +1391,41 @@ function openMarkSingleModal(empId) {
       </div>
 
       <div class="field">
-        <label class="field__required">Status</label>
+        <label>${escapeHtml(t("modalStatusLabel"))}</label>
       </div>
       <div class="status-picker" id="status-picker">
         ${STATUSES.map(s => `
           <div class="status-opt ${selectedStatus === s.key ? "is-on" : ""}" data-status="${s.key}">
             <span class="status-opt__dot" style="background:${s.color}"></span>
-            ${escapeHtml(s.label)}
+            ${escapeHtml(statusLabel(s.key))}
           </div>
         `).join("")}
       </div>
 
       <div class="field-row">
         <div class="field">
-          <label>Check-in</label>
+          <label>${escapeHtml(t("modalCheckIn"))}</label>
           <input type="time" id="mk-checkin" value="${escapeHtml(existing.checkIn || "")}">
         </div>
         <div class="field">
-          <label>Check-out</label>
+          <label>${escapeHtml(t("modalCheckOut"))}</label>
           <input type="time" id="mk-checkout" value="${escapeHtml(existing.checkOut || "")}">
         </div>
       </div>
 
       <div class="field">
-        <label>Notes</label>
-        <textarea id="mk-notes" placeholder="Optional — reason for late, absence, etc.">${escapeHtml(existing.notes || "")}</textarea>
+        <label>${escapeHtml(t("modalNotes"))}</label>
+        <textarea id="mk-notes" placeholder="${escapeHtml(t("modalNotesPlaceholder"))}">${escapeHtml(existing.notes || "")}</textarea>
       </div>
     </div>
     <div class="modal__foot">
       ${existing.status ? `<button class="btn btn--danger" id="mk-clear" style="margin-right:auto">
-        <svg viewBox="0 0 24 24">${ICONS.trash}</svg> Clear
+        <svg viewBox="0 0 24 24">${ICONS.trash}</svg> ${escapeHtml(t("modalClear"))}
       </button>` : ""}
-      <button class="btn" data-close>Cancel</button>
+      <button class="btn" data-close>${escapeHtml(t("modalCancel"))}</button>
       <button class="btn btn--primary" id="mk-save">
         <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
-        <span class="btn-label">Save</span>
+        <span class="btn-label">${escapeHtml(t("modalSave"))}</span>
       </button>
     </div>
   `);
@@ -1203,10 +1441,10 @@ function openMarkSingleModal(empId) {
 
   document.getElementById("mk-clear")?.addEventListener("click", async ()=>{
     if (!existing.status) return;
-    if (!confirm("Clear attendance for this day?")) return;
+    if (!confirm(t("modalClearConfirm"))) return;
     try {
       await deleteDoc(doc(db, "attendance", monthKey(selectedDate), "records", emp.id));
-      toast("Attendance cleared", "success");
+      toast(t("toastCleared"), "success");
       closeModal();
     } catch (err) { toast(err.code + ": " + err.message, "error"); }
   });
@@ -1219,12 +1457,12 @@ function openMarkSingleModal(empId) {
     const label = btn.querySelector(".btn-label");
     errBox.style.display = "none";
 
-    if (!selectedStatus) { errBox.style.display="flex"; errMsg.textContent = "Please choose a status."; return; }
+    if (!selectedStatus) { errBox.style.display="flex"; errMsg.textContent = t("toastChooseStatus"); return; }
 
     btn.disabled = true;
     spinner.classList.remove("hidden");
     const old = label.textContent;
-    label.textContent = "Saving…";
+    label.textContent = t("modalSaving");
 
     try {
       await saveAttendance(emp, {
@@ -1233,7 +1471,7 @@ function openMarkSingleModal(empId) {
         checkOut: document.getElementById("mk-checkout").value || null,
         notes: document.getElementById("mk-notes").value.trim() || null
       });
-      toast("Attendance saved", "success");
+      toast(t("toastSaved"), "success");
       closeModal();
     } catch (err) {
       console.error(err);
@@ -1247,41 +1485,40 @@ function openMarkSingleModal(empId) {
 }
 
 /* ============================================================
-   BULK MARK — for current filter
+   BULK MARK
    ============================================================ */
 function openBulkMarkModal() {
-  if (!canMarkOthers()) { toast("You cannot bulk-mark", "error"); return; }
+  if (!canMarkOthers()) { toast(t("toastCannotBulk"), "error"); return; }
   const list = filteredEmployees();
-  if (!list.length) { toast("Nothing to mark", "info"); return; }
+  if (!list.length) { toast(t("toastNothingToMark"), "info"); return; }
 
-  const choices = {}; // empId -> status
+  const choices = {};
   list.forEach(e => { choices[e.id] = ATTENDANCE[e.id]?.status || "present"; });
 
   openModal(`
     <div class="modal__head">
       <div>
-        <div class="modal__title">Mark Attendance</div>
-        <div class="modal__sub">${list.length} employees · ${escapeHtml(selectedDate)}</div>
+        <div class="modal__title">${escapeHtml(t("modalMarkTitle"))}</div>
+        <div class="modal__sub">${escapeHtml(t("modalBulkSub", { n: list.length, date: selectedDate }))}</div>
       </div>
       <button class="modal__close" data-close><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
     </div>
     <div class="modal__body">
       <div class="alert alert--info">
         <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-        <div>Pick a status for each employee. You can set them all to <b>Present</b> in one click and then adjust individual cases.</div>
+        <div>${t("modalBulkHint")}</div>
       </div>
 
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
         ${STATUSES.filter(s => !["weekend","holiday"].includes(s.key)).map(s => `
           <button type="button" class="btn btn--sm" data-set-all="${s.key}">
-            All ${escapeHtml(s.label)}
+            ${escapeHtml(t("modalAllPrefix"))} ${escapeHtml(statusLabel(s.key))}
           </button>
         `).join("")}
       </div>
 
       <div class="bulk-list" id="bulk-list">
         ${list.map(e => {
-          const rec = ATTENDANCE[e.id];
           const avatar = e.photoURL
             ? `<img src="${escapeHtml(e.photoURL)}" alt="">`
             : escapeHtml(initials(fullName(e)));
@@ -1294,7 +1531,7 @@ function openBulkMarkModal() {
               </div>
               <select data-emp="${e.id}">
                 ${STATUSES.map(s => `
-                  <option value="${s.key}" ${choices[e.id]===s.key?"selected":""}>${escapeHtml(s.label)}</option>
+                  <option value="${s.key}" ${choices[e.id]===s.key?"selected":""}>${escapeHtml(statusLabel(s.key))}</option>
                 `).join("")}
               </select>
             </div>`;
@@ -1303,10 +1540,10 @@ function openBulkMarkModal() {
     </div>
     <div class="modal__foot">
       <div class="spacer"></div>
-      <button class="btn" data-close>Cancel</button>
+      <button class="btn" data-close>${escapeHtml(t("modalCancel"))}</button>
       <button class="btn btn--primary" id="bulk-save">
         <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
-        <span class="btn-label">Save All</span>
+        <span class="btn-label">${escapeHtml(t("modalSaveAll"))}</span>
       </button>
     </div>
   `, { size:"lg" });
@@ -1332,12 +1569,12 @@ function openBulkMarkModal() {
     btn.disabled = true;
     spinner.classList.remove("hidden");
     const old = label.textContent;
-    label.textContent = "Saving…";
+    label.textContent = t("modalSaving");
     try {
       for (const e of list) {
         await saveAttendance(e, { status: choices[e.id], notes: null });
       }
-      toast(`${list.length} attendance records saved`, "success");
+      toast(t("toastSavedMany", { n: list.length }), "success");
       closeModal();
     } catch (err) {
       console.error(err);
@@ -1365,10 +1602,7 @@ async function saveAttendance(emp, { status, checkIn=null, checkOut=null, notes=
     employeeId: emp.id,
     employeeName: fullName(emp),
     photoURL: emp.photoURL || null,
-    status,
-    checkIn,
-    checkOut,
-    notes,
+    status, checkIn, checkOut, notes,
     regionCode: emp.regionCode || null,
     regionName: emp.regionName || null,
     clusterId: emp.clusterId || null,
@@ -1442,7 +1676,7 @@ function subscribeAttendance() {
     ATTENDANCE = {};
     snap.forEach(d => {
       const rec = { id: d.id, ...d.data() };
-      if (rec.date !== selectedDate) return; // only show selected date
+      if (rec.date !== selectedDate) return;
       ATTENDANCE[rec.employeeId] = rec;
     });
     render();
@@ -1450,7 +1684,7 @@ function subscribeAttendance() {
     console.warn("[attendance]", err.code, err.message);
     document.getElementById("att-tbody").innerHTML =
       `<tr><td colspan="8" style="text-align:center;padding:48px 20px;color:var(--danger)">
-        Could not load attendance: ${escapeHtml(err.code || "")} — ${escapeHtml(err.message || "")}
+        ${escapeHtml(err.code || "")} — ${escapeHtml(err.message || "")}
       </td></tr>`;
   });
 }
@@ -1468,6 +1702,8 @@ document.getElementById("menu-toggle").addEventListener("click", ()=>
   document.body.classList.toggle("sidebar-open"));
 document.getElementById("overlay").addEventListener("click", ()=>
   document.body.classList.remove("sidebar-open"));
+
+/* User dropdown */
 document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
   btn.addEventListener("click", (e)=>{
     e.stopPropagation();
@@ -1477,8 +1713,35 @@ document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
     if (!open) panel.classList.remove("hidden");
   });
 });
+
+/* Language dropdown */
+function updateLangUI() {
+  const label = document.getElementById("lang-label");
+  if (label) label.textContent = LANG.toUpperCase();
+  document.querySelectorAll("[data-set-lang]").forEach(btn => {
+    btn.classList.toggle("is-on", btn.dataset.setLang === LANG);
+  });
+}
+document.querySelectorAll("[data-lang-toggle]").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const panel = btn.closest(".dropdown").querySelector("[data-lang-panel]");
+    const open = !panel.classList.contains("hidden");
+    document.querySelectorAll("[data-dropdown-panel], [data-lang-panel]").forEach(p => p.classList.add("hidden"));
+    if (!open) panel.classList.remove("hidden");
+  });
+});
+document.querySelectorAll("[data-set-lang]").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const lang = btn.dataset.setLang;
+    try { localStorage.setItem("cs.language", lang); } catch (err) {}
+    window.location.reload();
+  });
+});
 document.addEventListener("click", ()=>
-  document.querySelectorAll("[data-dropdown-panel]").forEach(p => p.classList.add("hidden")));
+  document.querySelectorAll("[data-dropdown-panel], [data-lang-panel]").forEach(p => p.classList.add("hidden")));
+
 try {
   if (localStorage.getItem("cs.sidebar") === "collapsed") document.body.classList.add("sidebar-collapsed");
 } catch(e) {}
@@ -1532,6 +1795,12 @@ onAuthStateChanged(auth, async (user)=>{
   if (kick.done) return;
   if (!user) { kick("no-user"); return; }
 
+  // Read language before anything else
+  try { LANG = localStorage.getItem("cs.language") || "en"; } catch(e) { LANG = "en"; }
+  if (!I18N[LANG]) LANG = "en";
+  applyStaticI18n();
+  updateLangUI();
+
   let userDoc = null;
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
@@ -1561,7 +1830,7 @@ onAuthStateChanged(auth, async (user)=>{
   subscribeEmployees();
   subscribeAttendance();
 
-  console.log("[attendance] booted:", { role: S.role, date: selectedDate });
+  console.log("[attendance] booted:", { role: S.role, date: selectedDate, lang: LANG });
 });
 </script>
 
