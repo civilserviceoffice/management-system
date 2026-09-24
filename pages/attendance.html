@@ -70,7 +70,8 @@ html.theme-dark .sidebar, body.theme-dark .sidebar { background:linear-gradient(
 html.theme-dark .topbar, body.theme-dark .topbar { background:rgba(15,23,42,.85); border-bottom-color:#1e293b; }
 html.theme-dark .stat, body.theme-dark .stat,
 html.theme-dark .att-table, body.theme-dark .att-table,
-html.theme-dark .phase-bar, body.theme-dark .phase-bar { background:#0f172a; border-color:#1e293b; }
+html.theme-dark .phase-bar, body.theme-dark .phase-bar,
+html.theme-dark .scan-panel, body.theme-dark .scan-panel { background:#0f172a; border-color:#1e293b; }
 html.theme-dark table.data thead th { background:#111a2c; border-bottom-color:#1e293b; }
 html.theme-dark table.data tbody td { border-bottom-color:#1a2433; }
 html.theme-dark table.data tbody tr:hover { background:#111a2c; }
@@ -218,6 +219,155 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .scope-badge--manager { background:linear-gradient(135deg,#e0f5f7,#fff); border-color:#a3dfe6; color:#0e7490; }
 .scope-badge--fp { background:linear-gradient(135deg,#f0eaff,#fff); border-color:#ddd2fb; color:#5b21b6; cursor:pointer; }
 
+/* ============================================================
+   FINGERPRINT SCAN PANEL — big always-visible scan area
+   ============================================================ */
+.scan-panel {
+  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:26px;
+  background:linear-gradient(135deg,#faf5ff 0%, #fff 45%, #fff7ed 100%);
+  border:1px solid #c4b5fd;
+  border-radius:var(--r-lg); padding:26px 30px;
+  margin-bottom:20px; box-shadow:var(--sh-md);
+  position:relative; overflow:hidden;
+}
+.scan-panel::before {
+  content:""; position:absolute; inset:0;
+  background:
+    radial-gradient(circle at 15% 50%, rgba(109,40,217,.08), transparent 40%),
+    radial-gradient(circle at 85% 50%, rgba(234,88,12,.06), transparent 40%);
+  pointer-events:none;
+}
+.scan-panel.is-done {
+  background:linear-gradient(135deg,#ecfdf3 0%, #fff 50%, #f0fdf4 100%);
+  border-color:#abefc6;
+}
+.scan-panel.is-done::before {
+  background:radial-gradient(circle at 15% 50%, rgba(6,118,71,.08), transparent 40%);
+}
+
+.scan-panel__stage {
+  position:relative; z-index:1;
+  width:170px; height:170px; flex-shrink:0;
+  display:grid; place-items:center;
+  cursor:pointer;
+  user-select:none;
+  transition:transform .18s;
+}
+.scan-panel__stage:hover { transform:scale(1.03); }
+.scan-panel__stage:active { transform:scale(.97); }
+.scan-panel.is-done .scan-panel__stage { cursor:default; }
+.scan-panel.is-done .scan-panel__stage:hover { transform:none; }
+
+.scan-panel__ring { position:absolute; inset:0; border-radius:50%;
+  border:3px dashed var(--violet); opacity:.35; }
+.scan-panel__ring-2 { position:absolute; inset:14px; border-radius:50%;
+  border:2px solid var(--violet); opacity:.18; }
+.scan-panel.is-scanning .scan-panel__ring { animation:scanPulse 1.6s ease-out infinite; }
+.scan-panel.is-scanning .scan-panel__ring-2 { animation:scanPulse 1.6s ease-out .4s infinite; }
+.scan-panel.is-done .scan-panel__ring { border-color:#067647; opacity:.4; }
+.scan-panel.is-done .scan-panel__ring-2 { border-color:#067647; opacity:.25; }
+.scan-panel.is-error .scan-panel__ring { border-color:#b42318; opacity:.5; }
+@keyframes scanPulse {
+  0% { opacity:.6; transform:scale(.9); }
+  100% { opacity:0; transform:scale(1.18); }
+}
+
+.scan-panel__finger {
+  position:relative; z-index:2;
+  width:120px; height:120px;
+  display:grid; place-items:center;
+}
+.scan-panel__finger svg {
+  width:100%; height:100%;
+  stroke:var(--violet); stroke-width:1.4; fill:none;
+  transition:stroke .25s;
+}
+.scan-panel.is-scanning .scan-panel__finger svg { stroke:var(--violet); animation:fingerGlow 1.6s ease-in-out infinite; }
+.scan-panel.is-done .scan-panel__finger svg { stroke:#067647; }
+.scan-panel.is-error .scan-panel__finger svg { stroke:#b42318; }
+@keyframes fingerGlow {
+  0%,100% { filter:drop-shadow(0 0 6px rgba(109,40,217,.4)); }
+  50%     { filter:drop-shadow(0 0 18px rgba(109,40,217,.7)); }
+}
+
+.scan-panel__status {
+  position:absolute; bottom:-8px; left:50%; transform:translateX(-50%);
+  background:var(--violet); color:#fff;
+  padding:4px 12px; border-radius:999px;
+  font-size:10.5px; font-weight:800; letter-spacing:.06em;
+  text-transform:uppercase; white-space:nowrap;
+  box-shadow:0 4px 12px rgba(109,40,217,.35);
+  z-index:3;
+}
+.scan-panel.is-done .scan-panel__status { background:#067647; box-shadow:0 4px 12px rgba(6,118,71,.35); }
+.scan-panel.is-error .scan-panel__status { background:#b42318; box-shadow:0 4px 12px rgba(180,35,24,.35); }
+
+.scan-panel__main { position:relative; z-index:1; min-width:0; }
+.scan-panel__eyebrow {
+  font-size:11.5px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.12em; color:var(--violet); margin-bottom:6px;
+}
+.scan-panel.is-done .scan-panel__eyebrow { color:#067647; }
+.scan-panel__title {
+  font-size:24px; font-weight:800; letter-spacing:-.6px; line-height:1.2;
+  color:var(--text); margin-bottom:8px;
+}
+.scan-panel__msg {
+  font-size:13.5px; color:var(--muted); line-height:1.55;
+  max-width:520px;
+}
+
+.scan-panel__actions {
+  position:relative; z-index:1; display:flex; flex-direction:column; gap:8px;
+  align-items:flex-end; flex-shrink:0;
+}
+.scan-panel__clock {
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:22px; font-weight:800; color:var(--text);
+  letter-spacing:-.5px; line-height:1; margin-bottom:4px; text-align:right;
+}
+.scan-panel__clock-sub {
+  font-size:11px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.08em; color:var(--muted); text-align:right;
+  margin-bottom:10px;
+}
+.scan-panel__cta {
+  display:inline-flex; align-items:center; gap:9px;
+  height:48px; padding:0 22px; border-radius:13px;
+  background:linear-gradient(135deg, #6d28d9, #5b21b6); color:#fff;
+  font-size:14px; font-weight:800; letter-spacing:.01em;
+  border:none; cursor:pointer;
+  box-shadow:0 10px 22px rgba(109,40,217,.28);
+  transition:transform .15s, box-shadow .15s;
+}
+.scan-panel__cta:hover { transform:translateY(-1px); box-shadow:0 14px 28px rgba(109,40,217,.35); }
+.scan-panel__cta svg { width:19px; height:19px; stroke:currentColor; stroke-width:2.2; fill:none; }
+.scan-panel__cta:disabled { opacity:.55; pointer-events:none; box-shadow:none; }
+.scan-panel.is-done .scan-panel__cta {
+  background:linear-gradient(135deg, #067647, #10b981);
+  box-shadow:0 10px 22px rgba(6,118,71,.22);
+}
+.scan-panel__hint {
+  font-size:11px; color:var(--muted); text-align:right;
+  line-height:1.4; max-width:220px;
+}
+
+@media (max-width: 900px) {
+  .scan-panel {
+    grid-template-columns:1fr; gap:20px; padding:22px 20px;
+    text-align:center;
+  }
+  .scan-panel__stage { margin:0 auto; width:150px; height:150px; }
+  .scan-panel__finger { width:105px; height:105px; }
+  .scan-panel__msg { margin:0 auto; }
+  .scan-panel__actions { align-items:center; }
+  .scan-panel__clock, .scan-panel__clock-sub { text-align:center; }
+  .scan-panel__hint { text-align:center; }
+}
+
+/* ============================================================
+   4-PHASE PROGRESS BAR
+   ============================================================ */
 .phase-bar {
   display:flex; align-items:stretch; gap:0; flex-wrap:nowrap; overflow-x:auto;
   background:var(--card-bg); border:1px solid var(--border); border-radius:var(--r-lg);
@@ -234,11 +384,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .phase-bar__step.is-current {
   background:#f0eaff; border-color:#c4b5fd;
   box-shadow:0 0 0 4px rgba(109,40,217,.10);
-  animation:phasePulse 2s ease-in-out infinite;
-}
-@keyframes phasePulse {
-  0%,100% { box-shadow:0 0 0 4px rgba(109,40,217,.10); }
-  50% { box-shadow:0 0 0 8px rgba(109,40,217,.04); }
 }
 .phase-bar__icon {
   width:34px; height:34px; border-radius:10px; flex-shrink:0;
@@ -297,15 +442,8 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   transform:translateX(-100%); animation:shine 2.6s ease-in-out infinite; pointer-events:none;
 }
 @keyframes shine { 0%,60% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
-
 .btn--fp-out { background:linear-gradient(135deg, #ea580c, #c2410c); border:none; color:#fff;
   box-shadow:0 10px 22px rgba(234,88,12,.28); position:relative; overflow:hidden; }
-.btn--fp-out:hover { background:linear-gradient(135deg, #c2410c, #9a3412); transform:translateY(-1px); }
-.btn--fp-out::before {
-  content:""; position:absolute; inset:0;
-  background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,.18) 50%, transparent 70%);
-  transform:translateX(-100%); animation:shine 2.6s ease-in-out infinite; pointer-events:none;
-}
 .btn--fp-done { background:linear-gradient(135deg, #067647, #10b981); border:none; color:#fff;
   box-shadow:0 10px 22px rgba(6,118,71,.22); }
 
@@ -420,8 +558,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .session-cell__row svg { width:11px; height:11px; flex-shrink:0; }
 .session-cell__row--in svg { stroke:#5b21b6; }
 .session-cell__row--out svg { stroke:#c2410c; }
-.session-cell__label { font-size:9.5px; font-weight:800; text-transform:uppercase;
-  letter-spacing:.04em; color:var(--muted); }
 .session-cell__time { color:var(--text); }
 .session-cell__time--empty { color:var(--muted-light); font-weight:600; }
 .session-cell__row--in .session-cell__time { color:var(--violet); }
@@ -433,36 +569,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   font-size:10px; font-weight:800; letter-spacing:.04em;
   text-transform:uppercase; vertical-align:middle; }
 .fp-badge svg { width:11px; height:11px; stroke:currentColor; stroke-width:2.2; fill:none; }
-
-.fp-scan { display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:26px 12px 14px; text-align:center; }
-.fp-scan__ring { position:relative; width:120px; height:120px; margin-bottom:22px; }
-.fp-scan__ring svg.fp-icon { position:absolute; inset:0; width:100%; height:100%;
-  stroke:var(--violet); stroke-width:1.6; fill:none; transition:opacity .25s; }
-.fp-scan.is-checkout .fp-scan__ring svg.fp-icon { stroke:var(--orange); }
-.fp-scan.is-checkout .fp-scan__ring::before { border-color:var(--orange); }
-.fp-scan__ring::before, .fp-scan__ring::after {
-  content:""; position:absolute; inset:0; border-radius:50%;
-  border:2px solid var(--violet); opacity:0; }
-.fp-scan.is-scanning .fp-scan__ring::before { animation:fpPulse 1.6s ease-out infinite; }
-.fp-scan.is-scanning .fp-scan__ring::after { animation:fpPulse 1.6s ease-out .5s infinite; }
-.fp-scan.is-success .fp-scan__ring svg.fp-icon { stroke:#067647; }
-.fp-scan.is-error .fp-scan__ring svg.fp-icon { stroke:#b42318; }
-.fp-scan.is-success .fp-scan__ring::before { border-color:#067647; opacity:.35; animation:none; }
-.fp-scan.is-error .fp-scan__ring::before { border-color:#b42318; opacity:.35; animation:none; }
-@keyframes fpPulse {
-  0% { opacity:.7; transform:scale(.85); }
-  100% { opacity:0; transform:scale(1.35); }
-}
-.fp-scan__title { font-size:16px; font-weight:800; margin-bottom:6px; }
-.fp-scan__msg { font-size:13px; color:var(--muted); max-width:360px; line-height:1.5; }
-.fp-scan__badge { display:inline-flex; align-items:center; gap:6px;
-  margin-top:16px; padding:6px 12px; border-radius:999px;
-  background:var(--border-soft); font-size:11.5px; font-weight:700;
-  color:var(--text-soft); }
-.fp-scan__badge svg { width:13px; height:13px; stroke:currentColor; stroke-width:2.2; fill:none; }
-.fp-scan.is-success .fp-scan__badge { background:#ecfdf3; color:#067647; }
-.fp-scan.is-error .fp-scan__badge { background:#fef3f2; color:#b42318; }
 
 .modal-backdrop { position:fixed; inset:0; z-index:200; background:rgba(15,23,42,.55);
   backdrop-filter:blur(6px); display:grid; place-items:center; padding:24px; overflow-y:auto; }
@@ -488,9 +594,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   width:100%; height:48px; padding:0 14px; border:1px solid #d9dee7; border-radius:11px;
   background:var(--bg-soft); font-size:14px; color:var(--text); }
 .field textarea { height:auto; min-height:80px; padding:12px 14px; resize:vertical; }
-.field select { appearance:none; padding-right:38px;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-  background-repeat:no-repeat; background-position:right 14px center; }
 .field input:focus, .field select:focus, .field textarea:focus {
   outline:none; background:var(--card-bg); border-color:#70a8d9; box-shadow:0 0 0 4px rgba(11,92,171,.08); }
 .field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
@@ -665,6 +768,11 @@ body.sidebar-open .overlay { display:block; }
       <div class="page-head__actions" id="head-actions"></div>
     </div>
 
+    <!-- ============================================================
+         FINGERPRINT SCAN PANEL  — big, always-visible scan area
+         ============================================================ -->
+    <div id="scan-panel-host"></div>
+
     <div id="phase-bar-host"></div>
     <div class="rules-banner" id="rules-banner"></div>
 
@@ -735,25 +843,10 @@ import {
 
 /* ============================================================
    ATTENDANCE RULES
-   ------------------------------------------------------------
-   MORNING (arrival / morning check-in):
-     ≤ 08:45  → present
-     08:46 – 09:00 → late
-     ≥ 09:01  → absent
-   AFTERNOON (after-lunch / afternoon check-in):
-     13:30 – 13:45 → present
-     13:46 – 14:00 → late
-     ≥ 14:01  → absent
    ============================================================ */
 const ATTENDANCE_RULES = {
-  morning: {
-    presentUntil: "08:45",
-    lateUntil:    "09:00"
-  },
-  afternoon: {
-    presentUntil: "13:45",
-    lateUntil:    "14:00"
-  }
+  morning:   { presentUntil: "08:45", lateUntil: "09:00" },
+  afternoon: { presentUntil: "13:45", lateUntil: "14:00" }
 };
 
 /* ============================================================
@@ -788,23 +881,33 @@ const I18N = {
     loading:"Loading…", noEmployeesScope:"No employees in your scope.",
     noEmployeesFilter:"No employees match your filters.",
     markToday:"Mark Today",
-    phaseMorningIn:"Morning In",
-    phaseMorningOut:"Morning Out",
-    phaseAfternoonIn:"Afternoon In",
-    phaseAfternoonOut:"Afternoon Out",
+    phaseMorningIn:"Morning In", phaseMorningOut:"Morning Out",
+    phaseAfternoonIn:"Afternoon In", phaseAfternoonOut:"Afternoon Out",
     phaseDone:"Day Complete",
-    fpMorningIn:"Morning Check-in",
-    fpMorningOut:"Lunch Check-out",
-    fpAfternoonIn:"Afternoon Check-in",
-    fpAfternoonOut:"End-of-Day Check-out",
-    fpRegisterMorningIn:"Register & Check In",
-    fpDone:"Done for Today",
-    fpScanTitleIn:"Verify fingerprint to check in",
-    fpScanTitleOut:"Verify fingerprint to check out",
-    fpScanMsgIn:"Place your finger on the sensor to record your arrival.",
-    fpScanMsgOut:"Place your finger on the sensor to record your departure.",
-    fpScanRegTitle:"Register your fingerprint",
-    fpScanRegMsg:"Your device will ask you to confirm your fingerprint. This is stored securely on this device.",
+    scanEyebrowIn:"Tap to scan",
+    scanEyebrowDone:"All scans complete",
+    scanTitleMorningIn:"Place your finger to check in",
+    scanTitleMorningOut:"Place your finger to check out for lunch",
+    scanTitleAfternoonIn:"Place your finger to check in after lunch",
+    scanTitleAfternoonOut:"Place your finger to check out for the day",
+    scanTitleDone:"You're done for today",
+    scanMsgMorningIn:"Recording your morning arrival.",
+    scanMsgMorningOut:"Recording your lunch break departure.",
+    scanMsgAfternoonIn:"Recording your afternoon return.",
+    scanMsgAfternoonOut:"Recording your end-of-day departure.",
+    scanMsgDone:"All four scans have been recorded. See you tomorrow.",
+    scanMsgNoEmp:"Your account is not linked to an employee record. Ask an administrator to assign you.",
+    scanMsgNotSupported:"Fingerprint is not available on this device or browser. Try a device with Touch ID, Windows Hello, or a USB fingerprint reader.",
+    scanMsgNotHttps:"Fingerprint requires a secure connection (HTTPS).",
+    scanStatusReady:"Ready to scan",
+    scanStatusScanning:"Scanning…",
+    scanStatusDone:"Verified",
+    scanStatusError:"Failed",
+    scanCTAIn:"Scan Now",
+    scanCTADone:"Done",
+    scanCTAUnsupported:"Unavailable",
+    scanHintIn:"Or press the fingerprint area to start.",
+    scanHintDone:"The next scan opens on the next session.",
     fpScanSuccess:"Verified", fpScanError:"Failed", fpScanWaiting:"Waiting for biometric…",
     fpMarked:"{phase} recorded at {time}",
     fpMarkedMorning:"Morning In at {time} — {status}",
@@ -883,15 +986,24 @@ const I18N = {
     phaseMorningIn:"Ganama Seensa", phaseMorningOut:"Ganama Ba'insa",
     phaseAfternoonIn:"Waaree Seensa", phaseAfternoonOut:"Waaree Ba'insa",
     phaseDone:"Guyyaan Xumurame",
-    fpMorningIn:"Ganama Seeni", fpMorningOut:"Boqonnaa Baxi",
-    fpAfternoonIn:"Waaree Seeni", fpAfternoonOut:"Guyyaa Xumuri",
-    fpRegisterMorningIn:"Galmeessi fi Seeni", fpDone:"Har'aaf Xumurame",
-    fpScanTitleIn:"Mallattoo qubaa mirkaneessi",
-    fpScanTitleOut:"Mallattoo qubaa mirkaneessi",
-    fpScanMsgIn:"Yeroo seenaa galmeessuuf quba kee sensor irra kaa'i.",
-    fpScanMsgOut:"Yeroo ba'insaa galmeessuuf quba kee sensor irra kaa'i.",
-    fpScanRegTitle:"Mallattoo qubaa galmeessi",
-    fpScanRegMsg:"Meeshaan kee mallattoo qubaa mirkaneessu si gaafata.",
+    scanEyebrowIn:"Quba kaa'i", scanEyebrowDone:"Mallattoowwan hunda xumuraman",
+    scanTitleMorningIn:"Quba kee kaa'i seenuuf",
+    scanTitleMorningOut:"Quba kee kaa'i boqonnaaf ba'uuf",
+    scanTitleAfternoonIn:"Quba kee kaa'i waaree seenuuf",
+    scanTitleAfternoonOut:"Quba kee kaa'i guyyaa xumuruuf",
+    scanTitleDone:"Har'aaf xumurteetta",
+    scanMsgMorningIn:"Dhufaatii ganama galmeessaa jira.",
+    scanMsgMorningOut:"Boqonnaa galmeessaa jira.",
+    scanMsgAfternoonIn:"Deebii waaree galmeessaa jira.",
+    scanMsgAfternoonOut:"Ba'insa guyyaa galmeessaa jira.",
+    scanMsgDone:"Mallattoowwan afur hunda galmeeffamaniiru. Boru wal agarra.",
+    scanMsgNoEmp:"Herregni kee galmee hojjetaa waliin hin hidhamne.",
+    scanMsgNotSupported:"Mallattoon qubaa meeshaa kanaa irratti hin jiru.",
+    scanMsgNotHttps:"Mallattoon qubaa HTTPS barbaachisa.",
+    scanStatusReady:"Quba kaa'i", scanStatusScanning:"Scan godhaa jira…",
+    scanStatusDone:"Mirkanaa'e", scanStatusError:"Kufe",
+    scanCTAIn:"Amma Scan", scanCTADone:"Xumurame", scanCTAUnsupported:"Hin jiru",
+    scanHintIn:"Ykn bakka qubaa tuqi.", scanHintDone:"Mallattoon itti aanu yeroo itti aanuutti bana.",
     fpScanSuccess:"Mirkanaa'e", fpScanError:"Kufe", fpScanWaiting:"Biometric eegaa jira…",
     fpMarked:"{phase} {time} irratti galmeeffame",
     fpMarkedMorning:"Ganama Seensa {time} — {status}",
@@ -968,15 +1080,24 @@ const I18N = {
     phaseMorningIn:"ጠዋት መግቢያ", phaseMorningOut:"ጠዋት መውጫ",
     phaseAfternoonIn:"ከሰዓት መግቢያ", phaseAfternoonOut:"ከሰዓት መውጫ",
     phaseDone:"ቀኑ ተጠናቅቋል",
-    fpMorningIn:"የጠዋት መግቢያ", fpMorningOut:"የምሳ መውጫ",
-    fpAfternoonIn:"የከሰዓት መግቢያ", fpAfternoonOut:"የቀን መጨረሻ መውጫ",
-    fpRegisterMorningIn:"ይመዝገቡ እና ይግቡ", fpDone:"ዛሬ ተጠናቅቋል",
-    fpScanTitleIn:"ለመግቢያ የጣት አሻራ ያረጋግጡ",
-    fpScanTitleOut:"ለመውጫ የጣት አሻራ ያረጋግጡ",
-    fpScanMsgIn:"የመጡበትን ጊዜ ለመመዝገብ ጣትዎን በሴንሰሩ ላይ ያስቀምጡ።",
-    fpScanMsgOut:"የወጡበትን ጊዜ ለመመዝገብ ጣትዎን በሴንሰሩ ላይ ያስቀምጡ።",
-    fpScanRegTitle:"የጣት አሻራዎን ይመዝግቡ",
-    fpScanRegMsg:"መሣሪያዎ የጣት አሻራዎን እንዲያረጋግጡ ይጠይቅዎታል።",
+    scanEyebrowIn:"ለመቃኘት ይንኩ", scanEyebrowDone:"ሁሉም ስካኖች ተጠናቅቀዋል",
+    scanTitleMorningIn:"ለመግቢያ ጣትዎን ያስቀምጡ",
+    scanTitleMorningOut:"ለምሳ ለመውጣት ጣትዎን ያስቀምጡ",
+    scanTitleAfternoonIn:"ከምሳ በኋላ ለመግባት ጣትዎን ያስቀምጡ",
+    scanTitleAfternoonOut:"ለቀን መውጫ ጣትዎን ያስቀምጡ",
+    scanTitleDone:"ዛሬ ተጠናቅቋል",
+    scanMsgMorningIn:"የጠዋት መድረሻዎን በመመዝገብ ላይ።",
+    scanMsgMorningOut:"የምሳ እረፍት መውጫዎን በመመዝገብ ላይ።",
+    scanMsgAfternoonIn:"የከሰዓት መመለሻዎን በመመዝገብ ላይ።",
+    scanMsgAfternoonOut:"የቀን መጨረሻ መውጫዎን በመመዝገብ ላይ።",
+    scanMsgDone:"አራቱም ስካኖች ተመዝግበዋል። ነገ እንገናኝ።",
+    scanMsgNoEmp:"መለያዎ ከሰራተኛ መዝገብ ጋር አልተገናኘም።",
+    scanMsgNotSupported:"የጣት አሻራ በዚህ መሣሪያ ላይ አይገኝም።",
+    scanMsgNotHttps:"የጣት አሻራ HTTPS ይፈልጋል።",
+    scanStatusReady:"ለመቃኘት ዝግጁ", scanStatusScanning:"በመቃኘት ላይ…",
+    scanStatusDone:"ተረጋግጧል", scanStatusError:"አልተሳካም",
+    scanCTAIn:"አሁን ቃኝ", scanCTADone:"ተጠናቅቋል", scanCTAUnsupported:"አይገኝም",
+    scanHintIn:"ወይም የጣት አካባቢውን ይንኩ።", scanHintDone:"ቀጣዩ ስካን በሚቀጥለው ክፍለ ጊዜ ይከፈታል።",
     fpScanSuccess:"ተረጋግጧል", fpScanError:"አልተሳካም", fpScanWaiting:"ባዮሜትሪክ በመጠበቅ ላይ…",
     fpMarked:"{phase} በ {time} ተመዝግቧል",
     fpMarkedMorning:"የጠዋት መግቢያ በ {time} — {status}",
@@ -1200,8 +1321,6 @@ function timeToMinutes(hhmm) {
   return h * 60 + m;
 }
 function nowHHMM() { return new Date().toTimeString().slice(0,5); }
-
-/* Apply the arrival rule for a given session ("morning" or "afternoon") */
 function determineStatusFromCheckIn(checkInHHMM, session) {
   const m = timeToMinutes(checkInHHMM);
   if (m == null) return "present";
@@ -1212,25 +1331,15 @@ function determineStatusFromCheckIn(checkInHHMM, session) {
   if (m <= lateUntil)    return "late";
   return "absent";
 }
-
-/* Combine the morning and afternoon statuses into the day's final status.
-   Priority: if either session was "absent" → day is absent.
-             otherwise if either session was "late" → day is late.
-             otherwise present. */
 function combineDayStatus(rec) {
   if (!rec) return null;
-  const morning = rec.morningStatus;
-  const afternoon = rec.afternoonStatus;
-  if (!morning && !afternoon) return rec.status || null;
-  if (morning === "absent" || afternoon === "absent") return "absent";
-  if (morning === "late"   || afternoon === "late")   return "late";
-  if (morning === "present" || afternoon === "present") return "present";
+  const m = rec.morningStatus, a = rec.afternoonStatus;
+  if (!m && !a) return rec.status || null;
+  if (m === "absent" || a === "absent") return "absent";
+  if (m === "late" || a === "late") return "late";
+  if (m === "present" || a === "present") return "present";
   return rec.status || null;
 }
-
-/* ============================================================
-   4-PHASE STATE MACHINE
-   ============================================================ */
 function todayPhase(empId) {
   const rec = ATTENDANCE[empId];
   if (!rec) return "morning-in";
@@ -1241,11 +1350,11 @@ function todayPhase(empId) {
   return "done";
 }
 const PHASE_KEYS = {
-  "morning-in":   { labelKey:"phaseMorningIn",   actionKey:"fpMorningIn",   icon:"logIn",  isOut:false, session:"morning"   },
-  "morning-out":  { labelKey:"phaseMorningOut",  actionKey:"fpMorningOut",  icon:"logOut", isOut:true,  session:"morning"   },
-  "afternoon-in": { labelKey:"phaseAfternoonIn", actionKey:"fpAfternoonIn", icon:"logIn",  isOut:false, session:"afternoon" },
-  "afternoon-out":{ labelKey:"phaseAfternoonOut",actionKey:"fpAfternoonOut",icon:"logOut", isOut:true,  session:"afternoon" },
-  "done":         { labelKey:"phaseDone",        actionKey:"fpDone",        icon:"check",  isOut:false, session:null        }
+  "morning-in":   { titleKey:"scanTitleMorningIn",    msgKey:"scanMsgMorningIn",    icon:"logIn",  isOut:false, session:"morning"   },
+  "morning-out":  { titleKey:"scanTitleMorningOut",   msgKey:"scanMsgMorningOut",   icon:"logOut", isOut:true,  session:"morning"   },
+  "afternoon-in": { titleKey:"scanTitleAfternoonIn",  msgKey:"scanMsgAfternoonIn",  icon:"logIn",  isOut:false, session:"afternoon" },
+  "afternoon-out":{ titleKey:"scanTitleAfternoonOut", msgKey:"scanMsgAfternoonOut", icon:"logOut", isOut:true,  session:"afternoon" },
+  "done":         { titleKey:"scanTitleDone",         msgKey:"scanMsgDone",         icon:"check",  isOut:false, session:null        }
 };
 
 /* ============================================================
@@ -1306,7 +1415,6 @@ const escapeHtml = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g,
 const initials = (n) => (n || "?").split(/\s+/).slice(0,2).map(s => s[0]).join("").toUpperCase();
 const hasAccess = (item, role) => item.roles.includes("*") || item.roles.includes(role);
 const fullName = (e) => e.fullName || [e.firstName, e.lastName].filter(Boolean).join(" ") || e.nameEn || e.email || "Employee";
-
 const ROLE_LABELS = {
   super_admin:"role_super_admin", admin:"role_admin", hrm:"role_hrm",
   manager:"role_manager", employee:"role_employee", finance:"role_finance"
@@ -1316,7 +1424,6 @@ const roleLabel = (r) => {
   if (key) return t(key);
   return (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
 };
-
 function toast(msg, type="success") {
   const wrap = document.getElementById("toast-wrap");
   const el = document.createElement("div");
@@ -1336,7 +1443,6 @@ const isAdmin = () => S?.role === "admin";
 const isHRM = () => S?.role === "hrm";
 const isManager = () => S?.role === "manager";
 const isEmployee = () => S?.role === "employee";
-
 const canMarkAttendance = () => !isEmployee();
 const canMarkOthers = () => isSuper() || isAdmin() || isHRM() || isManager();
 
@@ -1479,48 +1585,101 @@ function closeModal() {
 }
 
 /* ============================================================
-   FINGERPRINT SCANNING MODAL
+   SCAN PANEL — big always-visible area
    ============================================================ */
-function openFpScanModal({ title, message, mode }) {
-  return new Promise((resolve) => {
-    const modeClass = mode === "checkout" ? "is-checkout" : "";
-    const bd = openModal(`
-      <div class="modal__body" style="padding:0">
-        <div class="fp-scan ${modeClass} is-scanning" id="fp-scan">
-          <div class="fp-scan__ring">
-            <svg class="fp-icon" viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
-          </div>
-          <div class="fp-scan__title">${escapeHtml(title)}</div>
-          <div class="fp-scan__msg">${escapeHtml(message)}</div>
-          <div class="fp-scan__badge" id="fp-badge">
-            <span class="spinner" style="width:12px;height:12px;border-width:2px"></span>
-            <span id="fp-badge-text">${escapeHtml(t("fpScanWaiting"))}</span>
+function renderScanPanel() {
+  const host = document.getElementById("scan-panel-host");
+  if (!MY_EMP) {
+    // Show a friendly placeholder for users with no employee record
+    host.innerHTML = `
+      <div class="scan-panel">
+        <div class="scan-panel__stage" style="cursor:default">
+          <div class="scan-panel__ring"></div>
+          <div class="scan-panel__ring-2"></div>
+          <div class="scan-panel__finger">
+            <svg viewBox="0 0 24 24" style="opacity:.35">${ICONS.fingerprint}</svg>
           </div>
         </div>
+        <div class="scan-panel__main">
+          <div class="scan-panel__eyebrow">Fingerprint Scanner</div>
+          <div class="scan-panel__title">Not available</div>
+          <div class="scan-panel__msg">${escapeHtml(t("scanMsgNoEmp"))}</div>
+        </div>
+        <div class="scan-panel__actions"></div>
+      </div>`;
+    return;
+  }
+
+  const phase = todayPhase(MY_EMP.id);
+  const phaseInfo = PHASE_KEYS[phase];
+  const isDone = phase === "done";
+  const fpCount = getFingerprintList(MY_EMP).length;
+  const now = nowHHMM();
+
+  // Availability checks
+  const httpsOk = location.protocol.startsWith("https") || location.hostname === "localhost";
+  const canScan = FP_SUPPORTED && httpsOk && !isDone;
+
+  // State class
+  let stateClass = "";
+  if (isDone) stateClass = "is-done";
+  else if (!canScan) stateClass = "is-error";
+
+  // Status text
+  let statusText = t("scanStatusReady");
+  if (isDone) statusText = t("scanStatusDone");
+  else if (!FP_SUPPORTED) statusText = "Not supported";
+  else if (!httpsOk) statusText = "HTTPS required";
+
+  // CTA label
+  let ctaLabel = t("scanCTAIn");
+  if (isDone) ctaLabel = t("scanCTADone");
+  else if (!canScan) ctaLabel = t("scanCTAUnsupported");
+
+  // Hint
+  const hint = isDone
+    ? t("scanHintDone")
+    : (canScan ? t("scanHintIn") : (FP_SUPPORTED ? t("scanMsgNotHttps") : t("scanMsgNotSupported")));
+
+  // Icon inside ring — checkmark when done
+  const innerIcon = isDone ? ICONS.check : ICONS.fingerprint;
+
+  host.innerHTML = `
+    <div class="scan-panel ${stateClass}" id="scan-panel">
+      <div class="scan-panel__stage" id="scan-stage" role="button" tabindex="0" aria-label="${escapeHtml(ctaLabel)}">
+        <div class="scan-panel__ring"></div>
+        <div class="scan-panel__ring-2"></div>
+        <div class="scan-panel__finger">
+          <svg viewBox="0 0 24 24">${innerIcon}</svg>
+        </div>
+        <span class="scan-panel__status" id="scan-status">${escapeHtml(statusText)}</span>
       </div>
-      <div class="modal__foot">
-        <button class="btn" data-close>${escapeHtml(t("fpCancel"))}</button>
+
+      <div class="scan-panel__main">
+        <div class="scan-panel__eyebrow">${escapeHtml(isDone ? t("scanEyebrowDone") : t("scanEyebrowIn"))}</div>
+        <div class="scan-panel__title">${escapeHtml(t(phaseInfo.titleKey))}</div>
+        <div class="scan-panel__msg">${escapeHtml(t(phaseInfo.msgKey))}</div>
       </div>
-    `);
-    bd.querySelector("[data-close]").addEventListener("click", () => resolve({ ok:false, reason:"cancelled" }));
-    bd.addEventListener("click", (e) => { if (e.target === bd) resolve({ ok:false, reason:"cancelled" }); });
-    resolve.__bd = bd;
-    resolve.__scanEl = document.getElementById("fp-scan");
-    resolve.__badgeText = document.getElementById("fp-badge-text");
-  });
-}
-function fpModalSetState(promise, state, customMsg) {
-  const scanEl = promise.__scanEl;
-  if (!scanEl) return;
-  scanEl.classList.remove("is-scanning","is-success","is-error");
-  scanEl.classList.add("is-" + state);
-  const badgeText = promise.__badgeText;
-  if (state === "scanning") {
-    badgeText.innerHTML = `<span class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle"></span> <span style="margin-left:4px">${escapeHtml(customMsg || t("fpScanWaiting"))}</span>`;
-  } else if (state === "success") {
-    badgeText.textContent = customMsg || t("fpScanSuccess");
-  } else if (state === "error") {
-    badgeText.textContent = customMsg || t("fpScanError");
+
+      <div class="scan-panel__actions">
+        <div class="scan-panel__clock">${escapeHtml(now)}</div>
+        <div class="scan-panel__clock-sub">Current time</div>
+        <button class="scan-panel__cta" id="scan-cta" ${canScan ? "" : "disabled"}>
+          <svg viewBox="0 0 24 24">${isDone ? ICONS.check : ICONS.fingerprint}</svg>
+          ${escapeHtml(ctaLabel)}
+        </button>
+        <div class="scan-panel__hint">${escapeHtml(hint)}</div>
+      </div>
+    </div>
+  `;
+
+  if (canScan) {
+    const stage = document.getElementById("scan-stage");
+    const cta = document.getElementById("scan-cta");
+    const trigger = () => markWithFingerprint();
+    stage.addEventListener("click", trigger);
+    stage.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); trigger(); } });
+    cta.addEventListener("click", trigger);
   }
 }
 
@@ -1546,19 +1705,15 @@ async function markWithFingerprint(empId = null) {
 
   const phaseInfo = PHASE_KEYS[phase];
   const isOut = phaseInfo.isOut;
-  const session = phaseInfo.session;
   const storedList = getFingerprintList(me);
 
-  const title =
-    phase === "morning-in" && !storedList.length ? t("fpScanRegTitle")
-    : isOut ? t("fpScanTitleOut")
-    : t("fpScanTitleIn");
-  const message = isOut ? t("fpScanMsgOut") : t("fpScanMsgIn");
-
-  const scanModal = await openFpScanModal({ title, message, mode: isOut ? "checkout" : "checkin" });
+  /* Reflect scanning state on the panel if it's the current user */
+  const panel = document.getElementById("scan-panel");
+  if (panel) panel.classList.add("is-scanning");
+  const statusEl = document.getElementById("scan-status");
+  if (statusEl) statusEl.textContent = t("scanStatusScanning");
 
   try {
-    fpModalSetState(scanModal, "scanning", t("fpScanWaiting"));
     let usedCredential = null;
 
     if (storedList.length) {
@@ -1567,13 +1722,15 @@ async function markWithFingerprint(empId = null) {
         usedCredential = result.credentialId;
       } catch (err) {
         if (err.name === "NotAllowedError" || err.message === "VERIFY_CANCELLED") {
-          fpModalSetState(scanModal, "scanning", "Registering this device…");
+          /* Register this device, then continue */
           const reg = await fpRegisterHere({
             uid: me.uid || S.uid,
             email: me.email || S.email,
             name: me.name || fullName(me)
           });
-          await updateDoc(doc(db, "employees", me.id), { fingerprints: [...storedList, reg] });
+          await updateDoc(doc(db, "employees", me.id), {
+            fingerprints: [...storedList, reg]
+          });
           usedCredential = reg.credentialId;
         } else {
           throw err;
@@ -1589,10 +1746,14 @@ async function markWithFingerprint(empId = null) {
       usedCredential = reg.credentialId;
     }
 
-    fpModalSetState(scanModal, "success", t("fpScanSuccess"));
+    if (panel) {
+      panel.classList.remove("is-scanning");
+      panel.classList.add("is-done");
+    }
+    if (statusEl) statusEl.textContent = t("scanStatusDone");
 
     const now = nowHHMM();
-    const phaseLabel = t(phaseInfo.labelKey);
+    const phaseLabel = t(phaseInfo.titleKey);
 
     if (phase === "morning-in") {
       const status = determineStatusFromCheckIn(now, "morning");
@@ -1603,12 +1764,9 @@ async function markWithFingerprint(empId = null) {
         morningCheckInMethod: "fingerprint",
         morningCheckInCredentialId: usedCredential,
         morningStatus: status,
-        /* legacy mirror */
         checkIn: now,
         method: "fingerprint"
       });
-      await new Promise(r => setTimeout(r, 500));
-      closeModal();
       toast(t("fpMarkedMorning", { time: now, status: statusLabel(status) }), "success");
 
     } else if (phase === "morning-out") {
@@ -1618,8 +1776,6 @@ async function markWithFingerprint(empId = null) {
         morningCheckOutMethod: "fingerprint",
         morningCheckOutCredentialId: usedCredential
       });
-      await new Promise(r => setTimeout(r, 500));
-      closeModal();
       toast(t("fpMarked", { phase: phaseLabel, time: now }), "success");
 
     } else if (phase === "afternoon-in") {
@@ -1631,8 +1787,6 @@ async function markWithFingerprint(empId = null) {
         afternoonCheckInCredentialId: usedCredential,
         afternoonStatus: status
       });
-      await new Promise(r => setTimeout(r, 500));
-      closeModal();
       toast(t("fpMarkedAfternoon", { time: now, status: statusLabel(status) }), "success");
 
     } else if (phase === "afternoon-out") {
@@ -1642,26 +1796,27 @@ async function markWithFingerprint(empId = null) {
         afternoonCheckOutMethod: "fingerprint",
         afternoonCheckOutCredentialId: usedCredential
       });
-      /* After the fourth scan, recompute the final day status */
       const rec = ATTENDANCE[me.id] || {};
-      const finalStatus = combineDayStatus({
-        ...rec,
-        afternoonCheckOut: now
-      });
-      if (finalStatus) {
-        await saveAttendance(me, { status: finalStatus });
-      }
-      await new Promise(r => setTimeout(r, 500));
-      closeModal();
+      const finalStatus = combineDayStatus({ ...rec, afternoonCheckOut: now });
+      if (finalStatus) await saveAttendance(me, { status: finalStatus });
       toast(t("fpMarked", { phase: phaseLabel, time: now }), "success");
     }
+
+    /* Panel will re-render on next attendance snapshot */
   } catch (err) {
     console.warn("[fp]", err);
-    fpModalSetState(scanModal, "error",
-      err.name === "NotAllowedError" ? t("fpCancelled") : (err.message || t("fpScanError")));
-    await new Promise(r => setTimeout(r, 1400));
-    closeModal();
+    if (panel) {
+      panel.classList.remove("is-scanning");
+      panel.classList.add("is-error");
+    }
+    if (statusEl) statusEl.textContent = t("scanStatusError");
     if (err.name !== "NotAllowedError") toast(err.message || t("fpScanError"), "error");
+    else toast(t("fpCancelled"), "error");
+    /* Reset panel state after a delay */
+    setTimeout(() => {
+      if (panel) panel.classList.remove("is-error");
+      renderScanPanel();
+    }, 1600);
   }
 }
 
@@ -1699,18 +1854,14 @@ function renderUser() {
 }
 function renderScopeBadge() {
   const el = document.getElementById("scope-badge");
-  if (isSuper()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--super"><svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeSuper"))}</span>`;
-  } else if (isHRM()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--cluster"><svg viewBox="0 0 24 24">${ICONS.users}</svg> ${escapeHtml(t("scopeHrm"))}</span>`;
-  } else if (isAdmin()) {
+  if (isSuper()) el.innerHTML = `<span class="scope-badge scope-badge--super"><svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeSuper"))}</span>`;
+  else if (isHRM()) el.innerHTML = `<span class="scope-badge scope-badge--cluster"><svg viewBox="0 0 24 24">${ICONS.users}</svg> ${escapeHtml(t("scopeHrm"))}</span>`;
+  else if (isAdmin()) {
     const c = CLUSTERS.find(x => x.id === S.clusterId);
     el.innerHTML = `<span class="scope-badge scope-badge--cluster"><svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeCluster"))} · ${escapeHtml(c?.name || "—")}</span>`;
-  } else if (isManager()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--manager"><svg viewBox="0 0 24 24">${ICONS.users}</svg> ${escapeHtml(t("scopeManager"))}</span>`;
-  } else {
-    el.innerHTML = `<span class="scope-badge"><svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeEmployee"))}</span>`;
-  }
+  } else if (isManager()) el.innerHTML = `<span class="scope-badge scope-badge--manager"><svg viewBox="0 0 24 24">${ICONS.users}</svg> ${escapeHtml(t("scopeManager"))}</span>`;
+  else el.innerHTML = `<span class="scope-badge"><svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeEmployee"))}</span>`;
+
   if (MY_EMP) {
     const fpCount = getFingerprintList(MY_EMP).length;
     const chip = document.createElement("span");
@@ -1724,50 +1875,30 @@ function renderScopeBadge() {
 function renderHeadActions() {
   const host = document.getElementById("head-actions");
   const btns = [];
-  if (MY_EMP) {
-    const phase = todayPhase(MY_EMP.id);
-    const fpCount = getFingerprintList(MY_EMP).length;
-    const phaseInfo = PHASE_KEYS[phase];
-    const isDone = phase === "done";
-    const isOut = phaseInfo.isOut;
-
-    let label = t(phaseInfo.actionKey);
-    if (phase === "morning-in" && !fpCount) label = t("fpRegisterMorningIn");
-
-    const cls = isDone ? "btn--fp-done" : (isOut ? "btn--fp-out" : "btn--fp");
-    btns.push(`<button class="btn ${cls}" id="fp-mark-btn" ${isDone || !FP_SUPPORTED ? "disabled" : ""} title="${escapeHtml(label)}">
-      <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ${escapeHtml(label)}
-    </button>`);
-  }
   if (canMarkAttendance()) {
     btns.push(`<button class="btn btn--primary" id="mark-all-btn">
       <svg viewBox="0 0 24 24">${ICONS.check}</svg> ${escapeHtml(t("markToday"))}
     </button>`);
   }
   host.innerHTML = btns.join("");
-  document.getElementById("fp-mark-btn")?.addEventListener("click", () => markWithFingerprint());
   document.getElementById("mark-all-btn")?.addEventListener("click", ()=>openBulkMarkModal());
 }
 
 /* ============================================================
-   PHASE BAR (4-step progress)
+   PHASE BAR
    ============================================================ */
 function renderPhaseBar() {
   const host = document.getElementById("phase-bar-host");
   if (!MY_EMP) { host.innerHTML = ""; return; }
   const rec = ATTENDANCE[MY_EMP.id] || {};
   const phase = todayPhase(MY_EMP.id);
-
   const steps = [
     { key:"morning-in",    labelKey:"phaseMorningIn",    icon:"logIn",  time: rec.morningCheckIn    || null, status: rec.morningStatus    || null },
     { key:"morning-out",   labelKey:"phaseMorningOut",   icon:"logOut", time: rec.morningCheckOut   || null, status: null },
     { key:"afternoon-in",  labelKey:"phaseAfternoonIn",  icon:"logIn",  time: rec.afternoonCheckIn  || null, status: rec.afternoonStatus  || null },
     { key:"afternoon-out", labelKey:"phaseAfternoonOut", icon:"logOut", time: rec.afternoonCheckOut || null, status: null }
   ];
-
   const phaseOrder = ["morning-in","morning-out","afternoon-in","afternoon-out","done"];
-  const currentIdx = phaseOrder.indexOf(phase);
-
   let html = '<div class="phase-bar">';
   steps.forEach((s, i) => {
     const isDone = !!s.time;
@@ -1775,7 +1906,6 @@ function renderPhaseBar() {
     const cls = "phase-bar__step" + (isDone ? " is-done" : "") + (isCurrent && !isDone ? " is-current" : "");
     const timeText = s.time ? s.time : "—:—";
     const statusTxt = s.status ? ` · ${statusLabel(s.status)}` : "";
-
     html += `<div class="${cls}">
       <div class="phase-bar__icon"><svg viewBox="0 0 24 24">${ICONS[s.icon]}</svg></div>
       <div class="phase-bar__main">
@@ -1783,9 +1913,7 @@ function renderPhaseBar() {
         <div class="phase-bar__time">${escapeHtml(timeText)}${escapeHtml(statusTxt)}</div>
       </div>
     </div>`;
-    if (i < steps.length - 1) {
-      html += `<div class="phase-bar__line ${isDone ? "is-done" : ""}"></div>`;
-    }
+    if (i < steps.length - 1) html += `<div class="phase-bar__line ${isDone ? "is-done" : ""}"></div>`;
   });
   html += '</div>';
   host.innerHTML = html;
@@ -1826,7 +1954,6 @@ function renderStats() {
   const working = counts.total - counts.none;
   const presentish = counts.present + counts.late + counts.field + counts.half_day;
   const rate = working ? Math.round((presentish / working) * 100) : 0;
-
   document.getElementById("stats").innerHTML = `
     ${statCard(t("statTotalEmployees"), counts.total, "stat--blue", "users")}
     ${statCard(t("statPresent"),         counts.present, "stat--green", "check")}
@@ -1864,7 +1991,7 @@ function filteredEmployeesForStats() {
 function populateFilters() {
   const emps = visibleEmployees();
   const regionSel = document.getElementById("region-filter");
-  const regionCodes = Array.from(new Set(emps.map(e => e.regionCode).filter(Boolean))).sort((a,b) => String(a).localeCompare(String(b)));
+  const regionCodes = Array.from(new Set(emps.map(e => e.regionCode).filter(Boolean))).sort((a,b)=>String(a).localeCompare(String(b)));
   regionSel.innerHTML = `<option value="">${escapeHtml(t("allRegions"))}</option>` +
     regionCodes.map(code => `<option value="${escapeHtml(code)}" ${filterRegion===code?"selected":""}>${escapeHtml(regionLabel(code))}</option>`).join("");
 
@@ -1929,7 +2056,6 @@ function statusPill(rec) {
     : "";
   return `<span class="status-pill status-${s.key}" data-edit="1">${escapeHtml(label)}</span>${fpBadge}`;
 }
-
 function sessionCell(inTime, outTime) {
   const inTxt = inTime || "—:—";
   const outTxt = outTime || "—:—";
@@ -1946,7 +2072,6 @@ function sessionCell(inTime, outTime) {
     </div>
   `;
 }
-
 function renderTable() {
   const tbody = document.getElementById("att-tbody");
   const list = filteredEmployees();
@@ -1967,8 +2092,6 @@ function renderTable() {
     const dep = DEPARTMENTS.find(d => d.id === e.departmentId);
     const avatar = e.photoURL ? `<img src="${escapeHtml(e.photoURL)}" alt="">` : escapeHtml(initials(fullName(e)));
     const editable = canMarkOthers() || e.uid === S.uid;
-    const isSelf = e.uid === S.uid;
-    const showFp = isSelf && FP_SUPPORTED && todayPhase(e.id) !== "done";
 
     return `
       <tr data-emp-id="${e.id}">
@@ -1988,10 +2111,6 @@ function renderTable() {
         <td>${sessionCell(rec?.afternoonCheckIn, rec?.afternoonCheckOut)}</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(rec?.notes || "—")}</td>
         <td style="text-align:right">
-          ${showFp ? `
-            <button class="btn btn--sm btn--icon btn--fp" data-action="fp" data-id="${e.id}" title="${escapeHtml(t(PHASE_KEYS[todayPhase(e.id)].actionKey))}" style="margin-right:4px">
-              <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
-            </button>` : ""}
           ${editable ? `
             <button class="btn btn--sm btn--icon" data-action="mark" data-id="${e.id}" title="${escapeHtml(t("modalMarkTitle"))}">
               <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
@@ -2002,9 +2121,6 @@ function renderTable() {
 
   tbody.querySelectorAll("[data-action='mark']").forEach(btn => {
     btn.addEventListener("click", ()=>openMarkSingleModal(btn.dataset.id));
-  });
-  tbody.querySelectorAll("[data-action='fp']").forEach(btn => {
-    btn.addEventListener("click", ()=>markWithFingerprint(btn.dataset.id));
   });
   tbody.querySelectorAll(".status-pill").forEach(pill => {
     const tr = pill.closest("tr");
@@ -2021,8 +2137,7 @@ function renderTable() {
 }
 
 function render() {
-  renderScopeBadge();
-  renderHeadActions();
+  renderScanPanel();
   renderPhaseBar();
   renderRulesBanner();
   renderStats();
@@ -2031,7 +2146,7 @@ function render() {
 }
 
 /* ============================================================
-   MARK SINGLE MODAL (manual override with 4 slots)
+   MARK SINGLE MODAL (manual override)
    ============================================================ */
 function openMarkSingleModal(empId) {
   const emp = EMPLOYEES.find(e => e.id === empId);
@@ -2039,7 +2154,6 @@ function openMarkSingleModal(empId) {
   const existing = ATTENDANCE[emp.id] || {};
   const editable = canMarkOthers() || emp.uid === S.uid;
   if (!editable) { toast(t("toastCannotMark"), "error"); return; }
-
   let selectedStatus = existing.status || "present";
 
   openModal(`
@@ -2055,10 +2169,7 @@ function openMarkSingleModal(empId) {
         <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
         <div id="mk-error-msg" style="flex:1"></div>
       </div>
-
-      <div class="field">
-        <label>${escapeHtml(t("modalStatusLabel"))}</label>
-      </div>
+      <div class="field"><label>${escapeHtml(t("modalStatusLabel"))}</label></div>
       <div class="status-picker" id="status-picker">
         ${STATUSES.map(s => `
           <div class="status-opt ${selectedStatus === s.key ? "is-on" : ""}" data-status="${s.key}">
@@ -2067,33 +2178,20 @@ function openMarkSingleModal(empId) {
           </div>
         `).join("")}
       </div>
-
       <div class="field-row">
-        <div class="field">
-          <label>${escapeHtml(t("modalMorningIn"))}</label>
-          <input type="time" id="mk-morningIn" value="${escapeHtml(existing.morningCheckIn || "")}">
-        </div>
-        <div class="field">
-          <label>${escapeHtml(t("modalMorningOut"))}</label>
-          <input type="time" id="mk-morningOut" value="${escapeHtml(existing.morningCheckOut || "")}">
-        </div>
+        <div class="field"><label>${escapeHtml(t("modalMorningIn"))}</label>
+          <input type="time" id="mk-morningIn" value="${escapeHtml(existing.morningCheckIn || "")}"></div>
+        <div class="field"><label>${escapeHtml(t("modalMorningOut"))}</label>
+          <input type="time" id="mk-morningOut" value="${escapeHtml(existing.morningCheckOut || "")}"></div>
       </div>
-
       <div class="field-row">
-        <div class="field">
-          <label>${escapeHtml(t("modalAfternoonIn"))}</label>
-          <input type="time" id="mk-afternoonIn" value="${escapeHtml(existing.afternoonCheckIn || "")}">
-        </div>
-        <div class="field">
-          <label>${escapeHtml(t("modalAfternoonOut"))}</label>
-          <input type="time" id="mk-afternoonOut" value="${escapeHtml(existing.afternoonCheckOut || "")}">
-        </div>
+        <div class="field"><label>${escapeHtml(t("modalAfternoonIn"))}</label>
+          <input type="time" id="mk-afternoonIn" value="${escapeHtml(existing.afternoonCheckIn || "")}"></div>
+        <div class="field"><label>${escapeHtml(t("modalAfternoonOut"))}</label>
+          <input type="time" id="mk-afternoonOut" value="${escapeHtml(existing.afternoonCheckOut || "")}"></div>
       </div>
-
-      <div class="field">
-        <label>${escapeHtml(t("modalNotes"))}</label>
-        <textarea id="mk-notes" placeholder="${escapeHtml(t("modalNotesPlaceholder"))}">${escapeHtml(existing.notes || "")}</textarea>
-      </div>
+      <div class="field"><label>${escapeHtml(t("modalNotes"))}</label>
+        <textarea id="mk-notes" placeholder="${escapeHtml(t("modalNotesPlaceholder"))}">${escapeHtml(existing.notes || "")}</textarea></div>
     </div>
     <div class="modal__foot">
       ${existing.status ? `<button class="btn btn--danger" id="mk-clear" style="margin-right:auto">
@@ -2115,7 +2213,6 @@ function openMarkSingleModal(empId) {
       selectedStatus = opt.dataset.status;
     });
   });
-
   document.getElementById("mk-clear")?.addEventListener("click", async ()=>{
     if (!existing.morningCheckIn) return;
     if (!confirm(t("modalClearConfirm"))) return;
@@ -2125,7 +2222,6 @@ function openMarkSingleModal(empId) {
       closeModal();
     } catch (err) { toast(err.code + ": " + err.message, "error"); }
   });
-
   document.getElementById("mk-save").addEventListener("click", async ()=>{
     const errBox = document.getElementById("mk-error");
     const errMsg = document.getElementById("mk-error-msg");
@@ -2133,33 +2229,25 @@ function openMarkSingleModal(empId) {
     const spinner = btn.querySelector(".spinner");
     const label = btn.querySelector(".btn-label");
     errBox.style.display = "none";
-
     if (!selectedStatus) { errBox.style.display="flex"; errMsg.textContent = t("toastChooseStatus"); return; }
-
     btn.disabled = true; spinner.classList.remove("hidden");
     const old = label.textContent; label.textContent = t("modalSaving");
-
     try {
       const morningIn = document.getElementById("mk-morningIn").value || null;
       const morningOut = document.getElementById("mk-morningOut").value || null;
       const afternoonIn = document.getElementById("mk-afternoonIn").value || null;
       const afternoonOut = document.getElementById("mk-afternoonOut").value || null;
       const notes = document.getElementById("mk-notes").value.trim() || null;
-
       const morningStatus = morningIn ? determineStatusFromCheckIn(morningIn, "morning") : null;
       const afternoonStatus = afternoonIn ? determineStatusFromCheckIn(afternoonIn, "afternoon") : null;
-
       await saveAttendance(emp, {
         status: selectedStatus,
         morningCheckIn: morningIn,
         morningCheckOut: morningOut,
         afternoonCheckIn: afternoonIn,
         afternoonCheckOut: afternoonOut,
-        morningStatus,
-        afternoonStatus,
-        notes,
-        checkIn: morningIn,
-        checkOut: afternoonOut,
+        morningStatus, afternoonStatus, notes,
+        checkIn: morningIn, checkOut: afternoonOut,
         method: "manual"
       });
       toast(t("toastSaved"), "success");
@@ -2168,9 +2256,7 @@ function openMarkSingleModal(empId) {
       console.error(err);
       errBox.style.display = "flex";
       errMsg.textContent = (err.code || "error") + ": " + (err.message || "");
-      btn.disabled = false;
-      spinner.classList.add("hidden");
-      label.textContent = old;
+      btn.disabled = false; spinner.classList.add("hidden"); label.textContent = old;
     }
   });
 }
@@ -2182,7 +2268,6 @@ function openBulkMarkModal() {
   if (!canMarkOthers()) { toast(t("toastCannotBulk"), "error"); return; }
   const list = filteredEmployees();
   if (!list.length) { toast(t("toastNothingToMark"), "info"); return; }
-
   const choices = {};
   list.forEach(e => { choices[e.id] = ATTENDANCE[e.id]?.status || "present"; });
 
@@ -2199,7 +2284,6 @@ function openBulkMarkModal() {
         <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
         <div>${t("modalBulkHint")}</div>
       </div>
-
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
         ${STATUSES.filter(s => !["weekend","holiday"].includes(s.key)).map(s => `
           <button type="button" class="btn btn--sm" data-set-all="${s.key}">
@@ -2207,7 +2291,6 @@ function openBulkMarkModal() {
           </button>
         `).join("")}
       </div>
-
       <div class="bulk-list" id="bulk-list">
         ${list.map(e => {
           const avatar = e.photoURL ? `<img src="${escapeHtml(e.photoURL)}" alt="">` : escapeHtml(initials(fullName(e)));
@@ -2219,9 +2302,7 @@ function openBulkMarkModal() {
                 <div class="bulk-item__meta">${escapeHtml(e.empId || "—")} · ${escapeHtml(e.position || "—")}</div>
               </div>
               <select data-emp="${e.id}">
-                ${STATUSES.map(s => `
-                  <option value="${s.key}" ${choices[e.id]===s.key?"selected":""}>${escapeHtml(statusLabel(s.key))}</option>
-                `).join("")}
+                ${STATUSES.map(s => `<option value="${s.key}" ${choices[e.id]===s.key?"selected":""}>${escapeHtml(statusLabel(s.key))}</option>`).join("")}
               </select>
             </div>`;
         }).join("")}
@@ -2244,13 +2325,9 @@ function openBulkMarkModal() {
   document.querySelectorAll("[data-set-all]").forEach(btn => {
     btn.addEventListener("click", ()=>{
       const val = btn.dataset.setAll;
-      bulkList.querySelectorAll("select").forEach(sel => {
-        sel.value = val;
-        choices[sel.dataset.emp] = val;
-      });
+      bulkList.querySelectorAll("select").forEach(sel => { sel.value = val; choices[sel.dataset.emp] = val; });
     });
   });
-
   document.getElementById("bulk-save").addEventListener("click", async ()=>{
     const btn = document.getElementById("bulk-save");
     const spinner = btn.querySelector(".spinner");
@@ -2258,9 +2335,7 @@ function openBulkMarkModal() {
     btn.disabled = true; spinner.classList.remove("hidden");
     const old = label.textContent; label.textContent = t("modalSaving");
     try {
-      for (const e of list) {
-        await saveAttendance(e, { status: choices[e.id], notes: null, method: "bulk" });
-      }
+      for (const e of list) await saveAttendance(e, { status: choices[e.id], notes: null, method: "bulk" });
       toast(t("toastSavedMany", { n: list.length }), "success");
       closeModal();
     } catch (err) {
@@ -2272,16 +2347,14 @@ function openBulkMarkModal() {
 }
 
 /* ============================================================
-   SAVE ATTENDANCE RECORD
+   SAVE ATTENDANCE
    ============================================================ */
 function monthKey(isoDate) { return isoDate.slice(0,7); }
-
 async function saveAttendance(emp, opts) {
   const o = opts || {};
   const mk = monthKey(selectedDate);
   const ref = doc(db, "attendance", mk, "records", emp.id);
   const existing = ATTENDANCE[emp.id];
-
   const payload = {
     date: selectedDate,
     empId: emp.empId || null,
@@ -2301,8 +2374,6 @@ async function saveAttendance(emp, opts) {
     updatedAt: serverTimestamp(),
     updatedBy: S.uid
   };
-
-  /* Only include keys that were actually passed */
   [
     "status","method","checkIn","checkOut","notes",
     "morningCheckIn","morningCheckOut","afternoonCheckIn","afternoonCheckOut",
@@ -2311,16 +2382,11 @@ async function saveAttendance(emp, opts) {
     "morningCheckInCredentialId","morningCheckOutCredentialId",
     "afternoonCheckInCredentialId","afternoonCheckOutCredentialId"
   ].forEach(k => { if (k in o) payload[k] = o[k]; });
-
   if ("morningCheckInAt" in o)    payload.morningCheckInAt    = o.morningCheckInAt;
   if ("morningCheckOutAt" in o)   payload.morningCheckOutAt   = o.morningCheckOutAt;
   if ("afternoonCheckInAt" in o)  payload.afternoonCheckInAt  = o.afternoonCheckInAt;
   if ("afternoonCheckOutAt" in o) payload.afternoonCheckOutAt = o.afternoonCheckOutAt;
-
-  if (!existing) {
-    payload.createdAt = serverTimestamp();
-    payload.createdBy = S.uid;
-  }
+  if (!existing) { payload.createdAt = serverTimestamp(); payload.createdBy = S.uid; }
   await setDoc(ref, payload, { merge: true });
 }
 
@@ -2380,7 +2446,6 @@ function subscribeAttendance() {
   if (isAdmin() && S.clusterId) q = query(q, where("clusterId","==",S.clusterId));
   else if (isManager()) q = query(q, where("managerId","==",S.uid));
   else if (isEmployee()) q = query(q, where("uid","==",S.uid));
-
   unsubAttendance = onSnapshot(q, (snap)=>{
     ATTENDANCE = {};
     snap.forEach(d => {
@@ -2397,7 +2462,7 @@ function subscribeAttendance() {
 }
 
 /* ============================================================
-   SHELL INTERACTIONS
+   SHELL
    ============================================================ */
 document.getElementById("collapse-toggle").addEventListener("click", (e)=>{
   e.stopPropagation();
@@ -2407,7 +2472,6 @@ document.getElementById("collapse-toggle").addEventListener("click", (e)=>{
 });
 document.getElementById("menu-toggle").addEventListener("click", ()=> document.body.classList.toggle("sidebar-open"));
 document.getElementById("overlay").addEventListener("click", ()=> document.body.classList.remove("sidebar-open"));
-
 document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
   btn.addEventListener("click", (e)=>{
     e.stopPropagation();
@@ -2417,13 +2481,10 @@ document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
     if (!open) panel.classList.remove("hidden");
   });
 });
-
 function updateLangUI() {
   const label = document.getElementById("lang-label");
   if (label) label.textContent = LANG.toUpperCase();
-  document.querySelectorAll("[data-set-lang]").forEach(btn => {
-    btn.classList.toggle("is-on", btn.dataset.setLang === LANG);
-  });
+  document.querySelectorAll("[data-set-lang]").forEach(btn => btn.classList.toggle("is-on", btn.dataset.setLang === LANG));
 }
 document.querySelectorAll("[data-lang-toggle]").forEach(btn => {
   btn.addEventListener("click", (e) => {
@@ -2437,17 +2498,14 @@ document.querySelectorAll("[data-lang-toggle]").forEach(btn => {
 document.querySelectorAll("[data-set-lang]").forEach(btn => {
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
-    const lang = btn.dataset.setLang;
-    try { localStorage.setItem("cs.language", lang); } catch (err) {}
+    try { localStorage.setItem("cs.language", btn.dataset.setLang); } catch (err) {}
     window.location.reload();
   });
 });
 document.addEventListener("click", ()=>
   document.querySelectorAll("[data-dropdown-panel], [data-lang-panel]").forEach(p => p.classList.add("hidden")));
-
 try { if (localStorage.getItem("cs.sidebar") === "collapsed") document.body.classList.add("sidebar-collapsed"); } catch(e) {}
 
-/* Filters + date */
 const dateEl = document.getElementById("date-picker");
 dateEl.value = selectedDate;
 dateEl.addEventListener("change", ()=>{
@@ -2455,36 +2513,29 @@ dateEl.addEventListener("change", ()=>{
   subscribeAttendance();
   renderStats();
 });
-
 let searchTimer;
 document.getElementById("search-input").addEventListener("input", (e)=>{
   clearTimeout(searchTimer);
   searchTimer = setTimeout(()=>{ searchTerm = e.target.value; renderStats(); renderTable(); }, 130);
 });
 document.getElementById("region-filter").addEventListener("change", (e)=>{
-  filterRegion = e.target.value;
-  filterCluster = ""; filterOffice = ""; filterDepartment = "";
+  filterRegion = e.target.value; filterCluster = ""; filterOffice = ""; filterDepartment = "";
   populateFilters(); renderStats(); renderTable();
 });
 document.getElementById("cluster-filter").addEventListener("change", (e)=>{
-  filterCluster = e.target.value;
-  filterOffice = ""; filterDepartment = "";
+  filterCluster = e.target.value; filterOffice = ""; filterDepartment = "";
   populateFilters(); renderStats(); renderTable();
 });
 document.getElementById("office-filter").addEventListener("change", (e)=>{
-  filterOffice = e.target.value;
-  filterDepartment = "";
+  filterOffice = e.target.value; filterDepartment = "";
   populateFilters(); renderStats(); renderTable();
 });
 document.getElementById("department-filter").addEventListener("change", (e)=>{
-  filterDepartment = e.target.value;
-  renderStats(); renderTable();
+  filterDepartment = e.target.value; renderStats(); renderTable();
 });
 document.getElementById("status-filter").addEventListener("change", (e)=>{
-  filterStatus = e.target.value;
-  renderStats(); renderTable();
+  filterStatus = e.target.value; renderStats(); renderTable();
 });
-
 window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>{
   if (STATE.theme === "auto") applyTheme("auto");
 });
@@ -2495,19 +2546,16 @@ window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").addEventL
 onAuthStateChanged(auth, async (user)=>{
   if (kick.done) return;
   if (!user) { kick("no-user"); return; }
-
   try { LANG = localStorage.getItem("cs.language") || "en"; } catch(e) { LANG = "en"; }
   if (!I18N[LANG]) LANG = "en";
   applyStaticI18n();
   updateLangUI();
-
   let userDoc = null;
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
     if (snap.exists()) userDoc = snap.data();
   } catch(e) {}
   if (userDoc && userDoc.active === false) { kick("inactive"); return; }
-
   S = {
     uid: user.uid,
     role: userDoc?.role || "employee",
@@ -2517,20 +2565,16 @@ onAuthStateChanged(auth, async (user)=>{
     officeId: userDoc?.officeId || "",
     clusterId: userDoc?.clusterId || ""
   };
-
   await loadUserSettings(user.uid);
-
   renderSidebar();
   renderUser();
   render();
-
   subscribeClusters();
   subscribeOffices();
   subscribeDepartments();
   subscribeEmployees();
   subscribeMyEmployee();
   subscribeAttendance();
-
   console.log("[attendance] booted — 4-scan flow — role:", S.role, "lang:", LANG, "fpSupported:", FP_SUPPORTED);
 });
 </script>
