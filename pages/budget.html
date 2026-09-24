@@ -18,6 +18,21 @@
     }
   } catch (e) { window.location.replace("../index.html"); }
 })();
+(function preTheme() {
+  try {
+    const t = localStorage.getItem("cs.theme") || "light";
+    if (t === "dark") document.documentElement.classList.add("theme-dark");
+    else if (t === "auto" && window.matchMedia &&
+             window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      document.documentElement.classList.add("theme-dark");
+    }
+    if (localStorage.getItem("cs.compact") === "true") document.documentElement.classList.add("compact-mode");
+    const lang = localStorage.getItem("cs.language") || "en";
+    document.documentElement.setAttribute("data-lang", lang);
+    document.documentElement.setAttribute("lang", lang === "am" ? "am" : (lang === "om" ? "om" : "en"));
+    if (lang === "am") document.documentElement.setAttribute("data-ethiopic", "true");
+  } catch (e) {}
+})();
 </script>
 <script type="importmap">
 {
@@ -51,6 +66,7 @@ body {
   color:var(--text); font-size:15px; line-height:1.55;
   -webkit-font-smoothing:antialiased;
 }
+html[data-ethiopic="true"] body { font-family:"Noto Sans Ethiopic","Inter",sans-serif; }
 img, svg { display:block; max-width:100%; }
 button, input, select, textarea { font:inherit; color:inherit; }
 button { cursor:pointer; background:none; border:none; }
@@ -155,6 +171,21 @@ body.sidebar-collapsed .nav-item { justify-content:center; padding:12px; }
 .dropdown__item svg { width:17px; height:17px; stroke:currentColor; stroke-width:2; fill:none; }
 .dropdown__divider { height:1px; background:var(--border-soft); margin:6px 0; }
 .dropdown__item--danger { color:var(--danger); }
+
+/* Language switcher */
+.lang-btn { display:inline-flex; align-items:center; gap:7px;
+  height:44px; padding:0 12px; border-radius:13px;
+  background:transparent; color:var(--text-soft);
+  font-size:12px; font-weight:800; letter-spacing:.06em;
+  cursor:pointer; transition:background .15s; }
+.lang-btn:hover { background:var(--border-soft); }
+.lang-btn svg { width:18px; height:18px; stroke:currentColor; stroke-width:1.85; fill:none; }
+.lang-btn__code { text-transform:uppercase; }
+.lang-item { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.lang-item__flag { font-size:15px; }
+.lang-item__check { width:15px; height:15px; stroke:currentColor; stroke-width:2.5; fill:none; opacity:0; }
+.lang-item.is-on .lang-item__check { opacity:1; }
+.lang-item.is-on { background:var(--border-soft); color:var(--primary); font-weight:700; }
 
 .main { grid-area:main; padding:32px; overflow-x:hidden; }
 .page-head { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-bottom:22px; flex-wrap:wrap; }
@@ -429,8 +460,8 @@ body.sidebar-open .overlay { display:block; }
              onerror="this.parentElement.innerHTML='<span style=&quot;color:#0b5cab;font-weight:800;font-size:18px&quot;>CS</span>'">
       </div>
       <div class="sidebar__identity">
-        <div class="sidebar__title">Civil Service</div>
-        <div class="sidebar__subtitle">Management Information System</div>
+        <div class="sidebar__title" id="brand-title">Civil Service</div>
+        <div class="sidebar__subtitle" id="brand-subtitle">Management Information System</div>
       </div>
       <button class="sidebar__collapse" id="collapse-toggle" aria-label="Toggle sidebar">
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
@@ -438,7 +469,7 @@ body.sidebar-open .overlay { display:block; }
     </div>
     <nav class="sidebar__nav" id="sidebar-nav"></nav>
     <div class="sidebar__footer">
-      <div>© 2026 Civil Service MIS</div>
+      <div id="footer-copy">© 2026 Civil Service MIS</div>
       <div style="margin-top:3px;opacity:.7">Eng. Abdi Furgasa</div>
     </div>
   </aside>
@@ -454,6 +485,33 @@ body.sidebar-open .overlay { display:block; }
     </button>
     <div class="topbar__spacer"></div>
     <div class="topbar__actions">
+
+      <!-- Language switcher -->
+      <div class="dropdown">
+        <button class="lang-btn" data-lang-toggle aria-label="Language">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span class="lang-btn__code" id="lang-label">EN</span>
+        </button>
+        <div class="dropdown__panel hidden" data-lang-panel style="min-width:200px">
+          <button class="dropdown__item lang-item" data-set-lang="en">
+            <span><span class="lang-item__flag">🇬🇧</span> English</span>
+            <svg class="lang-item__check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="dropdown__item lang-item" data-set-lang="om">
+            <span><span class="lang-item__flag">🇪🇹</span> Afaan Oromoo</span>
+            <svg class="lang-item__check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button class="dropdown__item lang-item" data-set-lang="am">
+            <span><span class="lang-item__flag">🇪🇹</span> አማርኛ</span>
+            <svg class="lang-item__check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </div>
+
       <a href="notifications.html" class="icon-btn" aria-label="Notifications">
         <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span class="icon-btn__badge" id="notif-badge"></span>
@@ -473,12 +531,16 @@ body.sidebar-open .overlay { display:block; }
           </div>
           <a class="dropdown__item" href="dashboard.html">
             <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-            <span>Dashboard</span>
+            <span data-i18n="navDashboard">Dashboard</span>
+          </a>
+          <a class="dropdown__item" href="settings.html">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span data-i18n="navSettings">Settings</span>
           </a>
           <div class="dropdown__divider"></div>
           <button class="dropdown__item dropdown__item--danger" id="logout-btn">
             <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            <span>Sign out</span>
+            <span data-i18n="signOut">Sign out</span>
           </button>
         </div>
       </div>
@@ -488,8 +550,8 @@ body.sidebar-open .overlay { display:block; }
   <main class="main">
     <div class="page-head">
       <div>
-        <h1 class="page-head__title">Budget</h1>
-        <p class="page-head__sub">Plan, allocate, and track expenditure against budget lines</p>
+        <h1 class="page-head__title" data-i18n="pageTitle">Budget</h1>
+        <p class="page-head__sub" data-i18n="pageSub">Plan, allocate, and track expenditure against budget lines</p>
         <div id="scope-badge"></div>
       </div>
       <div class="page-head__actions" id="head-actions"></div>
@@ -504,17 +566,17 @@ body.sidebar-open .overlay { display:block; }
     <div class="toolbar">
       <div class="toolbar__search">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="search-input" placeholder="Search by budget name, code, fiscal year, category…">
+        <input id="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search by budget name, code, fiscal year, category…">
       </div>
       <select class="toolbar__filter" id="year-filter">
-        <option value="">All fiscal years</option>
+        <option value="" data-i18n="allFiscalYears">All fiscal years</option>
       </select>
       <select class="toolbar__filter" id="status-filter">
-        <option value="">All statuses</option>
-        <option value="draft">Draft</option>
-        <option value="active">Active</option>
-        <option value="closed">Closed</option>
-        <option value="exceeded">Exceeded</option>
+        <option value="" data-i18n="allStatuses">All statuses</option>
+        <option value="draft"    data-i18n="st_draft">Draft</option>
+        <option value="active"   data-i18n="st_active">Active</option>
+        <option value="closed"   data-i18n="st_closed">Closed</option>
+        <option value="exceeded" data-i18n="st_exceeded">Exceeded</option>
       </select>
       <span class="toolbar__count" id="count-label"></span>
     </div>
@@ -524,15 +586,15 @@ body.sidebar-open .overlay { display:block; }
         <table class="data">
           <thead>
             <tr>
-              <th>Budget</th>
-              <th>Fiscal Year</th>
-              <th>Category</th>
-              <th class="num">Allocated</th>
-              <th class="num">Spent</th>
-              <th class="num">Remaining</th>
-              <th>Utilisation</th>
-              <th>Status</th>
-              <th style="width:200px;text-align:right">Actions</th>
+              <th data-i18n="thBudget">Budget</th>
+              <th data-i18n="thFiscalYear">Fiscal Year</th>
+              <th data-i18n="thCategory">Category</th>
+              <th class="num" data-i18n="thAllocated">Allocated</th>
+              <th class="num" data-i18n="thSpent">Spent</th>
+              <th class="num" data-i18n="thRemaining">Remaining</th>
+              <th data-i18n="thUtilisation">Utilisation</th>
+              <th data-i18n="thStatus">Status</th>
+              <th style="width:200px;text-align:right" data-i18n="thActions">Actions</th>
             </tr>
           </thead>
           <tbody id="budget-tbody">
@@ -555,6 +617,533 @@ import {
   orderBy, getDocs, addDoc, writeBatch, limit
 } from "firebase/firestore";
 
+/* ============================================================
+   I18N DICTIONARY
+   ============================================================ */
+const I18N = {
+  en: {
+    brandTitle:"Civil Service", brandSubtitle:"Management Information System",
+    footerCopy:"© 2026 Civil Service MIS",
+    navDashboard:"Dashboard", navSettings:"Settings", signOut:"Sign out",
+    // Page head
+    pageTitle:"Budget",
+    pageSub:"Plan, allocate, and track expenditure against budget lines",
+    // Nav sections
+    navOverview:"Overview", navOrganization:"Organization", navHumanResources:"Human Resources",
+    navOperations:"Operations", navFinance:"Finance", navAdministration:"Administration",
+    navUsers:"Users & Staff", navDepartments:"Departments",
+    navRecruitment:"Recruitment", navTraining:"Training", navPerformance:"Performance",
+    navAttendance:"Attendance", navLeave:"Leave",
+    navPayroll:"Payroll", navBudget:"Budget", navOffices:"Offices",
+    navNotifications:"Notifications",
+    // Scope badges
+    scopeSuper:"Full system access — all budgets",
+    scopeFinance:"Finance Office — organisation-wide",
+    scopeReadOnly:"Read-only view",
+    // Head actions
+    headNewBudget:"New Budget",
+    headRecordExpense:"Record Expense",
+    headExport:"Export CSV",
+    // Stats
+    statTotalAllocated:"Total Allocated",
+    statTotalSpent:"Total Spent",
+    statRemaining:"Remaining",
+    statPendingApprovals:"Pending Approvals",
+    statActiveBudgets:"Active Budgets",
+    statSubBudgetLines:"{n} budget line(s)",
+    statSubUtilised:"{p}% utilised",
+    statSubAvailable:"Available to spend",
+    statSubAwaiting:"Awaiting decision",
+    statSubAllWithin:"All within limit",
+    statSubExceeded:"{n} exceeded",
+    // Overview
+    overviewTitle:"Overall utilisation",
+    overviewOf:"of",
+    overviewTopCategories:"Top categories",
+    overviewNoCategories:"No category data yet",
+    overviewSpent:"Spent",
+    overviewPending:"Pending",
+    overviewRemaining:"Remaining",
+    // Tabs
+    tabAll:"All", tabActive:"Active", tabDraft:"Draft",
+    tabClosed:"Closed", tabExceeded:"Exceeded",
+    // Toolbar
+    searchPlaceholder:"Search by budget name, code, fiscal year, category…",
+    allFiscalYears:"All fiscal years",
+    allStatuses:"All statuses",
+    // Table headers
+    thBudget:"Budget", thFiscalYear:"Fiscal Year", thCategory:"Category",
+    thAllocated:"Allocated", thSpent:"Spent", thRemaining:"Remaining",
+    thUtilisation:"Utilisation", thStatus:"Status", thActions:"Actions",
+    // Budget statuses
+    st_draft:"Draft", st_active:"Active", st_closed:"Closed", st_exceeded:"Exceeded",
+    // Expense statuses
+    ex_pending:"Pending", ex_approved:"Approved", ex_rejected:"Rejected",
+    ex_paid:"Paid", ex_cancelled:"Cancelled",
+    // Categories
+    cat_personnel:"Personnel & Salaries",
+    cat_operations:"Operations & Maintenance",
+    cat_capital:"Capital Expenditure",
+    cat_training:"Training & Development",
+    cat_travel:"Travel & Per Diem",
+    cat_supplies:"Supplies & Materials",
+    cat_services:"Consultancy & Services",
+    cat_utilities:"Utilities",
+    cat_other:"Other",
+    // Empty / loading
+    loading:"Loading…",
+    emptyTitle:"No budget lines yet",
+    emptyHintCreate:"Click <strong>New Budget</strong> to create the first budget line.",
+    emptyHintRole:"No budget lines visible for your role.",
+    emptyFiltered:"No budget lines match your search or filters.",
+    // Modal — budget form
+    modalBudgetNew:"New Budget",
+    modalBudgetEdit:"Edit Budget",
+    modalBudgetNewSub:"Create a new budget line to track allocation and expenditure.",
+    modalBudgetEditSub:"Update the details of this budget line.",
+    fBudgetName:"Budget name",
+    fBudgetNamePh:"e.g. Q1 Operations Budget",
+    fBudgetCode:"Budget code",
+    fBudgetCodePh:"BUD-2026-001",
+    fBudgetCodeHint:"Optional — auto-generated if left blank.",
+    fFiscalYear:"Fiscal year",
+    fFiscalYearPh:"2026",
+    fCategory:"Category",
+    fAllocated:"Allocated amount ({cur})",
+    fStatus:"Status",
+    fPeriod:"Period",
+    fPeriodHint:"Start and end date for this budget cycle.",
+    fCluster:"Cluster (optional)",
+    fClusterOrgWide:"— Organisation-wide —",
+    fDescription:"Description / notes",
+    fDescriptionPh:"Purpose and scope of this budget…",
+    btnCancel:"Cancel",
+    btnSaveChanges:"Save changes",
+    btnCreateBudget:"Create budget",
+    btnCreating:"Creating…",
+    btnSaving:"Saving…",
+    // Modal — view
+    viewTitle:"Budget details",
+    viewAllocated:"Allocated",
+    viewSpent:"Spent",
+    viewPending:"Pending",
+    viewRemaining:"Remaining",
+    viewExpenses:"Expenses ({n})",
+    viewNoExpenses:"No expenses recorded against this budget yet.",
+    viewPeriod:"Period",
+    viewCluster:"Cluster",
+    viewOrgWide:"Organisation-wide",
+    viewStatus:"Status",
+    viewCategory:"Category",
+    viewDescription:"Description",
+    viewCreated:"Created",
+    viewLastUpdated:"Last updated",
+    viewClose:"Close",
+    viewEdit:"Edit",
+    viewDelete:"Delete",
+    viewAddExpense:"Add Expense",
+    // Modal — record expense
+    expRecordTitle:"Record Expense",
+    expRecordSub:"Log expenditure against a budget line.",
+    expBudgetLine:"Budget line",
+    expChooseBudget:"— Choose a budget —",
+    expDate:"Expense date",
+    expAmount:"Amount ({cur})",
+    expDescription:"Description",
+    expDescriptionPh:"e.g. Office supplies purchase — Invoice #1234",
+    expVendor:"Vendor / payee",
+    expVendorPh:"e.g. ABC Trading PLC",
+    expReference:"Reference / receipt #",
+    expMethod:"Payment method",
+    expMethodBank:"Bank transfer",
+    expMethodCash:"Cash",
+    expMethodCheque:"Cheque",
+    expMethodPetty:"Petty cash",
+    expNotes:"Notes (optional)",
+    expNotesPh:"Additional details…",
+    expSubmit:"Record expense",
+    expSubmitting:"Recording…",
+    // Modal — delete
+    delBudgetTitle:"Delete budget?",
+    delBudgetIntro:"This will permanently remove:",
+    delBudgetLine:"Budget <strong>{name}</strong> — allocated {amount}.",
+    delBudgetWarn:"⚠ There are {n} expense record(s) linked to this budget. They will be orphaned.",
+    delBudgetWarnNo:"This action cannot be undone.",
+    delBudgetSubmit:"Delete budget",
+    delExpenseTitle:"Delete expense?",
+    delExpenseIntro:"Permanently remove expense of <strong>{amount}</strong> from <strong>{budget}</strong>.",
+    delExpenseSubmit:"Delete expense",
+    delDeleting:"Deleting…",
+    // Toasts
+    toastCannotEdit:"You cannot edit budgets",
+    toastCannotDelete:"Only Super Admin can delete budgets",
+    toastCannotRecord:"You cannot record expenses",
+    toastCannotApprove:"Not allowed",
+    toastCannotDeleteExp:"You cannot delete expenses",
+    toastNoBudgets:"No open budgets available — create one first",
+    toastBudgetCreated:"Budget created",
+    toastBudgetUpdated:"Budget updated",
+    toastBudgetDeleted:"Budget deleted",
+    toastExpenseRecorded:"Expense recorded",
+    toastExpenseDeleted:"Expense deleted",
+    toastExpenseApproved:"Expense approved",
+    toastExpenseRejected:"Expense rejected",
+    toastCSVExported:"CSV exported",
+    toastNoRowsExport:"No rows to export",
+    // Errors
+    errNameRequired:"Budget name is required.",
+    errFiscalRequired:"Fiscal year is required.",
+    errCategoryRequired:"Category is required.",
+    errAllocatedPositive:"Allocated amount must be greater than 0.",
+    errEndAfterStart:"End date must be on or after start date.",
+    errChooseBudget:"Please choose a budget line.",
+    errDateRequired:"Date is required.",
+    errAmountPositive:"Amount must be greater than 0.",
+    errDescriptionRequired:"Description is required.",
+    errBudgetNotFound:"Budget not found.",
+    errCouldNotSave:"Could not save budget.",
+    errCouldNotRecord:"Could not record expense.",
+    errCouldNotDelete:"Could not delete",
+    // Confirm
+    confirmExceed:"Warning: this expense ({amount}) exceeds the remaining balance ({remaining}) on \"{name}\".\n\nRecord anyway?",
+    // Role labels
+    role_super_admin:"Super Admin", role_admin:"Cluster Admin",
+    role_hrm:"HR Manager", role_finance:"Finance Officer",
+    role_manager:"Manager", role_employee:"Employee",
+    // Days/months
+    day:"day", days:"days"
+  },
+  om: {
+    brandTitle:"Tajaajila Hawaasaa", brandSubtitle:"Sirna Odeeffannoo Bulchiinsaa",
+    footerCopy:"© 2026 SIM Tajaajila Hawaasaa",
+    navDashboard:"Daashboordii", navSettings:"Qindaa'ina", signOut:"Ba'i",
+    pageTitle:"Baajata",
+    pageSub:"Karoorfadhu, ramadi, fi baasii sirna baajataatiin hordofi",
+    navOverview:"Waliigala", navOrganization:"Dhaabbata", navHumanResources:"Rakkoo Namoomaa",
+    navOperations:"Hojimaata", navFinance:"Faayinaansii", navAdministration:"Bulchiinsa",
+    navUsers:"Fayyadamtoota fi Hojjettoota", navDepartments:"Qaamolee",
+    navRecruitment:"Qaccee", navTraining:"Leenjii", navPerformance:"Raawwii",
+    navAttendance:"Argannoo", navLeave:"Boqonnaa",
+    navPayroll:"Kaffaltii", navBudget:"Baajata", navOffices:"Waajjiraalee",
+    navNotifications:"Beeksisaalee",
+    scopeSuper:"Adeemsa sirna guutuu — baajata hunda",
+    scopeFinance:"Waajjira Faayinaansii — dhaabbata guutuu",
+    scopeReadOnly:"Ilaalcha dubbisuu qofa",
+    headNewBudget:"Baajata Haaraa",
+    headRecordExpense:"Baasii Galmeessi",
+    headExport:"CSV Baasi",
+    statTotalAllocated:"Waliigala Ramadame",
+    statTotalSpent:"Waliigala Baafame",
+    statRemaining:"Hafte",
+    statPendingApprovals:"Mirkaneessaa Eegaa",
+    statActiveBudgets:"Baajata Hojiirra Jiru",
+    statSubBudgetLines:"Sarara baajataa {n}",
+    statSubUtilised:"{p}% fayyadame",
+    statSubAvailable:"Baasuuf jiru",
+    statSubAwaiting:"Murtii eegaa",
+    statSubAllWithin:"Hunda daangaa keessa",
+    statSubExceeded:"{n} darbee",
+    overviewTitle:"Itti fayyadama waliigalaa",
+    overviewOf:"keessaa",
+    overviewTopCategories:"Ramaddii olaanoo",
+    overviewNoCategories:"Ragaan ramaddii hin jiru",
+    overviewSpent:"Baafame", overviewPending:"Eegaa", overviewRemaining:"Hafte",
+    tabAll:"Hunda", tabActive:"Hojiirra", tabDraft:"Wixinee",
+    tabClosed:"Cufame", tabExceeded:"Darbee",
+    searchPlaceholder:"Maqaa, koodii, bara baajataa, ramaddiin barbaadi…",
+    allFiscalYears:"Bara baajataa hunda",
+    allStatuses:"Haalota hunda",
+    thBudget:"Baajata", thFiscalYear:"Bara Baajataa", thCategory:"Ramaddii",
+    thAllocated:"Ramadame", thSpent:"Baafame", thRemaining:"Hafte",
+    thUtilisation:"Itti Fayyadama", thStatus:"Haala", thActions:"Gochaalee",
+    st_draft:"Wixinee", st_active:"Hojiirra", st_closed:"Cufame", st_exceeded:"Darbee",
+    ex_pending:"Eegaa", ex_approved:"Mirkanaa'e", ex_rejected:"Kufe",
+    ex_paid:"Kaffalame", ex_cancelled:"Haqame",
+    cat_personnel:"Hojjettoota fi Mindaa",
+    cat_operations:"Hojimaata fi Suphaa",
+    cat_capital:"Baasii Kaappitaalaa",
+    cat_training:"Leenjii fi Guddina",
+    cat_travel:"Imala fi Guyyoota",
+    cat_supplies:"Meesshaa fi Qabeenya",
+    cat_services:"Gorsaa fi Tajaajila",
+    cat_utilities:"Tajaajila Bu'uuraa",
+    cat_other:"Kan Biroo",
+    loading:"Fe'aa jira…",
+    emptyTitle:"Sarari baajataa hin jiru",
+    emptyHintCreate:"<strong>Baajata Haaraa</strong> tuqi sarara baajataa jalqabaa uumuuf.",
+    emptyHintRole:"Gahee keetiif sarari baajataa hin mul'atu.",
+    emptyFiltered:"Sararri baajataa filannoo keetii waliin hin walsimu.",
+    modalBudgetNew:"Baajata Haaraa",
+    modalBudgetEdit:"Baajata Sirreessi",
+    modalBudgetNewSub:"Ramaddii fi baasii hordofuuf sarara baajataa haaraa uumi.",
+    modalBudgetEditSub:"Bal'ina sarara baajataa kanaa haaromsi.",
+    fBudgetName:"Maqaa baajataa",
+    fBudgetNamePh:"fkn. Baajata Hojimaata Kurmaana 1",
+    fBudgetCode:"Koodii baajataa",
+    fBudgetCodePh:"BUD-2026-001",
+    fBudgetCodeHint:"Filannoo — yoo duwwaa ta'e ofumaan uumama.",
+    fFiscalYear:"Bara baajataa",
+    fFiscalYearPh:"2026",
+    fCategory:"Ramaddii",
+    fAllocated:"Hamma ramadame ({cur})",
+    fStatus:"Haala",
+    fPeriod:"Yeroo",
+    fPeriodHint:"Guyyaa jalqabaa fi xumuraa sirna baajataa kanaaf.",
+    fCluster:"Garee (filannoo)",
+    fClusterOrgWide:"— Dhaabbata guutuu —",
+    fDescription:"Ibsa / yaadannoo",
+    fDescriptionPh:"Kaayyoo fi bal'ina baajataa kanaa…",
+    btnCancel:"Haqi", btnSaveChanges:"Jijjiirama olkaa'i",
+    btnCreateBudget:"Baajata uumi", btnCreating:"Uumaa jira…", btnSaving:"Olkaa'aa jira…",
+    viewTitle:"Bal'ina baajataa",
+    viewAllocated:"Ramadame", viewSpent:"Baafame",
+    viewPending:"Eegaa", viewRemaining:"Hafte",
+    viewExpenses:"Baasiiwwan ({n})",
+    viewNoExpenses:"Baasiin baajata kanaaf galmeeffame hin jiru.",
+    viewPeriod:"Yeroo", viewCluster:"Garee", viewOrgWide:"Dhaabbata guutuu",
+    viewStatus:"Haala", viewCategory:"Ramaddii",
+    viewDescription:"Ibsa", viewCreated:"Uumame", viewLastUpdated:"Haaromsa dhumaa",
+    viewClose:"Cufi", viewEdit:"Sirreessi", viewDelete:"Haqi", viewAddExpense:"Baasii Dabali",
+    expRecordTitle:"Baasii Galmeessi",
+    expRecordSub:"Baasii sarara baajataa irratti galmeessi.",
+    expBudgetLine:"Sarara baajataa",
+    expChooseBudget:"— Baajata filadhu —",
+    expDate:"Guyyaa baasii",
+    expAmount:"Hamma ({cur})",
+    expDescription:"Ibsa",
+    expDescriptionPh:"fkn. Bittaa meesshaa waajjiraa — Nagahee #1234",
+    expVendor:"Gurguraa / kaffaltii",
+    expVendorPh:"fkn. ABC Daldala PLC",
+    expReference:"Wabii / nagahee #",
+    expMethod:"Mala kaffaltii",
+    expMethodBank:"Hedduu baankii",
+    expMethodCash:"Maallaqa harkaa",
+    expMethodCheque:"Cheekii",
+    expMethodPetty:"Maallaqa xiqqaa",
+    expNotes:"Yaadannoo (filannoo)",
+    expNotesPh:"Bal'ina dabalataa…",
+    expSubmit:"Baasii galmeessi", expSubmitting:"Galmeessaa jira…",
+    delBudgetTitle:"Baajata haquu?",
+    delBudgetIntro:"Kun guutummaatti ni haqa:",
+    delBudgetLine:"Baajata <strong>{name}</strong> — ramadame {amount}.",
+    delBudgetWarn:"⚠ Galmeewwan baasii {n} baajata kanaan walqabatan jiru. Isaan adda ba'u.",
+    delBudgetWarnNo:"Gochi kun deebi'uu hin danda'u.",
+    delBudgetSubmit:"Baajata haqi",
+    delExpenseTitle:"Baasii haquu?",
+    delExpenseIntro:"Baasii <strong>{amount}</strong> guutummaatti haqi <strong>{budget}</strong> keessaa.",
+    delExpenseSubmit:"Baasii haqi", delDeleting:"Haqaa jira…",
+    toastCannotEdit:"Baajata sirreessuu hin dandeessu",
+    toastCannotDelete:"Bulchaan Olaanaa qofti baajata haquu danda'a",
+    toastCannotRecord:"Baasii galmeessuu hin dandeessu",
+    toastCannotApprove:"Hayyamame hin jiru",
+    toastCannotDeleteExp:"Baasii haquu hin dandeessu",
+    toastNoBudgets:"Baajanni banaa hin jiru — dura tokko uumi",
+    toastBudgetCreated:"Baajanni uumame",
+    toastBudgetUpdated:"Baajanni haaromfame",
+    toastBudgetDeleted:"Baajanni haqame",
+    toastExpenseRecorded:"Baasiin galmeeffame",
+    toastExpenseDeleted:"Baasiin haqame",
+    toastExpenseApproved:"Baasiin mirkanaa'e",
+    toastExpenseRejected:"Baasiin kufe",
+    toastCSVExported:"CSV baafame",
+    toastNoRowsExport:"Sararri baasu hin jiru",
+    errNameRequired:"Maqaan baajataa barbaachisa.",
+    errFiscalRequired:"Barni baajataa barbaachisa.",
+    errCategoryRequired:"Ramaddiin barbaachisa.",
+    errAllocatedPositive:"Hammi ramadame 0 caalaa ta'uu qaba.",
+    errEndAfterStart:"Guyyaan xumuraa guyyaa jalqabaa booda ta'uu qaba.",
+    errChooseBudget:"Maaloo sarara baajataa filadhu.",
+    errDateRequired:"Guyyaan barbaachisa.",
+    errAmountPositive:"Hammi 0 caalaa ta'uu qaba.",
+    errDescriptionRequired:"Ibsi barbaachisa.",
+    errBudgetNotFound:"Baajanni hin argamne.",
+    errCouldNotSave:"Baajata olkaa'uu hin dandeenye.",
+    errCouldNotRecord:"Baasii galmeessuu hin dandeenye.",
+    errCouldNotDelete:"Haqqachuu hin dandeenye",
+    confirmExceed:"Akeekkachiisa: baasiin kun ({amount}) haftee ({remaining}) \"{name}\" irraa caalaa dha.\n\nAmmas galmeessuu?",
+    role_super_admin:"Bulchaa Olaanaa", role_admin:"Bulchaa Garee",
+    role_hrm:"Bulchaa HR", role_finance:"Ogeessa Faayinaansii",
+    role_manager:"Bulchaa", role_employee:"Hojjetaa",
+    day:"guyyaa", days:"guyyoota"
+  },
+  am: {
+    brandTitle:"የመንግስት ሰራተኛ", brandSubtitle:"የአስተዳደር መረጃ ስርዓት",
+    footerCopy:"© 2026 የመንግስት ሰራተኛ MIS",
+    navDashboard:"ዳሽቦርድ", navSettings:"ቅንብሮች", signOut:"ውጣ",
+    pageTitle:"በጀት",
+    pageSub:"በጀት መስመሮችን ያቅዱ፣ ይመድቡ እና ወጪን ይከታተሉ",
+    navOverview:"አጠቃላይ እይታ", navOrganization:"ድርጅት", navHumanResources:"የሰው ኃይል",
+    navOperations:"ክንውኖች", navFinance:"ፋይናንስ", navAdministration:"አስተዳደር",
+    navUsers:"ተጠቃሚዎች እና ሰራተኞች", navDepartments:"ክፍሎች",
+    navRecruitment:"ቅጥር", navTraining:"ስልጠና", navPerformance:"አፈጻጸም",
+    navAttendance:"መገኘት", navLeave:"ፈቃድ",
+    navPayroll:"ደመወዝ", navBudget:"በጀት", navOffices:"ቢሮዎች",
+    navNotifications:"ማሳወቂያዎች",
+    scopeSuper:"ሙሉ ስርዓት መዳረሻ — ሁሉም በጀቶች",
+    scopeFinance:"የፋይናንስ ቢሮ — በድርጅቱ ሁሉ",
+    scopeReadOnly:"የንባብ ብቻ እይታ",
+    headNewBudget:"አዲስ በጀት",
+    headRecordExpense:"ወጪ ይመዝግቡ",
+    headExport:"CSV ያውጡ",
+    statTotalAllocated:"ጠቅላላ የተመደበ",
+    statTotalSpent:"ጠቅላላ የወጣ",
+    statRemaining:"ቀሪ",
+    statPendingApprovals:"በመጠበቅ ላይ ያሉ ማጽደቆች",
+    statActiveBudgets:"ንቁ በጀቶች",
+    statSubBudgetLines:"{n} የበጀት መስመር(ዎች)",
+    statSubUtilised:"{p}% ጥቅም ላይ ዋለ",
+    statSubAvailable:"ለወጪ ዝግጁ",
+    statSubAwaiting:"ውሳኔ በመጠበቅ",
+    statSubAllWithin:"ሁሉም በገደብ ውስጥ",
+    statSubExceeded:"{n} አልፏል",
+    overviewTitle:"አጠቃላይ ጥቅም ላይ የዋለ",
+    overviewOf:"ከ",
+    overviewTopCategories:"ከፍተኛ ምድቦች",
+    overviewNoCategories:"እስካሁን የምድብ መረጃ የለም",
+    overviewSpent:"የወጣ", overviewPending:"በመጠበቅ", overviewRemaining:"ቀሪ",
+    tabAll:"ሁሉም", tabActive:"ንቁ", tabDraft:"ረቂቅ",
+    tabClosed:"የተዘጋ", tabExceeded:"ያለፈ",
+    searchPlaceholder:"በበጀት ስም፣ ኮድ፣ የበጀት ዓመት፣ ምድብ ይፈልጉ…",
+    allFiscalYears:"ሁሉም የበጀት ዓመታት",
+    allStatuses:"ሁሉም ሁኔታዎች",
+    thBudget:"በጀት", thFiscalYear:"የበጀት ዓመት", thCategory:"ምድብ",
+    thAllocated:"የተመደበ", thSpent:"የወጣ", thRemaining:"ቀሪ",
+    thUtilisation:"ጥቅም ላይ የዋለ", thStatus:"ሁኔታ", thActions:"እርምጃዎች",
+    st_draft:"ረቂቅ", st_active:"ንቁ", st_closed:"የተዘጋ", st_exceeded:"ያለፈ",
+    ex_pending:"በመጠበቅ", ex_approved:"ጸድቋል", ex_rejected:"ተቀባይነት አላገኘም",
+    ex_paid:"ተከፍሏል", ex_cancelled:"ተሰርዟል",
+    cat_personnel:"የሰራተኞች እና ደመወዝ",
+    cat_operations:"ክንውኖች እና ጥገና",
+    cat_capital:"የካፒታል ወጪ",
+    cat_training:"ስልጠና እና ልማት",
+    cat_travel:"ጉዞ እና የቀን አበል",
+    cat_supplies:"አቅርቦቶች እና ቁሳቁሶች",
+    cat_services:"ምክር እና አገልግሎቶች",
+    cat_utilities:"መገልገያዎች",
+    cat_other:"ሌላ",
+    loading:"በመጫን ላይ…",
+    emptyTitle:"እስካሁን የበጀት መስመሮች የሉም",
+    emptyHintCreate:"የመጀመሪያውን የበጀት መስመር ለመፍጠር <strong>አዲስ በጀት</strong> ን ይጫኑ።",
+    emptyHintRole:"ለእርስዎ ሚና የሚታዩ የበጀት መስመሮች የሉም።",
+    emptyFiltered:"ከፍለጋዎ ወይም ማጣሪያዎ ጋር የሚዛመዱ የበጀት መስመሮች የሉም።",
+    modalBudgetNew:"አዲስ በጀት",
+    modalBudgetEdit:"በጀት ያስተካክሉ",
+    modalBudgetNewSub:"ምደባ እና ወጪን ለመከታተል አዲስ የበጀት መስመር ይፍጠሩ።",
+    modalBudgetEditSub:"የዚህን የበጀት መስመር ዝርዝሮች ያዘምኑ።",
+    fBudgetName:"የበጀት ስም",
+    fBudgetNamePh:"ለምሳሌ የሩብ ዓመት 1 የክንውኖች በጀት",
+    fBudgetCode:"የበጀት ኮድ",
+    fBudgetCodePh:"BUD-2026-001",
+    fBudgetCodeHint:"አማራጭ — ባዶ ከተተወ በራስ-ሰር ይፈጠራል።",
+    fFiscalYear:"የበጀት ዓመት",
+    fFiscalYearPh:"2026",
+    fCategory:"ምድብ",
+    fAllocated:"የተመደበ መጠን ({cur})",
+    fStatus:"ሁኔታ",
+    fPeriod:"ወቅት",
+    fPeriodHint:"ለዚህ የበጀት ዑደት የመጀመሪያ እና የመጨረሻ ቀን።",
+    fCluster:"ክላስተር (አማራጭ)",
+    fClusterOrgWide:"— በድርጅቱ ሁሉ —",
+    fDescription:"መግለጫ / ማስታወሻ",
+    fDescriptionPh:"የዚህ በጀት ዓላማ እና ስፋት…",
+    btnCancel:"ሰርዝ", btnSaveChanges:"ለውጦችን አስቀምጥ",
+    btnCreateBudget:"በጀት ፍጠር", btnCreating:"በመፍጠር ላይ…", btnSaving:"በማስቀመጥ ላይ…",
+    viewTitle:"የበጀት ዝርዝሮች",
+    viewAllocated:"የተመደበ", viewSpent:"የወጣ",
+    viewPending:"በመጠበቅ", viewRemaining:"ቀሪ",
+    viewExpenses:"ወጪዎች ({n})",
+    viewNoExpenses:"እስካሁን በዚህ በጀት ላይ የተመዘገበ ወጪ የለም።",
+    viewPeriod:"ወቅት", viewCluster:"ክላስተር", viewOrgWide:"በድርጅቱ ሁሉ",
+    viewStatus:"ሁኔታ", viewCategory:"ምድብ",
+    viewDescription:"መግለጫ", viewCreated:"የተፈጠረ", viewLastUpdated:"የመጨረሻ ዝመና",
+    viewClose:"ዝጋ", viewEdit:"አስተካክል", viewDelete:"ሰርዝ", viewAddExpense:"ወጪ ጨምር",
+    expRecordTitle:"ወጪ ይመዝግቡ",
+    expRecordSub:"በበጀት መስመር ላይ ወጪ ይመዝግቡ።",
+    expBudgetLine:"የበጀት መስመር",
+    expChooseBudget:"— በጀት ይምረጡ —",
+    expDate:"የወጪ ቀን",
+    expAmount:"መጠን ({cur})",
+    expDescription:"መግለጫ",
+    expDescriptionPh:"ለምሳሌ የቢሮ አቅርቦት ግዢ — ደረሰኝ #1234",
+    expVendor:"አቅራቢ / ተከፋይ",
+    expVendorPh:"ለምሳሌ ABC Trading PLC",
+    expReference:"ማጣቀሻ / ደረሰኝ #",
+    expMethod:"የክፍያ ዘዴ",
+    expMethodBank:"የባንክ ዝውውር",
+    expMethodCash:"ጥሬ ገንዘብ",
+    expMethodCheque:"ቼክ",
+    expMethodPetty:"ትንሽ ጥሬ ገንዘብ",
+    expNotes:"ማስታወሻ (አማራጭ)",
+    expNotesPh:"ተጨማሪ ዝርዝሮች…",
+    expSubmit:"ወጪ ይመዝግቡ", expSubmitting:"በመመዝገብ ላይ…",
+    delBudgetTitle:"በጀት ይሰረዝ?",
+    delBudgetIntro:"ይህ በቋሚነት ያስወግዳል:",
+    delBudgetLine:"በጀት <strong>{name}</strong> — የተመደበ {amount}።",
+    delBudgetWarn:"⚠ ከዚህ በጀት ጋር የተገናኙ {n} የወጪ መዝገቦች አሉ። እነሱ ይተዉበታል።",
+    delBudgetWarnNo:"ይህ እርምጃ ሊቀለበስ አይችልም።",
+    delBudgetSubmit:"በጀት ሰርዝ",
+    delExpenseTitle:"ወጪ ይሰረዝ?",
+    delExpenseIntro:"የ <strong>{amount}</strong> ወጪን ከ <strong>{budget}</strong> በቋሚነት ያስወግዱ።",
+    delExpenseSubmit:"ወጪ ሰርዝ", delDeleting:"በመሰረዝ ላይ…",
+    toastCannotEdit:"በጀቶችን ማስተካከል አይችሉም",
+    toastCannotDelete:"ዋና አስተዳዳሪ ብቻ በጀት ማጥፋት ይችላል",
+    toastCannotRecord:"ወጪ መመዝገብ አይችሉም",
+    toastCannotApprove:"አይፈቀድም",
+    toastCannotDeleteExp:"ወጪዎችን ማጥፋት አይችሉም",
+    toastNoBudgets:"ክፍት በጀቶች የሉም — መጀመሪያ አንዱን ይፍጠሩ",
+    toastBudgetCreated:"በጀት ተፈጥሯል",
+    toastBudgetUpdated:"በጀት ተዘምኗል",
+    toastBudgetDeleted:"በጀት ተሰርዟል",
+    toastExpenseRecorded:"ወጪ ተመዝግቧል",
+    toastExpenseDeleted:"ወጪ ተሰርዟል",
+    toastExpenseApproved:"ወጪ ጸድቋል",
+    toastExpenseRejected:"ወጪ ተቀባይነት አላገኘም",
+    toastCSVExported:"CSV ተወጥቷል",
+    toastNoRowsExport:"የሚወጡ ረድፎች የሉም",
+    errNameRequired:"የበጀት ስም ያስፈልጋል።",
+    errFiscalRequired:"የበጀት ዓመት ያስፈልጋል።",
+    errCategoryRequired:"ምድብ ያስፈልጋል።",
+    errAllocatedPositive:"የተመደበው መጠን ከ 0 በላይ መሆን አለበት።",
+    errEndAfterStart:"የመጨረሻው ቀን ከመጀመሪያው ቀን በኋላ ወይም እኩል መሆን አለበት።",
+    errChooseBudget:"እባክዎ የበጀት መስመር ይምረጡ።",
+    errDateRequired:"ቀን ያስፈልጋል።",
+    errAmountPositive:"መጠኑ ከ 0 በላይ መሆን አለበት።",
+    errDescriptionRequired:"መግለጫ ያስፈልጋል።",
+    errBudgetNotFound:"በጀት አልተገኘም።",
+    errCouldNotSave:"በጀት ማስቀመጥ አልተቻለም።",
+    errCouldNotRecord:"ወጪ መመዝገብ አልተቻለም።",
+    errCouldNotDelete:"ማጥፋት አልተቻለም",
+    confirmExceed:"ማስጠንቀቂያ፡ ይህ ወጪ ({amount}) በ \"{name}\" ላይ ካለው ቀሪ ሂሳብ ({remaining}) ይበልጣል።\n\nለማንኛውም ይመዝገቡ?",
+    role_super_admin:"ዋና አስተዳዳሪ", role_admin:"የክላስተር አስተዳዳሪ",
+    role_hrm:"የሰው ኃይል ሥራ አስኪያጅ", role_finance:"የፋይናንስ ኦፊሰር",
+    role_manager:"ሥራ አስኪያጅ", role_employee:"ሰራተኛ",
+    day:"ቀን", days:"ቀናት"
+  }
+};
+
+let LANG = "en";
+function t(key, vars) {
+  const dict = I18N[LANG] || I18N.en;
+  let s = dict[key] || I18N.en[key] || key;
+  if (vars) Object.keys(vars).forEach(k => { s = s.replace("{"+k+"}", vars[k]); });
+  return s;
+}
+function applyStaticI18n() {
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    el.textContent = t(key);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
+  });
+  const bt = document.getElementById("brand-title"); if (bt) bt.textContent = t("brandTitle");
+  const bs = document.getElementById("brand-subtitle"); if (bs) bs.textContent = t("brandSubtitle");
+  const fc = document.getElementById("footer-copy"); if (fc) fc.textContent = t("footerCopy");
+}
+
+/* ============================================================
+   FIREBASE
+   ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyASE2f6DVivrH7koQXAFZeOrj6Wng45Uq4",
   authDomain: "civil-service-system-f2d46.firebaseapp.com",
@@ -618,10 +1207,14 @@ let activeTab = "all";
    PERMISSIONS
    ============================================================ */
 const ROLE_LABELS = {
-  super_admin: "Super Admin", admin: "Cluster Admin", hrm: "HR Manager",
-  finance: "Finance Officer", manager: "Manager", employee: "Employee"
+  super_admin:"role_super_admin", admin:"role_admin", hrm:"role_hrm",
+  finance:"role_finance", manager:"role_manager", employee:"role_employee"
 };
-const roleLabel = (r) => ROLE_LABELS[r] || (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+const roleLabel = (r) => {
+  const key = ROLE_LABELS[r];
+  if (key) return t(key);
+  return (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+};
 
 const isSuper   = () => S?.role === "super_admin";
 const isFinance = () => S?.role === "finance";
@@ -640,34 +1233,37 @@ const canSeeAll         = () => isSuper() || isFinance();
    ============================================================ */
 const CURRENCY = "ETB";
 const BUDGET_CATEGORIES = [
-  { id:"personnel",  label:"Personnel & Salaries",     color:"#0b5cab" },
-  { id:"operations", label:"Operations & Maintenance", color:"#0e7490" },
-  { id:"capital",    label:"Capital Expenditure",      color:"#6d28d9" },
-  { id:"training",   label:"Training & Development",   color:"#19a974" },
-  { id:"travel",     label:"Travel & Per Diem",        color:"#d4a017" },
-  { id:"supplies",   label:"Supplies & Materials",     color:"#db2777" },
-  { id:"services",   label:"Consultancy & Services",   color:"#0e7490" },
-  { id:"utilities",  label:"Utilities",                color:"#b42318" },
-  { id:"other",      label:"Other",                    color:"#6b7280" }
+  { id:"personnel",  color:"#0b5cab" },
+  { id:"operations", color:"#0e7490" },
+  { id:"capital",    color:"#6d28d9" },
+  { id:"training",   color:"#19a974" },
+  { id:"travel",     color:"#d4a017" },
+  { id:"supplies",   color:"#db2777" },
+  { id:"services",   color:"#0e7490" },
+  { id:"utilities",  color:"#b42318" },
+  { id:"other",      color:"#6b7280" }
 ];
 const CATEGORY_MAP = Object.fromEntries(BUDGET_CATEGORIES.map(c => [c.id, c]));
+const categoryLabel = (id) => t("cat_" + (id || "other"));
 
 const BUDGET_STATUSES = [
-  { id:"draft",    label:"Draft",    cls:"tag--gray"  },
-  { id:"active",   label:"Active",   cls:"tag--green" },
-  { id:"closed",   label:"Closed",   cls:"tag--blue"  },
-  { id:"exceeded", label:"Exceeded", cls:"tag--red"   }
+  { id:"draft",    cls:"tag--gray"  },
+  { id:"active",   cls:"tag--green" },
+  { id:"closed",   cls:"tag--blue"  },
+  { id:"exceeded", cls:"tag--red"   }
 ];
 const STATUS_MAP = Object.fromEntries(BUDGET_STATUSES.map(s => [s.id, s]));
+const statusLabel = (key) => t("st_" + key);
 
 const EXPENSE_STATUSES = [
-  { id:"pending",  label:"Pending",  cls:"tag--gold"  },
-  { id:"approved", label:"Approved", cls:"tag--green" },
-  { id:"rejected", label:"Rejected", cls:"tag--red"   },
-  { id:"paid",     label:"Paid",     cls:"tag--teal"  },
-  { id:"cancelled",label:"Cancelled",cls:"tag--gray"  }
+  { id:"pending",   cls:"tag--gold"  },
+  { id:"approved",  cls:"tag--green" },
+  { id:"rejected",  cls:"tag--red"   },
+  { id:"paid",      cls:"tag--teal"  },
+  { id:"cancelled", cls:"tag--gray"  }
 ];
 const EXPENSE_MAP = Object.fromEntries(EXPENSE_STATUSES.map(s => [s.id, s]));
+const expenseLabel = (key) => t("ex_" + key);
 
 /* ============================================================
    HELPERS
@@ -730,7 +1326,6 @@ const ICONS = {
   book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
   chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
   bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
-  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
   settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
   check:'<polyline points="20 6 9 17 4 12"/>',
   x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
@@ -755,30 +1350,30 @@ const ICONS = {
    NAV
    ============================================================ */
 const NAV = [
-  { section:"Overview", items:[
-    { key:"dashboard", label:"Dashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
+  { section:"navOverview", items:[
+    { key:"dashboard", labelKey:"navDashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
   ]},
-  { section:"Organization", items:[
-    { key:"users",       label:"Users & Staff", href:"users.html",       icon:"users",    roles:["super_admin","admin","hrm"] },
-    { key:"departments", label:"Departments",   href:"departments.html", icon:"building", roles:["super_admin","admin","hrm","manager"] }
+  { section:"navOrganization", items:[
+    { key:"users",       labelKey:"navUsers",       href:"users.html",       icon:"users",    roles:["super_admin","admin","hrm"] },
+    { key:"departments", labelKey:"navDepartments", href:"departments.html", icon:"building", roles:["super_admin","admin","hrm","manager"] }
   ]},
-  { section:"Human Resources", items:[
-    { key:"recruitment", label:"Recruitment", href:"recruitment.html", icon:"userPlus", roles:["super_admin","hrm","admin"] },
-    { key:"training",    label:"Training",    href:"training.html",    icon:"book",     roles:["super_admin","hrm","admin","manager","employee"] },
-    { key:"performance", label:"Performance", href:"performance.html", icon:"target",   roles:["super_admin","hrm","admin","manager","employee"] }
+  { section:"navHumanResources", items:[
+    { key:"recruitment", labelKey:"navRecruitment", href:"recruitment.html", icon:"userPlus", roles:["super_admin","hrm","admin"] },
+    { key:"training",    labelKey:"navTraining",    href:"training.html",    icon:"book",     roles:["super_admin","hrm","admin","manager","employee"] },
+    { key:"performance", labelKey:"navPerformance", href:"performance.html", icon:"target",   roles:["super_admin","hrm","admin","manager","employee"] }
   ]},
-  { section:"Operations", items:[
-    { key:"attendance",  label:"Attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","admin","hrm","manager","employee"] },
-    { key:"leave",       label:"Leave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","admin","hrm","manager","employee"] }
+  { section:"navOperations", items:[
+    { key:"attendance",  labelKey:"navAttendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","admin","hrm","manager","employee"] },
+    { key:"leave",       labelKey:"navLeave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","admin","hrm","manager","employee"] }
   ]},
-  { section:"Finance", items:[
-    { key:"payroll",     label:"Payroll",     href:"payroll.html",  icon:"wallet", roles:["super_admin","finance","admin"] },
-    { key:"budget",      label:"Budget",      href:"budget.html",   icon:"chart",  roles:["super_admin","finance"] }
+  { section:"navFinance", items:[
+    { key:"payroll",     labelKey:"navPayroll",     href:"payroll.html",  icon:"wallet", roles:["super_admin","finance","admin"] },
+    { key:"budget",      labelKey:"navBudget",      href:"budget.html",   icon:"chart",  roles:["super_admin","finance"] }
   ]},
-  { section:"Administration", items:[
-    { key:"offices",       label:"Offices",       href:"offices.html",       icon:"building", roles:["super_admin","admin"] },
-    { key:"notifications", label:"Notifications", href:"notifications.html", icon:"bell",     roles:["*"] },
-    { key:"settings",      label:"Settings",      href:"settings.html",      icon:"settings", roles:["*"] }
+  { section:"navAdministration", items:[
+    { key:"offices",       labelKey:"navOffices",       href:"offices.html",       icon:"building", roles:["super_admin","admin"] },
+    { key:"notifications", labelKey:"navNotifications", href:"notifications.html", icon:"bell",     roles:["*"] },
+    { key:"settings",      labelKey:"navSettings",      href:"settings.html",      icon:"settings", roles:["*"] }
   ]}
 ];
 
@@ -793,14 +1388,14 @@ function renderSidebar() {
     if (!vis.length) continue;
     const sec = document.createElement("div");
     sec.className = "sidebar__section";
-    sec.textContent = group.section;
+    sec.textContent = t(group.section);
     nav.appendChild(sec);
     for (const item of vis) {
       const a = document.createElement("a");
       a.className = "nav-item" + (item.key === "budget" ? " is-active" : "");
       a.href = item.href;
       a.innerHTML = `<svg viewBox="0 0 24 24">${ICONS[item.icon]}</svg>
-                     <span class="nav-item__label">${item.label}</span>`;
+                     <span class="nav-item__label">${escapeHtml(t(item.labelKey))}</span>`;
       nav.appendChild(a);
     }
   }
@@ -821,15 +1416,15 @@ function renderScopeBadge() {
   const el = document.getElementById("scope-badge");
   if (isSuper()) {
     el.innerHTML = `<span class="scope-badge scope-badge--super">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Full system access — all budgets
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeSuper"))}
     </span>`;
   } else if (isFinance()) {
     el.innerHTML = `<span class="scope-badge scope-badge--fin">
-      <svg viewBox="0 0 24 24">${ICONS.chart}</svg> Finance Office — organisation-wide
+      <svg viewBox="0 0 24 24">${ICONS.chart}</svg> ${escapeHtml(t("scopeFinance"))}
     </span>`;
   } else {
     el.innerHTML = `<span class="scope-badge">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Read-only view
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeReadOnly"))}
     </span>`;
   }
 }
@@ -838,17 +1433,17 @@ function renderHeadActions() {
   const btns = [];
   if (canCreateBudget()) {
     btns.push(`<button class="btn btn--primary" id="new-budget-btn">
-      <svg viewBox="0 0 24 24">${ICONS.plus}</svg> New Budget
+      <svg viewBox="0 0 24 24">${ICONS.plus}</svg> ${escapeHtml(t("headNewBudget"))}
     </button>`);
   }
   if (canRecordExpense()) {
     btns.push(`<button class="btn" id="record-expense-btn">
-      <svg viewBox="0 0 24 24">${ICONS.receipt}</svg> Record Expense
+      <svg viewBox="0 0 24 24">${ICONS.receipt}</svg> ${escapeHtml(t("headRecordExpense"))}
     </button>`);
   }
   if (canSeeAll()) {
     btns.push(`<button class="btn" id="export-btn">
-      <svg viewBox="0 0 24 24">${ICONS.download}</svg> Export CSV
+      <svg viewBox="0 0 24 24">${ICONS.download}</svg> ${escapeHtml(t("headExport"))}
     </button>`);
   }
   host.innerHTML = btns.join("");
@@ -913,11 +1508,11 @@ function renderStats() {
   const activeCount    = list.filter(b => b.status === "active").length;
 
   document.getElementById("stats").innerHTML = `
-    ${statCard("Total Allocated",   fmtMoneyShort(totalAllocated), "stat--blue",   "wallet",      list.length + " budget line(s)")}
-    ${statCard("Total Spent",        fmtMoneyShort(totalSpent),     "stat--gold",   "trendingUp",  totalAllocated ? Math.round((totalSpent/totalAllocated)*100) + "% utilised" : "—")}
-    ${statCard("Remaining",          fmtMoneyShort(totalRemaining), "stat--green",  "trendingDown", "Available to spend")}
-    ${statCard("Pending Approvals",  fmtMoneyShort(totalPending),   "stat--teal",   "clock",       "Awaiting decision")}
-    ${statCard("Active Budgets",     activeCount,                    "stat--violet", "folder",      overCount ? overCount + " exceeded" : "All within limit")}
+    ${statCard(t("statTotalAllocated"),  fmtMoneyShort(totalAllocated), "stat--blue",   "wallet",      t("statSubBudgetLines", { n: list.length }))}
+    ${statCard(t("statTotalSpent"),      fmtMoneyShort(totalSpent),     "stat--gold",   "trendingUp",  totalAllocated ? t("statSubUtilised", { p: Math.round((totalSpent/totalAllocated)*100) }) : "—")}
+    ${statCard(t("statRemaining"),       fmtMoneyShort(totalRemaining), "stat--green",  "trendingDown", t("statSubAvailable"))}
+    ${statCard(t("statPendingApprovals"),fmtMoneyShort(totalPending),   "stat--teal",   "clock",       t("statSubAwaiting"))}
+    ${statCard(t("statActiveBudgets"),   activeCount,                    "stat--violet", "folder",      overCount ? t("statSubExceeded", { n: overCount }) : t("statSubAllWithin"))}
   `;
 }
 function statCard(label, value, cls, iconKey, sub) {
@@ -959,16 +1554,16 @@ function renderOverview() {
     catTotals[c].pending += b.pending;
   });
   const catList = Object.entries(catTotals)
-    .map(([id, v]) => ({ id, ...v, label: CATEGORY_MAP[id]?.label || id, color: CATEGORY_MAP[id]?.color || "#6b7280" }))
+    .map(([id, v]) => ({ id, ...v, label: categoryLabel(id), color: CATEGORY_MAP[id]?.color || "#6b7280" }))
     .sort((a, b) => b.alloc - a.alloc)
     .slice(0, 6);
 
   host.innerHTML = `
     <div class="overview-card">
-      <div class="overview-card__title">Overall utilisation</div>
+      <div class="overview-card__title">${escapeHtml(t("overviewTitle"))}</div>
       <div class="overview-total">
         ${fmtMoneyShort(totalSpent)}
-        <small>of ${fmtMoneyShort(totalAllocated)}</small>
+        <small>${escapeHtml(t("overviewOf"))} ${fmtMoneyShort(totalAllocated)}</small>
       </div>
       <div class="bar">
         <div class="bar__seg" style="width:${pctSpent}%;background:#0b5cab"></div>
@@ -978,21 +1573,21 @@ function renderOverview() {
       <div class="overview-legend">
         <div class="overview-legend__item">
           <span class="overview-legend__dot" style="background:#0b5cab"></span>
-          Spent <span class="overview-legend__val">${fmtMoneyShort(totalSpent)}</span>
+          ${escapeHtml(t("overviewSpent"))} <span class="overview-legend__val">${fmtMoneyShort(totalSpent)}</span>
         </div>
         <div class="overview-legend__item">
           <span class="overview-legend__dot" style="background:#d4a017"></span>
-          Pending <span class="overview-legend__val">${fmtMoneyShort(totalPending)}</span>
+          ${escapeHtml(t("overviewPending"))} <span class="overview-legend__val">${fmtMoneyShort(totalPending)}</span>
         </div>
         <div class="overview-legend__item">
           <span class="overview-legend__dot" style="background:#19a974"></span>
-          Remaining <span class="overview-legend__val">${fmtMoneyShort(totalRemaining)}</span>
+          ${escapeHtml(t("overviewRemaining"))} <span class="overview-legend__val">${fmtMoneyShort(totalRemaining)}</span>
         </div>
       </div>
     </div>
 
     <div class="overview-card">
-      <div class="overview-card__title">Top categories</div>
+      <div class="overview-card__title">${escapeHtml(t("overviewTopCategories"))}</div>
       ${catList.length ? `
         <ul class="mini-list">
           ${catList.map(c => {
@@ -1002,13 +1597,13 @@ function renderOverview() {
                 <span class="mini-list__dot" style="background:${c.color}"></span>
                 <div class="mini-list__main">
                   <div class="mini-list__name">${escapeHtml(c.label)}</div>
-                  <div class="mini-list__sub">${fmtMoneyShort(c.spent)} of ${fmtMoneyShort(c.alloc)} · ${pct}%</div>
+                  <div class="mini-list__sub">${fmtMoneyShort(c.spent)} / ${fmtMoneyShort(c.alloc)} · ${pct}%</div>
                 </div>
                 <span class="mini-list__val">${pct}%</span>
               </li>`;
           }).join("")}
         </ul>
-      ` : `<div style="color:var(--muted);font-size:13px;padding:8px 0">No category data yet</div>`}
+      ` : `<div style="color:var(--muted);font-size:13px;padding:8px 0">${escapeHtml(t("overviewNoCategories"))}</div>`}
     </div>
   `;
 }
@@ -1027,16 +1622,16 @@ function renderTabs() {
     exceeded: base.filter(b => b.status === "exceeded").length
   };
   const tabs = [
-    { key:"all",      label:"All" },
-    { key:"active",   label:"Active" },
-    { key:"draft",    label:"Draft" },
-    { key:"closed",   label:"Closed" },
-    { key:"exceeded", label:"Exceeded" }
+    { key:"all",      labelKey:"tabAll" },
+    { key:"active",   labelKey:"tabActive" },
+    { key:"draft",    labelKey:"tabDraft" },
+    { key:"closed",   labelKey:"tabClosed" },
+    { key:"exceeded", labelKey:"tabExceeded" }
   ];
-  host.innerHTML = tabs.map(t => `
-    <button class="tab ${activeTab === t.key ? "is-active" : ""}" data-tab="${t.key}">
-      ${escapeHtml(t.label)}
-      <span class="tab__count">${counts[t.key]}</span>
+  host.innerHTML = tabs.map(tb => `
+    <button class="tab ${activeTab === tb.key ? "is-active" : ""}" data-tab="${tb.key}">
+      ${escapeHtml(t(tb.labelKey))}
+      <span class="tab__count">${counts[tb.key]}</span>
     </button>
   `).join("");
   host.querySelectorAll(".tab").forEach(btn => {
@@ -1051,7 +1646,7 @@ function renderYearFilter() {
   const sel = document.getElementById("year-filter");
   const current = sel.value;
   const years = Array.from(new Set(enrichedBudgets().map(b => b.fiscalYear).filter(Boolean))).sort().reverse();
-  sel.innerHTML = `<option value="">All fiscal years</option>` +
+  sel.innerHTML = `<option value="">${escapeHtml(t("allFiscalYears"))}</option>` +
     years.map(y => `<option value="${y}">${escapeHtml(y)}</option>`).join("");
   sel.value = current;
 }
@@ -1075,7 +1670,7 @@ function filteredBudgets() {
       if (filterYear   && b.fiscalYear !== filterYear)   return false;
       if (filterStatus && b.status !== filterStatus)     return false;
       if (s) {
-        const cat = CATEGORY_MAP[b.categoryId]?.label || b.categoryId || "";
+        const cat = categoryLabel(b.categoryId) || "";
         const hay = [b.name, b.code, b.fiscalYear, cat, b.description, b.clusterName]
           .filter(Boolean).join(" ").toLowerCase();
         if (!hay.includes(s)) return false;
@@ -1084,8 +1679,9 @@ function filteredBudgets() {
     });
 }
 function statusTag(status) {
-  const m = STATUS_MAP[status] || { cls:"tag--gray", label: status || "—" };
-  return `<span class="tag ${m.cls}">${escapeHtml(m.label)}</span>`;
+  const m = STATUS_MAP[status] || { cls:"tag--gray" };
+  const label = STATUS_MAP[status] ? statusLabel(status) : (status || "—");
+  return `<span class="tag ${m.cls}">${escapeHtml(label)}</span>`;
 }
 function utilisationBar(pct) {
   const clamped = Math.max(0, Math.min(150, pct));
@@ -1113,12 +1709,10 @@ function renderTable() {
         <td colspan="9" style="text-align:center;padding:60px 24px;color:var(--muted)">
           <div style="font-size:44px;margin-bottom:12px;opacity:.4">📊</div>
           <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px">
-            No budget lines yet
+            ${escapeHtml(t("emptyTitle"))}
           </div>
           <div style="font-size:13.5px;line-height:1.6;max-width:520px;margin:0 auto">
-            ${canCreateBudget()
-              ? "Click <strong>New Budget</strong> to create the first budget line."
-              : "No budget lines visible for your role."}
+            ${canCreateBudget() ? t("emptyHintCreate") : escapeHtml(t("emptyHintRole"))}
           </div>
         </td>
       </tr>`;
@@ -1126,13 +1720,14 @@ function renderTable() {
   }
   if (!list.length) {
     tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:48px 20px;color:var(--muted)">
-      No budget lines match your search or filters.
+      ${escapeHtml(t("emptyFiltered"))}
     </td></tr>`;
     return;
   }
 
   tbody.innerHTML = list.map(b => {
-    const cat = CATEGORY_MAP[b.categoryId] || { label: b.categoryId || "—", color:"#6b7280" };
+    const cat = CATEGORY_MAP[b.categoryId] || { color:"#6b7280" };
+    const catText = categoryLabel(b.categoryId);
     const canEdit = canEditBudget() && b.status !== "closed";
     const canDel  = canDeleteBudget();
 
@@ -1144,13 +1739,13 @@ function renderTable() {
               <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:${cat.color};stroke-width:2.2;fill:none">${ICONS.folder}</svg>
             </div>
             <div class="user-cell__main">
-              <div class="user-cell__name">${escapeHtml(b.name || "Untitled budget")}</div>
+              <div class="user-cell__name">${escapeHtml(b.name || "—")}</div>
               <div class="user-cell__email">${escapeHtml(b.code || "—")}${b.clusterName ? " · " + escapeHtml(b.clusterName) : ""}</div>
             </div>
           </div>
         </td>
         <td>${escapeHtml(b.fiscalYear || "—")}</td>
-        <td><span class="tag tag--gray" style="background:${cat.color}15;color:${cat.color};border:none">${escapeHtml(cat.label)}</span></td>
+        <td><span class="tag tag--gray" style="background:${cat.color}15;color:${cat.color};border:none">${escapeHtml(catText)}</span></td>
         <td class="num">${fmtNum(b.allocated)}</td>
         <td class="num">${fmtNum(b.spent)}</td>
         <td class="num--strong" style="color:${b.remaining < 0 ? "var(--danger)" : "var(--success)"}">${fmtNum(b.remaining)}</td>
@@ -1158,19 +1753,19 @@ function renderTable() {
         <td>${statusTag(b.status)}</td>
         <td>
           <div class="cell-actions">
-            <button class="btn btn--sm btn--icon" data-action="view" data-id="${b.id}" title="View details">
+            <button class="btn btn--sm btn--icon" data-action="view" data-id="${b.id}" title="${escapeHtml(t("viewTitle"))}">
               <svg viewBox="0 0 24 24">${ICONS.eye}</svg>
             </button>
             ${canEdit ? `
-              <button class="btn btn--sm btn--icon" data-action="edit" data-id="${b.id}" title="Edit budget">
+              <button class="btn btn--sm btn--icon" data-action="edit" data-id="${b.id}" title="${escapeHtml(t("viewEdit"))}">
                 <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
               </button>` : ""}
             ${canRecordExpense() && b.status !== "closed" ? `
-              <button class="btn btn--sm btn--icon btn--success" data-action="expense" data-id="${b.id}" title="Record expense">
+              <button class="btn btn--sm btn--icon btn--success" data-action="expense" data-id="${b.id}" title="${escapeHtml(t("viewAddExpense"))}">
                 <svg viewBox="0 0 24 24">${ICONS.receipt}</svg>
               </button>` : ""}
             ${canDel ? `
-              <button class="btn btn--sm btn--icon btn--danger" data-action="delete" data-id="${b.id}" title="Delete budget">
+              <button class="btn btn--sm btn--icon btn--danger" data-action="delete" data-id="${b.id}" title="${escapeHtml(t("viewDelete"))}">
                 <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
               </button>` : ""}
           </div>
@@ -1229,22 +1824,23 @@ function closeModal() {
 function openEditBudget(id) {
   const b = BUDGETS.find(x => x.id === id);
   if (!b) return;
-  if (!canEditBudget()) { toast("You cannot edit budgets", "error"); return; }
-  if (b.status === "closed") { toast("Closed budgets cannot be edited", "error"); return; }
+  if (!canEditBudget()) { toast(t("toastCannotEdit"), "error"); return; }
+  if (b.status === "closed") { toast(t("toastCannotEdit"), "error"); return; }
   openBudgetForm(b);
 }
 
 function openBudgetForm(existing = null) {
   const isEdit = !!existing;
   const defaultFY = String(new Date().getFullYear());
+  const cur = CURRENCY;
 
   openModal(`
     <div class="modal__head">
       <div>
-        <div class="modal__title">${isEdit ? "Edit Budget" : "New Budget"}</div>
-        <div class="modal__sub">${isEdit ? "Update the details of this budget line." : "Create a new budget line to track allocation and expenditure."}</div>
+        <div class="modal__title">${escapeHtml(isEdit ? t("modalBudgetEdit") : t("modalBudgetNew"))}</div>
+        <div class="modal__sub">${escapeHtml(isEdit ? t("modalBudgetEditSub") : t("modalBudgetNewSub"))}</div>
       </div>
-      <button class="modal__close" data-close aria-label="Close">
+      <button class="modal__close" data-close aria-label="${escapeHtml(t("viewClose"))}">
         <svg viewBox="0 0 24 24">${ICONS.x}</svg>
       </button>
     </div>
@@ -1255,60 +1851,60 @@ function openBudgetForm(existing = null) {
       </div>
 
       <div class="field">
-        <label class="field__required">Budget name</label>
-        <input id="bf-name" value="${escapeHtml(existing?.name || "")}" placeholder="e.g. Q1 Operations Budget">
+        <label class="field__required">${escapeHtml(t("fBudgetName"))}</label>
+        <input id="bf-name" value="${escapeHtml(existing?.name || "")}" placeholder="${escapeHtml(t("fBudgetNamePh"))}">
       </div>
 
       <div class="field-row">
         <div class="field">
-          <label>Budget code</label>
-          <input id="bf-code" value="${escapeHtml(existing?.code || "")}" placeholder="BUD-2026-001" style="font-family:ui-monospace,monospace">
-          <p class="field__hint">Optional — auto-generated if left blank.</p>
+          <label>${escapeHtml(t("fBudgetCode"))}</label>
+          <input id="bf-code" value="${escapeHtml(existing?.code || "")}" placeholder="${escapeHtml(t("fBudgetCodePh"))}" style="font-family:ui-monospace,monospace">
+          <p class="field__hint">${escapeHtml(t("fBudgetCodeHint"))}</p>
         </div>
         <div class="field">
-          <label class="field__required">Fiscal year</label>
-          <input id="bf-fiscalYear" value="${escapeHtml(existing?.fiscalYear || defaultFY)}" placeholder="2026">
+          <label class="field__required">${escapeHtml(t("fFiscalYear"))}</label>
+          <input id="bf-fiscalYear" value="${escapeHtml(existing?.fiscalYear || defaultFY)}" placeholder="${escapeHtml(t("fFiscalYearPh"))}">
         </div>
       </div>
 
       <div class="field">
-        <label class="field__required">Category</label>
+        <label class="field__required">${escapeHtml(t("fCategory"))}</label>
         <select id="bf-categoryId">
           ${BUDGET_CATEGORIES.map(c => `
-            <option value="${c.id}" ${existing?.categoryId === c.id ? "selected" : ""}>${escapeHtml(c.label)}</option>
+            <option value="${c.id}" ${existing?.categoryId === c.id ? "selected" : ""}>${escapeHtml(categoryLabel(c.id))}</option>
           `).join("")}
         </select>
       </div>
 
       <div class="field-row">
         <div class="field">
-          <label class="field__required">Allocated amount (${CURRENCY})</label>
+          <label class="field__required">${escapeHtml(t("fAllocated", { cur }))}</label>
           <input id="bf-allocated" type="number" step="0.01" min="0"
                  value="${existing?.allocated || ""}" placeholder="0.00">
         </div>
         <div class="field">
-          <label>Status</label>
+          <label>${escapeHtml(t("fStatus"))}</label>
           <select id="bf-status">
             ${BUDGET_STATUSES.map(s => `
-              <option value="${s.id}" ${existing?.status === s.id ? "selected" : ""}>${escapeHtml(s.label)}</option>
+              <option value="${s.id}" ${existing?.status === s.id ? "selected" : ""}>${escapeHtml(statusLabel(s.id))}</option>
             `).join("")}
           </select>
         </div>
       </div>
 
       <div class="field">
-        <label>Period</label>
+        <label>${escapeHtml(t("fPeriod"))}</label>
         <div class="field-row">
           <input id="bf-startDate" type="date" value="${escapeHtml(existing?.startDate || todayISO())}">
           <input id="bf-endDate" type="date" value="${escapeHtml(existing?.endDate || "")}">
         </div>
-        <p class="field__hint">Start and end date for this budget cycle.</p>
+        <p class="field__hint">${escapeHtml(t("fPeriodHint"))}</p>
       </div>
 
       <div class="field">
-        <label>Cluster (optional)</label>
+        <label>${escapeHtml(t("fCluster"))}</label>
         <select id="bf-clusterId">
-          <option value="">— Organisation-wide —</option>
+          <option value="">${escapeHtml(t("fClusterOrgWide"))}</option>
           ${CLUSTERS.map(c => `
             <option value="${c.id}" ${existing?.clusterId === c.id ? "selected" : ""}>
               ${escapeHtml(c.code ? c.code + " · " : "")}${escapeHtml(c.name)}
@@ -1318,15 +1914,15 @@ function openBudgetForm(existing = null) {
       </div>
 
       <div class="field">
-        <label>Description / notes</label>
-        <textarea id="bf-description" placeholder="Purpose and scope of this budget…">${escapeHtml(existing?.description || "")}</textarea>
+        <label>${escapeHtml(t("fDescription"))}</label>
+        <textarea id="bf-description" placeholder="${escapeHtml(t("fDescriptionPh"))}">${escapeHtml(existing?.description || "")}</textarea>
       </div>
     </div>
     <div class="modal__foot">
-      <button class="btn" data-close>Cancel</button>
+      <button class="btn" data-close>${escapeHtml(t("btnCancel"))}</button>
       <button class="btn btn--primary" id="bf-submit">
         <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
-        <span class="btn-label">${isEdit ? "Save changes" : "Create budget"}</span>
+        <span class="btn-label">${escapeHtml(isEdit ? t("btnSaveChanges") : t("btnCreateBudget"))}</span>
       </button>
     </div>
   `);
@@ -1350,19 +1946,19 @@ function openBudgetForm(existing = null) {
     const clusterId   = document.getElementById("bf-clusterId").value;
     const description = document.getElementById("bf-description").value.trim();
 
-    if (!name || name.length < 2)   { errBox.style.display="flex"; errMsg.textContent = "Budget name is required."; return; }
-    if (!fiscalYear)                { errBox.style.display="flex"; errMsg.textContent = "Fiscal year is required."; return; }
-    if (!categoryId)                { errBox.style.display="flex"; errMsg.textContent = "Category is required."; return; }
-    if (!(allocated > 0))           { errBox.style.display="flex"; errMsg.textContent = "Allocated amount must be greater than 0."; return; }
+    if (!name || name.length < 2)   { errBox.style.display="flex"; errMsg.textContent = t("errNameRequired"); return; }
+    if (!fiscalYear)                { errBox.style.display="flex"; errMsg.textContent = t("errFiscalRequired"); return; }
+    if (!categoryId)                { errBox.style.display="flex"; errMsg.textContent = t("errCategoryRequired"); return; }
+    if (!(allocated > 0))           { errBox.style.display="flex"; errMsg.textContent = t("errAllocatedPositive"); return; }
     if (startDate && endDate && endDate < startDate) {
-      errBox.style.display="flex"; errMsg.textContent = "End date must be on or after start date."; return;
+      errBox.style.display="flex"; errMsg.textContent = t("errEndAfterStart"); return;
     }
 
     const clusterName = clusterId ? (CLUSTERS.find(c => c.id === clusterId)?.name || null) : null;
 
     const payload = {
       name, code: code || null, fiscalYear,
-      categoryId, categoryLabel: CATEGORY_MAP[categoryId]?.label || categoryId,
+      categoryId, categoryLabel: categoryLabel(categoryId),
       allocated, status, startDate: startDate || null, endDate: endDate || null,
       clusterId: clusterId || null, clusterName,
       description: description || null,
@@ -1372,12 +1968,12 @@ function openBudgetForm(existing = null) {
     };
 
     btn.disabled = true; spinner.classList.remove("hidden");
-    const old = label.textContent; label.textContent = isEdit ? "Saving…" : "Creating…";
+    const old = label.textContent; label.textContent = isEdit ? t("btnSaving") : t("btnCreating");
 
     try {
       if (isEdit) {
         await updateDoc(doc(db, "budgets", existing.id), payload);
-        toast("Budget updated", "success");
+        toast(t("toastBudgetUpdated"), "success");
       } else {
         const autoCode = "BUD-" + fiscalYear + "-" + String(Date.now()).slice(-4);
         await addDoc(collection(db, "budgets"), {
@@ -1387,13 +1983,13 @@ function openBudgetForm(existing = null) {
           createdByName: S.name,
           createdAt: serverTimestamp()
         });
-        toast("Budget created", "success");
+        toast(t("toastBudgetCreated"), "success");
       }
       closeModal();
     } catch (err) {
       console.error(err);
       errBox.style.display = "flex";
-      errMsg.textContent = (err.code ? err.code + " — " : "") + (err.message || "Could not save budget.");
+      errMsg.textContent = (err.code ? err.code + " — " : "") + (err.message || t("errCouldNotSave"));
       btn.disabled = false; spinner.classList.add("hidden");
       label.textContent = old;
     }
@@ -1407,7 +2003,8 @@ function openViewBudget(id) {
   const raw = BUDGETS.find(x => x.id === id);
   if (!raw) return;
   const b = budgetWithSpend(raw);
-  const cat = CATEGORY_MAP[b.categoryId] || { label: b.categoryId || "—", color:"#6b7280" };
+  const cat = CATEGORY_MAP[b.categoryId] || { color:"#6b7280" };
+  const catText = categoryLabel(b.categoryId);
   const expenses = (expensesByBudget[b.id] || []).slice().sort((a, b2) => {
     const ta = a.date || ""; const tb = b2.date || "";
     return tb.localeCompare(ta);
@@ -1419,28 +2016,28 @@ function openViewBudget(id) {
     <div class="modal__head">
       <div>
         <div class="modal__title">${escapeHtml(b.name)}</div>
-        <div class="modal__sub">${escapeHtml(b.code || "")} · ${escapeHtml(b.fiscalYear || "")} · ${escapeHtml(cat.label)}</div>
+        <div class="modal__sub">${escapeHtml(b.code || "")} · ${escapeHtml(b.fiscalYear || "")} · ${escapeHtml(catText)}</div>
       </div>
-      <button class="modal__close" data-close aria-label="Close">
+      <button class="modal__close" data-close aria-label="${escapeHtml(t("viewClose"))}">
         <svg viewBox="0 0 24 24">${ICONS.x}</svg>
       </button>
     </div>
     <div class="modal__body">
       <div class="category-grid">
         <div class="category-cell">
-          <dt>Allocated</dt>
+          <dt>${escapeHtml(t("viewAllocated"))}</dt>
           <dd>${fmtMoneyShort(b.allocated)}</dd>
         </div>
         <div class="category-cell">
-          <dt>Spent</dt>
+          <dt>${escapeHtml(t("viewSpent"))}</dt>
           <dd style="color:#0b5cab">${fmtMoneyShort(b.spent)}</dd>
         </div>
         <div class="category-cell">
-          <dt>Pending</dt>
+          <dt>${escapeHtml(t("viewPending"))}</dt>
           <dd style="color:#d4a017">${fmtMoneyShort(b.pending)}</dd>
         </div>
         <div class="category-cell">
-          <dt>Remaining</dt>
+          <dt>${escapeHtml(t("viewRemaining"))}</dt>
           <dd style="color:${b.remaining < 0 ? "var(--danger)" : "var(--success)"}">${fmtMoneyShort(b.remaining)}</dd>
         </div>
       </div>
@@ -1450,27 +2047,27 @@ function openViewBudget(id) {
       </div>
 
       <div class="review">
-        <div class="review__row"><span class="review__k">Status</span><span class="review__v">${statusTag(b.status)}</span></div>
-        <div class="review__row"><span class="review__k">Category</span><span class="review__v">${escapeHtml(cat.label)}</span></div>
-        <div class="review__row"><span class="review__k">Cluster</span><span class="review__v">${escapeHtml(b.clusterName || "Organisation-wide")}</span></div>
-        <div class="review__row"><span class="review__k">Period</span><span class="review__v">${b.startDate ? fmtDate(b.startDate) : "—"} → ${b.endDate ? fmtDate(b.endDate) : "—"}</span></div>
-        <div class="review__row"><span class="review__k">Description</span><span class="review__v">${escapeHtml(b.description || "—")}</span></div>
-        <div class="review__row"><span class="review__k">Created</span><span class="review__v">${escapeHtml(b.createdByName || "—")} · ${escapeHtml(fmtDateTime(b.createdAt))}</span></div>
-        ${b.updatedByName ? `<div class="review__row"><span class="review__k">Last updated</span><span class="review__v">${escapeHtml(b.updatedByName)} · ${escapeHtml(fmtDateTime(b.updatedAt))}</span></div>` : ""}
+        <div class="review__row"><span class="review__k">${escapeHtml(t("viewStatus"))}</span><span class="review__v">${statusTag(b.status)}</span></div>
+        <div class="review__row"><span class="review__k">${escapeHtml(t("viewCategory"))}</span><span class="review__v">${escapeHtml(catText)}</span></div>
+        <div class="review__row"><span class="review__k">${escapeHtml(t("viewCluster"))}</span><span class="review__v">${escapeHtml(b.clusterName || t("viewOrgWide"))}</span></div>
+        <div class="review__row"><span class="review__k">${escapeHtml(t("viewPeriod"))}</span><span class="review__v">${b.startDate ? fmtDate(b.startDate) : "—"} → ${b.endDate ? fmtDate(b.endDate) : "—"}</span></div>
+        <div class="review__row"><span class="review__k">${escapeHtml(t("viewDescription"))}</span><span class="review__v">${escapeHtml(b.description || "—")}</span></div>
+        <div class="review__row"><span class="review__k">${escapeHtml(t("viewCreated"))}</span><span class="review__v">${escapeHtml(b.createdByName || "—")} · ${escapeHtml(fmtDateTime(b.createdAt))}</span></div>
+        ${b.updatedByName ? `<div class="review__row"><span class="review__k">${escapeHtml(t("viewLastUpdated"))}</span><span class="review__v">${escapeHtml(b.updatedByName)} · ${escapeHtml(fmtDateTime(b.updatedAt))}</span></div>` : ""}
       </div>
 
       <div style="font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
-                  color:var(--muted);margin:22px 0 12px">Expenses (${expenses.length})</div>
+                  color:var(--muted);margin:22px 0 12px">${escapeHtml(t("viewExpenses", { n: expenses.length }))}</div>
       ${expenses.length ? `
         <div style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:10px">
           <table class="data" style="margin:0">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th class="num">Amount</th>
-                <th>Status</th>
-                <th style="width:130px;text-align:right">Actions</th>
+                <th>${escapeHtml(t("expDate"))}</th>
+                <th>${escapeHtml(t("expDescription"))}</th>
+                <th class="num">${escapeHtml(t("expAmount", { cur: CURRENCY }))}</th>
+                <th>${escapeHtml(t("thStatus"))}</th>
+                <th style="width:130px;text-align:right">${escapeHtml(t("thActions"))}</th>
               </tr>
             </thead>
             <tbody>
@@ -1483,15 +2080,15 @@ function openViewBudget(id) {
                   <td>
                     <div class="cell-actions">
                       ${e.status === "pending" && canApproveExpense() ? `
-                        <button class="btn btn--sm btn--icon btn--success" data-vexp="approve" data-exp="${e.id}" title="Approve">
+                        <button class="btn btn--sm btn--icon btn--success" data-vexp="approve" data-exp="${e.id}" title="${escapeHtml(t("ex_approved"))}">
                           <svg viewBox="0 0 24 24">${ICONS.check}</svg>
                         </button>
-                        <button class="btn btn--sm btn--icon btn--danger" data-vexp="reject" data-exp="${e.id}" title="Reject">
+                        <button class="btn btn--sm btn--icon btn--danger" data-vexp="reject" data-exp="${e.id}" title="${escapeHtml(t("ex_rejected"))}">
                           <svg viewBox="0 0 24 24">${ICONS.x}</svg>
                         </button>
                       ` : ""}
                       ${canDeleteExpense() ? `
-                        <button class="btn btn--sm btn--icon btn--danger" data-vexp="delete" data-exp="${e.id}" title="Delete">
+                        <button class="btn btn--sm btn--icon btn--danger" data-vexp="delete" data-exp="${e.id}" title="${escapeHtml(t("viewDelete"))}">
                           <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
                         </button>
                       ` : ""}
@@ -1505,24 +2102,24 @@ function openViewBudget(id) {
       ` : `
         <div class="alert alert--info" style="margin-bottom:0">
           <svg viewBox="0 0 24 24">${ICONS.receipt}</svg>
-          <div>No expenses recorded against this budget yet.</div>
+          <div>${escapeHtml(t("viewNoExpenses"))}</div>
         </div>
       `}
     </div>
     <div class="modal__foot">
       ${canDel ? `
         <button class="btn btn--danger" id="vb-delete">
-          <svg viewBox="0 0 24 24">${ICONS.trash}</svg> Delete
+          <svg viewBox="0 0 24 24">${ICONS.trash}</svg> ${escapeHtml(t("viewDelete"))}
         </button>` : ""}
       <div class="spacer"></div>
-      <button class="btn" data-close>Close</button>
+      <button class="btn" data-close>${escapeHtml(t("viewClose"))}</button>
       ${canEdit ? `
         <button class="btn" id="vb-edit">
-          <svg viewBox="0 0 24 24">${ICONS.edit}</svg> Edit
+          <svg viewBox="0 0 24 24">${ICONS.edit}</svg> ${escapeHtml(t("viewEdit"))}
         </button>` : ""}
       ${canRecordExpense() && b.status !== "closed" ? `
         <button class="btn btn--primary" id="vb-add-expense">
-          <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add Expense
+          <svg viewBox="0 0 24 24">${ICONS.plus}</svg> ${escapeHtml(t("viewAddExpense"))}
         </button>` : ""}
     </div>
   `);
@@ -1558,20 +2155,21 @@ function openViewBudget(id) {
    RECORD EXPENSE
    ============================================================ */
 function openRecordExpenseModal(preselectBudgetId = null) {
-  if (!canRecordExpense()) { toast("You cannot record expenses", "error"); return; }
+  if (!canRecordExpense()) { toast(t("toastCannotRecord"), "error"); return; }
   const budgets = enrichedBudgets().filter(b => b.status !== "closed");
   if (!budgets.length) {
-    toast("No open budgets available — create one first", "error");
+    toast(t("toastNoBudgets"), "error");
     return;
   }
+  const cur = CURRENCY;
 
   openModal(`
     <div class="modal__head">
       <div>
-        <div class="modal__title">Record Expense</div>
-        <div class="modal__sub">Log expenditure against a budget line.</div>
+        <div class="modal__title">${escapeHtml(t("expRecordTitle"))}</div>
+        <div class="modal__sub">${escapeHtml(t("expRecordSub"))}</div>
       </div>
-      <button class="modal__close" data-close aria-label="Close">
+      <button class="modal__close" data-close aria-label="${escapeHtml(t("viewClose"))}">
         <svg viewBox="0 0 24 24">${ICONS.x}</svg>
       </button>
     </div>
@@ -1582,12 +2180,12 @@ function openRecordExpenseModal(preselectBudgetId = null) {
       </div>
 
       <div class="field">
-        <label class="field__required">Budget line</label>
+        <label class="field__required">${escapeHtml(t("expBudgetLine"))}</label>
         <select id="re-budgetId">
-          <option value="">— Choose a budget —</option>
+          <option value="">${escapeHtml(t("expChooseBudget"))}</option>
           ${budgets.map(b => `
             <option value="${b.id}" ${preselectBudgetId === b.id ? "selected" : ""}>
-              ${escapeHtml(b.name)} · ${escapeHtml(b.fiscalYear)} (${fmtMoneyShort(b.remaining)} left)
+              ${escapeHtml(b.name)} · ${escapeHtml(b.fiscalYear)} (${fmtMoneyShort(b.remaining)})
             </option>
           `).join("")}
         </select>
@@ -1595,51 +2193,51 @@ function openRecordExpenseModal(preselectBudgetId = null) {
 
       <div class="field-row">
         <div class="field">
-          <label class="field__required">Expense date</label>
+          <label class="field__required">${escapeHtml(t("expDate"))}</label>
           <input id="re-date" type="date" value="${todayISO()}">
         </div>
         <div class="field">
-          <label class="field__required">Amount (${CURRENCY})</label>
+          <label class="field__required">${escapeHtml(t("expAmount", { cur }))}</label>
           <input id="re-amount" type="number" step="0.01" min="0" placeholder="0.00">
         </div>
       </div>
 
       <div class="field">
-        <label class="field__required">Description</label>
-        <input id="re-description" placeholder="e.g. Office supplies purchase — Invoice #1234">
+        <label class="field__required">${escapeHtml(t("expDescription"))}</label>
+        <input id="re-description" placeholder="${escapeHtml(t("expDescriptionPh"))}">
       </div>
 
       <div class="field-row">
         <div class="field">
-          <label>Vendor / payee</label>
-          <input id="re-vendor" placeholder="e.g. ABC Trading PLC">
+          <label>${escapeHtml(t("expVendor"))}</label>
+          <input id="re-vendor" placeholder="${escapeHtml(t("expVendorPh"))}">
         </div>
         <div class="field">
-          <label>Reference / receipt #</label>
+          <label>${escapeHtml(t("expReference"))}</label>
           <input id="re-reference" placeholder="INV-1234" style="font-family:ui-monospace,monospace">
         </div>
       </div>
 
       <div class="field">
-        <label>Payment method</label>
+        <label>${escapeHtml(t("expMethod"))}</label>
         <select id="re-method">
-          <option value="bank">Bank transfer</option>
-          <option value="cash">Cash</option>
-          <option value="cheque">Cheque</option>
-          <option value="petty">Petty cash</option>
+          <option value="bank">${escapeHtml(t("expMethodBank"))}</option>
+          <option value="cash">${escapeHtml(t("expMethodCash"))}</option>
+          <option value="cheque">${escapeHtml(t("expMethodCheque"))}</option>
+          <option value="petty">${escapeHtml(t("expMethodPetty"))}</option>
         </select>
       </div>
 
       <div class="field">
-        <label>Notes (optional)</label>
-        <textarea id="re-notes" placeholder="Additional details…"></textarea>
+        <label>${escapeHtml(t("expNotes"))}</label>
+        <textarea id="re-notes" placeholder="${escapeHtml(t("expNotesPh"))}"></textarea>
       </div>
     </div>
     <div class="modal__foot">
-      <button class="btn" data-close>Cancel</button>
+      <button class="btn" data-close>${escapeHtml(t("btnCancel"))}</button>
       <button class="btn btn--primary" id="re-submit">
         <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
-        <span class="btn-label">Record expense</span>
+        <span class="btn-label">${escapeHtml(t("expSubmit"))}</span>
       </button>
     </div>
   `);
@@ -1661,23 +2259,25 @@ function openRecordExpenseModal(preselectBudgetId = null) {
     const method      = document.getElementById("re-method").value;
     const notes       = document.getElementById("re-notes").value.trim();
 
-    if (!budgetId)               { errBox.style.display="flex"; errMsg.textContent = "Please choose a budget line."; return; }
-    if (!date)                   { errBox.style.display="flex"; errMsg.textContent = "Date is required."; return; }
-    if (!(amount > 0))           { errBox.style.display="flex"; errMsg.textContent = "Amount must be greater than 0."; return; }
+    if (!budgetId)               { errBox.style.display="flex"; errMsg.textContent = t("errChooseBudget"); return; }
+    if (!date)                   { errBox.style.display="flex"; errMsg.textContent = t("errDateRequired"); return; }
+    if (!(amount > 0))           { errBox.style.display="flex"; errMsg.textContent = t("errAmountPositive"); return; }
     if (!description || description.length < 2) {
-      errBox.style.display="flex"; errMsg.textContent = "Description is required."; return;
+      errBox.style.display="flex"; errMsg.textContent = t("errDescriptionRequired"); return;
     }
 
     const budget = enrichedBudgets().find(b => b.id === budgetId);
-    if (!budget) { errBox.style.display="flex"; errMsg.textContent = "Budget not found."; return; }
+    if (!budget) { errBox.style.display="flex"; errMsg.textContent = t("errBudgetNotFound"); return; }
 
     const willExceed = amount > budget.remaining;
-    if (willExceed && !confirm(
-      `Warning: this expense (${fmtMoney(amount)}) exceeds the remaining balance (${fmtMoney(budget.remaining)}) on "${budget.name}".\n\nRecord anyway?`
-    )) return;
+    if (willExceed && !confirm(t("confirmExceed", {
+      amount: fmtMoney(amount),
+      remaining: fmtMoney(budget.remaining),
+      name: budget.name
+    }))) return;
 
     btn.disabled = true; spinner.classList.remove("hidden");
-    const old = label.textContent; label.textContent = "Recording…";
+    const old = label.textContent; label.textContent = t("expSubmitting");
 
     try {
       const payload = {
@@ -1686,7 +2286,7 @@ function openRecordExpenseModal(preselectBudgetId = null) {
         budgetCode: budget.code || null,
         fiscalYear: budget.fiscalYear || null,
         categoryId: budget.categoryId || null,
-        categoryLabel: CATEGORY_MAP[budget.categoryId]?.label || null,
+        categoryLabel: categoryLabel(budget.categoryId),
         clusterId: budget.clusterId || null,
         clusterName: budget.clusterName || null,
         date, amount, description,
@@ -1712,12 +2312,12 @@ function openRecordExpenseModal(preselectBudgetId = null) {
         } catch (e) { console.warn("[budget spent update]", e); }
       }
 
-      toast("Expense recorded", "success");
+      toast(t("toastExpenseRecorded"), "success");
       closeModal();
     } catch (err) {
       console.error(err);
       errBox.style.display = "flex";
-      errMsg.textContent = (err.code ? err.code + " — " : "") + (err.message || "Could not record expense.");
+      errMsg.textContent = (err.code ? err.code + " — " : "") + (err.message || t("errCouldNotRecord"));
       btn.disabled = false; spinner.classList.add("hidden");
       label.textContent = old;
     }
@@ -1725,14 +2325,15 @@ function openRecordExpenseModal(preselectBudgetId = null) {
 }
 
 function expenseStatusTag(status) {
-  const m = EXPENSE_MAP[status] || { cls:"tag--gray", label: status || "—" };
-  return `<span class="tag ${m.cls}">${escapeHtml(m.label)}</span>`;
+  const m = EXPENSE_MAP[status] || { cls:"tag--gray" };
+  const label = EXPENSE_MAP[status] ? expenseLabel(status) : (status || "—");
+  return `<span class="tag ${m.cls}">${escapeHtml(label)}</span>`;
 }
 
 async function setExpenseStatus(expId, status) {
   const e = EXPENSES.find(x => x.id === expId);
   if (!e) return;
-  if (!canApproveExpense()) { toast("Not allowed", "error"); return; }
+  if (!canApproveExpense()) { toast(t("toastCannotApprove"), "error"); return; }
   try {
     await updateDoc(doc(db, "expenses", expId), {
       status,
@@ -1740,7 +2341,6 @@ async function setExpenseStatus(expId, status) {
       decidedBy: S.uid,
       decidedByName: S.name
     });
-    // If approved, bump the budget's cached spent field
     if (status === "approved") {
       const b = BUDGETS.find(x => x.id === e.budgetId);
       if (b) {
@@ -1752,41 +2352,38 @@ async function setExpenseStatus(expId, status) {
         } catch (err) { console.warn("[bump spent]", err); }
       }
     }
-    toast("Expense " + status, "success");
+    toast(status === "approved" ? t("toastExpenseApproved") : t("toastExpenseRejected"), "success");
   } catch (err) {
     console.error(err);
-    toast(err.message || "Could not update expense", "error");
+    toast(err.message || t("errCouldNotSave"), "error");
   }
 }
 
 function confirmDeleteExpense(expId) {
   const e = EXPENSES.find(x => x.id === expId);
   if (!e) return;
-  if (!canDeleteExpense()) { toast("You cannot delete expenses", "error"); return; }
+  if (!canDeleteExpense()) { toast(t("toastCannotDeleteExp"), "error"); return; }
   openModal(`
     <div class="modal__head">
       <div>
-        <div class="modal__title">Delete expense?</div>
+        <div class="modal__title">${escapeHtml(t("delExpenseTitle"))}</div>
         <div class="modal__sub">${escapeHtml(e.description || "")}</div>
       </div>
-      <button class="modal__close" data-close aria-label="Close">
+      <button class="modal__close" data-close aria-label="${escapeHtml(t("viewClose"))}">
         <svg viewBox="0 0 24 24">${ICONS.x}</svg>
       </button>
     </div>
     <div class="modal__body">
       <div class="alert alert--error" style="margin-bottom:0">
         <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-        <div>
-          <div>Permanently remove expense of <strong>${fmtMoney(e.amount)}</strong> from
-          <strong>${escapeHtml(e.budgetName || "budget")}</strong>.</div>
-        </div>
+        <div>${t("delExpenseIntro", { amount: fmtMoney(e.amount), budget: escapeHtml(e.budgetName || "budget") })}</div>
       </div>
     </div>
     <div class="modal__foot">
-      <button class="btn" data-close>Cancel</button>
+      <button class="btn" data-close>${escapeHtml(t("btnCancel"))}</button>
       <button class="btn btn--danger" id="de-submit">
         <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
-        <span class="btn-label">Delete expense</span>
+        <span class="btn-label">${escapeHtml(t("delExpenseSubmit"))}</span>
       </button>
     </div>
   `);
@@ -1795,14 +2392,14 @@ function confirmDeleteExpense(expId) {
     const spinner = btn.querySelector(".spinner");
     const label = btn.querySelector(".btn-label");
     btn.disabled = true; spinner.classList.remove("hidden");
-    const old = label.textContent; label.textContent = "Deleting…";
+    const old = label.textContent; label.textContent = t("delDeleting");
     try {
       await deleteDoc(doc(db, "expenses", expId));
-      toast("Expense deleted", "success");
+      toast(t("toastExpenseDeleted"), "success");
       closeModal();
     } catch (err) {
       console.error(err);
-      toast(err.message || "Could not delete", "error");
+      toast(err.message || t("errCouldNotDelete"), "error");
       btn.disabled = false; spinner.classList.add("hidden");
       label.textContent = old;
     }
@@ -1815,16 +2412,16 @@ function confirmDeleteExpense(expId) {
 function confirmDeleteBudget(id) {
   const b = BUDGETS.find(x => x.id === id);
   if (!b) return;
-  if (!canDeleteBudget()) { toast("Only Super Admin can delete budgets", "error"); return; }
+  if (!canDeleteBudget()) { toast(t("toastCannotDelete"), "error"); return; }
   const expCount = (expensesByBudget[b.id] || []).length;
 
   openModal(`
     <div class="modal__head">
       <div>
-        <div class="modal__title">Delete budget?</div>
+        <div class="modal__title">${escapeHtml(t("delBudgetTitle"))}</div>
         <div class="modal__sub">${escapeHtml(b.name)} · ${escapeHtml(b.fiscalYear || "")}</div>
       </div>
-      <button class="modal__close" data-close aria-label="Close">
+      <button class="modal__close" data-close aria-label="${escapeHtml(t("viewClose"))}">
         <svg viewBox="0 0 24 24">${ICONS.x}</svg>
       </button>
     </div>
@@ -1832,20 +2429,20 @@ function confirmDeleteBudget(id) {
       <div class="alert alert--error" style="margin-bottom:0">
         <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
         <div>
-          <div style="font-weight:700;margin-bottom:6px">This will permanently remove:</div>
-          <div>Budget <strong>${escapeHtml(b.name)}</strong> — allocated ${fmtMoney(b.allocated)}.</div>
+          <div style="font-weight:700;margin-bottom:6px">${escapeHtml(t("delBudgetIntro"))}</div>
+          <div>${t("delBudgetLine", { name: escapeHtml(b.name), amount: fmtMoney(b.allocated) })}</div>
           ${expCount ? `<div style="margin-top:8px;font-size:12.5px;color:var(--danger)">
-            ⚠ There are ${expCount} expense record(s) linked to this budget. They will be orphaned.
+            ${escapeHtml(t("delBudgetWarn", { n: expCount }))}
           </div>` : ""}
-          <div style="margin-top:10px;font-size:12.5px">This action cannot be undone.</div>
+          <div style="margin-top:10px;font-size:12.5px">${escapeHtml(t("delBudgetWarnNo"))}</div>
         </div>
       </div>
     </div>
     <div class="modal__foot">
-      <button class="btn" data-close>Cancel</button>
+      <button class="btn" data-close>${escapeHtml(t("btnCancel"))}</button>
       <button class="btn btn--danger" id="db-submit">
         <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
-        <span class="btn-label">Delete budget</span>
+        <span class="btn-label">${escapeHtml(t("delBudgetSubmit"))}</span>
       </button>
     </div>
   `);
@@ -1855,14 +2452,14 @@ function confirmDeleteBudget(id) {
     const spinner = btn.querySelector(".spinner");
     const label = btn.querySelector(".btn-label");
     btn.disabled = true; spinner.classList.remove("hidden");
-    const old = label.textContent; label.textContent = "Deleting…";
+    const old = label.textContent; label.textContent = t("delDeleting");
     try {
       await deleteDoc(doc(db, "budgets", id));
-      toast("Budget deleted", "success");
+      toast(t("toastBudgetDeleted"), "success");
       closeModal();
     } catch (err) {
       console.error(err);
-      toast(err.message || "Could not delete", "error");
+      toast(err.message || t("errCouldNotDelete"), "error");
       btn.disabled = false; spinner.classList.add("hidden");
       label.textContent = old;
     }
@@ -1874,14 +2471,14 @@ function confirmDeleteBudget(id) {
    ============================================================ */
 function exportCSV() {
   const list = filteredBudgets();
-  if (!list.length) { toast("No rows to export", "error"); return; }
+  if (!list.length) { toast(t("toastNoRowsExport"), "error"); return; }
   const header = [
     "Code","Name","Fiscal Year","Category","Cluster",
     "Allocated","Spent","Pending","Remaining","Utilisation %","Status"
   ];
   const lines = [header.join(",")];
   list.forEach(b => {
-    const cat = CATEGORY_MAP[b.categoryId]?.label || b.categoryId || "";
+    const cat = categoryLabel(b.categoryId);
     lines.push([
       b.code || "", `"${(b.name || "").replace(/"/g,'""')}"`, b.fiscalYear || "",
       `"${cat}"`, `"${b.clusterName || ""}"`,
@@ -1897,7 +2494,7 @@ function exportCSV() {
   a.download = `budget-export-${todayISO()}.csv`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-  toast("CSV exported", "success");
+  toast(t("toastCSVExported"), "success");
 }
 
 /* ============================================================
@@ -1905,10 +2502,7 @@ function exportCSV() {
    ============================================================ */
 function subscribeBudgets() {
   if (unsubBudgets) unsubBudgets();
-  let q = collection(db, "budgets");
-  if (isAdmin() && S.clusterId) {
-    q = collection(db, "budgets");
-  }
+  const q = collection(db, "budgets");
   unsubBudgets = onSnapshot(q, (snap) => {
     BUDGETS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     render();
@@ -1917,7 +2511,7 @@ function subscribeBudgets() {
     const tbody = document.getElementById("budget-tbody");
     if (tbody) {
       tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:48px 20px;color:var(--danger)">
-        Could not load budgets: ${escapeHtml(err.code || "")} — ${escapeHtml(err.message || "")}
+        ${escapeHtml(err.code || "")} — ${escapeHtml(err.message || "")}
       </td></tr>`;
     }
   });
@@ -1948,7 +2542,6 @@ function subscribeClusters() {
 function subscribeEmployees() {
   onSnapshot(collection(db, "employees"), (snap) => {
     const emps = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    // Fallback: adopt own photo from employee record if missing on users doc
     if (S && !S.photoURL) {
       const mine = emps.find(e => e.uid === S.uid);
       if (mine?.photoURL) {
@@ -1960,7 +2553,7 @@ function subscribeEmployees() {
 }
 
 /* ============================================================
-   SHELL
+   SHELL INTERACTIONS
    ============================================================ */
 document.getElementById("collapse-toggle").addEventListener("click", (e) => {
   e.stopPropagation();
@@ -1972,6 +2565,8 @@ document.getElementById("menu-toggle").addEventListener("click", () =>
   document.body.classList.toggle("sidebar-open"));
 document.getElementById("overlay").addEventListener("click", () =>
   document.body.classList.remove("sidebar-open"));
+
+/* User dropdown */
 document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -1981,8 +2576,35 @@ document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
     if (!open) panel.classList.remove("hidden");
   });
 });
+
+/* Language dropdown */
+function updateLangUI() {
+  const label = document.getElementById("lang-label");
+  if (label) label.textContent = LANG.toUpperCase();
+  document.querySelectorAll("[data-set-lang]").forEach(btn => {
+    btn.classList.toggle("is-on", btn.dataset.setLang === LANG);
+  });
+}
+document.querySelectorAll("[data-lang-toggle]").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const panel = btn.closest(".dropdown").querySelector("[data-lang-panel]");
+    const open = !panel.classList.contains("hidden");
+    document.querySelectorAll("[data-dropdown-panel], [data-lang-panel]").forEach(p => p.classList.add("hidden"));
+    if (!open) panel.classList.remove("hidden");
+  });
+});
+document.querySelectorAll("[data-set-lang]").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const lang = btn.dataset.setLang;
+    try { localStorage.setItem("cs.language", lang); } catch (err) {}
+    window.location.reload();
+  });
+});
 document.addEventListener("click", () =>
-  document.querySelectorAll("[data-dropdown-panel]").forEach(p => p.classList.add("hidden")));
+  document.querySelectorAll("[data-dropdown-panel], [data-lang-panel]").forEach(p => p.classList.add("hidden")));
+
 try {
   if (localStorage.getItem("cs.sidebar") === "collapsed") document.body.classList.add("sidebar-collapsed");
 } catch (e) {}
@@ -2005,6 +2627,12 @@ document.getElementById("status-filter").addEventListener("change", (e) => {
 onAuthStateChanged(auth, async (user) => {
   if (kick.done) return;
   if (!user) { kick("no-user"); return; }
+
+  // Read language before anything else
+  try { LANG = localStorage.getItem("cs.language") || "en"; } catch(e) { LANG = "en"; }
+  if (!I18N[LANG]) LANG = "en";
+  applyStaticI18n();
+  updateLangUI();
 
   let userDoc = null;
   try {
@@ -2033,9 +2661,9 @@ onAuthStateChanged(auth, async (user) => {
   subscribeEmployees();
   subscribeBudgets();
   subscribeExpenses();
-});
 
-console.log("[budget] booted — budget management ready");
+  console.log("[budget] booted — role:", S.role, "lang:", LANG);
+});
 </script>
 
 </body>
