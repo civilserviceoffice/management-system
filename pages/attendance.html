@@ -52,6 +52,8 @@
   --danger:#dc2626; --success:#067647; --warning:#b8860b; --bg:#f4f7fb; --bg-soft:#fbfcfe;
   --card-bg:#ffffff;
   --violet:#5b21b6; --violet-soft:#f0eaff;
+  --orange:#c2410c; --orange-soft:#fff7ed;
+  --teal:#0e7490; --teal-soft:#e0f5f7;
   --sh-sm:0 1px 2px rgba(20,40,70,.04),0 1px 3px rgba(20,40,70,.06);
   --sh-md:0 4px 12px rgba(20,40,70,.06),0 2px 4px rgba(20,40,70,.04);
   --sh-lg:0 12px 32px rgba(20,40,70,.08),0 4px 8px rgba(20,40,70,.04);
@@ -66,9 +68,9 @@ html.theme-dark, body.theme-dark {
 html.theme-dark .main, body.theme-dark .main { background:#0b1220; }
 html.theme-dark .sidebar, body.theme-dark .sidebar { background:linear-gradient(145deg,#0b1220,#0f172a,#111a2c); }
 html.theme-dark .topbar, body.theme-dark .topbar { background:rgba(15,23,42,.85); border-bottom-color:#1e293b; }
-html.theme-dark .card, body.theme-dark .card,
 html.theme-dark .stat, body.theme-dark .stat,
-html.theme-dark .att-table, body.theme-dark .att-table { background:#0f172a; border-color:#1e293b; }
+html.theme-dark .att-table, body.theme-dark .att-table,
+html.theme-dark .phase-bar, body.theme-dark .phase-bar { background:#0f172a; border-color:#1e293b; }
 html.theme-dark table.data thead th { background:#111a2c; border-bottom-color:#1e293b; }
 html.theme-dark table.data tbody td { border-bottom-color:#1a2433; }
 html.theme-dark table.data tbody tr:hover { background:#111a2c; }
@@ -81,12 +83,12 @@ html.theme-dark .dropdown__panel { background:#0f172a; border-color:#1e293b; }
 html.theme-dark .dropdown__item:hover { background:#1a2433; }
 html.theme-dark .btn { background:#1a2433; border-color:#1e293b; color:#c5cdd9; }
 html.theme-dark .btn:hover { background:#1e293b; }
-html.theme-dark .btn--primary { background:linear-gradient(135deg,#0b5cab,#0e7490); color:#fff; border:none; }
 html.theme-dark .scope-badge { background:linear-gradient(135deg,#1a2433,#0f172a); border-color:#1e293b; color:#c5cdd9; }
 html.theme-dark .scope-badge--super { background:linear-gradient(135deg,#2a1e4a,#0f172a); border-color:#3d2a5f; color:#c4b5fd; }
 html.theme-dark .scope-badge--cluster { background:linear-gradient(135deg,#1a3a2a,#0f172a); border-color:#2a5f3d; color:#6ee7b7; }
 html.theme-dark .scope-badge--manager { background:linear-gradient(135deg,#1a3a3f,#0f172a); border-color:#2a5f6a; color:#67e8f9; }
 html.theme-dark .emp-avatar { background:linear-gradient(135deg,#1e3a5f,#2d4a72); color:#e4e8f0; }
+html.theme-dark .phase-bar__step { background:#111a2c; border-color:#1e293b; }
 
 html.compact-mode { --pad-main:18px; --topbar-h:60px; }
 html.compact-mode .stat { padding:16px; }
@@ -216,6 +218,59 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .scope-badge--manager { background:linear-gradient(135deg,#e0f5f7,#fff); border-color:#a3dfe6; color:#0e7490; }
 .scope-badge--fp { background:linear-gradient(135deg,#f0eaff,#fff); border-color:#ddd2fb; color:#5b21b6; cursor:pointer; }
 
+.phase-bar {
+  display:flex; align-items:stretch; gap:0; flex-wrap:nowrap; overflow-x:auto;
+  background:var(--card-bg); border:1px solid var(--border); border-radius:var(--r-lg);
+  padding:14px; margin-bottom:20px; box-shadow:var(--sh-sm);
+}
+.phase-bar__step {
+  flex:1; min-width:150px;
+  display:flex; align-items:center; gap:11px;
+  padding:11px 14px; border-radius:12px;
+  background:#f8fafc; border:1.5px solid var(--border);
+  transition:.2s; position:relative;
+}
+.phase-bar__step.is-done { background:#ecfdf3; border-color:#abefc6; }
+.phase-bar__step.is-current {
+  background:#f0eaff; border-color:#c4b5fd;
+  box-shadow:0 0 0 4px rgba(109,40,217,.10);
+  animation:phasePulse 2s ease-in-out infinite;
+}
+@keyframes phasePulse {
+  0%,100% { box-shadow:0 0 0 4px rgba(109,40,217,.10); }
+  50% { box-shadow:0 0 0 8px rgba(109,40,217,.04); }
+}
+.phase-bar__icon {
+  width:34px; height:34px; border-radius:10px; flex-shrink:0;
+  display:grid; place-items:center;
+  background:var(--border-soft); color:var(--text-soft);
+}
+.phase-bar__icon svg { width:16px; height:16px; stroke:currentColor; stroke-width:2.3; fill:none; }
+.phase-bar__step.is-done .phase-bar__icon { background:#067647; color:#fff; }
+.phase-bar__step.is-current .phase-bar__icon { background:var(--violet); color:#fff; }
+.phase-bar__main { flex:1; min-width:0; }
+.phase-bar__label {
+  font-size:11px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.05em; color:var(--muted);
+}
+.phase-bar__step.is-done .phase-bar__label { color:#067647; }
+.phase-bar__step.is-current .phase-bar__label { color:var(--violet); }
+.phase-bar__time {
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-weight:800; font-size:15px; color:var(--text); margin-top:2px;
+}
+.phase-bar__step:not(.is-done):not(.is-current) .phase-bar__time { color:var(--muted-light); }
+.phase-bar__line {
+  align-self:center; width:14px; height:2px; border-radius:2px;
+  background:var(--border); margin:0 -3px; z-index:1;
+}
+.phase-bar__line.is-done { background:#067647; }
+@media (max-width:900px) {
+  .phase-bar { padding:10px; }
+  .phase-bar__step { min-width:130px; padding:9px 11px; }
+  .phase-bar__line { width:8px; }
+}
+
 .chain { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
   background:var(--card-bg); border:1px solid var(--border); border-radius:var(--r-lg);
   padding:16px 22px; margin-bottom:24px; box-shadow:var(--sh-sm); font-size:13px; font-weight:700; }
@@ -232,6 +287,7 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .btn--primary { background:linear-gradient(135deg, #0b5cab, #0e7490); border:none; color:#fff;
   box-shadow:0 10px 22px rgba(11,92,171,.22); }
 .btn--primary:hover { background:linear-gradient(135deg, #073d75, #0b5cab); }
+
 .btn--fp { background:linear-gradient(135deg, #6d28d9, #5b21b6); border:none; color:#fff;
   box-shadow:0 10px 22px rgba(109,40,217,.28); position:relative; overflow:hidden; }
 .btn--fp:hover { background:linear-gradient(135deg, #5b21b6, #4c1d95); transform:translateY(-1px); }
@@ -241,6 +297,18 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   transform:translateX(-100%); animation:shine 2.6s ease-in-out infinite; pointer-events:none;
 }
 @keyframes shine { 0%,60% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
+
+.btn--fp-out { background:linear-gradient(135deg, #ea580c, #c2410c); border:none; color:#fff;
+  box-shadow:0 10px 22px rgba(234,88,12,.28); position:relative; overflow:hidden; }
+.btn--fp-out:hover { background:linear-gradient(135deg, #c2410c, #9a3412); transform:translateY(-1px); }
+.btn--fp-out::before {
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,.18) 50%, transparent 70%);
+  transform:translateX(-100%); animation:shine 2.6s ease-in-out infinite; pointer-events:none;
+}
+.btn--fp-done { background:linear-gradient(135deg, #067647, #10b981); border:none; color:#fff;
+  box-shadow:0 10px 22px rgba(6,118,71,.22); }
+
 .btn--sm { height:38px; padding:0 14px; font-size:13px; border-radius:10px; }
 .btn--sm svg { width:15px; height:15px; }
 .btn--icon { width:38px; padding:0; }
@@ -261,12 +329,25 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .stat--red { --c1:linear-gradient(90deg,#dc2626,#ef4444); --ic:#fef3f2; --ifc:#b42318; }
 .stat--violet { --c1:linear-gradient(90deg,#6d28d9,#a78bfa); --ic:#f0eaff; --ifc:#5b21b6; }
 .stat--teal { --c1:linear-gradient(90deg,#0e7490,#4dd4c4); --ic:#e0f5f7; --ifc:#0e7490; }
+.stat--orange { --c1:linear-gradient(90deg,#ea580c,#fb923c); --ic:#fff7ed; --ifc:#c2410c; }
 .stat__head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
 .stat__label { font-size:12.5px; color:var(--muted); font-weight:600; }
 .stat__icon { width:40px; height:40px; border-radius:12px; background:var(--ic); color:var(--ifc);
   display:grid; place-items:center; }
 .stat__icon svg { width:19px; height:19px; stroke:currentColor; stroke-width:2.2; fill:none; }
 .stat__value { font-size:26px; font-weight:800; letter-spacing:-1px; line-height:1; }
+
+.rules-banner {
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  background:linear-gradient(135deg,#f8fbff,#fff);
+  border:1px solid #bdd7f2; border-radius:14px;
+  padding:12px 16px; margin-bottom:20px;
+  font-size:12.5px; font-weight:600; color:var(--text-soft);
+}
+.rules-banner__item { display:inline-flex; align-items:center; gap:6px; }
+.rules-banner__dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.rules-banner__label { font-weight:800; }
+.rules-banner__sep { color:#cbd5e1; }
 
 .toolbar { display:flex; gap:12px; align-items:center; margin-bottom:20px; flex-wrap:wrap;
   background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:14px 18px;
@@ -332,6 +413,20 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .status-holiday { background:#fff7ed; color:#c2410c; }
 .status-none    { background:var(--border-soft); color:var(--muted-light); }
 
+.session-cell { display:flex; flex-direction:column; gap:3px; min-width:110px; }
+.session-cell__row { display:flex; align-items:center; gap:6px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-weight:700; font-size:12px; }
+.session-cell__row svg { width:11px; height:11px; flex-shrink:0; }
+.session-cell__row--in svg { stroke:#5b21b6; }
+.session-cell__row--out svg { stroke:#c2410c; }
+.session-cell__label { font-size:9.5px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.04em; color:var(--muted); }
+.session-cell__time { color:var(--text); }
+.session-cell__time--empty { color:var(--muted-light); font-weight:600; }
+.session-cell__row--in .session-cell__time { color:var(--violet); }
+.session-cell__row--out .session-cell__time { color:var(--orange); }
+
 .fp-badge { display:inline-flex; align-items:center; gap:4px;
   margin-left:6px; padding:2px 7px; border-radius:6px;
   background:var(--violet-soft); color:var(--violet);
@@ -339,12 +434,13 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   text-transform:uppercase; vertical-align:middle; }
 .fp-badge svg { width:11px; height:11px; stroke:currentColor; stroke-width:2.2; fill:none; }
 
-/* Fingerprint scanning modal */
 .fp-scan { display:flex; flex-direction:column; align-items:center; justify-content:center;
   padding:26px 12px 14px; text-align:center; }
 .fp-scan__ring { position:relative; width:120px; height:120px; margin-bottom:22px; }
 .fp-scan__ring svg.fp-icon { position:absolute; inset:0; width:100%; height:100%;
   stroke:var(--violet); stroke-width:1.6; fill:none; transition:opacity .25s; }
+.fp-scan.is-checkout .fp-scan__ring svg.fp-icon { stroke:var(--orange); }
+.fp-scan.is-checkout .fp-scan__ring::before { border-color:var(--orange); }
 .fp-scan__ring::before, .fp-scan__ring::after {
   content:""; position:absolute; inset:0; border-radius:50%;
   border:2px solid var(--violet); opacity:0; }
@@ -359,7 +455,7 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   100% { opacity:0; transform:scale(1.35); }
 }
 .fp-scan__title { font-size:16px; font-weight:800; margin-bottom:6px; }
-.fp-scan__msg { font-size:13px; color:var(--muted); max-width:340px; line-height:1.5; }
+.fp-scan__msg { font-size:13px; color:var(--muted); max-width:360px; line-height:1.5; }
 .fp-scan__badge { display:inline-flex; align-items:center; gap:6px;
   margin-top:16px; padding:6px 12px; border-radius:999px;
   background:var(--border-soft); font-size:11.5px; font-weight:700;
@@ -546,7 +642,7 @@ body.sidebar-open .overlay { display:block; }
             <span data-i18n="dashboard">Dashboard</span>
           </a>
           <a class="dropdown__item" href="settings.html">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 1 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span data-i18n="settings">Settings</span>
           </a>
           <div class="dropdown__divider"></div>
@@ -563,11 +659,14 @@ body.sidebar-open .overlay { display:block; }
     <div class="page-head">
       <div>
         <h1 class="page-head__title" data-i18n="pageTitle">Attendance</h1>
-        <p class="page-head__sub" data-i18n="pageSub">Track daily presence, lateness, leave and field work</p>
+        <p class="page-head__sub" data-i18n="pageSub">Scan four times a day: Morning In · Morning Out · Afternoon In · Afternoon Out</p>
         <div id="scope-badge"></div>
       </div>
       <div class="page-head__actions" id="head-actions"></div>
     </div>
+
+    <div id="phase-bar-host"></div>
+    <div class="rules-banner" id="rules-banner"></div>
 
     <div class="chain">
       <span class="chain__node" data-i18n="chainRegion">Region</span><span class="chain__arrow">›</span>
@@ -585,18 +684,10 @@ body.sidebar-open .overlay { display:block; }
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input id="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search employee by name or ID…">
       </div>
-      <select class="toolbar__filter" id="region-filter">
-        <option value="" data-i18n="allRegions">All regions</option>
-      </select>
-      <select class="toolbar__filter" id="cluster-filter" disabled>
-        <option value="" data-i18n="allClusters">All clusters</option>
-      </select>
-      <select class="toolbar__filter" id="office-filter" disabled>
-        <option value="" data-i18n="allOffices">All offices</option>
-      </select>
-      <select class="toolbar__filter" id="department-filter" disabled>
-        <option value="" data-i18n="allDepartments">All departments</option>
-      </select>
+      <select class="toolbar__filter" id="region-filter"><option value="" data-i18n="allRegions">All regions</option></select>
+      <select class="toolbar__filter" id="cluster-filter" disabled><option value="" data-i18n="allClusters">All clusters</option></select>
+      <select class="toolbar__filter" id="office-filter" disabled><option value="" data-i18n="allOffices">All offices</option></select>
+      <select class="toolbar__filter" id="department-filter" disabled><option value="" data-i18n="allDepartments">All departments</option></select>
       <select class="toolbar__filter" id="status-filter">
         <option value="" data-i18n="allStatuses">All statuses</option>
         <option value="present"  data-i18n="st_present">Present</option>
@@ -619,8 +710,8 @@ body.sidebar-open .overlay { display:block; }
               <th data-i18n="thEmployeeId">Employee ID</th>
               <th data-i18n="thDepartment">Department</th>
               <th data-i18n="thStatus">Status</th>
-              <th data-i18n="thCheckIn">Check-in</th>
-              <th data-i18n="thCheckOut">Check-out</th>
+              <th data-i18n="thMorning">Morning</th>
+              <th data-i18n="thAfternoon">Afternoon</th>
               <th data-i18n="thNotes">Notes</th>
               <th style="width:120px;text-align:right" data-i18n="thActions">Actions</th>
             </tr>
@@ -639,9 +730,31 @@ import { initializeApp } from "firebase/app";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
-  collection, query, where, onSnapshot, serverTimestamp,
-  getDocs, limit
+  collection, query, where, onSnapshot, serverTimestamp, getDocs, limit
 } from "firebase/firestore";
+
+/* ============================================================
+   ATTENDANCE RULES
+   ------------------------------------------------------------
+   MORNING (arrival / morning check-in):
+     ≤ 08:45  → present
+     08:46 – 09:00 → late
+     ≥ 09:01  → absent
+   AFTERNOON (after-lunch / afternoon check-in):
+     13:30 – 13:45 → present
+     13:46 – 14:00 → late
+     ≥ 14:01  → absent
+   ============================================================ */
+const ATTENDANCE_RULES = {
+  morning: {
+    presentUntil: "08:45",
+    lateUntil:    "09:00"
+  },
+  afternoon: {
+    presentUntil: "13:45",
+    lateUntil:    "14:00"
+  }
+};
 
 /* ============================================================
    I18N
@@ -652,7 +765,7 @@ const I18N = {
     footerCopy:"© 2026 Civil Service MIS",
     dashboard:"Dashboard", settings:"Settings", signOut:"Sign out",
     pageTitle:"Attendance",
-    pageSub:"Track daily presence, lateness, leave and field work",
+    pageSub:"Scan four times a day: Morning In · Morning Out · Afternoon In · Afternoon Out",
     chainRegion:"Region", chainCluster:"Cluster", chainOffice:"Office",
     chainDepartment:"Department", chainEmployee:"Employee Attendance",
     navOverview:"Overview", navOrganization:"Organization", navOperations:"Operations",
@@ -662,6 +775,7 @@ const I18N = {
     navOffices:"Offices", navNotifications:"Notifications", navSettings:"Settings",
     statTotalEmployees:"Total Employees", statPresent:"Present", statLate:"Late",
     statAbsent:"Absent", statOnLeave:"On Leave", statAttendanceRate:"Attendance Rate",
+    statMorningIn:"Morning In", statAfternoonOut:"Afternoon Out",
     searchPlaceholder:"Search employee by name or ID…",
     allRegions:"All regions", allClusters:"All clusters", allOffices:"All offices",
     allDepartments:"All departments", allStatuses:"All statuses",
@@ -669,31 +783,50 @@ const I18N = {
     st_field:"Field", st_half_day:"Half day", st_holiday:"Holiday", st_weekend:"Weekend",
     st_none:"Unmarked",
     thEmployee:"Employee", thEmployeeId:"Employee ID", thDepartment:"Department",
-    thStatus:"Status", thCheckIn:"Check-in", thCheckOut:"Check-out",
+    thStatus:"Status", thMorning:"Morning", thAfternoon:"Afternoon",
     thNotes:"Notes", thActions:"Actions",
     loading:"Loading…", noEmployeesScope:"No employees in your scope.",
     noEmployeesFilter:"No employees match your filters.",
     markToday:"Mark Today",
-    fpMarkTitle:"Mark with Fingerprint",
-    fpScanTitle:"Verify your fingerprint",
-    fpScanMsg:"Place your finger on the sensor or look at your device's biometric prompt.",
+    phaseMorningIn:"Morning In",
+    phaseMorningOut:"Morning Out",
+    phaseAfternoonIn:"Afternoon In",
+    phaseAfternoonOut:"Afternoon Out",
+    phaseDone:"Day Complete",
+    fpMorningIn:"Morning Check-in",
+    fpMorningOut:"Lunch Check-out",
+    fpAfternoonIn:"Afternoon Check-in",
+    fpAfternoonOut:"End-of-Day Check-out",
+    fpRegisterMorningIn:"Register & Check In",
+    fpDone:"Done for Today",
+    fpScanTitleIn:"Verify fingerprint to check in",
+    fpScanTitleOut:"Verify fingerprint to check out",
+    fpScanMsgIn:"Place your finger on the sensor to record your arrival.",
+    fpScanMsgOut:"Place your finger on the sensor to record your departure.",
     fpScanRegTitle:"Register your fingerprint",
     fpScanRegMsg:"Your device will ask you to confirm your fingerprint. This is stored securely on this device.",
-    fpScanSuccess:"Verified",
-    fpScanError:"Failed",
-    fpScanWaiting:"Waiting for biometric…",
-    fpMarked:"Attendance marked with fingerprint",
+    fpScanSuccess:"Verified", fpScanError:"Failed", fpScanWaiting:"Waiting for biometric…",
+    fpMarked:"{phase} recorded at {time}",
+    fpMarkedMorning:"Morning In at {time} — {status}",
+    fpMarkedAfternoon:"Afternoon In at {time} — {status}",
     fpCancelled:"Fingerprint cancelled or not recognised",
     fpNotSupported:"Fingerprint authentication is not supported on this device or browser.",
     fpNotAvailable:"No fingerprint sensor is available on this device.",
-    fpNotRegistered:"You haven't registered a fingerprint yet.",
     fpNoEmployee:"Your account is not linked to an employee record.",
-    fpAlreadyMarked:"You have already marked attendance for this date.",
     fpNotHttps:"Fingerprint requires a secure connection (HTTPS).",
-    fpVerified:"FP verified",
-    fpCancel:"Cancel", fpClose:"Close",
+    fpVerified:"FP", fpCancel:"Cancel", fpClose:"Close",
+    ruleMorningNotice:"Morning (arrival):",
+    ruleMorningPresent:"≤ 08:45 → Present",
+    ruleMorningLate:"08:46 – 09:00 → Late",
+    ruleMorningAbsent:"≥ 09:01 → Absent",
+    ruleAfternoonNotice:"Afternoon (after lunch):",
+    ruleAfternoonPresent:"13:30 – 13:45 → Present",
+    ruleAfternoonLate:"13:46 – 14:00 → Late",
+    ruleAfternoonAbsent:"≥ 14:01 → Absent",
     modalMarkTitle:"Mark Attendance", modalStatusLabel:"Status",
-    modalCheckIn:"Check-in", modalCheckOut:"Check-out", modalNotes:"Notes",
+    modalMorningIn:"Morning In", modalMorningOut:"Morning Out",
+    modalAfternoonIn:"Afternoon In", modalAfternoonOut:"Afternoon Out",
+    modalNotes:"Notes",
     modalNotesPlaceholder:"Optional — reason for late, absence, etc.",
     modalSave:"Save", modalSaving:"Saving…",
     modalClear:"Clear", modalClearConfirm:"Clear attendance for this day?",
@@ -722,7 +855,7 @@ const I18N = {
     footerCopy:"© 2026 SIM Tajaajila Hawaasaa",
     dashboard:"Daashboordii", settings:"Qindaa'ina", signOut:"Ba'i",
     pageTitle:"Argannoo",
-    pageSub:"Argannoo guyyaa, tursiisuu, boqonnaa fi hojii dirree hordofi",
+    pageSub:"Guyyaatti yeroo afur: Ganama Seensa · Ganama Ba'insa · Waaree Seensa · Waaree Ba'insa",
     chainRegion:"Naannoo", chainCluster:"Garee", chainOffice:"Waajjira",
     chainDepartment:"Qaama", chainEmployee:"Argannoo Hojjetaa",
     navOverview:"Waliigala", navOrganization:"Dhaabbata", navOperations:"Hojimaata",
@@ -733,7 +866,7 @@ const I18N = {
     navNotifications:"Beeksisaalee", navSettings:"Qindaa'ina",
     statTotalEmployees:"Hojjettoota Waliigalaa", statPresent:"Argaman",
     statLate:"Tursiisan", statAbsent:"Hin argamne", statOnLeave:"Boqonnaa irra",
-    statAttendanceRate:"Safara Argannoo",
+    statAttendanceRate:"Safara Argannoo", statMorningIn:"Ganama Seene", statAfternoonOut:"Waaree Bahe",
     searchPlaceholder:"Hojjetaa maqaa ykn eenyummeessaa barbaadi…",
     allRegions:"Naannoolee hunda", allClusters:"Gareewwan hunda",
     allOffices:"Waajjiraalee hunda", allDepartments:"Qaamolee hunda",
@@ -742,33 +875,49 @@ const I18N = {
     st_leave:"Boqonnaa irra", st_field:"Dirree", st_half_day:"Walakkaa guyyaa",
     st_holiday:"Ayyaana", st_weekend:"Sanbata fi Dilbata", st_none:"Hin galmeeffamne",
     thEmployee:"Hojjetaa", thEmployeeId:"Eenyummeessaa Hojjetaa",
-    thDepartment:"Qaama", thStatus:"Haala", thCheckIn:"Seensa", thCheckOut:"Ba'insa",
+    thDepartment:"Qaama", thStatus:"Haala", thMorning:"Ganama", thAfternoon:"Waaree",
     thNotes:"Yaadannoo", thActions:"Gochaalee",
     loading:"Fe'aa jira…", noEmployeesScope:"Naannoo keetii hojjettoonni hin jiran.",
     noEmployeesFilter:"Hojjettoonni filannoo keetii waliin hin walsiman.",
     markToday:"Har'a Galmeessi",
-    fpMarkTitle:"Mallattoo Qubaatiin Galmeessi",
-    fpScanTitle:"Mallattoo qubaa mirkaneessi",
-    fpScanMsg:"Quba kee sensor irra kaa'i ykn afeerraa biometric meeshaa keetii ilaali.",
+    phaseMorningIn:"Ganama Seensa", phaseMorningOut:"Ganama Ba'insa",
+    phaseAfternoonIn:"Waaree Seensa", phaseAfternoonOut:"Waaree Ba'insa",
+    phaseDone:"Guyyaan Xumurame",
+    fpMorningIn:"Ganama Seeni", fpMorningOut:"Boqonnaa Baxi",
+    fpAfternoonIn:"Waaree Seeni", fpAfternoonOut:"Guyyaa Xumuri",
+    fpRegisterMorningIn:"Galmeessi fi Seeni", fpDone:"Har'aaf Xumurame",
+    fpScanTitleIn:"Mallattoo qubaa mirkaneessi",
+    fpScanTitleOut:"Mallattoo qubaa mirkaneessi",
+    fpScanMsgIn:"Yeroo seenaa galmeessuuf quba kee sensor irra kaa'i.",
+    fpScanMsgOut:"Yeroo ba'insaa galmeessuuf quba kee sensor irra kaa'i.",
     fpScanRegTitle:"Mallattoo qubaa galmeessi",
-    fpScanRegMsg:"Meeshaan kee mallattoo qubaa mirkaneessu si gaafata. Kun meeshaa kana irratti qofa kuufama.",
+    fpScanRegMsg:"Meeshaan kee mallattoo qubaa mirkaneessu si gaafata.",
     fpScanSuccess:"Mirkanaa'e", fpScanError:"Kufe", fpScanWaiting:"Biometric eegaa jira…",
-    fpMarked:"Argannoon mallattoo qubaatiin galmeeffame",
+    fpMarked:"{phase} {time} irratti galmeeffame",
+    fpMarkedMorning:"Ganama Seensa {time} — {status}",
+    fpMarkedAfternoon:"Waaree Seensa {time} — {status}",
     fpCancelled:"Mallattoon qubaa haqame ykn hin beekamne",
-    fpNotSupported:"Mirkaneessi mallattoo qubaa meeshaa kanaa ykn browser kanaa irratti hin deggeru.",
-    fpNotAvailable:"Meeshaa kana irratti sensor mallattoo qubaa hin jiru.",
-    fpNotRegistered:"Amma amma mallattoo qubaa hin galmeessine.",
+    fpNotSupported:"Mirkaneessi mallattoo qubaa hin deggeru.",
+    fpNotAvailable:"Sensor mallattoo qubaa hin jiru.",
     fpNoEmployee:"Herregni kee galmee hojjetaa waliin hin hidhamne.",
-    fpAlreadyMarked:"Guyyaa kanaaf argannoo galmeessiteetta.",
-    fpNotHttps:"Mallattoon qubaa walqunnamtii nagaa (HTTPS) barbaachisa.",
-    fpVerified:"FP mirkanaa'e", fpCancel:"Haqi", fpClose:"Cufi",
+    fpNotHttps:"Mallattoon qubaa HTTPS barbaachisa.",
+    fpVerified:"FP", fpCancel:"Haqi", fpClose:"Cufi",
+    ruleMorningNotice:"Ganama (dhufaatii):",
+    ruleMorningPresent:"≤ 08:45 → Argame",
+    ruleMorningLate:"08:46 – 09:00 → Tursiise",
+    ruleMorningAbsent:"≥ 09:01 → Hin argamne",
+    ruleAfternoonNotice:"Waaree (booda):",
+    ruleAfternoonPresent:"13:30 – 13:45 → Argame",
+    ruleAfternoonLate:"13:46 – 14:00 → Tursiise",
+    ruleAfternoonAbsent:"≥ 14:01 → Hin argamne",
     modalMarkTitle:"Argannoo Galmeessi", modalStatusLabel:"Haala",
-    modalCheckIn:"Seensa", modalCheckOut:"Ba'insa", modalNotes:"Yaadannoo",
-    modalNotesPlaceholder:"Filannoo — sababa tursiisuu, hafuu, fi kkf.",
+    modalMorningIn:"Ganama Seensa", modalMorningOut:"Ganama Ba'insa",
+    modalAfternoonIn:"Waaree Seensa", modalAfternoonOut:"Waaree Ba'insa",
+    modalNotes:"Yaadannoo", modalNotesPlaceholder:"Filannoo — sababa tursiisuu, hafuu, fi kkf.",
     modalSave:"Olkaa'i", modalSaving:"Olkaa'aa jira…",
     modalClear:"Haqi", modalClearConfirm:"Argannoo guyyaa kanaa haquu?",
     modalBulkSub:"Hojjettoota {n} · {date}",
-    modalBulkHint:"Hojjetaa tokkoon tokkoon haala filadhu. Hunda <b>Argame</b> gochuuf tuqaa tokkoon dandeessa, sana booda dhuunfaan sirreessi.",
+    modalBulkHint:"Hojjetaa tokkoon tokkoon haala filadhu.",
     modalAllPrefix:"Hunda", modalSaveAll:"Hunda Olkaa'i",
     toastCannotMark:"Hojjetaa kana galmeessuu hin dandeessu",
     toastCannotBulk:"Walumaagalatti galmeessuu hin dandeessu",
@@ -791,7 +940,7 @@ const I18N = {
     footerCopy:"© 2026 የመንግስት ሰራተኛ MIS",
     dashboard:"ዳሽቦርድ", settings:"ቅንብሮች", signOut:"ውጣ",
     pageTitle:"መገኘት",
-    pageSub:"የቀን መገኘት፣ ዘግይቶ መምጣት፣ ፈቃድ እና የመስክ ሥራ ይከታተሉ",
+    pageSub:"በቀን አራት ጊዜ ይቃኙ: ጠዋት መግቢያ · ጠዋት መውጫ · ከሰዓት መግቢያ · ከሰዓት መውጫ",
     chainRegion:"ክልል", chainCluster:"ክላስተር", chainOffice:"ቢሮ",
     chainDepartment:"ክፍል", chainEmployee:"የሰራተኛ መገኘት",
     navOverview:"አጠቃላይ እይታ", navOrganization:"ድርጅት", navOperations:"ክንውኖች",
@@ -802,7 +951,7 @@ const I18N = {
     navNotifications:"ማሳወቂያዎች", navSettings:"ቅንብሮች",
     statTotalEmployees:"ጠቅላላ ሰራተኞች", statPresent:"የተገኙ",
     statLate:"ዘግይተው", statAbsent:"የቀሩ", statOnLeave:"ፈቃድ ላይ",
-    statAttendanceRate:"የመገኘት መጠን",
+    statAttendanceRate:"የመገኘት መጠን", statMorningIn:"ጠዋት የገቡ", statAfternoonOut:"ከሰዓት የወጡ",
     searchPlaceholder:"ሰራተኛ በስም ወይም በመታወቂያ ይፈልጉ…",
     allRegions:"ሁሉም ክልሎች", allClusters:"ሁሉም ክላስተሮች",
     allOffices:"ሁሉም ቢሮዎች", allDepartments:"ሁሉም ክፍሎች",
@@ -811,33 +960,49 @@ const I18N = {
     st_leave:"ፈቃድ ላይ", st_field:"የመስክ ሥራ", st_half_day:"ግማሽ ቀን",
     st_holiday:"በዓል", st_weekend:"ቅዳሜና እሁድ", st_none:"ያልተመዘገበ",
     thEmployee:"ሰራተኛ", thEmployeeId:"የሰራተኛ መታወቂያ",
-    thDepartment:"ክፍል", thStatus:"ሁኔታ", thCheckIn:"መግቢያ", thCheckOut:"መውጫ",
+    thDepartment:"ክፍል", thStatus:"ሁኔታ", thMorning:"ጠዋት", thAfternoon:"ከሰዓት",
     thNotes:"ማስታወሻ", thActions:"እርምጃዎች",
     loading:"በመጫን ላይ…", noEmployeesScope:"በአካባቢዎ ሰራተኞች የሉም።",
     noEmployeesFilter:"ከማጣሪያዎ ጋር የሚዛመዱ ሰራተኞች የለም።",
     markToday:"ዛሬ አስመዝግብ",
-    fpMarkTitle:"በጣት አሻራ አስመዝግብ",
-    fpScanTitle:"የጣት አሻራዎን ያረጋግጡ",
-    fpScanMsg:"ጣትዎን በሴንሰሩ ላይ ያስቀምጡ ወይም የመሣሪያዎን ባዮሜትሪክ ጥያቄ ይመልከቱ።",
+    phaseMorningIn:"ጠዋት መግቢያ", phaseMorningOut:"ጠዋት መውጫ",
+    phaseAfternoonIn:"ከሰዓት መግቢያ", phaseAfternoonOut:"ከሰዓት መውጫ",
+    phaseDone:"ቀኑ ተጠናቅቋል",
+    fpMorningIn:"የጠዋት መግቢያ", fpMorningOut:"የምሳ መውጫ",
+    fpAfternoonIn:"የከሰዓት መግቢያ", fpAfternoonOut:"የቀን መጨረሻ መውጫ",
+    fpRegisterMorningIn:"ይመዝገቡ እና ይግቡ", fpDone:"ዛሬ ተጠናቅቋል",
+    fpScanTitleIn:"ለመግቢያ የጣት አሻራ ያረጋግጡ",
+    fpScanTitleOut:"ለመውጫ የጣት አሻራ ያረጋግጡ",
+    fpScanMsgIn:"የመጡበትን ጊዜ ለመመዝገብ ጣትዎን በሴንሰሩ ላይ ያስቀምጡ።",
+    fpScanMsgOut:"የወጡበትን ጊዜ ለመመዝገብ ጣትዎን በሴንሰሩ ላይ ያስቀምጡ።",
     fpScanRegTitle:"የጣት አሻራዎን ይመዝግቡ",
-    fpScanRegMsg:"መሣሪያዎ የጣት አሻራዎን እንዲያረጋግጡ ይጠይቅዎታል። ይህ በዚህ መሣሪያ ላይ ብቻ ይቀመጣል።",
+    fpScanRegMsg:"መሣሪያዎ የጣት አሻራዎን እንዲያረጋግጡ ይጠይቅዎታል።",
     fpScanSuccess:"ተረጋግጧል", fpScanError:"አልተሳካም", fpScanWaiting:"ባዮሜትሪክ በመጠበቅ ላይ…",
-    fpMarked:"መገኘት በጣት አሻራ ተመዝግቧል",
+    fpMarked:"{phase} በ {time} ተመዝግቧል",
+    fpMarkedMorning:"የጠዋት መግቢያ በ {time} — {status}",
+    fpMarkedAfternoon:"የከሰዓት መግቢያ በ {time} — {status}",
     fpCancelled:"የጣት አሻራ ተሰርዟል ወይም አልታወቀም",
-    fpNotSupported:"የጣት አሻራ ማረጋገጫ በዚህ መሣሪያ ወይም አሳሽ ላይ አይደገፍም።",
-    fpNotAvailable:"በዚህ መሣሪያ ላይ የጣት አሻራ ሴንሰር የለም።",
-    fpNotRegistered:"እስካሁን የጣት አሻራ አልመዘገቡም።",
+    fpNotSupported:"የጣት አሻራ ማረጋገጫ አይደገፍም።",
+    fpNotAvailable:"የጣት አሻራ ሴንሰር የለም።",
     fpNoEmployee:"መለያዎ ከሰራተኛ መዝገብ ጋር አልተገናኘም።",
-    fpAlreadyMarked:"ለዚህ ቀን አስቀድመው መዝግበዋል።",
-    fpNotHttps:"የጣት አሻራ አስተማማኝ ግንኙነት (HTTPS) ይፈልጋል።",
-    fpVerified:"FP ተረጋግጧል", fpCancel:"ሰርዝ", fpClose:"ዝጋ",
+    fpNotHttps:"የጣት አሻራ HTTPS ይፈልጋል።",
+    fpVerified:"FP", fpCancel:"ሰርዝ", fpClose:"ዝጋ",
+    ruleMorningNotice:"ጠዋት (መድረሻ):",
+    ruleMorningPresent:"≤ 08:45 → ተገኝቷል",
+    ruleMorningLate:"08:46 – 09:00 → ዘግይቷል",
+    ruleMorningAbsent:"≥ 09:01 → ቀርቷል",
+    ruleAfternoonNotice:"ከሰዓት (ከምሳ በኋላ):",
+    ruleAfternoonPresent:"13:30 – 13:45 → ተገኝቷል",
+    ruleAfternoonLate:"13:46 – 14:00 → ዘግይቷል",
+    ruleAfternoonAbsent:"≥ 14:01 → ቀርቷል",
     modalMarkTitle:"መገኘት ያስመዝግቡ", modalStatusLabel:"ሁኔታ",
-    modalCheckIn:"መግቢያ", modalCheckOut:"መውጫ", modalNotes:"ማስታወሻ",
-    modalNotesPlaceholder:"አማራጭ — የዘግይቶ መምጣት፣ የመቅረት ምክንያት፣ ወዘተ.",
+    modalMorningIn:"ጠዋት መግቢያ", modalMorningOut:"ጠዋት መውጫ",
+    modalAfternoonIn:"ከሰዓት መግቢያ", modalAfternoonOut:"ከሰዓት መውጫ",
+    modalNotes:"ማስታወሻ", modalNotesPlaceholder:"አማራጭ — የዘግይቶ መምጣት፣ የመቅረት ምክንያት፣ ወዘተ.",
     modalSave:"አስቀምጥ", modalSaving:"በማስቀመጥ ላይ…",
     modalClear:"አጽዳ", modalClearConfirm:"የዚህን ቀን መገኘት ያጽዱ?",
     modalBulkSub:"{n} ሰራተኞች · {date}",
-    modalBulkHint:"ለእያንዳንዱ ሰራተኛ ሁኔታ ይምረጡ። ሁሉንም በአንድ ጠቅታ <b>ተገኝቷል</b> ማድረግ እና ከዚያ በኋላ በግለሰብ ማስተካከል ይችላሉ።",
+    modalBulkHint:"ለእያንዳንዱ ሰራተኛ ሁኔታ ይምረጡ።",
     modalAllPrefix:"ሁሉም", modalSaveAll:"ሁሉንም አስቀምጥ",
     toastCannotMark:"ይህን ሰራተኛ ማስመዝገብ አይችሉም",
     toastCannotBulk:"በጅምላ ማስመዝገብ አይችሉም",
@@ -865,12 +1030,8 @@ function t(key, vars) {
   return s;
 }
 function applyStaticI18n() {
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    el.textContent = t(el.getAttribute("data-i18n"));
-  });
-  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
-    el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
-  });
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.getAttribute("data-i18n")); });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => { el.placeholder = t(el.getAttribute("data-i18n-placeholder")); });
   const bt = document.getElementById("brand-title"); if (bt) bt.textContent = t("brandTitle");
   const bs = document.getElementById("brand-subtitle"); if (bs) bs.textContent = t("brandSubtitle");
   const fc = document.getElementById("footer-copy"); if (fc) fc.textContent = t("footerCopy");
@@ -929,10 +1090,7 @@ function applyTheme(theme) {
   let dark = false;
   if (theme === "dark") dark = true;
   else if (theme === "auto") dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  if (dark) {
-    document.documentElement.classList.add("theme-dark");
-    document.body.classList.add("theme-dark");
-  }
+  if (dark) { document.documentElement.classList.add("theme-dark"); document.body.classList.add("theme-dark"); }
   try { localStorage.setItem("cs.theme", theme); } catch(e) {}
 }
 function applyCompact(on) {
@@ -1033,6 +1191,64 @@ const STATUS_MAP = Object.fromEntries(STATUSES.map(s => [s.key, s]));
 const statusLabel = (key) => t("st_" + key);
 
 /* ============================================================
+   TIME HELPERS
+   ============================================================ */
+function timeToMinutes(hhmm) {
+  if (!hhmm || typeof hhmm !== "string") return null;
+  const [h, m] = hhmm.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+function nowHHMM() { return new Date().toTimeString().slice(0,5); }
+
+/* Apply the arrival rule for a given session ("morning" or "afternoon") */
+function determineStatusFromCheckIn(checkInHHMM, session) {
+  const m = timeToMinutes(checkInHHMM);
+  if (m == null) return "present";
+  const rules = session === "afternoon" ? ATTENDANCE_RULES.afternoon : ATTENDANCE_RULES.morning;
+  const presentUntil = timeToMinutes(rules.presentUntil);
+  const lateUntil    = timeToMinutes(rules.lateUntil);
+  if (m <= presentUntil) return "present";
+  if (m <= lateUntil)    return "late";
+  return "absent";
+}
+
+/* Combine the morning and afternoon statuses into the day's final status.
+   Priority: if either session was "absent" → day is absent.
+             otherwise if either session was "late" → day is late.
+             otherwise present. */
+function combineDayStatus(rec) {
+  if (!rec) return null;
+  const morning = rec.morningStatus;
+  const afternoon = rec.afternoonStatus;
+  if (!morning && !afternoon) return rec.status || null;
+  if (morning === "absent" || afternoon === "absent") return "absent";
+  if (morning === "late"   || afternoon === "late")   return "late";
+  if (morning === "present" || afternoon === "present") return "present";
+  return rec.status || null;
+}
+
+/* ============================================================
+   4-PHASE STATE MACHINE
+   ============================================================ */
+function todayPhase(empId) {
+  const rec = ATTENDANCE[empId];
+  if (!rec) return "morning-in";
+  if (!rec.morningCheckIn)    return "morning-in";
+  if (!rec.morningCheckOut)   return "morning-out";
+  if (!rec.afternoonCheckIn)  return "afternoon-in";
+  if (!rec.afternoonCheckOut) return "afternoon-out";
+  return "done";
+}
+const PHASE_KEYS = {
+  "morning-in":   { labelKey:"phaseMorningIn",   actionKey:"fpMorningIn",   icon:"logIn",  isOut:false, session:"morning"   },
+  "morning-out":  { labelKey:"phaseMorningOut",  actionKey:"fpMorningOut",  icon:"logOut", isOut:true,  session:"morning"   },
+  "afternoon-in": { labelKey:"phaseAfternoonIn", actionKey:"fpAfternoonIn", icon:"logIn",  isOut:false, session:"afternoon" },
+  "afternoon-out":{ labelKey:"phaseAfternoonOut",actionKey:"fpAfternoonOut",icon:"logOut", isOut:true,  session:"afternoon" },
+  "done":         { labelKey:"phaseDone",        actionKey:"fpDone",        icon:"check",  isOut:false, session:null        }
+};
+
+/* ============================================================
    ICONS
    ============================================================ */
 const ICONS = {
@@ -1044,14 +1260,16 @@ const ICONS = {
   wallet:'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',
   chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
   bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
-  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 1 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
   check:'<polyline points="20 6 9 17 4 12"/>',
   x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
   edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
   trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
   alert:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
   lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-  fingerprint:'<path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>'
+  fingerprint:'<path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>',
+  logIn:'<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>',
+  logOut:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'
 };
 
 /* ============================================================
@@ -1139,7 +1357,7 @@ function visibleOffices() {
 function visibleDepartments() {
   if (isSuper() || isHRM()) return DEPARTMENTS;
   const ids = new Set(visibleOffices().map(o => o.id));
-  return DEPARTMENTS.filter(d => ids.has(d.officeId));
+  return DEPARTMENTS.filter(d => ids.has(d.officeId) || ids.has(d.clusterId));
 }
 function visibleEmployees() {
   if (!S) return [];
@@ -1155,7 +1373,7 @@ function visibleEmployees() {
 }
 
 /* ============================================================
-   FINGERPRINT / WEBAUTHN — MULTI-DEVICE
+   FINGERPRINT / WEBAUTHN
    ============================================================ */
 const FP_SUPPORTED = !!(window.PublicKeyCredential &&
                         navigator.credentials &&
@@ -1182,8 +1400,6 @@ async function fpAvailable() {
     return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
   } catch (e) { return false; }
 }
-
-/* Register a new credential ON THIS DEVICE */
 async function fpRegisterHere(user) {
   const challenge = fpRandomChallenge();
   const userId = new TextEncoder().encode(user.uid);
@@ -1191,15 +1407,8 @@ async function fpRegisterHere(user) {
     publicKey: {
       challenge,
       rp: { name: "Civil Service MIS", id: location.hostname },
-      user: {
-        id: userId,
-        name: user.email || user.uid,
-        displayName: user.name || "User"
-      },
-      pubKeyCredParams: [
-        { type: "public-key", alg: -7 },
-        { type: "public-key", alg: -257 }
-      ],
+      user: { id: userId, name: user.email || user.uid, displayName: user.name || "User" },
+      pubKeyCredParams: [{ type:"public-key", alg:-7 }, { type:"public-key", alg:-257 }],
       authenticatorSelection: {
         authenticatorAttachment: "platform",
         userVerification: "required",
@@ -1215,14 +1424,11 @@ async function fpRegisterHere(user) {
   try { if (cred.response?.getTransports) transports = cred.response.getTransports(); } catch(e) {}
   return {
     credentialId: fpB64UrlEncode(cred.rawId),
-    transports,
-    rpId: location.hostname,
+    transports, rpId: location.hostname,
     deviceLabel: navigator.platform || "This device",
     createdAt: Date.now()
   };
 }
-
-/* Verify against ANY of the stored credentials for this employee on this device */
 async function fpVerifyAny(credentials) {
   if (!FP_SUPPORTED) throw new Error("WEBAUTHN_UNSUPPORTED");
   if (!credentials || !credentials.length) throw new Error("NO_CREDENTIAL");
@@ -1234,21 +1440,14 @@ async function fpVerifyAny(credentials) {
   }));
   const assertion = await navigator.credentials.get({
     publicKey: {
-      challenge,
-      allowCredentials: allow,
+      challenge, allowCredentials: allow,
       userVerification: "required",
-      timeout: 60000,
-      rpId: location.hostname
+      timeout: 60000, rpId: location.hostname
     }
   });
   if (!assertion) throw new Error("VERIFY_CANCELLED");
-  return {
-    credentialId: fpB64UrlEncode(assertion.rawId),
-    verifiedAt: Date.now()
-  };
+  return { credentialId: fpB64UrlEncode(assertion.rawId), verifiedAt: Date.now() };
 }
-
-/* Get normalised fingerprint list from employee doc (supports legacy single-object) */
 function getFingerprintList(emp) {
   if (!emp) return [];
   if (Array.isArray(emp.fingerprints)) return emp.fingerprints;
@@ -1257,13 +1456,37 @@ function getFingerprintList(emp) {
 }
 
 /* ============================================================
+   MODAL FRAMEWORK
+   ============================================================ */
+let escHandler = null;
+function openModal(html, { size="" } = {}) {
+  closeModal();
+  const bd = document.createElement("div");
+  bd.className = "modal-backdrop";
+  bd.id = "modal-backdrop";
+  bd.innerHTML = `<div class="modal ${size?"modal--"+size:""}" role="dialog">${html}</div>`;
+  document.body.appendChild(bd);
+  bd.addEventListener("click", (e)=>{ if (e.target === bd) closeModal(); });
+  bd.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", closeModal));
+  escHandler = (e)=>{ if (e.key === "Escape") closeModal(); };
+  document.addEventListener("keydown", escHandler);
+  return bd;
+}
+function closeModal() {
+  const el = document.getElementById("modal-backdrop");
+  if (el) el.remove();
+  if (escHandler) { document.removeEventListener("keydown", escHandler); escHandler = null; }
+}
+
+/* ============================================================
    FINGERPRINT SCANNING MODAL
    ============================================================ */
-function openFpScanModal({ title, message }) {
+function openFpScanModal({ title, message, mode }) {
   return new Promise((resolve) => {
+    const modeClass = mode === "checkout" ? "is-checkout" : "";
     const bd = openModal(`
       <div class="modal__body" style="padding:0">
-        <div class="fp-scan is-scanning" id="fp-scan">
+        <div class="fp-scan ${modeClass} is-scanning" id="fp-scan">
           <div class="fp-scan__ring">
             <svg class="fp-icon" viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
           </div>
@@ -1302,7 +1525,7 @@ function fpModalSetState(promise, state, customMsg) {
 }
 
 /* ============================================================
-   MAIN FLOW — MARK ATTENDANCE WITH FINGERPRINT
+   MAIN FLOW — 4-PHASE FINGERPRINT SCAN
    ============================================================ */
 async function markWithFingerprint(empId = null) {
   if (!FP_SUPPORTED) { toast(t("fpNotSupported"), "error"); return; }
@@ -1314,17 +1537,25 @@ async function markWithFingerprint(empId = null) {
     ? EMPLOYEES.find(e => e.id === empId)
     : (MY_EMP || EMPLOYEES.find(e => e.uid === S.uid));
   if (!me) { toast(t("fpNoEmployee"), "error"); return; }
-  if (ATTENDANCE[me.id]) { toast(t("fpAlreadyMarked"), "info"); return; }
+
+  const phase = todayPhase(me.id);
+  if (phase === "done") { toast(t("fpDone"), "info"); return; }
 
   const avail = await fpAvailable();
   if (!avail) { toast(t("fpNotAvailable"), "error"); return; }
 
+  const phaseInfo = PHASE_KEYS[phase];
+  const isOut = phaseInfo.isOut;
+  const session = phaseInfo.session;
   const storedList = getFingerprintList(me);
 
-  const scanModal = await openFpScanModal({
-    title: storedList.length ? t("fpScanTitle") : t("fpScanRegTitle"),
-    message: storedList.length ? t("fpScanMsg") : t("fpScanRegMsg")
-  });
+  const title =
+    phase === "morning-in" && !storedList.length ? t("fpScanRegTitle")
+    : isOut ? t("fpScanTitleOut")
+    : t("fpScanTitleIn");
+  const message = isOut ? t("fpScanMsgOut") : t("fpScanMsgIn");
+
+  const scanModal = await openFpScanModal({ title, message, mode: isOut ? "checkout" : "checkin" });
 
   try {
     fpModalSetState(scanModal, "scanning", t("fpScanWaiting"));
@@ -1332,11 +1563,9 @@ async function markWithFingerprint(empId = null) {
 
     if (storedList.length) {
       try {
-        /* Try to verify against any stored credential on this device */
         const result = await fpVerifyAny(storedList);
         usedCredential = result.credentialId;
       } catch (err) {
-        /* Credential isn't on this device (or user cancelled). Register this device. */
         if (err.name === "NotAllowedError" || err.message === "VERIFY_CANCELLED") {
           fpModalSetState(scanModal, "scanning", "Registering this device…");
           const reg = await fpRegisterHere({
@@ -1344,41 +1573,88 @@ async function markWithFingerprint(empId = null) {
             email: me.email || S.email,
             name: me.name || fullName(me)
           });
-          await updateDoc(doc(db, "employees", me.id), {
-            fingerprints: [...storedList, reg]
-          });
+          await updateDoc(doc(db, "employees", me.id), { fingerprints: [...storedList, reg] });
           usedCredential = reg.credentialId;
         } else {
           throw err;
         }
       }
     } else {
-      /* First time — register this device */
       const reg = await fpRegisterHere({
         uid: me.uid || S.uid,
         email: me.email || S.email,
         name: me.name || fullName(me)
       });
-      await updateDoc(doc(db, "employees", me.id), {
-        fingerprints: [reg]
-      });
+      await updateDoc(doc(db, "employees", me.id), { fingerprints: [reg] });
       usedCredential = reg.credentialId;
     }
 
     fpModalSetState(scanModal, "success", t("fpScanSuccess"));
 
-    await saveAttendance(me, {
-      status: "present",
-      checkIn: new Date().toTimeString().slice(0,5),
-      checkOut: null,
-      notes: null,
-      method: "fingerprint",
-      credentialId: usedCredential
-    });
+    const now = nowHHMM();
+    const phaseLabel = t(phaseInfo.labelKey);
 
-    await new Promise(r => setTimeout(r, 500));
-    closeModal();
-    toast(t("fpMarked"), "success");
+    if (phase === "morning-in") {
+      const status = determineStatusFromCheckIn(now, "morning");
+      await saveAttendance(me, {
+        status,
+        morningCheckIn: now,
+        morningCheckInAt: serverTimestamp(),
+        morningCheckInMethod: "fingerprint",
+        morningCheckInCredentialId: usedCredential,
+        morningStatus: status,
+        /* legacy mirror */
+        checkIn: now,
+        method: "fingerprint"
+      });
+      await new Promise(r => setTimeout(r, 500));
+      closeModal();
+      toast(t("fpMarkedMorning", { time: now, status: statusLabel(status) }), "success");
+
+    } else if (phase === "morning-out") {
+      await saveAttendance(me, {
+        morningCheckOut: now,
+        morningCheckOutAt: serverTimestamp(),
+        morningCheckOutMethod: "fingerprint",
+        morningCheckOutCredentialId: usedCredential
+      });
+      await new Promise(r => setTimeout(r, 500));
+      closeModal();
+      toast(t("fpMarked", { phase: phaseLabel, time: now }), "success");
+
+    } else if (phase === "afternoon-in") {
+      const status = determineStatusFromCheckIn(now, "afternoon");
+      await saveAttendance(me, {
+        afternoonCheckIn: now,
+        afternoonCheckInAt: serverTimestamp(),
+        afternoonCheckInMethod: "fingerprint",
+        afternoonCheckInCredentialId: usedCredential,
+        afternoonStatus: status
+      });
+      await new Promise(r => setTimeout(r, 500));
+      closeModal();
+      toast(t("fpMarkedAfternoon", { time: now, status: statusLabel(status) }), "success");
+
+    } else if (phase === "afternoon-out") {
+      await saveAttendance(me, {
+        afternoonCheckOut: now,
+        afternoonCheckOutAt: serverTimestamp(),
+        afternoonCheckOutMethod: "fingerprint",
+        afternoonCheckOutCredentialId: usedCredential
+      });
+      /* After the fourth scan, recompute the final day status */
+      const rec = ATTENDANCE[me.id] || {};
+      const finalStatus = combineDayStatus({
+        ...rec,
+        afternoonCheckOut: now
+      });
+      if (finalStatus) {
+        await saveAttendance(me, { status: finalStatus });
+      }
+      await new Promise(r => setTimeout(r, 500));
+      closeModal();
+      toast(t("fpMarked", { phase: phaseLabel, time: now }), "success");
+    }
   } catch (err) {
     console.warn("[fp]", err);
     fpModalSetState(scanModal, "error",
@@ -1424,76 +1700,128 @@ function renderUser() {
 function renderScopeBadge() {
   const el = document.getElementById("scope-badge");
   if (isSuper()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--super">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeSuper"))}
-    </span>`;
+    el.innerHTML = `<span class="scope-badge scope-badge--super"><svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeSuper"))}</span>`;
   } else if (isHRM()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--cluster">
-      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${escapeHtml(t("scopeHrm"))}
-    </span>`;
+    el.innerHTML = `<span class="scope-badge scope-badge--cluster"><svg viewBox="0 0 24 24">${ICONS.users}</svg> ${escapeHtml(t("scopeHrm"))}</span>`;
   } else if (isAdmin()) {
     const c = CLUSTERS.find(x => x.id === S.clusterId);
-    el.innerHTML = `<span class="scope-badge scope-badge--cluster">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeCluster"))} · ${escapeHtml(c?.name || "—")}
-    </span>`;
+    el.innerHTML = `<span class="scope-badge scope-badge--cluster"><svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeCluster"))} · ${escapeHtml(c?.name || "—")}</span>`;
   } else if (isManager()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--manager">
-      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${escapeHtml(t("scopeManager"))}
-    </span>`;
+    el.innerHTML = `<span class="scope-badge scope-badge--manager"><svg viewBox="0 0 24 24">${ICONS.users}</svg> ${escapeHtml(t("scopeManager"))}</span>`;
   } else {
-    el.innerHTML = `<span class="scope-badge">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeEmployee"))}
-    </span>`;
+    el.innerHTML = `<span class="scope-badge"><svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(t("scopeEmployee"))}</span>`;
   }
-
-  /* Fingerprint status chip */
   if (MY_EMP) {
     const fpCount = getFingerprintList(MY_EMP).length;
     const chip = document.createElement("span");
     chip.className = "scope-badge scope-badge--fp";
     chip.innerHTML = `<svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ` +
-      (fpCount
-        ? escapeHtml(`FP registered (${fpCount} device${fpCount>1?"s":""})`)
-        : escapeHtml("No fingerprint yet"));
-    chip.addEventListener("click", () => {
-      if (!fpCount) markWithFingerprint();
-    });
+      (fpCount ? escapeHtml(`FP registered (${fpCount} device${fpCount>1?"s":""})`) : escapeHtml("No fingerprint yet"));
+    chip.addEventListener("click", () => { if (!fpCount) markWithFingerprint(); });
     el.appendChild(chip);
   }
 }
 function renderHeadActions() {
   const host = document.getElementById("head-actions");
   const btns = [];
-
-  /* Fingerprint button — always shown if user has an employee record and no mark yet */
   if (MY_EMP) {
-    const marked = !!ATTENDANCE[MY_EMP.id];
-    const fpReady = FP_SUPPORTED;
+    const phase = todayPhase(MY_EMP.id);
     const fpCount = getFingerprintList(MY_EMP).length;
-    const label = fpCount ? t("fpMarkTitle") : "Register Fingerprint & Mark";
-    btns.push(`<button class="btn btn--fp" id="fp-mark-btn" ${marked || !fpReady ? "disabled" : ""} title="${escapeHtml(fpReady ? label : t("fpNotSupported"))}">
+    const phaseInfo = PHASE_KEYS[phase];
+    const isDone = phase === "done";
+    const isOut = phaseInfo.isOut;
+
+    let label = t(phaseInfo.actionKey);
+    if (phase === "morning-in" && !fpCount) label = t("fpRegisterMorningIn");
+
+    const cls = isDone ? "btn--fp-done" : (isOut ? "btn--fp-out" : "btn--fp");
+    btns.push(`<button class="btn ${cls}" id="fp-mark-btn" ${isDone || !FP_SUPPORTED ? "disabled" : ""} title="${escapeHtml(label)}">
       <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ${escapeHtml(label)}
     </button>`);
   }
-
   if (canMarkAttendance()) {
     btns.push(`<button class="btn btn--primary" id="mark-all-btn">
       <svg viewBox="0 0 24 24">${ICONS.check}</svg> ${escapeHtml(t("markToday"))}
     </button>`);
   }
-
   host.innerHTML = btns.join("");
   document.getElementById("fp-mark-btn")?.addEventListener("click", () => markWithFingerprint());
   document.getElementById("mark-all-btn")?.addEventListener("click", ()=>openBulkMarkModal());
 }
 
+/* ============================================================
+   PHASE BAR (4-step progress)
+   ============================================================ */
+function renderPhaseBar() {
+  const host = document.getElementById("phase-bar-host");
+  if (!MY_EMP) { host.innerHTML = ""; return; }
+  const rec = ATTENDANCE[MY_EMP.id] || {};
+  const phase = todayPhase(MY_EMP.id);
+
+  const steps = [
+    { key:"morning-in",    labelKey:"phaseMorningIn",    icon:"logIn",  time: rec.morningCheckIn    || null, status: rec.morningStatus    || null },
+    { key:"morning-out",   labelKey:"phaseMorningOut",   icon:"logOut", time: rec.morningCheckOut   || null, status: null },
+    { key:"afternoon-in",  labelKey:"phaseAfternoonIn",  icon:"logIn",  time: rec.afternoonCheckIn  || null, status: rec.afternoonStatus  || null },
+    { key:"afternoon-out", labelKey:"phaseAfternoonOut", icon:"logOut", time: rec.afternoonCheckOut || null, status: null }
+  ];
+
+  const phaseOrder = ["morning-in","morning-out","afternoon-in","afternoon-out","done"];
+  const currentIdx = phaseOrder.indexOf(phase);
+
+  let html = '<div class="phase-bar">';
+  steps.forEach((s, i) => {
+    const isDone = !!s.time;
+    const isCurrent = phaseOrder[i] === phase;
+    const cls = "phase-bar__step" + (isDone ? " is-done" : "") + (isCurrent && !isDone ? " is-current" : "");
+    const timeText = s.time ? s.time : "—:—";
+    const statusTxt = s.status ? ` · ${statusLabel(s.status)}` : "";
+
+    html += `<div class="${cls}">
+      <div class="phase-bar__icon"><svg viewBox="0 0 24 24">${ICONS[s.icon]}</svg></div>
+      <div class="phase-bar__main">
+        <div class="phase-bar__label">${escapeHtml(t(s.labelKey))}</div>
+        <div class="phase-bar__time">${escapeHtml(timeText)}${escapeHtml(statusTxt)}</div>
+      </div>
+    </div>`;
+    if (i < steps.length - 1) {
+      html += `<div class="phase-bar__line ${isDone ? "is-done" : ""}"></div>`;
+    }
+  });
+  html += '</div>';
+  host.innerHTML = html;
+}
+
+/* ============================================================
+   RULES BANNER
+   ============================================================ */
+function renderRulesBanner() {
+  document.getElementById("rules-banner").innerHTML = `
+    <span class="rules-banner__label">${escapeHtml(t("ruleMorningNotice"))}</span>
+    <span class="rules-banner__item"><span class="rules-banner__dot" style="background:#067647"></span>${escapeHtml(t("ruleMorningPresent"))}</span>
+    <span class="rules-banner__item"><span class="rules-banner__dot" style="background:#b8860b"></span>${escapeHtml(t("ruleMorningLate"))}</span>
+    <span class="rules-banner__item"><span class="rules-banner__dot" style="background:#b42318"></span>${escapeHtml(t("ruleMorningAbsent"))}</span>
+    <span class="rules-banner__sep">|</span>
+    <span class="rules-banner__label">${escapeHtml(t("ruleAfternoonNotice"))}</span>
+    <span class="rules-banner__item"><span class="rules-banner__dot" style="background:#067647"></span>${escapeHtml(t("ruleAfternoonPresent"))}</span>
+    <span class="rules-banner__item"><span class="rules-banner__dot" style="background:#b8860b"></span>${escapeHtml(t("ruleAfternoonLate"))}</span>
+    <span class="rules-banner__item"><span class="rules-banner__dot" style="background:#b42318"></span>${escapeHtml(t("ruleAfternoonAbsent"))}</span>
+  `;
+}
+
+/* ============================================================
+   STATS
+   ============================================================ */
 function renderStats() {
   const list = filteredEmployeesForStats();
   const counts = { present:0, late:0, absent:0, leave:0, field:0, half_day:0, none:0, total:list.length };
+  let morningInCount = 0, afternoonOutCount = 0;
   for (const e of list) {
     const rec = ATTENDANCE[e.id];
     if (!rec) { counts.none++; continue; }
-    if (counts[rec.status] != null) counts[rec.status]++;
+    const dayStatus = combineDayStatus(rec) || rec.status;
+    if (counts[dayStatus] != null) counts[dayStatus]++;
+    if (rec.morningCheckIn)    morningInCount++;
+    if (rec.afternoonCheckOut) afternoonOutCount++;
   }
   const working = counts.total - counts.none;
   const presentish = counts.present + counts.late + counts.field + counts.half_day;
@@ -1504,7 +1832,8 @@ function renderStats() {
     ${statCard(t("statPresent"),         counts.present, "stat--green", "check")}
     ${statCard(t("statLate"),            counts.late, "stat--gold", "clock")}
     ${statCard(t("statAbsent"),          counts.absent, "stat--red", "alert")}
-    ${statCard(t("statOnLeave"),         counts.leave, "stat--violet", "calendar")}
+    ${statCard(t("statMorningIn"),       morningInCount, "stat--violet", "logIn")}
+    ${statCard(t("statAfternoonOut"),    afternoonOutCount, "stat--orange", "logOut")}
     ${statCard(t("statAttendanceRate"),  rate + "%", "stat--teal", "chart")}
   `;
 }
@@ -1534,47 +1863,32 @@ function filteredEmployeesForStats() {
    ============================================================ */
 function populateFilters() {
   const emps = visibleEmployees();
-
   const regionSel = document.getElementById("region-filter");
-  const regionCodes = Array.from(new Set(emps.map(e => e.regionCode).filter(Boolean)))
-    .sort((a,b) => String(a).localeCompare(String(b)));
+  const regionCodes = Array.from(new Set(emps.map(e => e.regionCode).filter(Boolean))).sort((a,b) => String(a).localeCompare(String(b)));
   regionSel.innerHTML = `<option value="">${escapeHtml(t("allRegions"))}</option>` +
-    regionCodes.map(code =>
-      `<option value="${escapeHtml(code)}" ${filterRegion===code?"selected":""}>
-        ${escapeHtml(regionLabel(code))}
-      </option>`).join("");
+    regionCodes.map(code => `<option value="${escapeHtml(code)}" ${filterRegion===code?"selected":""}>${escapeHtml(regionLabel(code))}</option>`).join("");
 
   const clusterSel = document.getElementById("cluster-filter");
   let clusterPool = visibleClusters();
   if (filterRegion) clusterPool = clusterPool.filter(c => c.regionCode === filterRegion);
   clusterSel.innerHTML = `<option value="">${escapeHtml(t("allClusters"))}</option>` +
-    clusterPool.map(c =>
-      `<option value="${c.id}" ${filterCluster===c.id?"selected":""}>
-        ${escapeHtml(c.code)} — ${escapeHtml(c.name)}
-      </option>`).join("");
+    clusterPool.map(c => `<option value="${c.id}" ${filterCluster===c.id?"selected":""}>${escapeHtml(c.code)} — ${escapeHtml(c.name)}</option>`).join("");
   clusterSel.disabled = !clusterPool.length;
 
   const officeSel = document.getElementById("office-filter");
   let officePool = visibleOffices();
   if (filterCluster) officePool = officePool.filter(o => o.clusterId === filterCluster);
   officeSel.innerHTML = `<option value="">${escapeHtml(t("allOffices"))}</option>` +
-    officePool.sort((a,b)=>String(a.code).localeCompare(String(b.code))).map(o =>
-      `<option value="${o.id}" ${filterOffice===o.id?"selected":""}>
-        ${escapeHtml(o.code)} — ${escapeHtml(o.name)}
-      </option>`).join("");
+    officePool.sort((a,b)=>String(a.code).localeCompare(String(b.code))).map(o => `<option value="${o.id}" ${filterOffice===o.id?"selected":""}>${escapeHtml(o.code)} — ${escapeHtml(o.name)}</option>`).join("");
   officeSel.disabled = !officePool.length;
 
   const deptSel = document.getElementById("department-filter");
   let deptPool = visibleDepartments();
   if (filterOffice) deptPool = deptPool.filter(d => d.officeId === filterOffice);
   deptSel.innerHTML = `<option value="">${escapeHtml(t("allDepartments"))}</option>` +
-    deptPool.sort((a,b)=>String(a.code).localeCompare(String(b.code))).map(d =>
-      `<option value="${d.id}" ${filterDepartment===d.id?"selected":""}>
-        ${escapeHtml(d.code)} — ${escapeHtml(d.name)}
-      </option>`).join("");
+    deptPool.sort((a,b)=>String(a.code).localeCompare(String(b.code))).map(d => `<option value="${d.id}" ${filterDepartment===d.id?"selected":""}>${escapeHtml(d.code)} — ${escapeHtml(d.name)}</option>`).join("");
   deptSel.disabled = !deptPool.length;
 }
-
 function filteredEmployees() {
   const s = searchTerm.trim().toLowerCase();
   const list = visibleEmployees().filter(e => {
@@ -1591,8 +1905,9 @@ function filteredEmployees() {
   if (filterStatus) {
     return list.filter(e => {
       const rec = ATTENDANCE[e.id];
-      if (filterStatus === "none") return !rec;
-      return rec && rec.status === filterStatus;
+      if (filterStatus === "none") return !rec || !rec.morningCheckIn;
+      const status = rec ? (combineDayStatus(rec) || rec.status) : null;
+      return status === filterStatus;
     });
   }
   return list;
@@ -1601,16 +1916,35 @@ function filteredEmployees() {
 /* ============================================================
    TABLE
    ============================================================ */
-function statusPill(status, isFp) {
-  if (!status) {
+function statusPill(rec) {
+  if (!rec || !rec.morningCheckIn) {
     return `<span class="status-pill status-none" data-edit="1">— ${escapeHtml(t("st_none"))}</span>`;
   }
+  const status = combineDayStatus(rec) || rec.status || "present";
   const s = STATUS_MAP[status] || { key:"none" };
   const label = STATUS_MAP[status] ? statusLabel(status) : status;
-  const fpBadge = isFp
+  const fpMarked = rec.morningCheckInMethod === "fingerprint" || rec.afternoonCheckInMethod === "fingerprint";
+  const fpBadge = fpMarked
     ? `<span class="fp-badge"><svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ${escapeHtml(t("fpVerified"))}</span>`
     : "";
   return `<span class="status-pill status-${s.key}" data-edit="1">${escapeHtml(label)}</span>${fpBadge}`;
+}
+
+function sessionCell(inTime, outTime) {
+  const inTxt = inTime || "—:—";
+  const outTxt = outTime || "—:—";
+  return `
+    <div class="session-cell">
+      <div class="session-cell__row session-cell__row--in">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">${ICONS.logIn}</svg>
+        <span class="session-cell__time ${inTime ? "" : "session-cell__time--empty"}">${escapeHtml(inTxt)}</span>
+      </div>
+      <div class="session-cell__row session-cell__row--out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">${ICONS.logOut}</svg>
+        <span class="session-cell__time ${outTime ? "" : "session-cell__time--empty"}">${escapeHtml(outTxt)}</span>
+      </div>
+    </div>
+  `;
 }
 
 function renderTable() {
@@ -1620,30 +1954,21 @@ function renderTable() {
   document.getElementById("count-label").textContent = list.length + " / " + total;
 
   if (!total) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:48px 20px;color:var(--muted)">
-      ${escapeHtml(t("noEmployeesScope"))}
-    </td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:48px 20px;color:var(--muted)">${escapeHtml(t("noEmployeesScope"))}</td></tr>`;
     return;
   }
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:48px 20px;color:var(--muted)">
-      ${escapeHtml(t("noEmployeesFilter"))}
-    </td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:48px 20px;color:var(--muted)">${escapeHtml(t("noEmployeesFilter"))}</td></tr>`;
     return;
   }
 
   tbody.innerHTML = list.map(e => {
     const rec = ATTENDANCE[e.id];
     const dep = DEPARTMENTS.find(d => d.id === e.departmentId);
-    const avatar = e.photoURL
-      ? `<img src="${escapeHtml(e.photoURL)}" alt="">`
-      : escapeHtml(initials(fullName(e)));
+    const avatar = e.photoURL ? `<img src="${escapeHtml(e.photoURL)}" alt="">` : escapeHtml(initials(fullName(e)));
     const editable = canMarkOthers() || e.uid === S.uid;
     const isSelf = e.uid === S.uid;
-    const fpMarked = rec && rec.method === "fingerprint";
-
-    /* Fingerprint button only for the current user, unmarked */
-    const showFp = isSelf && FP_SUPPORTED && !rec;
+    const showFp = isSelf && FP_SUPPORTED && todayPhase(e.id) !== "done";
 
     return `
       <tr data-emp-id="${e.id}">
@@ -1658,17 +1983,17 @@ function renderTable() {
         </td>
         <td><span class="emp-id">${escapeHtml(e.empId || "—")}</span></td>
         <td>${escapeHtml(dep ? dep.name : "—")}</td>
-        <td>${statusPill(rec?.status, fpMarked)}</td>
-        <td>${rec?.checkIn ? escapeHtml(rec.checkIn) : "—"}</td>
-        <td>${rec?.checkOut ? escapeHtml(rec.checkOut) : "—"}</td>
+        <td>${statusPill(rec)}</td>
+        <td>${sessionCell(rec?.morningCheckIn, rec?.morningCheckOut)}</td>
+        <td>${sessionCell(rec?.afternoonCheckIn, rec?.afternoonCheckOut)}</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(rec?.notes || "—")}</td>
         <td style="text-align:right">
           ${showFp ? `
-            <button class="btn btn--sm btn--icon btn--fp" data-action="fp" data-id="${e.id}" title="${escapeHtml(t("fpMarkTitle"))}" style="margin-right:4px">
+            <button class="btn btn--sm btn--icon btn--fp" data-action="fp" data-id="${e.id}" title="${escapeHtml(t(PHASE_KEYS[todayPhase(e.id)].actionKey))}" style="margin-right:4px">
               <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
             </button>` : ""}
           ${editable ? `
-            <button class="btn btn--sm btn--icon" data-action="mark" data-id="${e.id}">
+            <button class="btn btn--sm btn--icon" data-action="mark" data-id="${e.id}" title="${escapeHtml(t("modalMarkTitle"))}">
               <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
             </button>` : ""}
         </td>
@@ -1698,36 +2023,15 @@ function renderTable() {
 function render() {
   renderScopeBadge();
   renderHeadActions();
+  renderPhaseBar();
+  renderRulesBanner();
   renderStats();
   populateFilters();
   renderTable();
 }
 
 /* ============================================================
-   MODAL FRAMEWORK
-   ============================================================ */
-let escHandler = null;
-function openModal(html, { size="" } = {}) {
-  closeModal();
-  const bd = document.createElement("div");
-  bd.className = "modal-backdrop";
-  bd.id = "modal-backdrop";
-  bd.innerHTML = `<div class="modal ${size?"modal--"+size:""}" role="dialog">${html}</div>`;
-  document.body.appendChild(bd);
-  bd.addEventListener("click", (e)=>{ if (e.target === bd) closeModal(); });
-  bd.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", closeModal));
-  escHandler = (e)=>{ if (e.key === "Escape") closeModal(); };
-  document.addEventListener("keydown", escHandler);
-  return bd;
-}
-function closeModal() {
-  const el = document.getElementById("modal-backdrop");
-  if (el) el.remove();
-  if (escHandler) { document.removeEventListener("keydown", escHandler); escHandler = null; }
-}
-
-/* ============================================================
-   MARK SINGLE
+   MARK SINGLE MODAL (manual override with 4 slots)
    ============================================================ */
 function openMarkSingleModal(empId) {
   const emp = EMPLOYEES.find(e => e.id === empId);
@@ -1737,7 +2041,6 @@ function openMarkSingleModal(empId) {
   if (!editable) { toast(t("toastCannotMark"), "error"); return; }
 
   let selectedStatus = existing.status || "present";
-  const isSelf = emp.uid === S.uid;
 
   openModal(`
     <div class="modal__head">
@@ -1753,12 +2056,6 @@ function openMarkSingleModal(empId) {
         <div id="mk-error-msg" style="flex:1"></div>
       </div>
 
-      ${isSelf && FP_SUPPORTED && !existing.status ? `
-        <button class="btn btn--fp" id="mk-fp-btn" style="width:100%;justify-content:center;margin-bottom:16px">
-          <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ${escapeHtml(t("fpMarkTitle"))}
-        </button>
-      ` : ""}
-
       <div class="field">
         <label>${escapeHtml(t("modalStatusLabel"))}</label>
       </div>
@@ -1773,12 +2070,23 @@ function openMarkSingleModal(empId) {
 
       <div class="field-row">
         <div class="field">
-          <label>${escapeHtml(t("modalCheckIn"))}</label>
-          <input type="time" id="mk-checkin" value="${escapeHtml(existing.checkIn || "")}">
+          <label>${escapeHtml(t("modalMorningIn"))}</label>
+          <input type="time" id="mk-morningIn" value="${escapeHtml(existing.morningCheckIn || "")}">
         </div>
         <div class="field">
-          <label>${escapeHtml(t("modalCheckOut"))}</label>
-          <input type="time" id="mk-checkout" value="${escapeHtml(existing.checkOut || "")}">
+          <label>${escapeHtml(t("modalMorningOut"))}</label>
+          <input type="time" id="mk-morningOut" value="${escapeHtml(existing.morningCheckOut || "")}">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>${escapeHtml(t("modalAfternoonIn"))}</label>
+          <input type="time" id="mk-afternoonIn" value="${escapeHtml(existing.afternoonCheckIn || "")}">
+        </div>
+        <div class="field">
+          <label>${escapeHtml(t("modalAfternoonOut"))}</label>
+          <input type="time" id="mk-afternoonOut" value="${escapeHtml(existing.afternoonCheckOut || "")}">
         </div>
       </div>
 
@@ -1808,14 +2116,8 @@ function openMarkSingleModal(empId) {
     });
   });
 
-  document.getElementById("mk-fp-btn")?.addEventListener("click", async () => {
-    closeModal();
-    await new Promise(r => setTimeout(r, 80));
-    await markWithFingerprint(emp.id);
-  });
-
   document.getElementById("mk-clear")?.addEventListener("click", async ()=>{
-    if (!existing.status) return;
+    if (!existing.morningCheckIn) return;
     if (!confirm(t("modalClearConfirm"))) return;
     try {
       await deleteDoc(doc(db, "attendance", monthKey(selectedDate), "records", emp.id));
@@ -1834,17 +2136,30 @@ function openMarkSingleModal(empId) {
 
     if (!selectedStatus) { errBox.style.display="flex"; errMsg.textContent = t("toastChooseStatus"); return; }
 
-    btn.disabled = true;
-    spinner.classList.remove("hidden");
-    const old = label.textContent;
-    label.textContent = t("modalSaving");
+    btn.disabled = true; spinner.classList.remove("hidden");
+    const old = label.textContent; label.textContent = t("modalSaving");
 
     try {
+      const morningIn = document.getElementById("mk-morningIn").value || null;
+      const morningOut = document.getElementById("mk-morningOut").value || null;
+      const afternoonIn = document.getElementById("mk-afternoonIn").value || null;
+      const afternoonOut = document.getElementById("mk-afternoonOut").value || null;
+      const notes = document.getElementById("mk-notes").value.trim() || null;
+
+      const morningStatus = morningIn ? determineStatusFromCheckIn(morningIn, "morning") : null;
+      const afternoonStatus = afternoonIn ? determineStatusFromCheckIn(afternoonIn, "afternoon") : null;
+
       await saveAttendance(emp, {
         status: selectedStatus,
-        checkIn: document.getElementById("mk-checkin").value || null,
-        checkOut: document.getElementById("mk-checkout").value || null,
-        notes: document.getElementById("mk-notes").value.trim() || null,
+        morningCheckIn: morningIn,
+        morningCheckOut: morningOut,
+        afternoonCheckIn: afternoonIn,
+        afternoonCheckOut: afternoonOut,
+        morningStatus,
+        afternoonStatus,
+        notes,
+        checkIn: morningIn,
+        checkOut: afternoonOut,
         method: "manual"
       });
       toast(t("toastSaved"), "success");
@@ -1895,9 +2210,7 @@ function openBulkMarkModal() {
 
       <div class="bulk-list" id="bulk-list">
         ${list.map(e => {
-          const avatar = e.photoURL
-            ? `<img src="${escapeHtml(e.photoURL)}" alt="">`
-            : escapeHtml(initials(fullName(e)));
+          const avatar = e.photoURL ? `<img src="${escapeHtml(e.photoURL)}" alt="">` : escapeHtml(initials(fullName(e)));
           return `
             <div class="bulk-item" data-emp-id="${e.id}">
               <div class="emp-avatar">${avatar}</div>
@@ -1942,10 +2255,8 @@ function openBulkMarkModal() {
     const btn = document.getElementById("bulk-save");
     const spinner = btn.querySelector(".spinner");
     const label = btn.querySelector(".btn-label");
-    btn.disabled = true;
-    spinner.classList.remove("hidden");
-    const old = label.textContent;
-    label.textContent = t("modalSaving");
+    btn.disabled = true; spinner.classList.remove("hidden");
+    const old = label.textContent; label.textContent = t("modalSaving");
     try {
       for (const e of list) {
         await saveAttendance(e, { status: choices[e.id], notes: null, method: "bulk" });
@@ -1955,9 +2266,7 @@ function openBulkMarkModal() {
     } catch (err) {
       console.error(err);
       toast(err.code + ": " + err.message, "error");
-      btn.disabled = false;
-      spinner.classList.add("hidden");
-      label.textContent = old;
+      btn.disabled = false; spinner.classList.add("hidden"); label.textContent = old;
     }
   });
 }
@@ -1968,7 +2277,7 @@ function openBulkMarkModal() {
 function monthKey(isoDate) { return isoDate.slice(0,7); }
 
 async function saveAttendance(emp, opts) {
-  const { status, checkIn=null, checkOut=null, notes=null, method="manual", credentialId=null } = opts || {};
+  const o = opts || {};
   const mk = monthKey(selectedDate);
   const ref = doc(db, "attendance", mk, "records", emp.id);
   const existing = ATTENDANCE[emp.id];
@@ -1980,8 +2289,6 @@ async function saveAttendance(emp, opts) {
     employeeId: emp.id,
     employeeName: fullName(emp),
     photoURL: emp.photoURL || null,
-    status, checkIn, checkOut, notes,
-    method,
     regionCode: emp.regionCode || null,
     regionName: emp.regionName || null,
     clusterId: emp.clusterId || null,
@@ -1995,11 +2302,20 @@ async function saveAttendance(emp, opts) {
     updatedBy: S.uid
   };
 
-  if (method === "fingerprint") {
-    payload.verifiedByFingerprint = true;
-    payload.credentialId = credentialId || null;
-    payload.verifiedAt = serverTimestamp();
-  }
+  /* Only include keys that were actually passed */
+  [
+    "status","method","checkIn","checkOut","notes",
+    "morningCheckIn","morningCheckOut","afternoonCheckIn","afternoonCheckOut",
+    "morningStatus","afternoonStatus",
+    "morningCheckInMethod","morningCheckOutMethod","afternoonCheckInMethod","afternoonCheckOutMethod",
+    "morningCheckInCredentialId","morningCheckOutCredentialId",
+    "afternoonCheckInCredentialId","afternoonCheckOutCredentialId"
+  ].forEach(k => { if (k in o) payload[k] = o[k]; });
+
+  if ("morningCheckInAt" in o)    payload.morningCheckInAt    = o.morningCheckInAt;
+  if ("morningCheckOutAt" in o)   payload.morningCheckOutAt   = o.morningCheckOutAt;
+  if ("afternoonCheckInAt" in o)  payload.afternoonCheckInAt  = o.afternoonCheckInAt;
+  if ("afternoonCheckOutAt" in o) payload.afternoonCheckOutAt = o.afternoonCheckOutAt;
 
   if (!existing) {
     payload.createdAt = serverTimestamp();
@@ -2049,8 +2365,6 @@ function subscribeEmployees() {
     render();
   }, (err)=>console.warn("[employees]", err.code));
 }
-
-/* Always subscribe to the current user's own employee doc, regardless of role */
 function subscribeMyEmployee() {
   if (unsubMyEmp) unsubMyEmp();
   const q = query(collection(db, "employees"), where("uid","==",S.uid), limit(1));
@@ -2059,7 +2373,6 @@ function subscribeMyEmployee() {
     render();
   }, (err)=>console.warn("[my-emp]", err.code));
 }
-
 function subscribeAttendance() {
   if (unsubAttendance) unsubAttendance();
   const mk = monthKey(selectedDate);
@@ -2079,9 +2392,7 @@ function subscribeAttendance() {
   }, (err)=>{
     console.warn("[attendance]", err.code, err.message);
     document.getElementById("att-tbody").innerHTML =
-      `<tr><td colspan="8" style="text-align:center;padding:48px 20px;color:var(--danger)">
-        ${escapeHtml(err.code || "")} — ${escapeHtml(err.message || "")}
-      </td></tr>`;
+      `<tr><td colspan="8" style="text-align:center;padding:48px 20px;color:var(--danger)">${escapeHtml(err.code || "")} — ${escapeHtml(err.message || "")}</td></tr>`;
   });
 }
 
@@ -2094,12 +2405,9 @@ document.getElementById("collapse-toggle").addEventListener("click", (e)=>{
   document.body.classList.toggle("sidebar-collapsed", c);
   try { localStorage.setItem("cs.sidebar", c ? "collapsed" : "expanded"); } catch(err) {}
 });
-document.getElementById("menu-toggle").addEventListener("click", ()=>
-  document.body.classList.toggle("sidebar-open"));
-document.getElementById("overlay").addEventListener("click", ()=>
-  document.body.classList.remove("sidebar-open"));
+document.getElementById("menu-toggle").addEventListener("click", ()=> document.body.classList.toggle("sidebar-open"));
+document.getElementById("overlay").addEventListener("click", ()=> document.body.classList.remove("sidebar-open"));
 
-/* User dropdown */
 document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
   btn.addEventListener("click", (e)=>{
     e.stopPropagation();
@@ -2110,7 +2418,6 @@ document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
   });
 });
 
-/* Language dropdown */
 function updateLangUI() {
   const label = document.getElementById("lang-label");
   if (label) label.textContent = LANG.toUpperCase();
@@ -2138,9 +2445,7 @@ document.querySelectorAll("[data-set-lang]").forEach(btn => {
 document.addEventListener("click", ()=>
   document.querySelectorAll("[data-dropdown-panel], [data-lang-panel]").forEach(p => p.classList.add("hidden")));
 
-try {
-  if (localStorage.getItem("cs.sidebar") === "collapsed") document.body.classList.add("sidebar-collapsed");
-} catch(e) {}
+try { if (localStorage.getItem("cs.sidebar") === "collapsed") document.body.classList.add("sidebar-collapsed"); } catch(e) {}
 
 /* Filters + date */
 const dateEl = document.getElementById("date-picker");
@@ -2226,7 +2531,7 @@ onAuthStateChanged(auth, async (user)=>{
   subscribeMyEmployee();
   subscribeAttendance();
 
-  console.log("[attendance] booted:", { role: S.role, date: selectedDate, lang: LANG, fpSupported: FP_SUPPORTED });
+  console.log("[attendance] booted — 4-scan flow — role:", S.role, "lang:", LANG, "fpSupported:", FP_SUPPORTED);
 });
 </script>
 
