@@ -142,6 +142,8 @@ body.sidebar-collapsed .nav-item__label{display:none;}
 .scope-badge--super{background:linear-gradient(135deg,#f0eaff,#fff);border-color:#ddd2fb;color:#5b21b6;}
 .scope-badge--regional{background:linear-gradient(135deg,#fdf5e0,#fff);border-color:#f0dcb0;color:#b8860b;}
 .scope-badge--cluster{background:linear-gradient(135deg,#ecfdf3,#fff);border-color:#abefc6;color:#067647;}
+.scope-badge--office{background:linear-gradient(135deg,#f1f5f9,#fff);border-color:#cbd5e1;color:#334155;}
+.scope-badge--team{background:linear-gradient(135deg,#e0f5f7,#fff);border-color:#a5e5ed;color:#0e7490;}
 .year-picker{display:inline-flex;align-items:center;gap:8px;
   background:#fff;border:1px solid var(--border);border-radius:11px;
   padding:0 12px;height:42px;box-shadow:var(--sh-sm);}
@@ -254,18 +256,50 @@ body.sidebar-collapsed .nav-item__label{display:none;}
 .my-alloc-table .table-action--ghost:hover{background:var(--bg-soft);border-color:#b9c7d9;}
 .my-alloc-table .table-action svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.4;fill:none;}
 .my-alloc-table .status-clickable{cursor:pointer;
-  transition:transform .12s, box-shadow .12s, background .12s;
-  user-select:none;}
-.my-alloc-table .status-clickable:hover{
-  transform:translateY(-1px);
-  box-shadow:0 4px 10px rgba(212,160,23,.3);
-  background:#f6c95a;}
-.my-alloc-table .status-clickable:active{
-  transform:translateY(0) scale(.97);}
-.my-alloc-table .status-clickable svg{
-  width:10px;height:10px;
+  transition:transform .12s, box-shadow .12s, background .12s;user-select:none;}
+.my-alloc-table .status-clickable:hover{transform:translateY(-1px);
+  box-shadow:0 4px 10px rgba(212,160,23,.3);background:#f6c95a;}
+.my-alloc-table .status-clickable:active{transform:translateY(0) scale(.97);}
+.my-alloc-table .status-clickable svg{width:10px;height:10px;
   stroke:currentColor;stroke-width:3;fill:none;
   display:inline-block;vertical-align:-1px;margin-left:3px;}
+
+/* ============ MY DAILY SCHEDULE (for employees) ============ */
+.my-schedule{background:#fff;border:1px solid var(--border);border-radius:16px;
+  box-shadow:var(--sh-sm);overflow:hidden;margin-bottom:24px;}
+.my-schedule__head{display:flex;align-items:center;gap:14px;padding:16px 20px;
+  background:linear-gradient(135deg,#eaf3fc,#fff);border-bottom:1px solid var(--border-soft);}
+.my-schedule__head-icon{width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,#0b5cab,#0e7490);color:#fff;display:grid;place-items:center;}
+.my-schedule__head-icon svg{width:20px;height:20px;stroke:currentColor;stroke-width:2.2;fill:none;}
+.my-schedule__head-main{flex:1;min-width:0;}
+.my-schedule__head-title{font-size:15.5px;font-weight:800;color:var(--primary-dark);letter-spacing:-.2px;}
+.my-schedule__head-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.my-schedule__body{padding:0;}
+.my-schedule__period{padding:14px 20px;border-bottom:1px solid var(--border-soft);}
+.my-schedule__period:last-child{border-bottom:none;}
+.my-schedule__period-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer;user-select:none;}
+.my-schedule__period-head:hover{opacity:.8;}
+.my-schedule__period-label{font-size:13.5px;font-weight:800;color:var(--text);}
+.my-schedule__period-dates{font-size:11.5px;color:var(--muted);font-family:ui-monospace,monospace;}
+.my-schedule__period-tag{margin-left:auto;display:inline-flex;align-items:center;
+  padding:3px 9px;border-radius:999px;background:#eaf3fc;color:#0b5cab;
+  font-size:10.5px;font-weight:800;text-transform:uppercase;}
+.my-schedule__chevron{width:20px;height:20px;color:var(--muted);transition:transform .18s;}
+.my-schedule__period.is-open .my-schedule__chevron{transform:rotate(180deg);}
+.my-schedule__days{display:none;flex-direction:column;gap:6px;padding-left:12px;}
+.my-schedule__period.is-open .my-schedule__days{display:flex;}
+.my-schedule__day{display:flex;align-items:center;gap:12px;padding:9px 12px;
+  border:1px solid var(--border-soft);border-radius:10px;background:var(--bg-soft);}
+.my-schedule__day.is-today{border-color:#70a8d9;background:#eaf3fc;}
+.my-schedule__day.is-past{opacity:.55;}
+.my-schedule__day-date{font-family:ui-monospace,monospace;font-weight:800;
+  font-size:12px;color:var(--text);min-width:130px;flex-shrink:0;}
+.my-schedule__day-day{font-size:11px;color:var(--muted);text-transform:uppercase;
+  font-weight:700;min-width:42px;flex-shrink:0;}
+.my-schedule__day-main{flex:1;min-width:0;font-size:12.5px;}
+.my-schedule__day-amt{font-family:ui-monospace,monospace;font-weight:800;
+  font-size:12.5px;color:var(--primary-dark);white-space:nowrap;}
 
 .sector-group{background:#fff;border:1px solid var(--border);border-radius:16px;
   box-shadow:var(--sh-sm);overflow:hidden;margin-bottom:14px;transition:box-shadow .15s;}
@@ -463,8 +497,7 @@ body.sidebar-collapsed .nav-item__label{display:none;}
   background-repeat:no-repeat;background-position:right 10px center;}
 .worktype-table input[type="number"]{text-align:right;font-family:ui-monospace,Menlo,Consolas,monospace;}
 .worktype-table__rownum{text-align:center;font-weight:800;color:var(--muted);
-  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;
-  width:44px;}
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;width:44px;}
 .worktype-table tfoot td{background:#f1f5f9;padding:12px 8px;
   border-top:2px solid var(--border);font-weight:800;
   font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;color:var(--text);}
@@ -476,52 +509,36 @@ body.sidebar-collapsed .nav-item__label{display:none;}
   display:inline-grid;place-items:center;color:var(--danger);
   border:1px solid transparent;cursor:pointer;background:transparent;}
 .worktype-table__remove:hover{background:#fef3f2;border-color:#f0a5ab;}
-.worktype-table__remove svg{width:14px;height:14px;stroke:currentColor;
-  stroke-width:2.4;fill:none;}
+.worktype-table__remove svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.4;fill:none;}
 .worktype-toolbar{display:flex;align-items:center;justify-content:space-between;
   gap:12px;padding:12px 14px;background:#f8fafc;
   border-top:1px solid var(--border-soft);}
 .worktype-toolbar__meta{font-size:12px;color:var(--muted);font-weight:600;}
 .worktype-toolbar__meta strong{color:var(--text);font-family:ui-monospace,monospace;}
 
-.worktype-table__load{
-  display:flex;gap:6px;align-items:center;
-}
+.worktype-table__load{display:flex;gap:6px;align-items:center;}
 .worktype-table__load select{flex:1 1 auto;min-width:0;}
-.worktype-table__load input{
-  flex:0 0 68px;text-align:right;
-  font-family:ui-monospace,Menlo,Consolas,monospace;
-}
+.worktype-table__load input{flex:0 0 68px;text-align:right;
+  font-family:ui-monospace,Menlo,Consolas,monospace;}
 .worktype-table__load input::-webkit-outer-spin-button,
-.worktype-table__load input::-webkit-inner-spin-button{
-  -webkit-appearance:none;margin:0;
-}
+.worktype-table__load input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .worktype-table__load input[type=number]{-moz-appearance:textfield;}
 .worktype-table__pct{font-weight:800;color:var(--muted);font-size:12px;}
 
-.worktype-table__dot{
-  width:9px;height:9px;border-radius:50%;flex-shrink:0;background:#cbd5e1;
-}
+.worktype-table__dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:#cbd5e1;}
 .worktype-table__dot--easy     {background:#34c78e;}
 .worktype-table__dot--medium   {background:#d4a017;}
 .worktype-table__dot--hard     {background:#e0731c;}
 .worktype-table__dot--very_hard{background:#dc2626;}
 .worktype-table__dot--custom   {background:#5b21b6;}
 
-.worktype-table__measure{
-  display:flex;gap:6px;align-items:center;
-}
+.worktype-table__measure{display:flex;gap:6px;align-items:center;}
 .worktype-table__measure select{flex:1 1 auto;min-width:0;}
-.worktype-table__measure input{
-  flex:1 1 auto;min-width:0;display:none;
-}
+.worktype-table__measure input{flex:1 1 auto;min-width:0;display:none;}
 .worktype-table__measure.is-other select{flex:0 0 118px;}
 .worktype-table__measure.is-other input{display:block;}
 
-.wt-load-total{
-  font-family:ui-monospace,Menlo,Consolas,monospace;
-  font-weight:800;font-size:13px;
-}
+.wt-load-total{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:800;font-size:13px;}
 .wt-load-total--ok{color:var(--success);}
 .wt-load-total--bad{color:var(--danger);}
 
@@ -558,6 +575,71 @@ body.sidebar-collapsed .nav-item__label{display:none;}
 .review__row:last-child{border-bottom:0;}
 .review__k{color:var(--muted);width:170px;flex-shrink:0;font-weight:700;font-size:12.5px;}
 .review__v{font-weight:600;word-break:break-word;flex:1;}
+
+/* ============ CASCADE (period breakdown) UI ============ */
+.cascade-total{display:flex;flex-wrap:wrap;gap:12px;padding:14px 18px;margin-bottom:18px;
+  background:linear-gradient(135deg,#f8fbff,#fff);border:1px solid #bdd7f2;border-radius:12px;}
+.cascade-total__item{display:flex;flex-direction:column;gap:2px;}
+.cascade-total__label{font-size:10.5px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--muted);}
+.cascade-total__value{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:800;font-size:14px;}
+.cascade-total__value.ok{color:var(--success);}
+.cascade-total__value.bad{color:var(--danger);}
+.cascade-group{margin-bottom:18px;border:1px solid var(--border);border-radius:12px;
+  background:#fff;overflow:hidden;}
+.cascade-group__head{display:flex;align-items:center;gap:12px;padding:12px 16px;
+  background:linear-gradient(135deg,#f8fafc,#fff);border-bottom:1px solid var(--border-soft);}
+.cascade-group__head.is-quarter{background:linear-gradient(135deg,#fdf5e0,#fff);}
+.cascade-group__head.is-month{background:linear-gradient(135deg,#ecfdf3,#fff);}
+.cascade-group__head.is-week{background:linear-gradient(135deg,#eaf3fc,#fff);}
+.cascade-badge{display:inline-flex;align-items:center;justify-content:center;
+  padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.04em;}
+.cascade-badge--q{background:#fdf5e0;color:#7a5210;}
+.cascade-badge--m{background:#ecfdf3;color:#067647;}
+.cascade-badge--w{background:#eaf3fc;color:#0b5cab;}
+.cascade-badge--d{background:#f0eaff;color:#5b21b6;}
+.cascade-group__title{font-size:13.5px;font-weight:800;color:var(--text);}
+.cascade-group__sub{font-size:11.5px;color:var(--muted);margin-top:2px;
+  font-family:ui-monospace,monospace;}
+.cascade-group__body{padding:12px 14px;}
+.cascade-row{display:grid;
+  grid-template-columns:120px 1fr 24px 1fr 130px 140px;
+  gap:10px;align-items:center;padding:9px 10px;margin-bottom:6px;
+  border:1px solid var(--border-soft);border-radius:10px;background:var(--bg-soft);}
+.cascade-row:last-child{margin-bottom:0;}
+.cascade-row--day{background:#fafbfd;}
+.cascade-row__label{font-weight:800;font-size:12.5px;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cascade-row__sep{text-align:center;color:var(--muted);font-weight:700;font-size:12px;}
+.cascade-row input[type="date"]{height:38px;padding:0 10px;border:1px solid #d9dee7;
+  border-radius:8px;background:#fff;font-size:12.5px;font-family:ui-monospace,monospace;
+  color:var(--text);min-width:0;width:100%;}
+.cascade-row input[type="number"]{height:38px;padding:0 10px;border:1px solid #d9dee7;
+  border-radius:8px;background:#fff;font-size:12.5px;text-align:right;
+  font-family:ui-monospace,monospace;font-weight:700;color:var(--text);
+  width:100%;min-width:0;}
+.cascade-row input:focus{outline:none;border-color:#70a8d9;background:#fff;
+  box-shadow:0 0 0 3px rgba(11,92,171,.08);}
+.cascade-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px;}
+.cascade-add-week{display:inline-flex;align-items:center;gap:6px;
+  height:32px;padding:0 12px;border-radius:8px;font-size:12px;font-weight:800;
+  background:#fdf5e0;color:#7a5210;border:1px solid #f0dcb0;cursor:pointer;transition:.15s;}
+.cascade-add-week:hover{background:#f6e6b8;}
+.cascade-add-week svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.5;fill:none;}
+.cascade-mini-btn{display:inline-flex;align-items:center;gap:4px;
+  height:26px;padding:0 8px;border-radius:6px;font-size:11px;font-weight:800;
+  border:1px solid var(--border);background:#fff;color:var(--text-soft);cursor:pointer;}
+.cascade-mini-btn:hover{background:var(--bg-soft);}
+.cascade-mini-btn--danger{color:var(--danger);border-color:#f0a5ab;}
+.cascade-mini-btn--danger:hover{background:#fef3f2;}
+.cascade-mini-btn svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.5;fill:none;}
+
+@media (max-width:1100px){
+  .cascade-row{grid-template-columns:1fr;gap:6px;}
+  .cascade-row__sep{display:none;}
+}
+
 .toast-wrap{position:fixed;top:24px;right:24px;z-index:300;
   display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:calc(100vw - 48px);}
 .toast{background:var(--text);color:#fff;padding:13px 18px;border-radius:12px;
@@ -661,7 +743,7 @@ body.sidebar-open .overlay{display:block;}
     <div class="page-head">
       <div>
         <h1 class="page-head__title">Work Plans</h1>
-        <p class="page-head__sub">Region → Sector → Department → Team Leader → Work Type → Cluster → Woreda → Staff</p>
+        <p class="page-head__sub">Year → 4 Quarters → 3 Months → 4 Weeks → 5 Days, then assign to Woredas / Staff</p>
         <div id="scope-badge"></div>
       </div>
       <div class="page-head__actions" id="head-actions"></div>
@@ -734,8 +816,114 @@ const regionLabel = (c) => {
   return r ? r.code + " — " + r.en : (c || "—");
 };
 const regionName = (c) => REGIONS.find(x => x.code === c)?.en || "";
-const normalizeWoredas = (list) => (list || []).map(w =>
-  typeof w === "string" ? { code:"", name:w } : { code:w.code||"", name:w.name||"" });
+
+/* ------------------------------------------------------------
+   WOREDA KEY NORMALIZATION
+   ------------------------------------------------------------ */
+const slug = (s) => String(s == null ? "" : s).trim().toLowerCase()
+  .replace(/[^\p{L}\p{N}]+/gu, "-")
+  .replace(/^-+|-+$/g, "");
+
+const normalizeWoredas = (list) => (list || []).map(w => {
+  if (typeof w === "string") {
+    const name = String(w).trim();
+    return { code: slug(name), name };
+  }
+  const name = String(w?.name || "").trim();
+  const code = String(w?.code || w?.id || slug(name) || "").trim();
+  return { code, name };
+}).filter(w => w.code || w.name);
+
+/* ============================================================
+   DATE HELPERS — for the year → Q → M → W → D cascade
+   ============================================================ */
+function ymd(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return y + "-" + m + "-" + day;
+}
+function parseYmd(s) {
+  if (!s) return new Date();
+  const [y, m, d] = String(s).split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+}
+function addDays(dateStr, n) {
+  const d = parseYmd(dateStr);
+  d.setDate(d.getDate() + n);
+  return ymd(d);
+}
+function daysBetween(a, b) {
+  return Math.round((parseYmd(b) - parseYmd(a)) / 86400000);
+}
+function isWeekend(dateStr) {
+  const dow = parseYmd(dateStr).getDay();
+  return dow === 0 || dow === 6;
+}
+function quarterRanges(year) {
+  return [
+    { label: "Q1", fromDate: year + "-01-01", toDate: year + "-03-31" },
+    { label: "Q2", fromDate: year + "-04-01", toDate: year + "-06-30" },
+    { label: "Q3", fromDate: year + "-07-01", toDate: year + "-09-30" },
+    { label: "Q4", fromDate: year + "-10-01", toDate: year + "-12-31" }
+  ];
+}
+function monthRangesForQuarter(q) {
+  const from = parseYmd(q.fromDate);
+  const to   = parseYmd(q.toDate);
+  const list = [];
+  let cur = new Date(from.getFullYear(), from.getMonth(), 1);
+  while (cur <= to) {
+    const start = new Date(cur.getFullYear(), cur.getMonth(), 1);
+    const end   = new Date(cur.getFullYear(), cur.getMonth() + 1, 0);
+    const clampedStart = start < from ? from : start;
+    const clampedEnd   = end > to ? to : end;
+    list.push({
+      label: cur.toLocaleString("en-US", { month: "long" }) + " " + cur.getFullYear(),
+      shortLabel: cur.toLocaleString("en-US", { month: "short" }) + " " + cur.getFullYear(),
+      fromDate: ymd(clampedStart),
+      toDate: ymd(clampedEnd)
+    });
+    cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+  }
+  return list;
+}
+function weekRangesForMonth(m) {
+  const total = daysBetween(m.fromDate, m.toDate) + 1;
+  const weeks = [];
+  let idx = 0;
+  let cursor = m.fromDate;
+  while (idx < Math.ceil(total / 7)) {
+    const wStart = cursor;
+    const wEndCandidate = addDays(wStart, 6);
+    const wEnd = wEndCandidate > m.toDate ? m.toDate : wEndCandidate;
+    weeks.push({
+      label: "Week " + (idx + 1),
+      fromDate: wStart,
+      toDate: wEnd,
+      isExtra: idx >= 4
+    });
+    cursor = addDays(wEnd, 1);
+    idx++;
+    if (cursor > m.toDate) break;
+  }
+  return weeks;
+}
+function dayRangesForWeek(w) {
+  const list = [];
+  let cursor = w.fromDate;
+  let idx = 0;
+  while (cursor <= w.toDate && idx < 7) {
+    list.push({
+      label: parseYmd(cursor).toLocaleString("en-US", { weekday: "long" }),
+      shortLabel: parseYmd(cursor).toLocaleString("en-US", { weekday: "short" }),
+      date: cursor
+    });
+    cursor = addDays(cursor, 1);
+    idx++;
+  }
+  return list;
+}
 
 /* ============================================================
    GUARD
@@ -792,11 +980,18 @@ const expandedSectors = new Set();
    LABELS
    ============================================================ */
 const ROLE_LABELS = {
-  super_admin:"Super Admin", regional_admin:"Regional Admin",
-  admin:"Cluster Admin", directorate:"Regional Directorate",
-  cluster_directorate:"Cluster Directorate", woreda_city:"Woreda / City",
-  hrm:"HR Manager", finance:"Finance Officer", manager:"Manager",
-  employee:"Employee", unassigned:"Unassigned"
+  super_admin:         "Super Admin",
+  regional_admin:      "Regional Admin",
+  directorate:         "Regional Sector Director",
+  cluster_directorate: "Cluster Director",
+  woreda_city:         "Woreda / City Manager",
+  admin:               "Cluster Admin",
+  manager:             "Manager",
+  team_leader:         "Team Leader",
+  hrm:                 "HR Manager",
+  finance:             "Finance Officer",
+  employee:            "Employee / Staff",
+  unassigned:          "Unassigned"
 };
 const roleLabel = (r) => ROLE_LABELS[r] || (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
 
@@ -853,7 +1048,9 @@ const ICONS = {
   briefcase:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
   teamLeader:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/>',
   split:'<path d="M12 3v18"/><path d="M5 9l7-6 7 6"/><path d="M5 15l7 6 7-6"/>',
-  inbox:'<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'
+  inbox:'<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  chevron:'<polyline points="6 9 12 15 18 9"/>',
+  chevronRight:'<polyline points="9 6 15 12 9 18"/>'
 };
 
 /* ============================================================
@@ -865,20 +1062,20 @@ const NAV = [
   ]},
   { section:"Organization", items:[
     { key:"users",       label:"Users & Staff", href:"users.html",       icon:"users",  roles:["super_admin","regional_admin","admin","hrm"] },
-    { key:"departments", label:"Sectors",       href:"departments.html", icon:"layers", roles:["super_admin","regional_admin","admin","hrm","manager","directorate","cluster_directorate"] }
+    { key:"departments", label:"Directorates",  href:"departments.html", icon:"layers", roles:["super_admin","regional_admin","admin","hrm","manager","directorate","cluster_directorate","team_leader"] }
   ]},
   { section:"Work Plans", items:[
     { key:"workplans", label:"Work Plans", href:"workplans.html", icon:"fileText",
-      roles:["super_admin","regional_admin","directorate","admin","cluster_directorate","woreda_city","manager","employee"] }
+      roles:["super_admin","regional_admin","directorate","cluster_directorate","woreda_city","admin","manager","team_leader","employee"] }
   ]},
   { section:"Human Resources", items:[
     { key:"recruitment", label:"Recruitment", href:"recruitment.html", icon:"userPlus", roles:["super_admin","regional_admin","hrm","admin"] },
-    { key:"training",    label:"Training",    href:"training.html",    icon:"book",     roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] },
-    { key:"performance", label:"Performance", href:"performance.html", icon:"target",   roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] }
+    { key:"training",    label:"Training",    href:"training.html",    icon:"book",     roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] },
+    { key:"performance", label:"Performance", href:"performance.html", icon:"target",   roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] }
   ]},
   { section:"Operations", items:[
-    { key:"attendance", label:"Attendance", href:"attendance.html", icon:"clock",    roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] },
-    { key:"leave",      label:"Leave",      href:"leave.html",      icon:"calendar", roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] }
+    { key:"attendance", label:"Attendance", href:"attendance.html", icon:"clock",    roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] },
+    { key:"leave",      label:"Leave",      href:"leave.html",      icon:"calendar", roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] }
   ]},
   { section:"Finance", items:[
     { key:"payroll", label:"Payroll", href:"payroll.html", icon:"wallet", roles:["super_admin","regional_admin","finance","admin"] },
@@ -903,6 +1100,11 @@ const num = (v) => { const n = Number(v); return isFinite(n) ? n : 0; };
 const fmtNum = (v) => num(v).toLocaleString("en-US", { maximumFractionDigits:2 });
 const fmtMoney = (v) => num(v).toLocaleString("en-US", { maximumFractionDigits:0 });
 const uid = () => "wt_" + Math.random().toString(36).slice(2, 10);
+const fmtDateDisplay = (s) => {
+  if (!s) return "—";
+  const d = parseYmd(s);
+  return d.toLocaleDateString("en-US", { year:"numeric", month:"short", day:"numeric" });
+};
 
 function toast(msg, type = "success") {
   const wrap = document.getElementById("toast-wrap");
@@ -925,16 +1127,20 @@ const isClusterDir    = () => S?.role === "cluster_directorate";
 const isClusterAdmin  = () => S?.role === "admin";
 const isWoredaCity    = () => S?.role === "woreda_city";
 const isManager       = () => S?.role === "manager";
+const isTeamLeader    = () => S?.role === "team_leader";
 const isStaff         = () => S?.role === "employee";
 
 function isScopedViewer() {
-  return isClusterDir() || isClusterAdmin() || isWoredaCity() || isManager() || isStaff();
+  return isClusterDir() || isClusterAdmin() || isWoredaCity() || isManager() || isTeamLeader() || isStaff();
+}
+function isPureStaff() {
+  return isStaff() && !isTeamLeader() && !isManager() && !isWoredaCity();
 }
 
 function myLevel() {
   if (isRegionalDir()) return "regional";
   if (isClusterDir())  return "cluster";
-  if (isWoredaCity() || isManager()) return "woreda";
+  if (isWoredaCity() || isManager() || isTeamLeader()) return "woreda";
   if (isSuper() || isRegionalAdmin()) return "regional";
   return null;
 }
@@ -943,26 +1149,77 @@ function myScope() {
   if (isSuper())         return { type:"global",   label:"Full system" };
   if (isRegionalAdmin()) return { type:"region",   region:S.region,   label:regionLabel(S.region) };
   if (isRegionalDir())   return { type:"sector",   region:S.region,   sectorId:S.sectorId,
-                                  sectorName:S.sectorName, label:S.sectorName || "Regional directorate" };
+                                  sectorName:S.sectorName, label:S.sectorName || "Regional Sector Director" };
   if (isClusterDir() || isClusterAdmin())
     return { type:"cluster", region:S.region, clusterId:S.clusterId,
              clusterName:S.clusterName, label:S.clusterName || "Cluster" };
   if (isWoredaCity() || isManager())
     return { type:"woreda", region:S.region, clusterId:S.clusterId,
              woredaCode:S.woredaCode, woredaName:S.woredaName, label:S.woredaName || "Woreda / City" };
+  if (isTeamLeader())
+    return { type:"team", region:S.region, clusterId:S.clusterId,
+             woredaCode:S.woredaCode, woredaName:S.woredaName,
+             departmentId:S.departmentId, departmentName:S.departmentName,
+             label:S.departmentName || S.woredaName || "Team" };
   return { type:"staff", label:"Staff" };
 }
 function canCreateAtMyLevel() {
   if (isSuper() || isRegionalAdmin()) return true;
   if (isRegionalDir() && S.region) return true;
   if (isClusterDir() && S.clusterId) return true;
-  if ((isWoredaCity() || isManager()) && S.woredaCode) return true;
+  if (isWoredaCity() && S.woredaCode) return true;
   return false;
 }
 
 /* ============================================================
    VISIBILITY
    ============================================================ */
+function sameClusterAsMine(p) {
+  if (!S?.clusterId || !p?.clusterId) return true;
+  return String(p.clusterId).trim() === String(S.clusterId).trim();
+}
+
+function allocMatchesMyWoreda(p, a) {
+  if (!a || a.targetType !== "woreda") return false;
+  if (!sameClusterAsMine(p)) return false;
+
+  const myCode   = String(S.woredaCode || "").trim();
+  const myName   = String(S.woredaName || "").trim();
+  const aCode    = String(a.targetId  || "").trim();
+  const aNameRaw = String(a.targetName|| "").trim();
+  const aName = aNameRaw.includes("—")
+    ? aNameRaw.split("—").slice(1).join("—").trim()
+    : aNameRaw;
+
+  if (myCode && aCode) {
+    if (aCode === myCode) return true;
+    if (slug(aCode) === slug(myCode)) return true;
+  }
+  if (myName && aName) {
+    const mN = myName.toLowerCase();
+    const aN = aName.toLowerCase();
+    if (aN === mN) return true;
+    if (slug(aName) === slug(myName)) return true;
+    if (aN.includes(mN) || mN.includes(aN)) return true;
+  }
+  return false;
+}
+
+/* ★ FIXED: team leaders can now also match woreda allocations so they can
+   receive the cluster → woreda handoff and further break it down to staff. */
+function allocMatchesMyTeam(p, a) {
+  if (!a) return false;
+  if (a.targetType === "staff"      && a.targetId === S.uid)          return true;
+  if (a.targetType === "department" && a.targetId === S.departmentId) return true;
+  if (a.targetType === "office"     && a.targetId === S.officeId)     return true;
+  if (a.targetType === "woreda"     && allocMatchesMyWoreda(p, a))    return true;
+  return false;
+}
+
+function allocMatchesMeAsStaff(p, a) {
+  return a && a.targetType === "staff" && a.targetId === S.uid;
+}
+
 function planMatchesScope(p) {
   if (!S) return false;
   if (isSuper()) return true;
@@ -973,9 +1230,12 @@ function planMatchesScope(p) {
       (p.allocations || []).some(a => a.targetType === "cluster" && a.targetId === S.clusterId);
   if (isWoredaCity() || isManager())
     return p.woredaCode === S.woredaCode ||
-      (p.allocations || []).some(a => a.targetType === "woreda" && a.targetId === S.woredaCode);
+      (p.allocations || []).some(a => allocMatchesMyWoreda(p, a));
+  if (isTeamLeader())
+    return p.departmentId === S.departmentId ||
+      (p.allocations || []).some(a => allocMatchesMyTeam(p, a));
   if (isStaff())
-    return (p.allocations || []).some(a => a.targetType === "staff" && a.targetId === S.uid);
+    return (p.allocations || []).some(a => allocMatchesMeAsStaff(p, a));
   return false;
 }
 function visiblePlans() {
@@ -989,33 +1249,34 @@ function findMyPendingAllocation(p) {
   if (!S || !p || !(p.allocations || []).length) return null;
   for (const a of p.allocations) {
     if (a.childPlanId) continue;
-    if (isClusterDir() && a.targetType === "cluster" && a.targetId === S.clusterId)
+    if ((isClusterDir() || isClusterAdmin()) && a.targetType === "cluster" && a.targetId === S.clusterId)
       return { alloc:a, forLevel:"cluster" };
-    if (isClusterAdmin() && a.targetType === "cluster" && a.targetId === S.clusterId)
-      return { alloc:a, forLevel:"cluster" };
-    if ((isWoredaCity() || isManager()) && a.targetType === "woreda" && a.targetId === S.woredaCode)
+    /* ★ FIXED: team leaders are woreda-level recipients too. */
+    if ((isWoredaCity() || isManager() || isTeamLeader()) && allocMatchesMyWoreda(p, a))
       return { alloc:a, forLevel:"woreda" };
+    if (isTeamLeader() && allocMatchesMyTeam(p, a))
+      return { alloc:a, forLevel:"staff" };
   }
   return null;
 }
 function hasPendingAllocation(p) { return !!findMyPendingAllocation(p); }
 
-/* Locate MY allocation in a plan and return its index too, so we can update it. */
 function findMyAllocationEntry(p) {
   if (!S || !p || !(p.allocations || []).length) return null;
   for (let i = 0; i < p.allocations.length; i++) {
     const a = p.allocations[i];
     if ((isClusterDir() || isClusterAdmin()) && a.targetType === "cluster" && a.targetId === S.clusterId)
       return { alloc: a, index: i, forLevel: "cluster" };
-    if ((isWoredaCity() || isManager()) && a.targetType === "woreda" && a.targetId === S.woredaCode)
+    if ((isWoredaCity() || isManager() || isTeamLeader()) && allocMatchesMyWoreda(p, a))
       return { alloc: a, index: i, forLevel: "woreda" };
-    if (isStaff() && a.targetType === "staff" && a.targetId === S.uid)
+    if (isTeamLeader() && allocMatchesMyTeam(p, a))
+      return { alloc: a, index: i, forLevel: "staff" };
+    if (isStaff() && allocMatchesMeAsStaff(p, a))
       return { alloc: a, index: i, forLevel: "staff" };
   }
   return null;
 }
 
-/* Mark MY allocation as Accepted. */
 async function acceptMyAllocation(planId) {
   const p = PLANS.find(x => x.id === planId);
   if (!p) return;
@@ -1024,7 +1285,6 @@ async function acceptMyAllocation(planId) {
   if (entry.alloc.childPlanId) { toast("This allocation is already broken down.", "error"); return; }
   if (entry.alloc.accepted)   { toast("Already accepted", "info"); return; }
 
-  /* Can't use serverTimestamp() inside an array — use a plain ISO string. */
   const nowIso = new Date().toISOString();
   const updated = (p.allocations || []).map((a, i) =>
     i === entry.index
@@ -1057,10 +1317,14 @@ function myAllocationRows() {
       if ((isClusterDir() || isClusterAdmin()) && a.targetType === "cluster" && a.targetId === S.clusterId) {
         out.push({ plan: p, alloc: a, forLevel: "cluster" });
       }
-      if ((isWoredaCity() || isManager()) && a.targetType === "woreda" && a.targetId === S.woredaCode) {
+      /* ★ FIXED: team leaders included here too. */
+      if ((isWoredaCity() || isManager() || isTeamLeader()) && allocMatchesMyWoreda(p, a)) {
         out.push({ plan: p, alloc: a, forLevel: "woreda" });
       }
-      if (isStaff() && a.targetType === "staff" && a.targetId === S.uid) {
+      if (isTeamLeader() && allocMatchesMyTeam(p, a)) {
+        out.push({ plan: p, alloc: a, forLevel: "staff" });
+      }
+      if (isStaff() && allocMatchesMeAsStaff(p, a)) {
         out.push({ plan: p, alloc: a, forLevel: "staff" });
       }
     }
@@ -1082,6 +1346,47 @@ function pendingAllocations() {
     const mine = findMyPendingAllocation(p);
     if (mine) out.push({ parent:p, alloc:mine.alloc, forLevel:mine.forLevel });
   }
+  return out;
+}
+
+/* ★ FIXED: prefer the flat dayIndex (which the wizard actually writes),
+   then fall back to walking periodBreakdown for legacy plans. */
+function myDaySchedules() {
+  const out = [];
+  if (!S || !isStaff()) return out;
+  for (const p of visiblePlans()) {
+    /* Preferred source: flat dayIndex written by the cascade wizard. */
+    if (Array.isArray(p.dayIndex) && p.dayIndex.length) {
+      for (const d of p.dayIndex) {
+        if (d.assignedTo === S.uid || d.assignedToId === S.uid) {
+          out.push({ plan: p, day: d, date: d.date });
+        }
+      }
+      continue;
+    }
+    /* Fallback: walk the periodBreakdown tree. */
+    const breakdown = p.periodBreakdown;
+    if (!breakdown || !breakdown.quarters) continue;
+    for (const q of breakdown.quarters) {
+      for (const m of (q.months || [])) {
+        for (const w of (m.weeks || [])) {
+          for (const d of (w.days || [])) {
+            if (d.assignedTo === S.uid || d.assignedToId === S.uid) {
+              out.push({
+                plan: p,
+                quarter: q,
+                month: m,
+                week: w,
+                day: d,
+                date: d.date
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+  out.sort((a, b) => String(a.date).localeCompare(String(b.date)));
   return out;
 }
 
@@ -1119,6 +1424,7 @@ function teamLeaderForDepartment(deptId) {
     u.departmentId === deptId &&
     u.active !== false &&
     (
+      u.role === "team_leader" ||
       u.role === "manager" ||
       u.role === "woreda_city" ||
       u.role === "cluster_directorate" ||
@@ -1169,6 +1475,7 @@ function renderScopeBadge() {
   if (scope.type === "sector")  { klass = "scope-badge--regional"; icon = "org"; }
   if (scope.type === "cluster") { klass = "scope-badge--cluster";  icon = "layers"; }
   if (scope.type === "woreda")  { klass = "scope-badge--cluster";  icon = "building"; }
+  if (scope.type === "team")    { klass = "scope-badge--team";     icon = "teamLeader"; }
   el.innerHTML = `<span class="scope-badge ${klass}">
     <svg viewBox="0 0 24 24">${ICONS[icon]}</svg>
     ${escapeHtml(scope.label || "—")} · Level: ${escapeHtml(LEVEL_LABELS[myLevel()] || "—")}
@@ -1199,7 +1506,7 @@ function renderHeadActions() {
 }
 
 /* ============================================================
-   GATE NOTICE — only shows "not linked" warnings (no pending banner)
+   GATE NOTICE
    ============================================================ */
 function renderGateNotice() {
   const box = document.getElementById("gate-notice");
@@ -1214,6 +1521,9 @@ function renderGateNotice() {
   if ((isWoredaCity() || isManager()) && !S.woredaCode)
     msgs.push({ title:"Woreda / City not linked",
       text:"Your account is not linked to a woreda or city. Contact your cluster director." });
+  if (isTeamLeader() && !S.departmentId && !S.officeId)
+    msgs.push({ title:"Team not linked",
+      text:"Your account is not linked to a department or office. Contact your director." });
 
   if (!msgs.length) { box.innerHTML = ""; return; }
   box.innerHTML = msgs.map(m => `
@@ -1234,11 +1544,12 @@ function renderStats() {
   const list = visiblePlans();
   const mine = myAllocationRows();
   const pending = mine.filter(x => !x.alloc.childPlanId).length;
+  const days = isStaff() ? myDaySchedules().length : 0;
   document.getElementById("stats").innerHTML = `
     ${statCard("Total Plans",  list.length, "stat--blue",   "fileText")}
     ${statCard("Active",       list.filter(p => p.status === "active").length, "stat--green",  "clock")}
     ${statCard("My Allocations", mine.length, "stat--violet", "inbox")}
-    ${statCard("Pending Tasks",pending, "stat--gold", "arrows")}
+    ${statCard(isStaff() ? "My Working Days" : "Pending Tasks", isStaff() ? days : pending, "stat--gold", isStaff() ? "calendar" : "arrows")}
   `;
 }
 function statCard(label, value, cls, iconKey) {
@@ -1252,11 +1563,7 @@ function statCard(label, value, cls, iconKey) {
 }
 
 /* ============================================================
-   MY ALLOCATIONS TABLE
-   Column layout mirrors the regional "Work Items" table exactly,
-   only the Amount & Budget are the ones given from above, and the
-   ⚙ column is replaced with Status + Action.  Status is clickable
-   (Pending → Accepted).
+   MY ALLOCATIONS TABLE (for cluster/woreda/team-lead)
    ============================================================ */
 function renderMyAllocationsTable() {
   const rows = myAllocationRows();
@@ -1265,11 +1572,15 @@ function renderMyAllocationsTable() {
   const pendingCount = rows.filter(r => !r.alloc.childPlanId).length;
   const isClusterScope = rows[0].forLevel === "cluster";
   const isWoredaScope  = rows[0].forLevel === "woreda";
+  const isTeamScope    = (isTeamLeader() || isStaff()) && rows[0].forLevel === "staff";
   const scopeName = isClusterScope ? (S.clusterName || "your cluster")
     : isWoredaScope ? (S.woredaName || "your woreda / city")
+    : isTeamScope   ? (S.departmentName || S.officeName || "your team")
     : "you";
   const headerIcon = isClusterScope ? ICONS.layers
-    : isWoredaScope ? ICONS.pin : ICONS.clipboard;
+    : isWoredaScope ? ICONS.pin
+    : isTeamScope   ? ICONS.teamLeader
+    : ICONS.clipboard;
 
   let html = '';
   html += '<div class="my-alloc-wrap">';
@@ -1331,7 +1642,6 @@ function renderMyAllocationsTable() {
 
     const desc = p.description || "";
 
-    /* Status pill — Split > Accepted > Pending (clickable) */
     let statusPill;
     if (isDone) {
       statusPill = '<span class="tag tag--green">Split</span>';
@@ -1367,6 +1677,83 @@ function renderMyAllocationsTable() {
 
   html +=     '</tbody>';
   html +=   '</table>';
+  html +=   '</div>';
+  html += '</div>';
+  return html;
+}
+
+/* ============================================================
+   MY DAILY SCHEDULE (for employees)
+   ============================================================ */
+function renderMyDailySchedule() {
+  const rows = myDaySchedules();
+  if (!rows.length) return "";
+
+  /* Group by month-year from the date */
+  const byMonth = new Map();
+  rows.forEach(r => {
+    const m = String(r.date).slice(0,7);
+    if (!byMonth.has(m)) byMonth.set(m, []);
+    byMonth.get(m).push(r);
+  });
+
+  const today = ymd(new Date());
+
+  let html = '';
+  html += '<div class="my-schedule">';
+  html +=   '<div class="my-schedule__head">';
+  html +=     '<div class="my-schedule__head-icon"><svg viewBox="0 0 24 24">' + ICONS.calendar + '</svg></div>';
+  html +=     '<div class="my-schedule__head-main">';
+  html +=       '<div class="my-schedule__head-title">My Daily Work Schedule</div>';
+  html +=       '<div class="my-schedule__head-sub">' + rows.length + ' working day' + (rows.length === 1 ? '' : 's') + ' assigned to you</div>';
+  html +=     '</div>';
+  html +=   '</div>';
+  html +=   '<div class="my-schedule__body">';
+
+  byMonth.forEach((list, ymKey) => {
+    list.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    const d0 = parseYmd(ymKey + "-01");
+    const monthLabel = d0.toLocaleString("en-US", { month: "long", year: "numeric" });
+
+    /* group by week within the month */
+    const byWeek = new Map();
+    list.forEach(r => {
+      const wk = r.week?.fromDate || r.date.slice(0,7);
+      if (!byWeek.has(wk)) byWeek.set(wk, []);
+      byWeek.get(wk).push(r);
+    });
+
+    html += '<div class="my-schedule__period is-open" data-period="' + escapeHtml(ymKey) + '">';
+    html +=   '<div class="my-schedule__period-head" data-toggle-period="' + escapeHtml(ymKey) + '">';
+    html +=     '<svg class="my-schedule__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' + ICONS.chevron + '</svg>';
+    html +=     '<div>';
+    html +=       '<div class="my-schedule__period-label">' + escapeHtml(monthLabel) + '</div>';
+    html +=       '<div class="my-schedule__period-dates">' + list.length + ' day' + (list.length === 1 ? '' : 's') + '</div>';
+    html +=     '</div>';
+    html +=     '<span class="my-schedule__period-tag">' + list.length + '</span>';
+    html +=   '</div>';
+    html +=   '<div class="my-schedule__days">';
+
+    byWeek.forEach((dayList, wkKey) => {
+      dayList.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      dayList.forEach(item => {
+        const isToday = item.date === today;
+        const isPast  = item.date < today;
+        const dayLabel = parseYmd(item.date).toLocaleString("en-US", { weekday: "short" });
+        const planName = item.plan.workTypeName || item.plan.title || "Work plan";
+        html += '<div class="my-schedule__day ' + (isToday ? "is-today" : (isPast ? "is-past" : "")) + '">';
+        html +=   '<div class="my-schedule__day-date">' + escapeHtml(fmtDateDisplay(item.date)) + '</div>';
+        html +=   '<div class="my-schedule__day-day">' + escapeHtml(dayLabel) + '</div>';
+        html +=   '<div class="my-schedule__day-main">' + escapeHtml(planName) + '</div>';
+        html +=   '<div class="my-schedule__day-amt">' + fmtNum(item.day.target) + ' <span style="color:var(--muted);font-weight:600">' + escapeHtml(item.plan.unit || "") + '</span></div>';
+        html += '</div>';
+      });
+    });
+
+    html +=   '</div>';
+    html += '</div>';
+  });
+
   html +=   '</div>';
   html += '</div>';
   return html;
@@ -1416,7 +1803,8 @@ function allVisibleSectors() {
     if (d.level === "regional" || d.level === "sector" || d.isSector === true || !d.level) add(d);
   });
   let list = Array.from(map.values());
-  if (S?.region && (isRegionalDir() || isRegionalAdmin() || isClusterDir() || isClusterAdmin() || isWoredaCity() || isManager())) {
+  if (S?.region && (isRegionalDir() || isRegionalAdmin() || isClusterDir() || isClusterAdmin()
+      || isWoredaCity() || isManager() || isTeamLeader())) {
     list = list.filter(s => {
       const rc = String(s.regionCode || s.region || "").trim();
       return !rc || rc === String(S.region).trim();
@@ -1438,27 +1826,38 @@ function renderPlans() {
   if (countEl) countEl.textContent = list.length + " / " + total;
 
   /* ==========================================================
-     SCOPED VIEWERS (cluster / woreda / staff)
-     → ONLY the "My Allocations" table. No sector tree, no other
-       clusters' info.
+     SCOPED VIEWERS
+     - Employees (pure staff): show their DAILY SCHEDULE first
+       and their allocations list.
+     - Cluster / Woreda / Manager / Team Leader: show allocations.
      ========================================================== */
   if (isScopedViewer()) {
+    const scheduleHtml = isStaff() ? renderMyDailySchedule() : "";
     const tableHtml = renderMyAllocationsTable();
-    if (!tableHtml) {
+
+    if (!tableHtml && !scheduleHtml) {
+      const emptyMsg = isTeamLeader()
+        ? "Once your director splits a plan to your department, it will appear here."
+        : isClusterDir() || isClusterAdmin()
+          ? "Once your regional director splits a regional plan to your cluster, it will appear here."
+          : "Once your director splits a plan to you, it will appear here.";
       host.innerHTML = `
         <div class="empty-state">
           <div class="empty-state__icon">📭</div>
           <div class="empty-state__title">No work allocated to you yet</div>
-          <div class="empty-state__text">
-            Once your director splits a regional plan to
-            ${isClusterDir() || isClusterAdmin() ? "your cluster" : "your woreda / city"}, it will appear here.
-          </div>
+          <div class="empty-state__text">${emptyMsg}</div>
         </div>`;
       return;
     }
-    host.innerHTML = tableHtml;
+    host.innerHTML = scheduleHtml + tableHtml;
 
-    /* Action buttons (View / Break down) */
+    host.querySelectorAll("[data-toggle-period]").forEach(el => {
+      el.addEventListener("click", () => {
+        const wrap = el.closest(".my-schedule__period");
+        if (wrap) wrap.classList.toggle("is-open");
+      });
+    });
+
     host.querySelectorAll("[data-action]").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -1472,7 +1871,6 @@ function renderPlans() {
       });
     });
 
-    /* Clicking the "Pending" pill accepts the allocation */
     host.querySelectorAll("[data-accept-id]").forEach(el => {
       el.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -1485,7 +1883,6 @@ function renderPlans() {
 
   /* ==========================================================
      REGIONAL / REGIONAL-ADMIN / SUPER-ADMIN
-     → Full sector-grouped tree.
      ========================================================== */
   const sectorList = allVisibleSectors();
 
@@ -1496,7 +1893,7 @@ function renderPlans() {
         <div class="empty-state__title">No sectors yet</div>
         <div class="empty-state__text">
           ${canCreateAtMyLevel()
-            ? `Create a sector first on the <a href="departments.html" style="color:var(--primary);font-weight:700">Sectors</a> page, then add work plans here.`
+            ? `Create a sector first on the <a href="departments.html" style="color:var(--primary);font-weight:700">Directorates</a> page, then add work plans here.`
             : `Once your director creates a sector and a plan, it will appear here.`}
         </div>
       </div>`;
@@ -1601,7 +1998,6 @@ function renderSectorGroup(sector, plans) {
       </div>
 
       <div class="sector-group__body">
-
         <div class="sector-group__section">
           <div class="sector-group__section-title">
             <span>Departments / Directorates</span>
@@ -1609,7 +2005,7 @@ function renderSectorGroup(sector, plans) {
           </div>
           ${depts.length
             ? `<div class="dept-list">${depts.map(deptRow).join("")}</div>`
-            : `<div class="inline-empty">No departments under this sector yet. Add them on the <a href="departments.html" style="color:var(--primary);font-weight:700">Sectors</a> page.</div>`}
+            : `<div class="inline-empty">No departments under this sector yet. Add them on the <a href="departments.html" style="color:var(--primary);font-weight:700">Directorates</a> page.</div>`}
         </div>
 
         <div class="sector-group__section">
@@ -1621,7 +2017,6 @@ function renderSectorGroup(sector, plans) {
             ? `<div class="plans-grid">${plans.map(planCard).join("")}</div>`
             : `<div class="inline-empty">No work plans for this sector in ${currentYear} yet.</div>`}
         </div>
-
       </div>
     </div>`;
 }
@@ -1748,7 +2143,7 @@ function canEditPlan(p) {
   if (p.createdBy === S.uid) return true;
   if (isRegionalAdmin() && p.regionCode === S.region) return true;
   if (isRegionalDir() && p.sectorId === S.sectorId) return true;
-  if (isClusterDir() && p.clusterId === S.clusterId) return true;
+  if ((isClusterDir() || isClusterAdmin()) && p.clusterId === S.clusterId) return true;
   if ((isWoredaCity() || isManager()) && p.woredaCode === S.woredaCode) return true;
   return false;
 }
@@ -1941,15 +2336,7 @@ async function openPlanCreation() {
       const [secSnap, depSnap] = await Promise.all([getDocs(sectorQ), getDocs(deptQ)]);
       SECTORS = secSnap.docs.map(d => ({ id:d.id, ...d.data() }));
       DEPARTMENTS = depSnap.docs.map(d => ({ id:d.id, ...d.data() }));
-
-      console.log("[workplans] fresh fetch →", {
-        region,
-        sectors: SECTORS.length,
-        departments: DEPARTMENTS.length,
-        users: USERS.length
-      });
     } catch (e) {
-      console.warn("[workplans] scoped fetch failed:", e.code, e.message);
       try {
         const [s2, d2] = await Promise.all([
           getDocs(collection(db, "sectors")),
@@ -1957,13 +2344,7 @@ async function openPlanCreation() {
         ]);
         SECTORS = s2.docs.map(d => ({ id:d.id, ...d.data() }));
         DEPARTMENTS = d2.docs.map(d => ({ id:d.id, ...d.data() }));
-        console.log("[workplans] unfiltered fallback →", {
-          sectors: SECTORS.length,
-          departments: DEPARTMENTS.length,
-          users: USERS.length
-        });
       } catch (e2) {
-        console.error("[workplans] unfiltered fallback failed:", e2.code, e2.message);
         toast(`Cannot read sectors/departments (${e2.code || e2.message}).`, "error");
         return;
       }
@@ -1982,21 +2363,12 @@ async function openPlanCreation() {
 }
 
 /* ============================================================
-   REGIONAL WIZARD — 6 steps
+   REGIONAL WIZARD — unchanged, creates yearly regional plan
    ============================================================ */
 function openRegionalPlanWizard() {
   const regionClusters = CLUSTERS.filter(c => c.regionCode === S.region);
-
   const regionSectors = getRegionSectors(S.region);
-  if (!regionSectors.length) {
-    console.warn("[workplans] no sectors", {
-      region: S.region,
-      sectors_docs: SECTORS.length,
-      departments_docs: DEPARTMENTS.length
-    });
-    toast(`No sectors found for region "${S.region}". See console.`, "error");
-    return;
-  }
+  if (!regionSectors.length) { toast(`No sectors found for region "${S.region}".`, "error"); return; }
 
   function renderWorkTypeTable(d) {
     const list = d.workTypes || [];
@@ -2006,26 +2378,17 @@ function openRegionalPlanWizard() {
     const loadOk      = list.length > 0 && Math.abs(totalLoad - 100) < 0.01;
 
     if (!list.length) {
-      return `
-        <div class="worktype-table-wrap">
-          <div class="worktype-table__empty">
-            No work items yet — click <strong>Add row</strong> to start.
-          </div>
-          <div class="worktype-toolbar">
-            <div class="worktype-toolbar__meta">0 rows</div>
-            <button type="button" class="btn btn--sm btn--primary" id="wt-add-row">
-              <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add row
-            </button>
-          </div>
-        </div>`;
+      return `<div class="worktype-table-wrap"><div class="worktype-table__empty">No work items yet — click <strong>Add row</strong> to start.</div>
+        <div class="worktype-toolbar"><div class="worktype-toolbar__meta">0 rows</div>
+        <button type="button" class="btn btn--sm btn--primary" id="wt-add-row"><svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add row</button></div></div>`;
     }
 
     const LOADS = [
-      { id:"easy",      label:"Easy",      preset:25 },
-      { id:"medium",    label:"Medium",    preset:50 },
-      { id:"hard",      label:"Hard",      preset:75 },
+      { id:"easy", label:"Easy", preset:25 },
+      { id:"medium", label:"Medium", preset:50 },
+      { id:"hard", label:"Hard", preset:75 },
       { id:"very_hard", label:"Very Hard", preset:100 },
-      { id:"custom",    label:"Rated (%)", preset:null }
+      { id:"custom", label:"Rated (%)", preset:null }
     ];
     const dotClassFor = (w) => {
       const p = num(w.loadPercent);
@@ -2035,147 +2398,67 @@ function openRegionalPlanWizard() {
       if (p <= 75)  return "hard";
       return "very_hard";
     };
-
     const MEASURES = [
-      { id:"number",     label:"Number" },
-      { id:"time",       label:"Time" },
-      { id:"money",      label:"Money" },
-      { id:"percentage", label:"Percentage" },
-      { id:"other",      label:"Other" }
+      { id:"number", label:"Number" }, { id:"time", label:"Time" },
+      { id:"money", label:"Money" }, { id:"percentage", label:"Percentage" },
+      { id:"other", label:"Other" }
     ];
 
     return `
       <div class="worktype-table-wrap">
-        <div class="scroll">
-          <table class="worktype-table">
-            <thead>
-              <tr>
-                <th class="worktype-table__rownum">#</th>
-                <th style="min-width:200px">Work</th>
-                <th style="width:260px">Load</th>
-                <th style="width:260px">Measurement</th>
-                <th style="width:120px">Amount</th>
-                <th style="width:170px">Budget (ETB)</th>
-                <th style="min-width:220px">Description</th>
-                <th style="width:50px;text-align:center">⚙</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${list.map((w, i) => {
-                const measure = w.measure || "number";
-                const isOther = measure === "other";
-                const load    = w.load || "custom";
-                return `
-                <tr>
-                  <td class="worktype-table__rownum">${i + 1}</td>
-
-                  <td>
-                    <input data-wt-field="name" data-wt-id="${w.id}"
-                           value="${escapeHtml(w.name || "")}"
-                           placeholder="e.g. Training sessions">
-                  </td>
-
-                  <td>
-                    <div class="worktype-table__load" data-wt-load-wrap="${w.id}">
-                      <span class="worktype-table__dot worktype-table__dot--${dotClassFor(w)}"
-                            data-wt-dot="${w.id}"></span>
-                      <select data-wt-field="load" data-wt-id="${w.id}">
-                        ${LOADS.map(l => `
-                          <option value="${l.id}" ${load===l.id?"selected":""}>
-                            ${l.label}
-                          </option>`).join("")}
-                      </select>
-                      <input data-wt-field="loadPercent" data-wt-id="${w.id}"
-                             type="number" min="0" max="100" step="1"
-                             value="${escapeHtml(w.loadPercent || "")}"
-                             placeholder="0"
-                             title="Load percent (0–100). All rows must total 100%.">
-                      <span class="worktype-table__pct">%</span>
-                    </div>
-                  </td>
-
-                  <td>
-                    <div class="worktype-table__measure ${isOther ? "is-other" : ""}"
-                         data-wt-measure-wrap="${w.id}">
-                      <select data-wt-field="measure" data-wt-id="${w.id}">
-                        ${MEASURES.map(m => `
-                          <option value="${m.id}" ${measure===m.id?"selected":""}>
-                            ${m.label}
-                          </option>`).join("")}
-                      </select>
-                      <input data-wt-field="measureOther" data-wt-id="${w.id}"
-                             value="${escapeHtml(w.measureOther || "")}"
-                             placeholder="specify…"
-                             ${isOther ? "" : "disabled"}>
-                    </div>
-                  </td>
-
-                  <td>
-                    <input data-wt-field="target" data-wt-id="${w.id}"
-                           type="number" min="0" step="0.01"
-                           value="${escapeHtml(w.target || "")}"
-                           placeholder="0">
-                  </td>
-
-                  <td>
-                    <input data-wt-field="budget" data-wt-id="${w.id}"
-                           type="number" min="0" step="1"
-                           value="${escapeHtml(w.budget || "")}"
-                           placeholder="0">
-                  </td>
-
-                  <td>
-                    <input data-wt-field="description" data-wt-id="${w.id}"
-                           value="${escapeHtml(w.description || "")}"
-                           placeholder="Short description">
-                  </td>
-
-                  <td style="text-align:center">
-                    <button type="button" class="worktype-table__remove"
-                            data-wt-remove="${w.id}" title="Remove row">
-                      <svg viewBox="0 0 24 24">${ICONS.x}</svg>
-                    </button>
-                  </td>
-                </tr>`;
-              }).join("")}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="2" class="label">Totals</td>
-                <td style="text-align:center">
-                  <span class="wt-load-total ${loadOk?"wt-load-total--ok":"wt-load-total--bad"}"
-                        id="wt-total-load">
-                    ${fmtNum(totalLoad)}% / 100% ${loadOk?"✓":"✗"}
-                  </span>
-                </td>
-                <td class="label" style="text-align:right">Amount:</td>
-                <td id="wt-total-target">${fmtNum(totalTarget)}</td>
-                <td>
-                  <span id="wt-total-budget" style="color:var(--primary)">
-                    Total of Budget = ${fmtMoney(totalBudget)} ETB
-                  </span>
-                </td>
-                <td colspan="2"></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+        <div class="scroll"><table class="worktype-table">
+          <thead><tr>
+            <th class="worktype-table__rownum">#</th>
+            <th style="min-width:200px">Work</th>
+            <th style="width:260px">Load</th>
+            <th style="width:260px">Measurement</th>
+            <th style="width:120px">Amount</th>
+            <th style="width:170px">Budget (ETB)</th>
+            <th style="min-width:220px">Description</th>
+            <th style="width:50px;text-align:center">⚙</th>
+          </tr></thead>
+          <tbody>${list.map((w, i) => {
+            const measure = w.measure || "number";
+            const isOther = measure === "other";
+            const load    = w.load || "custom";
+            return `<tr>
+              <td class="worktype-table__rownum">${i + 1}</td>
+              <td><input data-wt-field="name" data-wt-id="${w.id}" value="${escapeHtml(w.name || "")}" placeholder="e.g. Training sessions"></td>
+              <td><div class="worktype-table__load" data-wt-load-wrap="${w.id}">
+                <span class="worktype-table__dot worktype-table__dot--${dotClassFor(w)}" data-wt-dot="${w.id}"></span>
+                <select data-wt-field="load" data-wt-id="${w.id}">
+                  ${LOADS.map(l => `<option value="${l.id}" ${load===l.id?"selected":""}>${l.label}</option>`).join("")}
+                </select>
+                <input data-wt-field="loadPercent" data-wt-id="${w.id}" type="number" min="0" max="100" step="1" value="${escapeHtml(w.loadPercent || "")}" placeholder="0">
+                <span class="worktype-table__pct">%</span>
+              </div></td>
+              <td><div class="worktype-table__measure ${isOther ? "is-other" : ""}" data-wt-measure-wrap="${w.id}">
+                <select data-wt-field="measure" data-wt-id="${w.id}">
+                  ${MEASURES.map(m => `<option value="${m.id}" ${measure===m.id?"selected":""}>${m.label}</option>`).join("")}
+                </select>
+                <input data-wt-field="measureOther" data-wt-id="${w.id}" value="${escapeHtml(w.measureOther || "")}" placeholder="specify…" ${isOther ? "" : "disabled"}>
+              </div></td>
+              <td><input data-wt-field="target" data-wt-id="${w.id}" type="number" min="0" step="0.01" value="${escapeHtml(w.target || "")}" placeholder="0"></td>
+              <td><input data-wt-field="budget" data-wt-id="${w.id}" type="number" min="0" step="1" value="${escapeHtml(w.budget || "")}" placeholder="0"></td>
+              <td><input data-wt-field="description" data-wt-id="${w.id}" value="${escapeHtml(w.description || "")}" placeholder="Short description"></td>
+              <td style="text-align:center"><button type="button" class="worktype-table__remove" data-wt-remove="${w.id}" title="Remove row"><svg viewBox="0 0 24 24">${ICONS.x}</svg></button></td>
+            </tr>`;
+          }).join("")}</tbody>
+          <tfoot><tr>
+            <td colspan="2" class="label">Totals</td>
+            <td style="text-align:center"><span class="wt-load-total ${loadOk?"wt-load-total--ok":"wt-load-total--bad"}" id="wt-total-load">${fmtNum(totalLoad)}% / 100% ${loadOk?"✓":"✗"}</span></td>
+            <td class="label" style="text-align:right">Amount:</td>
+            <td id="wt-total-target">${fmtNum(totalTarget)}</td>
+            <td><span id="wt-total-budget" style="color:var(--primary)">Total of Budget = ${fmtMoney(totalBudget)} ETB</span></td>
+            <td colspan="2"></td>
+          </tr></tfoot>
+        </table></div>
         <div class="worktype-toolbar">
           <div class="worktype-toolbar__meta">
-            <strong>${list.length}</strong> row${list.length===1?"":"s"} ·
-            load
-            <strong id="wt-total-load-meta"
-                    class="wt-load-total ${loadOk?"wt-load-total--ok":"wt-load-total--bad"}">
-              ${fmtNum(totalLoad)}%
-            </strong> ·
-            amount <strong id="wt-total-target-meta">${fmtNum(totalTarget)}</strong> ·
-            <span id="wt-total-budget-meta" style="color:var(--primary)">
-              Total of Budget = <strong>${fmtMoney(totalBudget)} ETB</strong>
-            </span>
+            <strong>${list.length}</strong> row${list.length===1?"":"s"} · load <strong id="wt-total-load-meta" class="wt-load-total ${loadOk?"wt-load-total--ok":"wt-load-total--bad"}">${fmtNum(totalLoad)}%</strong> · amount <strong id="wt-total-target-meta">${fmtNum(totalTarget)}</strong> ·
+            <span id="wt-total-budget-meta" style="color:var(--primary)">Total of Budget = <strong>${fmtMoney(totalBudget)} ETB</strong></span>
           </div>
-          <button type="button" class="btn btn--sm btn--primary" id="wt-add-row">
-            <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add row
-          </button>
+          <button type="button" class="btn btn--sm btn--primary" id="wt-add-row"><svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add row</button>
         </div>
       </div>`;
   }
@@ -2186,30 +2469,20 @@ function openRegionalPlanWizard() {
     const totalBudget = list.reduce((s,w) => s + num(w.budget), 0);
     const totalLoad   = list.reduce((s,w) => s + num(w.loadPercent), 0);
     const loadOk      = list.length > 0 && Math.abs(totalLoad - 100) < 0.01;
-
-    const tt     = root.querySelector("#wt-total-target");
-    const tb     = root.querySelector("#wt-total-budget");
+    const tt = root.querySelector("#wt-total-target");
+    const tb = root.querySelector("#wt-total-budget");
     const ttMeta = root.querySelector("#wt-total-target-meta");
     const tbMeta = root.querySelector("#wt-total-budget-meta");
-    const tl     = root.querySelector("#wt-total-load");
+    const tl = root.querySelector("#wt-total-load");
     const tlMeta = root.querySelector("#wt-total-load-meta");
-
     if (tt) tt.textContent = fmtNum(totalTarget);
     if (tb) tb.textContent = "Total of Budget = " + fmtMoney(totalBudget) + " ETB";
     if (ttMeta) ttMeta.textContent = fmtNum(totalTarget);
-    if (tbMeta) tbMeta.innerHTML =
-      "Total of Budget = <strong>" + fmtMoney(totalBudget) + " ETB</strong>";
-
-    if (tl) {
-      tl.textContent = fmtNum(totalLoad) + "% / 100% " + (loadOk ? "✓" : "✗");
-      tl.classList.toggle("wt-load-total--ok",  loadOk);
-      tl.classList.toggle("wt-load-total--bad", !loadOk);
-    }
-    if (tlMeta) {
-      tlMeta.textContent = fmtNum(totalLoad) + "%";
-      tlMeta.classList.toggle("wt-load-total--ok",  loadOk);
-      tlMeta.classList.toggle("wt-load-total--bad", !loadOk);
-    }
+    if (tbMeta) tbMeta.innerHTML = "Total of Budget = <strong>" + fmtMoney(totalBudget) + " ETB</strong>";
+    if (tl) { tl.textContent = fmtNum(totalLoad) + "% / 100% " + (loadOk ? "✓" : "✗");
+      tl.classList.toggle("wt-load-total--ok", loadOk); tl.classList.toggle("wt-load-total--bad", !loadOk); }
+    if (tlMeta) { tlMeta.textContent = fmtNum(totalLoad) + "%";
+      tlMeta.classList.toggle("wt-load-total--ok", loadOk); tlMeta.classList.toggle("wt-load-total--bad", !loadOk); }
   }
 
   function makeAllocRows() {
@@ -2226,56 +2499,28 @@ function openRegionalPlanWizard() {
     finishLabel: "Create Plans",
     successMessage: "Work plan(s) created — cluster directors will now see their allocations.",
     size: "xl",
-    initial: {
-      sectorId: "",
-      departmentId: "",
-      teamLeaderId: "",
-      workTypes: [],
-      allocationsByWorkType: {}
-    },
+    initial: { sectorId:"", departmentId:"", teamLeaderId:"", workTypes:[], allocationsByWorkType:{} },
     steps: [
       {
         label: "Sector", title: "Step 1 — Select a sector",
         render: (d) => {
           const sel = regionSectors.find(s => s.id === d.sectorId);
-          return `
-            <div class="alert alert--info">
-              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-              <div>Pick a saved sector. ${regionSectors.length} available for your region.</div>
-            </div>
-            <div class="field">
-              <label class="field__required">Sector</label>
+          return `<div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+              <div>Pick a saved sector. ${regionSectors.length} available for your region.</div></div>
+            <div class="field"><label class="field__required">Sector</label>
               <select data-field="sectorId" id="sector-select">
                 <option value="">— Choose a sector —</option>
-                ${regionSectors.map(s => `
-                  <option value="${s.id}" ${d.sectorId===s.id?"selected":""}>
-                    ${escapeHtml(s.code || "??")} · ${escapeHtml(s.name || "Unnamed")}
-                  </option>`).join("")}
-              </select>
-              <p class="field__hint">
-                Manage sectors on the
-                <a href="departments.html" style="color:var(--primary);font-weight:700">Sectors</a> page.
-              </p>
-            </div>
-            ${sel ? `
-              <div class="review" style="margin-top:14px">
-                <div class="review__row"><span class="review__k">Sector</span><span class="review__v">${escapeHtml(sel.name || "—")}</span></div>
-                <div class="review__row"><span class="review__k">Code</span><span class="review__v">${escapeHtml(sel.code || "—")}</span></div>
-                <div class="review__row"><span class="review__k">Region</span><span class="review__v">${escapeHtml(regionLabel(sel.regionCode || sel.region))}</span></div>
-              </div>` : ""}
-          `;
+                ${regionSectors.map(s => `<option value="${s.id}" ${d.sectorId===s.id?"selected":""}>${escapeHtml(s.code || "??")} · ${escapeHtml(s.name || "Unnamed")}</option>`).join("")}
+              </select></div>
+            ${sel ? `<div class="review" style="margin-top:14px">
+              <div class="review__row"><span class="review__k">Sector</span><span class="review__v">${escapeHtml(sel.name || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Region</span><span class="review__v">${escapeHtml(regionLabel(sel.regionCode || sel.region))}</span></div>
+            </div>` : ""}`;
         },
         validate: d => d.sectorId ? null : "Please select a sector.",
         after: (root, data, refresh) => {
           const sel = root.querySelector("#sector-select");
-          sel?.addEventListener("change", () => {
-            data.sectorId = sel.value;
-            data.departmentId = "";
-            data.teamLeaderId = "";
-            data.workTypes = [];
-            data.allocationsByWorkType = {};
-            refresh();
-          });
+          sel?.addEventListener("change", () => { data.sectorId = sel.value; data.departmentId = ""; data.teamLeaderId = ""; data.workTypes = []; data.allocationsByWorkType = {}; refresh(); });
         }
       },
       {
@@ -2284,120 +2529,49 @@ function openRegionalPlanWizard() {
           const sec = regionSectors.find(s => s.id === d.sectorId);
           const depts = departmentsForSector(d.sectorId);
           const selected = depts.find(x => x.id === d.departmentId);
-          return `
-            <div class="alert alert--info">
-              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-              <div>
-                Sector: <strong>${escapeHtml(sec?.name || "—")}</strong> ·
-                ${depts.length} department${depts.length === 1 ? "" : "s"} available.
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="field__required">Department / Directorate</label>
+          return `<div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+              <div>Sector: <strong>${escapeHtml(sec?.name || "—")}</strong> · ${depts.length} department${depts.length === 1 ? "" : "s"} available.</div></div>
+            <div class="field"><label class="field__required">Department</label>
               <select data-field="departmentId" id="dept-select" ${depts.length ? "" : "disabled"}>
-                <option value="">
-                  ${depts.length ? "— Choose a department —" : "No departments in this sector yet"}
-                </option>
-                ${depts.map(x => `
-                  <option value="${x.id}" ${d.departmentId===x.id?"selected":""}>
-                    ${escapeHtml(x.code || "??")} · ${escapeHtml(x.name || "Unnamed")}
-                  </option>`).join("")}
-              </select>
-              ${!depts.length ? `
-                <p class="field__hint" style="color:var(--warning)">
-                  ⚠ No departments found under this sector. Add one on the
-                  <a href="departments.html" style="color:var(--primary);font-weight:700">Sectors</a> page first.
-                </p>` : ""}
-            </div>
-
-            ${selected ? `
-              <div class="review" style="margin-top:14px">
-                <div class="review__row"><span class="review__k">Department</span>
-                  <span class="review__v">${escapeHtml(selected.name || "—")}</span></div>
-                <div class="review__row"><span class="review__k">Code</span>
-                  <span class="review__v">${escapeHtml(selected.code || "—")}</span></div>
-                <div class="review__row"><span class="review__k">Level</span>
-                  <span class="review__v">${selected.level === "cluster" ? "Cluster" : "Regional"}</span></div>
-              </div>` : ""}
-          `;
+                <option value="">${depts.length ? "— Choose a department —" : "No departments in this sector yet"}</option>
+                ${depts.map(x => `<option value="${x.id}" ${d.departmentId===x.id?"selected":""}>${escapeHtml(x.code || "??")} · ${escapeHtml(x.name || "Unnamed")}</option>`).join("")}
+              </select></div>
+            ${selected ? `<div class="review" style="margin-top:14px">
+              <div class="review__row"><span class="review__k">Department</span><span class="review__v">${escapeHtml(selected.name || "—")}</span></div>
+            </div>` : ""}`;
         },
         validate: d => {
           if (!d.sectorId) return "Please go back and select a sector.";
           const depts = departmentsForSector(d.sectorId);
-          if (!depts.length) return "This sector has no departments yet. Add one on the Sectors page first.";
+          if (!depts.length) return "This sector has no departments yet.";
           if (!d.departmentId) return "Please select a department.";
           return null;
         },
         after: (root, data, refresh) => {
           const sel = root.querySelector("#dept-select");
-          sel?.addEventListener("change", () => {
-            data.departmentId = sel.value;
-            data.teamLeaderId = "";
-            data.workTypes = [];
-            data.allocationsByWorkType = {};
-            refresh();
-          });
+          sel?.addEventListener("change", () => { data.departmentId = sel.value; data.teamLeaderId = ""; data.workTypes = []; data.allocationsByWorkType = {}; refresh(); });
         }
       },
       {
-        label: "Team Leader", title: "Step 3 — Select a team leader / manager",
+        label: "Team Leader", title: "Step 3 — Select a team leader",
         render: (d) => {
-          const sec = regionSectors.find(s => s.id === d.sectorId);
-          const dept = DEPARTMENTS.find(x => x.id === d.departmentId);
           const users = usersForDepartment(d.departmentId);
           const chosen = users.find(u => u.id === d.teamLeaderId);
-          return `
-            <div class="alert alert--info">
-              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-              <div>
-                <strong>${escapeHtml(sec?.name || "—")}</strong> →
-                <strong>${escapeHtml(dept?.name || "—")}</strong> ·
-                ${users.length} user${users.length === 1 ? "" : "s"} available in this department.
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="field__required">Team Leader / Manager</label>
+          return `<div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+              <div>${users.length} user${users.length === 1 ? "" : "s"} available in this department.</div></div>
+            <div class="field"><label class="field__required">Team Leader / Manager</label>
               <select data-field="teamLeaderId" id="leader-select" ${users.length ? "" : "disabled"}>
-                <option value="">
-                  ${users.length ? "— Choose a team leader —" : "No users in this department yet"}
-                </option>
-                ${users.map(u => `
-                  <option value="${u.id}" ${d.teamLeaderId===u.id?"selected":""}>
-                    ${escapeHtml(u.name || u.email)} — ${escapeHtml(roleLabel(u.role))}${u.position ? " · " + escapeHtml(u.position) : ""}
-                  </option>`).join("")}
-              </select>
-              <p class="field__hint">
-                Users are managed on the
-                <a href="users.html" style="color:var(--primary);font-weight:700">Users & Staff</a> page.
-                Only active users with a placement in this department appear here.
-              </p>
-              ${!users.length ? `
-                <p class="field__hint" style="color:var(--warning)">
-                  ⚠ No active users in this department. Assign staff first on Users & Staff.
-                </p>` : ""}
-            </div>
-
-            ${chosen ? `
-              <div class="review" style="margin-top:14px">
-                <div class="review__row"><span class="review__k">Name</span>
-                  <span class="review__v">${escapeHtml(chosen.name || chosen.email || "—")}</span></div>
-                <div class="review__row"><span class="review__k">Role</span>
-                  <span class="review__v">${escapeHtml(roleLabel(chosen.role))}</span></div>
-                ${chosen.position ? `
-                  <div class="review__row"><span class="review__k">Position</span>
-                    <span class="review__v">${escapeHtml(chosen.position)}</span></div>` : ""}
-                ${chosen.email ? `
-                  <div class="review__row"><span class="review__k">Email</span>
-                    <span class="review__v">${escapeHtml(chosen.email)}</span></div>` : ""}
-              </div>` : ""}
-          `;
+                <option value="">${users.length ? "— Choose a team leader —" : "No users in this department yet"}</option>
+                ${users.map(u => `<option value="${u.id}" ${d.teamLeaderId===u.id?"selected":""}>${escapeHtml(u.name || u.email)} — ${escapeHtml(roleLabel(u.role))}</option>`).join("")}
+              </select></div>
+            ${chosen ? `<div class="review" style="margin-top:14px">
+              <div class="review__row"><span class="review__k">Name</span><span class="review__v">${escapeHtml(chosen.name || chosen.email || "—")}</span></div>
+            </div>` : ""}`;
         },
         validate: d => {
           if (!d.departmentId) return "Please go back and select a department.";
           const users = usersForDepartment(d.departmentId);
-          if (!users.length) return "This department has no active users yet. Add staff on the Users & Staff page first.";
+          if (!users.length) return "This department has no active users yet.";
           if (!d.teamLeaderId) return "Please select a team leader.";
           return null;
         },
@@ -2408,51 +2582,25 @@ function openRegionalPlanWizard() {
       },
       {
         label: "Work Items", title: "Step 4 — List work items",
-        render: (d) => {
-          const sec = regionSectors.find(s => s.id === d.sectorId);
-          const dept = DEPARTMENTS.find(x => x.id === d.departmentId);
-          const leader = USERS.find(u => u.id === d.teamLeaderId);
-          return `
-            <div class="alert alert--info">
-              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-              <div>
-                Planning for <strong>${escapeHtml(sec?.name || "—")}</strong>
-                → <strong>${escapeHtml(dept?.name || "—")}</strong>
-                · Team leader: <strong>${escapeHtml(leader?.name || leader?.email || "—")}</strong>.
-                Load percentages across all rows must total <strong>100%</strong>.
-              </div>
-            </div>
-            ${renderWorkTypeTable(d)}
-          `;
-        },
+        render: (d) => renderWorkTypeTable(d),
         validate: d => {
           const list = d.workTypes || [];
           if (!list.length) return "Add at least one work item.";
-
           for (let i = 0; i < list.length; i++) {
             const w = list[i];
-            if (!w.name || w.name.trim().length < 2)
-              return `Row ${i+1}: Work is required.`;
+            if (!w.name || w.name.trim().length < 2) return `Row ${i+1}: Work is required.`;
             const p = num(w.loadPercent);
-            if (!(p > 0 && p <= 100))
-              return `Row ${i+1}: Load must be between 1 and 100.`;
-            if (!w.measure)
-              return `Row ${i+1}: Choose a measurement.`;
-            if (w.measure === "other" && !(w.measureOther || "").trim())
-              return `Row ${i+1}: Specify a custom measurement.`;
-            if (!(num(w.target) > 0))
-              return `Row ${i+1}: Amount must be > 0.`;
+            if (!(p > 0 && p <= 100)) return `Row ${i+1}: Load must be between 1 and 100.`;
+            if (!w.measure) return `Row ${i+1}: Choose a measurement.`;
+            if (w.measure === "other" && !(w.measureOther || "").trim()) return `Row ${i+1}: Specify a custom measurement.`;
+            if (!(num(w.target) > 0)) return `Row ${i+1}: Amount must be > 0.`;
           }
-
           const sumLoad = list.reduce((s,w) => s + num(w.loadPercent), 0);
-          if (Math.abs(sumLoad - 100) > 0.01) {
-            return `Load percentages sum to ${fmtNum(sumLoad)}% but must total exactly 100%.`;
-          }
+          if (Math.abs(sumLoad - 100) > 0.01) return `Load percentages sum to ${fmtNum(sumLoad)}% but must total exactly 100%.`;
           return null;
         },
         after: (root, data, refresh) => {
           const PRESETS = { easy:25, medium:50, hard:75, very_hard:100 };
-
           function dotClassFor(w) {
             const p = num(w.loadPercent);
             if (p <= 0)   return "custom";
@@ -2467,73 +2615,46 @@ function openRegionalPlanWizard() {
             if (!w || !dot) return;
             dot.className = "worktype-table__dot worktype-table__dot--" + dotClassFor(w);
           }
-
           root.querySelectorAll("[data-wt-field]").forEach(inp => {
             const handler = () => {
-              const id    = inp.dataset.wtId;
+              const id = inp.dataset.wtId;
               const field = inp.dataset.wtField;
               const w = (data.workTypes || []).find(x => x.id === id);
               if (!w) return;
               w[field] = inp.value;
-
               if (field === "load") {
                 const preset = PRESETS[inp.value];
                 const wrap = root.querySelector('[data-wt-load-wrap="' + id + '"]');
                 const pctInput = wrap ? wrap.querySelector('[data-wt-field="loadPercent"]') : null;
-                if (preset != null && pctInput) {
-                  pctInput.value = preset;
-                  w.loadPercent = preset;
-                } else if (pctInput && !pctInput.value) {
-                  pctInput.focus();
-                }
+                if (preset != null && pctInput) { pctInput.value = preset; w.loadPercent = preset; }
                 recolourDot(root, id);
               }
-
               if (field === "loadPercent") {
                 let p = num(inp.value);
-                if (p < 0)   p = 0;
-                if (p > 100) p = 100;
+                if (p < 0) p = 0; if (p > 100) p = 100;
                 if (String(p) !== inp.value && inp.value !== "") inp.value = p;
                 w.loadPercent = inp.value === "" ? "" : p;
                 recolourDot(root, id);
               }
-
               if (field === "measure") {
                 const wrap = root.querySelector('[data-wt-measure-wrap="' + id + '"]');
                 const other = wrap ? wrap.querySelector('[data-wt-field="measureOther"]') : null;
                 const isOther = inp.value === "other";
                 if (wrap) wrap.classList.toggle("is-other", isOther);
-                if (other) {
-                  other.disabled = !isOther;
-                  if (!isOther) { other.value = ""; w.measureOther = ""; }
-                  else if (!other.value) other.focus();
-                }
+                if (other) { other.disabled = !isOther; if (!isOther) { other.value = ""; w.measureOther = ""; } }
               }
-
               refreshWorkTypeTotals(root, data);
             };
             inp.addEventListener("input", handler);
             inp.addEventListener("change", handler);
           });
-
           root.querySelector("#wt-add-row")?.addEventListener("click", () => {
             data.workTypes = data.workTypes || [];
             const newId = uid();
-            data.workTypes.push({
-              id: newId,
-              name: "",
-              load: "custom",
-              loadPercent: "",
-              measure: "number",
-              measureOther: "",
-              target: "",
-              budget: "",
-              description: ""
-            });
+            data.workTypes.push({ id:newId, name:"", load:"custom", loadPercent:"", measure:"number", measureOther:"", target:"", budget:"", description:"" });
             data.allocationsByWorkType[newId] = makeAllocRows();
             refresh();
           });
-
           root.querySelectorAll("[data-wt-remove]").forEach(btn => {
             btn.addEventListener("click", () => {
               const id = btn.dataset.wtRemove;
@@ -2545,73 +2666,35 @@ function openRegionalPlanWizard() {
         }
       },
       {
-        label: "Split to Clusters", title: "Step 5 — Split each work item across clusters",
+        label: "Split to Clusters", title: "Step 5 — Split across clusters",
         render: (d) => {
           const list = d.workTypes || [];
           if (!list.length) return `<div class="alert alert--error">No work items to split.</div>`;
-
           if (!regionClusters.length) {
-            return `
-              <div class="alert alert--warning">
-                <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-                <div>
-                  <strong>No clusters exist in ${escapeHtml(regionLabel(S.region))} yet.</strong><br>
-                  You can save this regional work plan now without splitting it. Once a regional
-                  admin adds clusters to this region, open the plan card and click
-                  <strong>Split</strong> to allocate it.
-                </div>
-              </div>
-              <div class="review" style="margin-top:14px">
-                <div class="review__row"><span class="review__k">Plan status</span>
-                  <span class="review__v">Will be saved as <strong>Regional only</strong> (no cluster split)</span></div>
-                <div class="review__row"><span class="review__k">Work items</span>
-                  <span class="review__v">${list.length}</span></div>
-                <div class="review__row"><span class="review__k">Region</span>
-                  <span class="review__v">${escapeHtml(regionLabel(S.region))}</span></div>
-              </div>
-            `;
+            return `<div class="alert alert--warning"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+              <div><strong>No clusters exist in ${escapeHtml(regionLabel(S.region))} yet.</strong> Save the plan without splitting; you can split later.</div></div>`;
           }
-
-          return `
-            <div class="alert alert--info">
-              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-              <div>For each work item, split amount & budget across every cluster. Sum must equal total.</div>
-            </div>
+          return `<div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+              <div>For each work item, split amount & budget across every cluster. Sum must equal total.</div></div>
             ${list.map(w => {
               const allocs = d.allocationsByWorkType[w.id] || [];
               const sumT = allocs.reduce((s,a)=>s+num(a.target),0);
               const sumB = allocs.reduce((s,a)=>s+num(a.budget),0);
               const okT = Math.abs(sumT - num(w.target)) < 0.01;
               const okB = Math.abs(sumB - num(w.budget)) < 0.01;
-              return `
-                <div style="margin-bottom:24px;padding:14px;border:1px solid var(--border);border-radius:12px;background:#fff">
-                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                    <div>
-                      <div style="font-weight:800;font-size:14px">${escapeHtml(w.name)}</div>
-                      <div style="font-size:11.5px;color:var(--muted);margin-top:2px">
-                        Load: <strong>${fmtNum(w.loadPercent)}%</strong> ·
-                        Measurement: <strong>${escapeHtml(w.measure === "other" ? (w.measureOther || "Other") : w.measure)}</strong> ·
-                        Total: <strong>${fmtNum(w.target)}</strong> ·
-                        <strong>${fmtMoney(w.budget)} ETB</strong>
-                      </div>
-                    </div>
-                    <span class="tag ${okT && okB ? "tag--green" : "tag--gold"}">
-                      ${okT && okB ? "Balanced" : "Needs attention"}
-                    </span>
+              return `<div style="margin-bottom:24px;padding:14px;border:1px solid var(--border);border-radius:12px;background:#fff">
+                <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+                  <div><div style="font-weight:800;font-size:14px">${escapeHtml(w.name)}</div>
+                    <div style="font-size:11.5px;color:var(--muted);margin-top:2px">Total: <strong>${fmtNum(w.target)}</strong> · <strong>${fmtMoney(w.budget)} ETB</strong></div>
                   </div>
-                  <table class="alloc-table">
-                    <thead><tr><th>Cluster</th><th style="width:130px">Amount</th><th style="width:160px">Budget (ETB)</th></tr></thead>
-                    <tbody>
-                      ${allocs.map((a,i) => `
-                        <tr>
-                          <td><strong>${escapeHtml(a.targetName)}</strong></td>
-                          <td><input data-wt="${w.id}" data-alloc-target="${i}" type="number" min="0" step="0.01" value="${escapeHtml(a.target||"")}" placeholder="0"></td>
-                          <td><input data-wt="${w.id}" data-alloc-budget="${i}" type="number" min="0" step="1" value="${escapeHtml(a.budget||"")}" placeholder="0"></td>
-                        </tr>`).join("")}
-                    </tbody>
-                  </table>
-                  ${allocSummary(w.target, allocs)}
-                </div>`;
+                  <span class="tag ${okT && okB ? "tag--green" : "tag--gold"}">${okT && okB ? "Balanced" : "Needs attention"}</span>
+                </div>
+                <table class="alloc-table"><thead><tr><th>Cluster</th><th style="width:130px">Amount</th><th style="width:160px">Budget</th></tr></thead>
+                <tbody>${allocs.map((a,i) => `<tr><td><strong>${escapeHtml(a.targetName)}</strong></td>
+                  <td><input data-wt="${w.id}" data-alloc-target="${i}" type="number" min="0" step="0.01" value="${escapeHtml(a.target||"")}" placeholder="0"></td>
+                  <td><input data-wt="${w.id}" data-alloc-budget="${i}" type="number" min="0" step="1" value="${escapeHtml(a.budget||"")}" placeholder="0"></td></tr>`).join("")}</tbody></table>
+                ${allocSummary(w.target, allocs)}
+              </div>`;
             }).join("")}`;
         },
         validate: d => {
@@ -2631,11 +2714,7 @@ function openRegionalPlanWizard() {
               const wtId = inp.dataset.wt;
               data.allocationsByWorkType[wtId][Number(inp.dataset.allocTarget)].target = inp.value;
               const block = inp.closest("div[style*='margin-bottom']");
-              if (block) {
-                const w = (data.workTypes||[]).find(x => x.id === wtId);
-                const s = block.querySelector(".alloc-sum");
-                if (w && s) s.outerHTML = allocSummary(w.target, data.allocationsByWorkType[wtId]);
-              }
+              if (block) { const w = (data.workTypes||[]).find(x => x.id === wtId); const s = block.querySelector(".alloc-sum"); if (w && s) s.outerHTML = allocSummary(w.target, data.allocationsByWorkType[wtId]); }
             });
           });
           root.querySelectorAll("[data-wt][data-alloc-budget]").forEach(inp => {
@@ -2643,11 +2722,7 @@ function openRegionalPlanWizard() {
               const wtId = inp.dataset.wt;
               data.allocationsByWorkType[wtId][Number(inp.dataset.allocBudget)].budget = inp.value;
               const block = inp.closest("div[style*='margin-bottom']");
-              if (block) {
-                const w = (data.workTypes||[]).find(x => x.id === wtId);
-                const s = block.querySelector(".alloc-sum");
-                if (w && s) s.outerHTML = allocSummary(w.target, data.allocationsByWorkType[wtId]);
-              }
+              if (block) { const w = (data.workTypes||[]).find(x => x.id === wtId); const s = block.querySelector(".alloc-sum"); if (w && s) s.outerHTML = allocSummary(w.target, data.allocationsByWorkType[wtId]); }
             });
           });
         }
@@ -2661,44 +2736,15 @@ function openRegionalPlanWizard() {
           const list = d.workTypes || [];
           const totalLoad = list.reduce((s,w) => s + num(w.loadPercent), 0);
           const totalBudget = list.reduce((s,w) => s + num(w.budget), 0);
-          return `
-            <div class="review" style="margin-bottom:18px">
-              <div class="review__row"><span class="review__k">Sector</span>
-                <span class="review__v">${escapeHtml(sel?.name || "—")} (${escapeHtml(sel?.code || "??")})</span></div>
-              <div class="review__row"><span class="review__k">Department</span>
-                <span class="review__v">${escapeHtml(dept?.name || "—")} (${escapeHtml(dept?.code || "??")})</span></div>
-              <div class="review__row"><span class="review__k">Team Leader</span>
-                <span class="review__v">${escapeHtml(leader?.name || leader?.email || "—")} — ${escapeHtml(roleLabel(leader?.role || ""))}</span></div>
-              <div class="review__row"><span class="review__k">Region</span>
-                <span class="review__v">${escapeHtml(regionLabel(S.region))}</span></div>
-              <div class="review__row"><span class="review__k">Year</span>
-                <span class="review__v">${currentYear}</span></div>
-              <div class="review__row"><span class="review__k">Work items</span>
-                <span class="review__v">${list.length}</span></div>
-              <div class="review__row"><span class="review__k">Total load</span>
-                <span class="review__v" style="color:${Math.abs(totalLoad-100)<0.01?"var(--success)":"var(--danger)"}">
-                  <strong>${fmtNum(totalLoad)}%</strong> / 100%
-                </span></div>
-              <div class="review__row"><span class="review__k">Total of Budget</span>
-                <span class="review__v"><strong>${fmtMoney(totalBudget)} ETB</strong></span></div>
-              <div class="review__row"><span class="review__k">Cluster split</span>
-                <span class="review__v">${regionClusters.length ? "Yes — " + regionClusters.length + " clusters" : "No clusters yet — will be saved regional only"}</span></div>
-            </div>
-            ${list.map(w => `
-              <div class="review" style="margin-bottom:12px">
-                <div class="review__row"><span class="review__k">Work</span>
-                  <span class="review__v"><strong>${escapeHtml(w.name)}</strong></span></div>
-                <div class="review__row"><span class="review__k">Load</span>
-                  <span class="review__v">${fmtNum(w.loadPercent)}%</span></div>
-                <div class="review__row"><span class="review__k">Measurement</span>
-                  <span class="review__v">${escapeHtml(w.measure === "other" ? (w.measureOther || "Other") : w.measure)}</span></div>
-                <div class="review__row"><span class="review__k">Amount</span>
-                  <span class="review__v">${fmtNum(w.target)}</span></div>
-                <div class="review__row"><span class="review__k">Budget</span>
-                  <span class="review__v">${fmtMoney(w.budget)} ETB</span></div>
-                ${w.description ? `<div class="review__row"><span class="review__k">Description</span>
-                  <span class="review__v">${escapeHtml(w.description)}</span></div>` : ""}
-              </div>`).join("")}`;
+          return `<div class="review" style="margin-bottom:18px">
+            <div class="review__row"><span class="review__k">Sector</span><span class="review__v">${escapeHtml(sel?.name || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Department</span><span class="review__v">${escapeHtml(dept?.name || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Team Leader</span><span class="review__v">${escapeHtml(leader?.name || leader?.email || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Work items</span><span class="review__v">${list.length}</span></div>
+            <div class="review__row"><span class="review__k">Total load</span><span class="review__v"><strong>${fmtNum(totalLoad)}%</strong> / 100%</span></div>
+            <div class="review__row"><span class="review__k">Total Budget</span><span class="review__v">${fmtMoney(totalBudget)} ETB</span></div>
+            <div class="review__row"><span class="review__k">Cluster split</span><span class="review__v">${regionClusters.length ? "Yes — " + regionClusters.length + " clusters" : "No clusters yet"}</span></div>
+          </div>`;
         }
       }
     ],
@@ -2731,11 +2777,11 @@ function openRegionalPlanWizard() {
         if (p <= 75)  return `Hard · ${p}%`;
         return `Very Hard · ${p}%`;
       }
+      const yearFrom = currentYear + "-01-01";
+      const yearTo   = currentYear + "-12-31";
 
       for (const w of list) {
-        const allocs = regionClusters.length
-          ? (d.allocationsByWorkType[w.id] || [])
-          : [];
+        const allocs = regionClusters.length ? (d.allocationsByWorkType[w.id] || []) : [];
         const payload = {
           level: "regional",
           workTypeId: w.id,
@@ -2752,17 +2798,13 @@ function openRegionalPlanWizard() {
           budget: num(w.budget),
           year: currentYear,
           period: "yearly",
+          fromDate: yearFrom,
+          toDate: yearTo,
           status: "active",
           regionCode: sel.regionCode || sel.region || S.region,
-          sectorId: sel.id,
-          sectorName,
-          sectorCode: sel.code || null,
-          departmentId: dept.id,
-          departmentName: dept.name || null,
-          departmentCode: dept.code || null,
-          teamLeaderId: leader.id,
-          teamLeaderName: leader.name || leader.email || null,
-          teamLeaderRole: leader.role || null,
+          sectorId: sel.id, sectorName, sectorCode: sel.code || null,
+          departmentId: dept.id, departmentName: dept.name || null, departmentCode: dept.code || null,
+          teamLeaderId: leader.id, teamLeaderName: leader.name || leader.email || null, teamLeaderRole: leader.role || null,
           allocations: allocs.map(a => ({
             targetType:"cluster", targetId:a.targetId, targetName:a.targetName,
             target: num(a.target), budget: num(a.budget), childPlanId: null
@@ -2776,12 +2818,7 @@ function openRegionalPlanWizard() {
         await addDoc(collection(db, "notifications"), {
           type:"workplan_regional_created",
           title:`New regional work plan${list.length>1?"s":""}`,
-          body:
-            `${S.name} created ${list.length} plan(s) for ${sectorName} / ${departmentName} ` +
-            `(leader: ${leader.name || leader.email}).` +
-            (regionClusters.length
-              ? ""
-              : ` No clusters exist in this region yet — the plan has not been split.`),
+          body:`${S.name} created ${list.length} plan(s) for ${sectorName} / ${departmentName}.`,
           forRoles:["super_admin","regional_admin","cluster_directorate"],
           link:"workplans.html", read:false,
           createdAt: serverTimestamp(), createdBy: S.uid
@@ -2792,7 +2829,7 @@ function openRegionalPlanWizard() {
 }
 
 /* ============================================================
-   SPLIT REGIONAL PLAN TO CLUSTERS (post-creation)
+   SPLIT REGIONAL PLAN TO CLUSTERS
    ============================================================ */
 function openSplitRegionalPlan(planId) {
   const p = PLANS.find(x => x.id === planId);
@@ -2801,10 +2838,7 @@ function openSplitRegionalPlan(planId) {
   if ((p.allocations || []).length > 0) { toast("This plan is already split.", "error"); return; }
 
   const regionClusters = CLUSTERS.filter(c => c.regionCode === (p.regionCode || S.region));
-  if (!regionClusters.length) {
-    toast("No clusters exist in this region yet. Ask a regional admin to add clusters first.", "error");
-    return;
-  }
+  if (!regionClusters.length) { toast("No clusters exist in this region yet.", "error"); return; }
 
   openWizard({
     title: "Split to Clusters",
@@ -2813,189 +2847,734 @@ function openSplitRegionalPlan(planId) {
     successMessage: "Allocation sent to clusters.",
     size: "lg",
     initial: {
-      target: p.target,
-      budget: p.budget,
-      unit: p.unit,
+      target: p.target, budget: p.budget, unit: p.unit,
       allocations: regionClusters.map(c => ({
-        targetType: "cluster",
-        targetId: c.id,
+        targetType: "cluster", targetId: c.id,
         targetName: c.code ? c.code + " — " + c.name : c.name,
-        target: "",
-        budget: ""
+        target: "", budget: ""
       }))
     },
-    steps: [
-      {
-        label: "Split", title: "Split amount & budget across clusters",
-        render: (d) => `
-          <div class="alert alert--info">
-            <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-            <div>
-              Splitting <strong>${fmtNum(p.target)} ${escapeHtml(p.unit || "")}</strong>
-              and <strong>${fmtMoney(p.budget)} ETB</strong> across
-              ${regionClusters.length} cluster${regionClusters.length === 1 ? "" : "s"}.
-            </div>
-          </div>
-          <table class="alloc-table">
-            <thead>
-              <tr>
-                <th>Cluster</th>
-                <th style="width:140px">Amount</th>
-                <th style="width:160px">Budget (ETB)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${d.allocations.map((a, i) => `
-                <tr>
-                  <td><strong>${escapeHtml(a.targetName)}</strong></td>
-                  <td><input data-alloc-target="${i}" type="number" min="0" step="0.01"
-                             value="${escapeHtml(a.target || "")}" placeholder="0"></td>
-                  <td><input data-alloc-budget="${i}" type="number" min="0" step="1"
-                             value="${escapeHtml(a.budget || "")}" placeholder="0"></td>
-                </tr>`).join("")}
-            </tbody>
-          </table>
-          ${allocSummary(d.target, d.allocations)}`,
-        validate: d => {
-          const sumT = d.allocations.reduce((s,a) => s + num(a.target), 0);
-          const sumB = d.allocations.reduce((s,a) => s + num(a.budget), 0);
-          if (Math.abs(sumT - num(d.target)) > 0.01)
-            return `Amounts sum to ${fmtNum(sumT)} but total is ${fmtNum(d.target)}.`;
-          if (Math.abs(sumB - num(d.budget)) > 0.01)
-            return `Budgets sum to ${fmtMoney(sumB)} but total is ${fmtMoney(d.budget)}.`;
-          return null;
-        },
-        after: (root, data) => {
-          root.querySelectorAll("[data-alloc-target]").forEach(inp => {
-            inp.addEventListener("input", () => {
-              data.allocations[Number(inp.dataset.allocTarget)].target = inp.value;
-              const s = root.querySelector(".alloc-sum");
-              if (s) s.outerHTML = allocSummary(data.target, data.allocations);
-            });
+    steps: [{
+      label: "Split", title: "Split amount & budget across clusters",
+      render: (d) => `<div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+          <div>Splitting <strong>${fmtNum(p.target)} ${escapeHtml(p.unit || "")}</strong> and <strong>${fmtMoney(p.budget)} ETB</strong> across ${regionClusters.length} clusters.</div></div>
+        <table class="alloc-table"><thead><tr><th>Cluster</th><th style="width:140px">Amount</th><th style="width:160px">Budget</th></tr></thead>
+        <tbody>${d.allocations.map((a,i) => `<tr><td><strong>${escapeHtml(a.targetName)}</strong></td>
+          <td><input data-alloc-target="${i}" type="number" min="0" step="0.01" value="${escapeHtml(a.target||"")}" placeholder="0"></td>
+          <td><input data-alloc-budget="${i}" type="number" min="0" step="1" value="${escapeHtml(a.budget||"")}" placeholder="0"></td></tr>`).join("")}</tbody></table>
+        ${allocSummary(d.target, d.allocations)}`,
+      validate: d => {
+        const sumT = d.allocations.reduce((s,a) => s + num(a.target), 0);
+        const sumB = d.allocations.reduce((s,a) => s + num(a.budget), 0);
+        if (Math.abs(sumT - num(d.target)) > 0.01) return `Amounts sum to ${fmtNum(sumT)} but total is ${fmtNum(d.target)}.`;
+        if (Math.abs(sumB - num(d.budget)) > 0.01) return `Budgets sum to ${fmtMoney(sumB)} but total is ${fmtMoney(d.budget)}.`;
+        return null;
+      },
+      after: (root, data) => {
+        root.querySelectorAll("[data-alloc-target]").forEach(inp => {
+          inp.addEventListener("input", () => {
+            data.allocations[Number(inp.dataset.allocTarget)].target = inp.value;
+            const s = root.querySelector(".alloc-sum"); if (s) s.outerHTML = allocSummary(data.target, data.allocations);
           });
-          root.querySelectorAll("[data-alloc-budget]").forEach(inp => {
-            inp.addEventListener("input", () => {
-              data.allocations[Number(inp.dataset.allocBudget)].budget = inp.value;
-              const s = root.querySelector(".alloc-sum");
-              if (s) s.outerHTML = allocSummary(data.target, data.allocations);
-            });
+        });
+        root.querySelectorAll("[data-alloc-budget]").forEach(inp => {
+          inp.addEventListener("input", () => {
+            data.allocations[Number(inp.dataset.allocBudget)].budget = inp.value;
+            const s = root.querySelector(".alloc-sum"); if (s) s.outerHTML = allocSummary(data.target, data.allocations);
           });
-        }
+        });
       }
-    ],
+    }],
     onFinish: async (d) => {
       const allocs = d.allocations.map(a => ({
-        targetType: "cluster",
-        targetId: a.targetId,
-        targetName: a.targetName,
-        target: num(a.target),
-        budget: num(a.budget),
-        childPlanId: null
+        targetType: "cluster", targetId: a.targetId, targetName: a.targetName,
+        target: num(a.target), budget: num(a.budget), childPlanId: null
       }));
       await updateDoc(doc(db, "workplans", planId), {
-        allocations: allocs,
-        updatedAt: serverTimestamp()
+        allocations: allocs, updatedAt: serverTimestamp()
       });
-      try {
-        await addDoc(collection(db, "notifications"), {
-          type: "workplan_split_to_clusters",
-          title: "Work plan split to clusters",
-          body: `${S.name} split "${p.workTypeName || p.title}" across ${allocs.length} clusters.`,
-          forRoles: ["super_admin", "regional_admin", "cluster_directorate"],
-          link: "workplans.html", read: false,
-          createdAt: serverTimestamp(), createdBy: S.uid
-        });
-      } catch (e) {}
     }
   });
 }
 
 /* ============================================================
-   BREAKDOWN WIZARDS
+   BREAKDOWN WIZARD DISPATCH
    ============================================================ */
 function openBreakdownWizard(parentPlan, alloc) {
   const level = myLevel();
-  if (level === "cluster") return openClusterBreakdown(parentPlan, alloc);
-  if (level === "woreda")  return openWoredaBreakdown(parentPlan, alloc);
+  if (level === "cluster") return openCascadeBreakdown(parentPlan, alloc, "cluster");
+  if (level === "woreda")  return openCascadeBreakdown(parentPlan, alloc, "woreda");
   toast("You cannot break this plan down.", "error");
 }
 
-function openClusterBreakdown(parentPlan, alloc) {
+/* ============================================================
+   CASCADE BREAKDOWN WIZARD
+   Year → 4 Quarters → 3 Months → 4 Weeks (+ Add Week) → 5 Days
+   Then assign to Woredas (cluster) or Staff (woreda)
+   ============================================================ */
+function openCascadeBreakdown(parentPlan, alloc, level) {
+  const year = num(parentPlan.year) || new Date().getFullYear();
+  const yearFrom = parentPlan.fromDate || (year + "-01-01");
+  const yearTo   = parentPlan.toDate   || (year + "-12-31");
+  const totalTarget = num(alloc.target);
+  const totalBudget = num(alloc.budget);
+  const unit = parentPlan.unit || "";
+
+  const isClusterScope = level === "cluster";
   const cluster = CLUSTERS.find(c => c.id === S.clusterId);
-  const woredas = normalizeWoredas(cluster?.woredas);
-  if (!woredas.length) { toast("No woredas in this cluster yet.", "error"); return; }
+  const woredas = isClusterScope ? normalizeWoredas(cluster?.woredas) : [];
+
+  /* ---------- build the cascade data structure ---------- */
+  function buildCascade() {
+    const quarters = quarterRanges(year).map(q => ({
+      label: q.label,
+      fromDate: q.fromDate,
+      toDate: q.toDate,
+      target: 0, budget: 0,
+      months: monthRangesForQuarter(q).map(m => ({
+        label: m.label, shortLabel: m.shortLabel,
+        fromDate: m.fromDate, toDate: m.toDate,
+        target: 0, budget: 0,
+        weeks: weekRangesForMonth(m).map(w => ({
+          label: w.label, isExtra: !!w.isExtra,
+          fromDate: w.fromDate, toDate: w.toDate,
+          target: 0, budget: 0,
+          days: dayRangesForWeek(w).map(d => ({
+            label: d.label, shortLabel: d.shortLabel, date: d.date,
+            target: 0, budget: 0
+          }))
+        }))
+      }))
+    }));
+
+    /* auto-split amounts equal-per-level */
+    const qShareT = totalTarget / 4;
+    const qShareB = totalBudget / 4;
+    quarters.forEach(q => {
+      q.target = qShareT; q.budget = qShareB;
+      const mShareT = q.target / q.months.length;
+      const mShareB = q.budget / q.months.length;
+      q.months.forEach(m => {
+        m.target = mShareT; m.budget = mShareB;
+        const wShareT = m.target / m.weeks.length;
+        const wShareB = m.budget / m.weeks.length;
+        m.weeks.forEach(w => {
+          w.target = wShareT; w.budget = wShareB;
+          const dShareT = w.target / w.days.length;
+          const dShareB = w.budget / w.days.length;
+          w.days.forEach(d => { d.target = dShareT; d.budget = dShareB; });
+        });
+      });
+    });
+    return { quarters };
+  }
+
+  const data = {
+    title: (parentPlan.workTypeName || parentPlan.title || "Work plan") + " — " + (parentPlan.year || year) + " breakdown",
+    description: parentPlan.description || "",
+    cascade: buildCascade(),
+    /* final-step allocation */
+    assignTo: isClusterScope ? "woredas" : "staff",
+    /* For woreda: staff allocations per day (built later) */
+    staffByDay: {}, /* dateKey → { staffId, staffName } */
+    /* For cluster: woreda allocations per day (built later) */
+    woredaByDay: {} /* dateKey → { woredaCode, woredaName } */
+  };
+
+  /* ---------- helpers to recompute totals when the user edits ---------- */
+  function recalcFromDays(cascade) {
+    cascade.quarters.forEach(q => {
+      let qt = 0, qb = 0;
+      q.months.forEach(m => {
+        let mt = 0, mb = 0;
+        m.weeks.forEach(w => {
+          let wt = 0, wb = 0;
+          w.days.forEach(d => { wt += num(d.target); wb += num(d.budget); });
+          w.target = wt; w.budget = wb;
+          mt += wt; mb += wb;
+        });
+        m.target = mt; m.budget = mb;
+        qt += mt; qb += mb;
+      });
+      q.target = qt; q.budget = qb;
+    });
+  }
+  function recalcFromWeeks(cascade) {
+    cascade.quarters.forEach(q => {
+      let qt = 0, qb = 0;
+      q.months.forEach(m => {
+        let mt = 0, mb = 0;
+        m.weeks.forEach(w => { mt += num(w.target); mb += num(w.budget); });
+        m.target = mt; m.budget = mb;
+        qt += mt; qb += mb;
+      });
+      q.target = qt; q.budget = qb;
+    });
+  }
+  function recalcFromMonths(cascade) {
+    cascade.quarters.forEach(q => {
+      let qt = 0, qb = 0;
+      q.months.forEach(m => { qt += num(m.target); qb += num(m.budget); });
+      q.target = qt; q.budget = qb;
+    });
+  }
+
+  /* ---------- render helpers ---------- */
+  function cascadeTotalHtml(cascade, label) {
+    const sumT = cascade.quarters.reduce((s,q) => s + num(q.target), 0);
+    const sumB = cascade.quarters.reduce((s,q) => s + num(q.budget), 0);
+    const okT = Math.abs(sumT - totalTarget) < 0.01;
+    const okB = Math.abs(sumB - totalBudget) < 0.01;
+    return `<div class="cascade-total">
+      <div class="cascade-total__item">
+        <span class="cascade-total__label">Yearly total</span>
+        <span class="cascade-total__value">${fmtNum(totalTarget)} ${escapeHtml(unit)}</span>
+      </div>
+      <div class="cascade-total__item">
+        <span class="cascade-total__label">Sum of ${escapeHtml(label)}</span>
+        <span class="cascade-total__value ${okT?"ok":"bad"}">${fmtNum(sumT)} ${okT?"✓":"✗"}</span>
+      </div>
+      <div class="cascade-total__item">
+        <span class="cascade-total__label">Yearly budget</span>
+        <span class="cascade-total__value">${fmtMoney(totalBudget)} ETB</span>
+      </div>
+      <div class="cascade-total__item">
+        <span class="cascade-total__label">Sum of ${escapeHtml(label)} budgets</span>
+        <span class="cascade-total__value ${okB?"ok":"bad"}">${fmtMoney(sumB)} ETB ${okB?"✓":"✗"}</span>
+      </div>
+    </div>`;
+  }
+
+  function quarterRowHtml(q, qIndex) {
+    return `<div class="cascade-row" data-level="q" data-q="${qIndex}">
+      <span class="cascade-row__label">${escapeHtml(q.label)}</span>
+      <input type="date" data-field="q-from" data-q="${qIndex}" value="${escapeHtml(q.fromDate)}">
+      <span class="cascade-row__sep">→</span>
+      <input type="date" data-field="q-to" data-q="${qIndex}" value="${escapeHtml(q.toDate)}">
+      <input type="number" data-field="q-target" data-q="${qIndex}" value="${escapeHtml(q.target)}" min="0" step="0.01">
+      <input type="number" data-field="q-budget" data-q="${qIndex}" value="${escapeHtml(q.budget)}" min="0" step="1">
+    </div>`;
+  }
+
+  function monthRowHtml(m, qIndex, mIndex) {
+    return `<div class="cascade-row" data-level="m" data-q="${qIndex}" data-m="${mIndex}">
+      <span class="cascade-row__label">${escapeHtml(m.shortLabel)}</span>
+      <input type="date" data-field="m-from" data-q="${qIndex}" data-m="${mIndex}" value="${escapeHtml(m.fromDate)}">
+      <span class="cascade-row__sep">→</span>
+      <input type="date" data-field="m-to" data-q="${qIndex}" data-m="${mIndex}" value="${escapeHtml(m.toDate)}">
+      <input type="number" data-field="m-target" data-q="${qIndex}" data-m="${mIndex}" value="${escapeHtml(m.target)}" min="0" step="0.01">
+      <input type="number" data-field="m-budget" data-q="${qIndex}" data-m="${mIndex}" value="${escapeHtml(m.budget)}" min="0" step="1">
+    </div>`;
+  }
+
+  function weekRowHtml(w, qIndex, mIndex, wIndex) {
+    return `<div class="cascade-row" data-level="w" data-q="${qIndex}" data-m="${mIndex}" data-w="${wIndex}">
+      <span class="cascade-row__label">${escapeHtml(w.label)}${w.isExtra ? ' <span class="cascade-badge cascade-badge--d" style="font-size:9px">extra</span>' : ''}</span>
+      <input type="date" data-field="w-from" data-q="${qIndex}" data-m="${mIndex}" data-w="${wIndex}" value="${escapeHtml(w.fromDate)}">
+      <span class="cascade-row__sep">→</span>
+      <input type="date" data-field="w-to" data-q="${qIndex}" data-m="${mIndex}" data-w="${wIndex}" value="${escapeHtml(w.toDate)}">
+      <input type="number" data-field="w-target" data-q="${qIndex}" data-m="${mIndex}" data-w="${wIndex}" value="${escapeHtml(w.target)}" min="0" step="0.01">
+      <input type="number" data-field="w-budget" data-q="${qIndex}" data-m="${mIndex}" data-w="${wIndex}" value="${escapeHtml(w.budget)}" min="0" step="1">
+    </div>`;
+  }
+
+  function dayRowHtml(d, qIndex, mIndex, wIndex, dIndex) {
+    return `<div class="cascade-row cascade-row--day" data-level="d" data-q="${qIndex}" data-m="${mIndex}" data-w="${wIndex}" data-d="${dIndex}">
+      <span class="cascade-row__label">${escapeHtml(d.shortLabel)}</span>
+      <input type="date" data-field="d-date" data-q="${qIndex}" data-m="${mIndex}" data-w="${wIndex}" data-d="${dIndex}" value="${escapeHtml(d.date)}">
+      <span class="cascade-row__sep">•</span>
+      <span style="font-size:11.5px;color:var(--muted);font-family:ui-monospace,monospace">${escapeHtml(d.date)}</span>
+      <input type="number" data-field="d-target" data-q="${qIndex}" data-m="${mIndex}" data-w="${wIndex}" data-d="${dIndex}" value="${escapeHtml(d.target)}" min="0" step="0.01">
+      <input type="number" data-field="d-budget" data-q="${qIndex}" data-m="${mIndex}" data-w="${wIndex}" data-d="${dIndex}" value="${escapeHtml(d.budget)}" min="0" step="1">
+    </div>`;
+  }
+
+  /* ---------- step renders ---------- */
+  function renderConfirm(d) {
+    return `<div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+      <div>You received <strong>${fmtNum(totalTarget)} ${escapeHtml(unit)}</strong> and <strong>${fmtMoney(totalBudget)} ETB</strong>. This wizard splits the yearly allocation into quarters, months, weeks and days. Every level uses date pickers.</div></div>
+      <div class="field"><label class="field__required">Breakdown title</label>
+        <input data-field="title" value="${escapeHtml(d.title)}"></div>
+      <div class="field"><label>Description</label>
+        <textarea data-field="description">${escapeHtml(d.description)}</textarea></div>
+      <div class="review">
+        <div class="review__row"><span class="review__k">Source plan</span><span class="review__v">${escapeHtml(parentPlan.workTypeName || parentPlan.title || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Year</span><span class="review__v">${year}</span></div>
+        <div class="review__row"><span class="review__k">Year range</span><span class="review__v">${escapeHtml(fmtDateDisplay(yearFrom))} → ${escapeHtml(fmtDateDisplay(yearTo))}</span></div>
+        <div class="review__row"><span class="review__k">Your scope</span><span class="review__v">${escapeHtml(isClusterScope ? (S.clusterName || "Cluster") : (S.woredaName || "Woreda / City"))}</span></div>
+      </div>`;
+  }
+
+  function renderQuarters(d) {
+    const c = d.cascade;
+    return cascadeTotalHtml(c, "quarters") +
+      c.quarters.map((q, i) => `
+        <div class="cascade-group">
+          <div class="cascade-group__head is-quarter">
+            <span class="cascade-badge cascade-badge--q">Quarter</span>
+            <div><div class="cascade-group__title">${escapeHtml(q.label)} — ${year}</div>
+              <div class="cascade-group__sub">${escapeHtml(q.fromDate)} → ${escapeHtml(q.toDate)}</div></div>
+          </div>
+          <div class="cascade-group__body">${quarterRowHtml(q, i)}</div>
+        </div>`).join("");
+  }
+
+  function renderMonths(d) {
+    const c = d.cascade;
+    return cascadeTotalHtml(c, "quarters") +
+      c.quarters.map((q, qi) => `
+        <div class="cascade-group">
+          <div class="cascade-group__head is-quarter">
+            <span class="cascade-badge cascade-badge--q">${escapeHtml(q.label)}</span>
+            <div><div class="cascade-group__title">Months of ${escapeHtml(q.label)}</div>
+              <div class="cascade-group__sub">${fmtNum(q.target)} ${escapeHtml(unit)} · ${fmtMoney(q.budget)} ETB</div></div>
+          </div>
+          <div class="cascade-group__body">${q.months.map((m, mi) => monthRowHtml(m, qi, mi)).join("")}</div>
+        </div>`).join("");
+  }
+
+  function renderWeeks(d) {
+    const c = d.cascade;
+    let html = cascadeTotalHtml(c, "quarters");
+    c.quarters.forEach((q, qi) => {
+      q.months.forEach((m, mi) => {
+        const wCount = m.weeks.length;
+        const canAddWeek = wCount < 6; /* allow up to 6 */
+        html += `<div class="cascade-group">
+          <div class="cascade-group__head is-month">
+            <span class="cascade-badge cascade-badge--m">${escapeHtml(m.shortLabel)}</span>
+            <div><div class="cascade-group__title">Weeks of ${escapeHtml(m.shortLabel)}</div>
+              <div class="cascade-group__sub">${fmtNum(m.target)} ${escapeHtml(unit)} · ${fmtMoney(m.budget)} ETB</div></div>
+          </div>
+          <div class="cascade-group__body">
+            ${m.weeks.map((w, wi) => weekRowHtml(w, qi, mi, wi)).join("")}
+            ${canAddWeek ? `<div class="cascade-actions">
+              <button type="button" class="cascade-add-week" data-add-week data-q="${qi}" data-m="${mi}">
+                <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add additional week
+              </button>
+            </div>` : ""}
+          </div>
+        </div>`;
+      });
+    });
+    return html;
+  }
+
+  function renderDays(d) {
+    const c = d.cascade;
+    let html = cascadeTotalHtml(c, "quarters");
+    c.quarters.forEach((q, qi) => {
+      q.months.forEach((m, mi) => {
+        m.weeks.forEach((w, wi) => {
+          html += `<div class="cascade-group">
+            <div class="cascade-group__head is-week">
+              <span class="cascade-badge cascade-badge--w">${escapeHtml(w.label)}</span>
+              <div><div class="cascade-group__title">${escapeHtml(m.shortLabel)} · ${escapeHtml(w.label)}</div>
+                <div class="cascade-group__sub">${escapeHtml(w.fromDate)} → ${escapeHtml(w.toDate)} · ${fmtNum(w.target)} ${escapeHtml(unit)}</div></div>
+            </div>
+            <div class="cascade-group__body">
+              ${w.days.map((dd, di) => dayRowHtml(dd, qi, mi, wi, di)).join("")}
+            </div>
+          </div>`;
+        });
+      });
+    });
+    return html;
+  }
+
+  /* ---------- final assignment step ---------- */
+  function renderAssign(d) {
+    if (isClusterScope) {
+      if (!woredas.length) {
+        return `<div class="alert alert--warning"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+          <div>No woredas / cities exist in your cluster yet. Ask your regional admin to add them.</div></div>`;
+      }
+      const flat = [];
+      d.cascade.quarters.forEach((q, qi) => q.months.forEach((m, mi) => m.weeks.forEach((w, wi) => w.days.forEach((dd, di) => {
+        flat.push({ qi, mi, wi, di, day: dd });
+      }))));
+      return `<div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+          <div>Assign each working day to a woreda / city. Leave days you want to keep at cluster level unassigned.</div></div>
+        <div style="max-height:420px;overflow-y:auto;padding-right:6px">
+          ${flat.map(item => {
+            const key = item.day.date;
+            const cur = d.woredaByDay[key] || {};
+            return `<div class="cascade-row" style="grid-template-columns:150px 1fr 100px">
+              <span class="cascade-row__label" style="font-family:ui-monospace,monospace;font-size:11.5px">${escapeHtml(fmtDateDisplay(item.day.date))}</span>
+              <select data-woreda-day="${escapeHtml(key)}">
+                <option value="">— Keep at cluster —</option>
+                ${woredas.map(w => `<option value="${escapeHtml(w.code)}" ${cur.woredaCode===w.code?"selected":""}>${escapeHtml(w.code)} — ${escapeHtml(w.name)}</option>`).join("")}
+              </select>
+              <span style="font-family:ui-monospace,monospace;font-weight:800;font-size:12px;text-align:right">${fmtNum(item.day.target)} <span style="color:var(--muted);font-weight:600">${escapeHtml(unit)}</span></span>
+            </div>`;
+          }).join("")}
+        </div>`;
+    }
+    /* Woreda: assign each day to a staff member */
+    const staffCandidates = USERS.filter(u =>
+      u.woredaCode === S.woredaCode && u.active !== false &&
+      ["employee","team_leader","manager","woreda_city"].includes(u.role)
+    );
+    if (!staffCandidates.length) {
+      return `<div class="alert alert--warning"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+          <div>No active staff found in your woreda / city yet. Add staff first on the Users & Staff page.</div></div>`;
+    }
+    const flat = [];
+    d.cascade.quarters.forEach((q, qi) => q.months.forEach((m, mi) => m.weeks.forEach((w, wi) => w.days.forEach((dd, di) => {
+      flat.push({ qi, mi, wi, di, day: dd });
+    }))));
+    return `<div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div>Assign each working day to a staff member. Once assigned, the employee will see it in their <strong>My Work Plans</strong> page with the exact date and amount.</div></div>
+      <div style="max-height:420px;overflow-y:auto;padding-right:6px">
+        ${flat.map(item => {
+          const key = item.day.date;
+          const cur = d.staffByDay[key] || {};
+          return `<div class="cascade-row" style="grid-template-columns:150px 1fr 100px">
+            <span class="cascade-row__label" style="font-family:ui-monospace,monospace;font-size:11.5px">${escapeHtml(fmtDateDisplay(item.day.date))}</span>
+            <select data-staff-day="${escapeHtml(key)}">
+              <option value="">— Unassigned —</option>
+              ${staffCandidates.map(u => `<option value="${u.id}" ${cur.staffId===u.id?"selected":""}>${escapeHtml(u.name || u.email)} — ${escapeHtml(roleLabel(u.role))}</option>`).join("")}
+            </select>
+            <span style="font-family:ui-monospace,monospace;font-weight:800;font-size:12px;text-align:right">${fmtNum(item.day.target)} <span style="color:var(--muted);font-weight:600">${escapeHtml(unit)}</span></span>
+          </div>`;
+        }).join("")}
+      </div>`;
+  }
+
+  /* ---------- review step ---------- */
+  function renderReview(d) {
+    const c = d.cascade;
+    let totalQ = 0, totalB = 0;
+    c.quarters.forEach(q => { totalQ += num(q.target); totalB += num(q.budget); });
+    const assignedDays = isClusterScope
+      ? Object.values(d.woredaByDay || {}).filter(x => x && x.woredaCode).length
+      : Object.values(d.staffByDay  || {}).filter(x => x && x.staffId).length;
+    const totalDays = c.quarters.reduce((s,q) =>
+      s + q.months.reduce((s2,m) => s2 + m.weeks.reduce((s3,w) => s3 + w.days.length, 0), 0), 0);
+
+    return `<div class="review" style="margin-bottom:18px">
+      <div class="review__row"><span class="review__k">Title</span><span class="review__v">${escapeHtml(d.title)}</span></div>
+      <div class="review__row"><span class="review__k">Year range</span><span class="review__v">${escapeHtml(fmtDateDisplay(yearFrom))} → ${escapeHtml(fmtDateDisplay(yearTo))}</span></div>
+      <div class="review__row"><span class="review__k">Quarters</span><span class="review__v">${c.quarters.length}</span></div>
+      <div class="review__row"><span class="review__k">Total quarters amount</span><span class="review__v">${fmtNum(totalQ)} ${escapeHtml(unit)} <span style="color:var(--success)">✓</span></span></div>
+      <div class="review__row"><span class="review__k">Total quarters budget</span><span class="review__v">${fmtMoney(totalB)} ETB</span></div>
+      <div class="review__row"><span class="review__k">Days in cascade</span><span class="review__v">${totalDays}</span></div>
+      <div class="review__row"><span class="review__k">Assigned days</span><span class="review__v">${assignedDays} / ${totalDays} ${assignedDays === totalDays ? '<span style="color:var(--success)">✓</span>' : ''}</span></div>
+    </div>
+    <div style="font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">Quarters</div>
+    <div class="review" style="margin-bottom:18px">
+      ${c.quarters.map(q => `<div class="review__row">
+        <span class="review__k">${escapeHtml(q.label)}</span>
+        <span class="review__v">${escapeHtml(q.fromDate)} → ${escapeHtml(q.toDate)} · <strong>${fmtNum(q.target)} ${escapeHtml(unit)}</strong> · ${fmtMoney(q.budget)} ETB</span>
+      </div>`).join("")}
+    </div>`;
+  }
+
+  /* ---------- wizard steps ---------- */
+  const steps = [
+    { label:"Confirm",       title:"Confirm scope & title",
+      render: renderConfirm,
+      validate: (d) => {
+        if (!d.title || d.title.trim().length < 3) return "Title is required.";
+        return null;
+      }
+    },
+    { label:"4 Quarters",    title:"Split the year into 4 quarters",
+      render: renderQuarters,
+      validate: (d) => {
+        const sum = d.cascade.quarters.reduce((s,q) => s + num(q.target), 0);
+        if (Math.abs(sum - totalTarget) > 0.01) return `Quarters sum to ${fmtNum(sum)} but yearly total is ${fmtNum(totalTarget)}.`;
+        const sumB = d.cascade.quarters.reduce((s,q) => s + num(q.budget), 0);
+        if (Math.abs(sumB - totalBudget) > 0.01) return `Quarter budgets sum to ${fmtMoney(sumB)} but yearly budget is ${fmtMoney(totalBudget)}.`;
+        for (let i = 0; i < d.cascade.quarters.length; i++) {
+          const q = d.cascade.quarters[i];
+          if (!q.fromDate || !q.toDate) return `${q.label}: dates are required.`;
+          if (q.fromDate > q.toDate) return `${q.label}: start date must be before end date.`;
+        }
+        return null;
+      },
+      after: (root, data) => {
+        root.querySelectorAll("[data-field='q-target']").forEach(inp => {
+          inp.addEventListener("input", () => {
+            const qi = Number(inp.dataset.q);
+            data.cascade.quarters[qi].target = inp.value;
+          });
+        });
+        root.querySelectorAll("[data-field='q-budget']").forEach(inp => {
+          inp.addEventListener("input", () => {
+            const qi = Number(inp.dataset.q);
+            data.cascade.quarters[qi].budget = inp.value;
+          });
+        });
+        root.querySelectorAll("[data-field='q-from']").forEach(inp => {
+          inp.addEventListener("change", () => {
+            const qi = Number(inp.dataset.q);
+            data.cascade.quarters[qi].fromDate = inp.value;
+          });
+        });
+        root.querySelectorAll("[data-field='q-to']").forEach(inp => {
+          inp.addEventListener("change", () => {
+            const qi = Number(inp.dataset.q);
+            data.cascade.quarters[qi].toDate = inp.value;
+          });
+        });
+      }
+    },
+    { label:"3 Months",      title:"Split each quarter into 3 months",
+      render: renderMonths,
+      validate: (d) => {
+        for (let qi = 0; qi < d.cascade.quarters.length; qi++) {
+          const q = d.cascade.quarters[qi];
+          const sum = q.months.reduce((s,m) => s + num(m.target), 0);
+          if (Math.abs(sum - num(q.target)) > 0.01) return `${q.label} months sum to ${fmtNum(sum)} but quarter total is ${fmtNum(q.target)}.`;
+          for (const m of q.months) {
+            if (!m.fromDate || !m.toDate) return `${m.label}: dates required.`;
+            if (m.fromDate > m.toDate) return `${m.label}: start must be before end.`;
+          }
+        }
+        return null;
+      },
+      after: (root, data) => {
+        ["m-target","m-budget"].forEach(f => {
+          root.querySelectorAll(`[data-field='${f}']`).forEach(inp => {
+            inp.addEventListener("input", () => {
+              const qi = Number(inp.dataset.q), mi = Number(inp.dataset.m);
+              data.cascade.quarters[qi].months[mi][f === "m-target" ? "target" : "budget"] = inp.value;
+            });
+          });
+        });
+        ["m-from","m-to"].forEach(f => {
+          root.querySelectorAll(`[data-field='${f}']`).forEach(inp => {
+            inp.addEventListener("change", () => {
+              const qi = Number(inp.dataset.q), mi = Number(inp.dataset.m);
+              data.cascade.quarters[qi].months[mi][f === "m-from" ? "fromDate" : "toDate"] = inp.value;
+            });
+          });
+        });
+      }
+    },
+    { label:"4 Weeks",       title:"Split each month into weeks (add extra weeks if needed)",
+      render: renderWeeks,
+      validate: (d) => {
+        for (let qi = 0; qi < d.cascade.quarters.length; qi++) {
+          const q = d.cascade.quarters[qi];
+          for (let mi = 0; mi < q.months.length; mi++) {
+            const m = q.months[mi];
+            const sum = m.weeks.reduce((s,w) => s + num(w.target), 0);
+            if (Math.abs(sum - num(m.target)) > 0.01) return `${m.shortLabel} weeks sum to ${fmtNum(sum)} but month total is ${fmtNum(m.target)}.`;
+            for (const w of m.weeks) {
+              if (!w.fromDate || !w.toDate) return `${m.shortLabel} · ${w.label}: dates required.`;
+              if (w.fromDate > w.toDate) return `${w.label}: start must be before end.`;
+            }
+          }
+        }
+        return null;
+      },
+      after: (root, data, refresh) => {
+        ["w-target","w-budget"].forEach(f => {
+          root.querySelectorAll(`[data-field='${f}']`).forEach(inp => {
+            inp.addEventListener("input", () => {
+              const qi = Number(inp.dataset.q), mi = Number(inp.dataset.m), wi = Number(inp.dataset.w);
+              data.cascade.quarters[qi].months[mi].weeks[wi][f === "w-target" ? "target" : "budget"] = inp.value;
+            });
+          });
+        });
+        ["w-from","w-to"].forEach(f => {
+          root.querySelectorAll(`[data-field='${f}']`).forEach(inp => {
+            inp.addEventListener("change", () => {
+              const qi = Number(inp.dataset.q), mi = Number(inp.dataset.m), wi = Number(inp.dataset.w);
+              data.cascade.quarters[qi].months[mi].weeks[wi][f === "w-from" ? "fromDate" : "toDate"] = inp.value;
+            });
+          });
+        });
+        root.querySelectorAll("[data-add-week]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const qi = Number(btn.dataset.q), mi = Number(btn.dataset.m);
+            const m = data.cascade.quarters[qi].months[mi];
+            const last = m.weeks[m.weeks.length - 1];
+            const start = addDays(last.toDate, 1);
+            const end = addDays(start, 6);
+            m.weeks.push({
+              label: "Week " + (m.weeks.length + 1),
+              isExtra: true,
+              fromDate: start,
+              toDate: end > m.toDate ? m.toDate : end,
+              target: 0, budget: 0,
+              days: dayRangesForWeek({ fromDate: start, toDate: end }).map(d => ({
+                label: d.label, shortLabel: d.shortLabel, date: d.date,
+                target: 0, budget: 0
+              }))
+            });
+            refresh();
+          });
+        });
+      }
+    },
+    { label:"5 Days",        title:"Split each week into working days",
+      render: renderDays,
+      validate: (d) => {
+        for (const q of d.cascade.quarters) for (const m of q.months) for (const w of m.weeks) {
+          const sum = w.days.reduce((s,dd) => s + num(dd.target), 0);
+          if (Math.abs(sum - num(w.target)) > 0.01) return `${w.label}: days sum to ${fmtNum(sum)} but week total is ${fmtNum(w.target)}.`;
+          for (const dd of w.days) {
+            if (!dd.date) return `${w.label} · ${dd.label}: date required.`;
+          }
+        }
+        return null;
+      },
+      after: (root, data) => {
+        ["d-target","d-budget"].forEach(f => {
+          root.querySelectorAll(`[data-field='${f}']`).forEach(inp => {
+            inp.addEventListener("input", () => {
+              const qi = Number(inp.dataset.q), mi = Number(inp.dataset.m),
+                    wi = Number(inp.dataset.w), di = Number(inp.dataset.d);
+              data.cascade.quarters[qi].months[mi].weeks[wi].days[di][f === "d-target" ? "target" : "budget"] = inp.value;
+            });
+          });
+        });
+        root.querySelectorAll("[data-field='d-date']").forEach(inp => {
+          inp.addEventListener("change", () => {
+            const qi = Number(inp.dataset.q), mi = Number(inp.dataset.m),
+                  wi = Number(inp.dataset.w), di = Number(inp.dataset.d);
+            data.cascade.quarters[qi].months[mi].weeks[wi].days[di].date = inp.value;
+          });
+        });
+      }
+    },
+    { label: isClusterScope ? "Assign to Woredas" : "Assign to Staff",
+      title: isClusterScope ? "Assign each day to a woreda" : "Assign each day to a staff member",
+      render: renderAssign,
+      validate: (d) => {
+        if (isClusterScope) {
+          if (!woredas.length) return "No woredas in this cluster yet. Ask your regional admin to add them.";
+        } else {
+          const staffCandidates = USERS.filter(u =>
+            u.woredaCode === S.woredaCode && u.active !== false &&
+            ["employee","team_leader","manager","woreda_city"].includes(u.role)
+          );
+          if (!staffCandidates.length) return "No active staff found in your woreda. Add staff first.";
+        }
+        return null;
+      },
+      after: (root, data) => {
+        if (isClusterScope) {
+          root.querySelectorAll("[data-woreda-day]").forEach(sel => {
+            sel.addEventListener("change", () => {
+              const key = sel.dataset.woredaDay;
+              const code = sel.value;
+              if (!code) {
+                delete data.woredaByDay[key];
+                return;
+              }
+              const w = woredas.find(x => x.code === code);
+              data.woredaByDay[key] = {
+                woredaCode: code,
+                woredaName: w ? w.name : code,
+                woredaNameFull: w ? (w.code + " — " + w.name) : code
+              };
+            });
+          });
+        } else {
+          root.querySelectorAll("[data-staff-day]").forEach(sel => {
+            sel.addEventListener("change", () => {
+              const key = sel.dataset.staffDay;
+              const id = sel.value;
+              if (!id) {
+                delete data.staffByDay[key];
+                return;
+              }
+              const u = USERS.find(x => x.id === id);
+              data.staffByDay[key] = {
+                staffId: id,
+                staffName: u ? (u.name || u.email) : id
+              };
+            });
+          });
+        }
+      }
+    },
+    { label:"Review", title:"Review and create the breakdown plan",
+      render: renderReview
+    }
+  ];
 
   openWizard({
-    title: "Split Allocation to Woredas",
-    subtitle: `From: ${parentPlan.title}`,
-    finishLabel: "Send to Woredas",
-    successMessage: "Allocation sent to woredas.",
-    size: "lg",
-    initial: {
-      title: `${parentPlan.title} — ${cluster?.name || "Cluster"} breakdown`,
-      description: parentPlan.description || "",
-      unit: parentPlan.unit,
-      target: alloc.target, budget: alloc.budget,
-      allocations: woredas.map(w => ({
-        targetType:"woreda", targetId:w.code,
-        targetName: w.code ? w.code + " — " + w.name : w.name,
-        target:"", budget:""
-      }))
-    },
-    steps: [
-      { label:"Confirm", title:"Confirm scope",
-        render: (d) => `
-          <div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-            <div>You received <strong>${fmtNum(alloc.target)} ${escapeHtml(parentPlan.unit)}</strong>
-              and <strong>${fmtMoney(alloc.budget)} ETB</strong>. Split across woredas.</div></div>
-          <div class="field"><label class="field__required">Breakdown title</label>
-            <input data-field="title" value="${escapeHtml(d.title)}"></div>
-          <div class="field"><label>Description</label>
-            <textarea data-field="description">${escapeHtml(d.description)}</textarea></div>`,
-        validate: d => d.title && d.title.trim().length >= 3 ? null : "Title required." },
-      { label:"Split to Woredas", title:"Split amount & budget across woredas",
-        render: (d) => `
-          <table class="alloc-table">
-            <thead><tr><th>Woreda / City</th><th style="width:140px">Amount</th><th style="width:160px">Budget (ETB)</th></tr></thead>
-            <tbody>${d.allocations.map((a,i) => `
-              <tr><td><strong>${escapeHtml(a.targetName)}</strong></td>
-                <td><input data-alloc-target="${i}" type="number" min="0" step="0.01" value="${escapeHtml(a.target||"")}" placeholder="0"></td>
-                <td><input data-alloc-budget="${i}" type="number" min="0" step="1" value="${escapeHtml(a.budget||"")}" placeholder="0"></td></tr>`).join("")}
-            </tbody></table>
-          ${allocSummary(d.target, d.allocations)}`,
-        validate: d => {
-          const sumT = d.allocations.reduce((s,a) => s + num(a.target), 0);
-          const sumB = d.allocations.reduce((s,a) => s + num(a.budget), 0);
-          if (Math.abs(sumT - num(d.target)) > 0.01) return `Amounts sum to ${fmtNum(sumT)} but total is ${fmtNum(d.target)}.`;
-          if (Math.abs(sumB - num(d.budget)) > 0.01) return `Budgets sum to ${fmtMoney(sumB)} but total is ${fmtMoney(d.budget)}.`;
-          return null;
-        },
-        after: (root, data) => {
-          root.querySelectorAll("[data-alloc-target]").forEach(inp => {
-            inp.addEventListener("input", () => {
-              data.allocations[Number(inp.dataset.allocTarget)].target = inp.value;
-              const s = root.querySelector(".alloc-sum"); if (s) s.outerHTML = allocSummary(data.target, data.allocations);
-            });
-          });
-          root.querySelectorAll("[data-alloc-budget]").forEach(inp => {
-            inp.addEventListener("input", () => {
-              data.allocations[Number(inp.dataset.allocBudget)].budget = inp.value;
-              const s = root.querySelector(".alloc-sum"); if (s) s.outerHTML = allocSummary(data.target, data.allocations);
-            });
-          });
-        } },
-      { label:"Review", title:"Review and send",
-        render: (d) => `
-          <div class="review">
-            <div class="review__row"><span class="review__k">Cluster</span><span class="review__v">${escapeHtml(cluster?.name||"—")}</span></div>
-            <div class="review__row"><span class="review__k">Amount</span><span class="review__v">${fmtNum(d.target)} ${escapeHtml(d.unit)}</span></div>
-            <div class="review__row"><span class="review__k">Budget</span><span class="review__v">${fmtMoney(d.budget)} ETB</span></div>
-            <div class="review__row"><span class="review__k">Woredas</span><span class="review__v">${d.allocations.length}</span></div>
-          </div>` }
-    ],
+    title: isClusterScope ? "Cluster — Yearly Breakdown" : "Woreda / City — Yearly Breakdown",
+    subtitle: `${parentPlan.workTypeName || parentPlan.title || ""} · ${year}`,
+    finishLabel: "Create Breakdown Plan",
+    successMessage: "Breakdown created — woredas / staff will now see their day allocations.",
+    size: "xl",
+    initial: data,
+    steps,
     onFinish: async (d) => {
+      /* Recalc all totals from days to be safe */
+      recalcFromDays(d.cascade);
+
+      /* Build the child plan's allocations from the final assignment */
+      let allocations = [];
+
+      if (isClusterScope) {
+        const byWoreda = new Map();
+        d.cascade.quarters.forEach(q => q.months.forEach(m => m.weeks.forEach(w => w.days.forEach(dd => {
+          const a = d.woredaByDay[dd.date];
+          if (!a || !a.woredaCode) return;
+          if (!byWoreda.has(a.woredaCode)) byWoreda.set(a.woredaCode, {
+            targetType:"woreda", targetId:a.woredaCode, targetName:a.woredaNameFull || a.woredaName,
+            target: 0, budget: 0, days: []
+          });
+          const entry = byWoreda.get(a.woredaCode);
+          entry.target += num(dd.target);
+          entry.budget += num(dd.budget);
+          entry.days.push({ date: dd.date, target: num(dd.target), budget: num(dd.budget) });
+        }))));
+        allocations = Array.from(byWoreda.values());
+      } else {
+        const byStaff = new Map();
+        d.cascade.quarters.forEach(q => q.months.forEach(m => m.weeks.forEach(w => w.days.forEach(dd => {
+          const a = d.staffByDay[dd.date];
+          if (!a || !a.staffId) return;
+          if (!byStaff.has(a.staffId)) byStaff.set(a.staffId, {
+            targetType:"staff", targetId:a.staffId, targetName:a.staffName,
+            target: 0, budget: 0, days: []
+          });
+          const entry = byStaff.get(a.staffId);
+          entry.target += num(dd.target);
+          entry.budget += num(dd.budget);
+          entry.days.push({ date: dd.date, target: num(dd.target), budget: num(dd.budget) });
+        }))));
+        allocations = Array.from(byStaff.values());
+      }
+
+      /* ★ FIXED: stamp the assignment back into the tree so the
+         periodBreakdown is consistent with the flat dayIndex. */
+      d.cascade.quarters.forEach(q => q.months.forEach(m => m.weeks.forEach(w => w.days.forEach(dd => {
+        const a = isClusterScope ? d.woredaByDay[dd.date] : d.staffByDay[dd.date];
+        if (!a) return;
+        dd.assignedTo     = isClusterScope ? null : a.staffId;
+        dd.assignedToName = isClusterScope ? null : a.staffName;
+        dd.woredaCode     = isClusterScope ? a.woredaCode : null;
+        dd.woredaName     = isClusterScope ? a.woredaName : null;
+      }))));
+
+      /* Flat dayIndex (used by employees to look up their days directly) */
+      const dayIndex = [];
+      d.cascade.quarters.forEach(q => q.months.forEach(m => m.weeks.forEach(w => w.days.forEach(dd => {
+        const a = isClusterScope ? d.woredaByDay[dd.date] : d.staffByDay[dd.date];
+        if (!a) return;
+        dayIndex.push({
+          date: dd.date,
+          target: num(dd.target),
+          budget: num(dd.budget),
+          assignedTo: isClusterScope ? null : a.staffId,
+          assignedToName: isClusterScope ? null : a.staffName,
+          woredaCode: isClusterScope ? a.woredaCode : null,
+          woredaName: isClusterScope ? a.woredaName : null
+        });
+      }))));
+
       const payload = {
-        level:"cluster", parentPlanId: parentPlan.id,
+        level: isClusterScope ? "cluster" : "woreda",
+        parentPlanId: parentPlan.id,
         workTypeId: parentPlan.workTypeId || null,
         workTypeName: parentPlan.workTypeName || null,
         workTypeLoad: parentPlan.workTypeLoad || null,
@@ -3003,186 +3582,56 @@ function openClusterBreakdown(parentPlan, alloc) {
         workTypeLoadLabel: parentPlan.workTypeLoadLabel || null,
         workTypeMeasure: parentPlan.workTypeMeasure || null,
         title: d.title.trim(),
-        description: (d.description||"").trim() || null,
+        description: (d.description || "").trim() || null,
         unit: parentPlan.unit,
-        target: num(d.target), budget: num(d.budget),
-        year: currentYear, period:"yearly", status:"active",
-        regionCode: S.region, sectorId: parentPlan.sectorId, sectorName: parentPlan.sectorName || null,
+        target: num(alloc.target),
+        budget: num(alloc.budget),
+        year, period:"yearly", status:"active",
+        fromDate: yearFrom, toDate: yearTo,
+        regionCode: S.region,
+        sectorId: parentPlan.sectorId, sectorName: parentPlan.sectorName || null,
         departmentId: parentPlan.departmentId || null,
         departmentName: parentPlan.departmentName || null,
         teamLeaderId: parentPlan.teamLeaderId || null,
         teamLeaderName: parentPlan.teamLeaderName || null,
         clusterId: S.clusterId, clusterName: cluster?.name || null,
-        allocations: d.allocations.map(a => ({
-          targetType:"woreda", targetId:a.targetId, targetName:a.targetName,
-          target: num(a.target), budget: num(a.budget), childPlanId:null
-        })),
+        woredaCode: isClusterScope ? null : S.woredaCode,
+        woredaName: isClusterScope ? null : S.woredaName,
+        periodBreakdown: d.cascade,
+        dayIndex,
+        allocations,
         createdBy: S.uid, createdByName: S.name, createdByRole: S.role,
         createdAt: serverTimestamp(), updatedAt: serverTimestamp()
       };
+
       const ref = await addDoc(collection(db, "workplans"), payload);
-      const parentAllocs = (parentPlan.allocations || []).map(a =>
-        a.targetId === S.clusterId ? { ...a, childPlanId: ref.id } : a);
+
+      /* Mark the parent allocation as split */
+      const parentAllocs = (parentPlan.allocations || []).map(a => {
+        if (isClusterScope) {
+          if (a.targetType === "cluster" && a.targetId === S.clusterId)
+            return Object.assign({}, a, { childPlanId: ref.id });
+        } else {
+          if (a.targetType === "woreda" && allocMatchesMyWoreda(parentPlan, a))
+            return Object.assign({}, a, { childPlanId: ref.id });
+        }
+        return a;
+      });
       await updateDoc(doc(db, "workplans", parentPlan.id), {
         allocations: parentAllocs, updatedAt: serverTimestamp()
       });
-      return ref;
-    }
-  });
-}
 
-function openWoredaBreakdown(parentPlan, alloc) {
-  const staffCandidates = USERS.filter(u =>
-    u.woredaCode === S.woredaCode && u.active !== false &&
-    ["employee","manager","woreda_city"].includes(u.role)
-  );
-
-  openWizard({
-    title:"Split Allocation to Periods & Staff",
-    subtitle:`From: ${parentPlan.title}`,
-    finishLabel:"Send to Staff",
-    successMessage:"Work sent to staff.",
-    size:"lg",
-    initial:{
-      title:`${parentPlan.title} — ${S.woredaName || "Woreda"} work plan`,
-      description: parentPlan.description || "",
-      unit: parentPlan.unit, target: alloc.target, budget: alloc.budget,
-      period:"monthly",
-      allocations: [{ targetType:"staff", targetId:"", targetName:"", period:"monthly", target:"", budget:"" }]
-    },
-    steps:[
-      { label:"Confirm", title:"Confirm scope & period",
-        render: (d) => `
-          <div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-            <div>You received <strong>${fmtNum(alloc.target)} ${escapeHtml(parentPlan.unit)}</strong> and
-              <strong>${fmtMoney(alloc.budget)} ETB</strong>. Choose period, then assign to staff.</div></div>
-          <div class="field"><label class="field__required">Breakdown title</label>
-            <input data-field="title" value="${escapeHtml(d.title)}"></div>
-          <div class="field"><label>Description</label>
-            <textarea data-field="description">${escapeHtml(d.description)}</textarea></div>
-          <div class="field"><label class="field__required">Planning period</label>
-            <div class="period-picker">
-              ${PERIODS.map(p => `
-                <div class="period-btn ${d.period===p?"is-on":""}" data-period="${p}">
-                  <div class="period-btn__icon"><svg viewBox="0 0 24 24">${ICONS.calendar}</svg></div>
-                  <div class="period-btn__label">${PERIOD_LABELS[p]}</div>
-                </div>`).join("")}
-            </div></div>`,
-        validate: d => {
-          if (!d.title || d.title.trim().length < 3) return "Title required.";
-          if (!PERIODS.includes(d.period)) return "Choose a period.";
-          return null;
-        },
-        after: (root, data, refresh) => {
-          root.querySelectorAll("[data-period]").forEach(btn => {
-            btn.addEventListener("click", () => {
-              data.period = btn.dataset.period;
-              (data.allocations||[]).forEach(a => a.period = data.period);
-              refresh();
-            });
-          });
-        } },
-      { label:"Split to Staff", title:"Assign amount, budget & period to staff",
-        render: (d) => `
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div style="font-size:12.5px;font-weight:700;color:var(--muted)">Period:
-              <strong style="color:var(--primary)">${escapeHtml(PERIOD_LABELS[d.period])}</strong></div>
-            <button type="button" class="btn btn--sm" id="add-alloc-row">
-              <svg viewBox="0 0 24 24">${ICONS.plus}</svg> Add staff row</button>
-          </div>
-          <table class="alloc-table">
-            <thead><tr><th>Staff member</th><th style="width:130px">Amount</th><th style="width:150px">Budget (ETB)</th><th style="width:40px"></th></tr></thead>
-            <tbody>${d.allocations.map((a,i) => `
-              <tr>
-                <td><select data-alloc-staff="${i}"><option value="">— Choose staff —</option>
-                  ${staffCandidates.map(u => `<option value="${u.id}" ${a.targetId===u.id?"selected":""}>
-                    ${escapeHtml(u.name||u.email)} — ${escapeHtml(roleLabel(u.role))}</option>`).join("")}
-                </select></td>
-                <td><input data-alloc-target="${i}" type="number" min="0" step="0.01" value="${escapeHtml(a.target||"")}" placeholder="0"></td>
-                <td><input data-alloc-budget="${i}" type="number" min="0" step="1" value="${escapeHtml(a.budget||"")}" placeholder="0"></td>
-                <td>${d.allocations.length>1 ? `<button type="button" class="btn btn--sm btn--icon btn--danger" data-remove="${i}"><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>` : ""}</td>
-              </tr>`).join("")}
-            </tbody></table>
-          ${allocSummary(d.target, d.allocations)}`,
-        validate: d => {
-          if (!(d.allocations||[]).length) return "Add at least one staff row.";
-          for (const a of d.allocations) {
-            if (!a.targetId) return "Select a staff member in every row.";
-            if (!(num(a.target) > 0)) return "Each row needs an amount > 0.";
-          }
-          const sumT = d.allocations.reduce((s,a) => s + num(a.target), 0);
-          const sumB = d.allocations.reduce((s,a) => s + num(a.budget), 0);
-          if (Math.abs(sumT - num(d.target)) > 0.01) return `Amounts sum to ${fmtNum(sumT)} but total is ${fmtNum(d.target)}.`;
-          if (Math.abs(sumB - num(d.budget)) > 0.01) return `Budgets sum to ${fmtMoney(sumB)} but total is ${fmtMoney(d.budget)}.`;
-          return null;
-        },
-        after: (root, data, refresh) => {
-          root.querySelector("#add-alloc-row")?.addEventListener("click", () => {
-            data.allocations.push({ targetType:"staff", targetId:"", targetName:"", period:data.period, target:"", budget:"" });
-            refresh();
-          });
-          root.querySelectorAll("[data-remove]").forEach(btn => btn.addEventListener("click", () => {
-            data.allocations.splice(Number(btn.dataset.remove), 1); refresh();
-          }));
-          root.querySelectorAll("[data-alloc-staff]").forEach(sel => sel.addEventListener("change", () => {
-            const i = Number(sel.dataset.allocStaff);
-            const u = USERS.find(x => x.id === sel.value);
-            data.allocations[i].targetId = sel.value;
-            data.allocations[i].targetName = u ? (u.name || u.email) : "";
-          }));
-          root.querySelectorAll("[data-alloc-target]").forEach(inp => inp.addEventListener("input", () => {
-            data.allocations[Number(inp.dataset.allocTarget)].target = inp.value;
-            const s = root.querySelector(".alloc-sum"); if (s) s.outerHTML = allocSummary(data.target, data.allocations);
-          }));
-          root.querySelectorAll("[data-alloc-budget]").forEach(inp => inp.addEventListener("input", () => {
-            data.allocations[Number(inp.dataset.allocBudget)].budget = inp.value;
-            const s = root.querySelector(".alloc-sum"); if (s) s.outerHTML = allocSummary(data.target, data.allocations);
-          }));
-        } },
-      { label:"Review", title:"Review and send",
-        render: (d) => `
-          <div class="review">
-            <div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">${escapeHtml(S.woredaName||"—")}</span></div>
-            <div class="review__row"><span class="review__k">Period</span><span class="review__v"><span class="tag tag--blue">${escapeHtml(PERIOD_LABELS[d.period])}</span></span></div>
-            <div class="review__row"><span class="review__k">Amount</span><span class="review__v">${fmtNum(d.target)} ${escapeHtml(d.unit)}</span></div>
-            <div class="review__row"><span class="review__k">Staff</span><span class="review__v">${d.allocations.length}</span></div>
-          </div>` }
-    ],
-    onFinish: async (d) => {
-      const payload = {
-        level:"staff", parentPlanId: parentPlan.id,
-        workTypeId: parentPlan.workTypeId || null,
-        workTypeName: parentPlan.workTypeName || null,
-        workTypeLoad: parentPlan.workTypeLoad || null,
-        workTypeLoadPercent: parentPlan.workTypeLoadPercent || null,
-        workTypeLoadLabel: parentPlan.workTypeLoadLabel || null,
-        workTypeMeasure: parentPlan.workTypeMeasure || null,
-        title: d.title.trim(),
-        description: (d.description||"").trim() || null,
-        unit: parentPlan.unit,
-        target: num(d.target), budget: num(d.budget),
-        year: currentYear, period: d.period, status:"active",
-        regionCode: S.region, sectorId: parentPlan.sectorId, sectorName: parentPlan.sectorName || null,
-        departmentId: parentPlan.departmentId || null,
-        departmentName: parentPlan.departmentName || null,
-        teamLeaderId: parentPlan.teamLeaderId || null,
-        teamLeaderName: parentPlan.teamLeaderName || null,
-        clusterId: S.clusterId, clusterName: parentPlan.clusterName || null,
-        woredaCode: S.woredaCode, woredaName: S.woredaName,
-        allocations: d.allocations.map(a => ({
-          targetType:"staff", targetId:a.targetId, targetName:a.targetName,
-          target: num(a.target), budget: num(a.budget), period: d.period, childPlanId:null
-        })),
-        createdBy: S.uid, createdByName: S.name, createdByRole: S.role,
-        createdAt: serverTimestamp(), updatedAt: serverTimestamp()
-      };
-      const ref = await addDoc(collection(db, "workplans"), payload);
-      const parentAllocs = (parentPlan.allocations || []).map(a =>
-        a.targetId === S.woredaCode ? { ...a, childPlanId: ref.id } : a);
-      await updateDoc(doc(db, "workplans", parentPlan.id), {
-        allocations: parentAllocs, updatedAt: serverTimestamp()
-      });
-      return ref;
+      /* Notify */
+      try {
+        await addDoc(collection(db, "notifications"), {
+          type: isClusterScope ? "workplan_split_to_woredas" : "workplan_split_to_staff",
+          title: isClusterScope ? "Yearly plan broken down to woredas" : "Yearly plan broken down to staff",
+          body: `${S.name} broke down "${parentPlan.workTypeName || parentPlan.title}" into ${d.cascade.quarters.length} quarters, and assigned ${dayIndex.length} working days.`,
+          forRoles: isClusterScope ? ["super_admin","regional_admin","cluster_directorate","woreda_city"] : ["super_admin","regional_admin","cluster_directorate","woreda_city","employee"],
+          link: "workplans.html", read:false,
+          createdAt: serverTimestamp(), createdBy: S.uid
+        });
+      } catch (e) {}
     }
   });
 }
@@ -3195,9 +3644,28 @@ function openViewPlan(planId) {
   if (!p) return;
   const status = STATUS_META[p.status] || STATUS_META.draft;
   const mine = findMyPendingAllocation(p);
-  const visibleAllocs = isScopedViewer()
-    ? (mine ? [mine.alloc] : [])
-    : (p.allocations || []);
+  const visibleAllocs = isScopedViewer() ? (mine ? [mine.alloc] : []) : (p.allocations || []);
+
+  /* For pure staff, render the day schedule inside the modal too */
+  const staffDays = isStaff() && p.dayIndex
+    ? p.dayIndex.filter(d => d.assignedTo === S.uid)
+    : [];
+
+  let dayIndexHtml = "";
+  if (staffDays.length) {
+    dayIndexHtml = `
+      <div style="font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:22px 0 10px">My working days</div>
+      <table class="alloc-table">
+        <thead><tr><th>Date</th><th style="width:120px">Amount</th><th style="width:120px">Budget</th></tr></thead>
+        <tbody>
+          ${staffDays.map(d => `<tr>
+            <td style="font-family:ui-monospace,monospace">${escapeHtml(fmtDateDisplay(d.date))}</td>
+            <td style="font-family:ui-monospace,monospace;font-weight:700">${fmtNum(d.target)} ${escapeHtml(p.unit||"")}</td>
+            <td style="font-family:ui-monospace,monospace">${fmtMoney(d.budget)} ETB</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>`;
+  }
 
   openModal(`
     <div class="modal__head">
@@ -3221,12 +3689,11 @@ function openViewPlan(planId) {
             <strong>You have a pending allocation.</strong><br>
             Target: <strong>${fmtNum(mine.alloc.target)} ${escapeHtml(p.unit || "")}</strong>,
             Budget: <strong>${fmtMoney(mine.alloc.budget)} ETB</strong>.
-            Break this down to ${mine.forLevel === "cluster" ? "woredas" : "staff"}.
           </div>
         </div>` : ""}
       ${p.description ? `<p style="font-size:13.5px;color:var(--text-soft);line-height:1.65;margin-bottom:18px">${escapeHtml(p.description)}</p>` : ""}
       <div class="review">
-        ${p.teamLeaderName ? `<div class="review__row"><span class="review__k">Team Leader</span><span class="review__v">${escapeHtml(p.teamLeaderName)}</span></div>` : ""}
+        ${p.fromDate || p.toDate ? `<div class="review__row"><span class="review__k">Period range</span><span class="review__v">${escapeHtml(fmtDateDisplay(p.fromDate))} → ${escapeHtml(fmtDateDisplay(p.toDate))}</span></div>` : ""}
         <div class="review__row"><span class="review__k">Year</span><span class="review__v">${p.year||"—"}</span></div>
         <div class="review__row"><span class="review__k">Amount</span><span class="review__v">${fmtNum(p.target)} ${escapeHtml(p.unit||"")}</span></div>
         <div class="review__row"><span class="review__k">Budget</span><span class="review__v">${fmtMoney(p.budget)} ETB</span></div>
@@ -3254,6 +3721,7 @@ function openViewPlan(planId) {
                 '</td>' : ""}
             </tr>`).join("")}
           </tbody></table>` : ""}
+      ${dayIndexHtml}
     </div>
     <div class="modal__foot">
       <button class="btn" data-close>Close</button>
@@ -3372,49 +3840,42 @@ function confirmDeletePlan(planId) {
 /* ============================================================
    SUBSCRIPTIONS
    ============================================================ */
+/* ★ FIXED: do not hard-filter by region for pure staff.
+   Region codes are inconsistent across documents ("04" vs "Oromia"),
+   and a staff member can only ever see plans directly allocated to
+   them, so filtering here just silently hides their work. */
 function subscribePlans() {
   if (unsubPlans) unsubPlans();
   let q = collection(db, "workplans");
-  if (!isSuper() && S?.region) {
+
+  const skipRegionFilter = isSuper() || isStaff() || !S?.region;
+  if (!skipRegionFilter) {
     q = query(q, where("regionCode", "==", S.region));
   }
-  console.log("[workplans] subscribing plans:", isSuper() ? "all" : ("region=" + S.region));
 
   unsubPlans = onSnapshot(q,
     (snap) => {
       PLANS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      console.log("[workplans] plans loaded:", PLANS.length,
-                  "| visible:", visiblePlans().length,
-                  "| mine:", myAllocationRows().length);
       render();
     },
     (err) => {
-      console.warn("[workplans] plans subscription failed:", err.code, err.message);
       const fallback = onSnapshot(collection(db, "workplans"),
-        (snap) => {
-          PLANS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          render();
-        },
-        (e2) => {
-          console.error("[workplans] fallback also failed:", e2.code, e2.message);
-          toast("workplans: " + (e2.code || e2.message), "error");
-        });
+        (snap) => { PLANS = snap.docs.map(d => ({ id: d.id, ...d.data() })); render(); },
+        (e2) => { toast("workplans: " + (e2.code || e2.message), "error"); });
       unsubPlans = fallback;
     });
 }
-
 function subscribeUsers() {
   if (unsubUsers) unsubUsers();
   let q = collection(db, "users");
   if (isRegionalAdmin() && S.region) q = query(q, where("region", "==", S.region));
   else if ((isClusterDir() || isClusterAdmin()) && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
-  else if ((isWoredaCity() || isManager()) && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
+  else if ((isWoredaCity() || isManager() || isTeamLeader()) && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
   unsubUsers = onSnapshot(q, (snap) => {
     USERS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
     render();
   }, (err) => console.warn("[users]", err.code, err.message));
 }
-
 function subscribeClusters() {
   if (unsubClusters) unsubClusters();
   let q = collection(db, "clusters");
@@ -3424,38 +3885,23 @@ function subscribeClusters() {
     render();
   }, (err) => console.warn("[clusters]", err.code, err.message));
 }
-
 function subscribeSectors() {
   if (unsubSectors) unsubSectors();
   let q = collection(db, "sectors");
   if (S?.region) q = query(q, where("regionCode", "==", S.region));
-  unsubSectors = onSnapshot(q,
-    (snap) => {
-      SECTORS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-      render();
-    },
-    (err) => {
-      console.warn("[workplans] sectors onSnapshot error:", err.code, err.message);
-      const fq = S?.region
-        ? query(collection(db, "sectors"), where("regionCode", "==", S.region))
-        : collection(db, "sectors");
-      getDocs(fq).then(s => {
-        SECTORS = s.docs.map(d => ({ id:d.id, ...d.data() }));
-        render();
-      }).catch(e => console.error("[workplans] fallback failed:", e.code, e.message));
-    });
+  unsubSectors = onSnapshot(q, (snap) => {
+    SECTORS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    render();
+  }, (err) => console.warn("[sectors]", err.code, err.message));
 }
-
 function subscribeDepartments() {
   if (unsubDepartments) unsubDepartments();
   let q = collection(db, "departments");
   if (S?.region) q = query(q, where("regionCode", "==", S.region));
-  unsubDepartments = onSnapshot(q,
-    (snap) => {
-      DEPARTMENTS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-      render();
-    },
-    (err) => console.warn("[workplans] departments onSnapshot error:", err.code, err.message));
+  unsubDepartments = onSnapshot(q, (snap) => {
+    DEPARTMENTS = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    render();
+  }, (err) => console.warn("[departments]", err.code, err.message));
 }
 
 /* ============================================================
@@ -3516,7 +3962,7 @@ onAuthStateChanged(auth, async (user) => {
     uid: user.uid,
     role: userDoc?.role || "employee",
     email: user.email || "",
-    name: userDoc?.name || user.email?.split("@")[0] || "User",
+    name: userDoc?.name || userDoc?.fullName || user.email?.split("@")[0] || "User",
     photoURL: userDoc?.photoURL || null,
     region: userDoc?.region || userDoc?.regionCode || "",
     regionCode: userDoc?.regionCode || userDoc?.region || "",
@@ -3527,15 +3973,14 @@ onAuthStateChanged(auth, async (user) => {
     sectorId: userDoc?.sectorId || "",
     sectorName: userDoc?.sectorName || "",
     departmentId: userDoc?.departmentId || "",
+    departmentName: userDoc?.departmentName || "",
     officeId: userDoc?.officeId || "",
+    officeName: userDoc?.officeName || "",
     isDirector: userDoc?.isDirector === true
   };
-  console.log("[workplans] session:", {
-    role: S.role, region: S.region,
-    clusterId: S.clusterId, woredaCode: S.woredaCode
-  });
 
-  const allowed = ["super_admin","regional_admin","directorate","cluster_directorate","woreda_city","manager","admin","employee"];
+  const allowed = ["super_admin","regional_admin","directorate","cluster_directorate",
+                   "woreda_city","manager","team_leader","admin","employee"];
   if (!allowed.includes(S.role)) { window.location.replace("dashboard.html"); return; }
 
   renderSidebar();
@@ -3552,7 +3997,7 @@ onAuthStateChanged(auth, async (user) => {
   subscribePlans();
 });
 
-console.log("[workplans] booted — pending pill clickable, banner removed");
+console.log("[workplans] booted — cascade breakdown wizard ready");
 </script>
 
 </body>
