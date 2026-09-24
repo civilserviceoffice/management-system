@@ -619,7 +619,8 @@ const I18N = {
     regionDashboard: "Region Dashboard", clusterDashboard: "Cluster Dashboard",
     hrDashboard: "HR Dashboard", financeDashboard: "Finance Dashboard",
     directorateDashboard: "Directorate Dashboard", woredaDashboard: "Woreda Dashboard",
-    managerDashboard: "Manager Dashboard", myDashboard: "My Dashboard",
+    managerDashboard: "Manager Dashboard", teamLeaderDashboard: "Team Dashboard",
+    myDashboard: "My Dashboard",
     welcomeBack: "Welcome back", profile: "Profile", settings: "Settings", signOut: "Sign out",
     overview: "Overview", organization: "Organization",
     usersStaff: "Users & Staff", directorates: "Directorates",
@@ -645,6 +646,7 @@ const I18N = {
     totalEmployees: "Total Employees", payrollHeadcount: "Payroll Headcount",
     pendingPayments: "Pending Payments", budgetUtilisation: "Budget Utilisation",
     myDirectorateStaff: "My Directorate Staff", myWorkPlans: "My Work Plans",
+    myWorkPlanDays: "My Work Plan Days",
     presentToday: "Present Today", pendingItems: "Pending Items",
     officesInMyWoreda: "Offices in my woreda", staffInMyWoreda: "Staff in my woreda",
     myTeam: "My Team", onLeave: "On Leave",
@@ -662,11 +664,12 @@ const I18N = {
     role_admin: "Cluster Admin", role_directorate: "Regional Directorate",
     role_cluster_directorate: "Cluster Directorate", role_woreda_city: "Woreda / City",
     role_hrm: "HR Manager", role_finance: "Finance Officer",
-    role_manager: "Manager", role_employee: "Employee",
+    role_manager: "Manager", role_team_leader: "Team Leader", role_employee: "Employee",
     fullSystemAllRegions: "Full system — all regions",
     regionalAdmin: "Regional Admin", hrManagerOrgWide: "HR Manager — organisation-wide",
     clusterAdmin: "Cluster Admin", woredaCity: "Woreda / City", manager: "Manager",
-    employee: "Employee", allRegions: "All Regions", hrOrgWide: "HR — Organisation-wide",
+    teamLeader: "Team Leader", employee: "Employee",
+    allRegions: "All Regions", hrOrgWide: "HR — Organisation-wide",
     addOffice: "Add Office", addDirectorate: "Add Directorate", addCluster: "Add Cluster",
     addPerson: "Add Person", runPayroll: "Run Payroll", requestLeave: "Request Leave",
     addRegion: "Add Region", addStaff: "Add Staff", reviewLeave: "Review Leave",
@@ -691,7 +694,8 @@ const I18N = {
     regionDashboard: "Daashboordii Naannoo", clusterDashboard: "Daashboordii Garee",
     hrDashboard: "Daashboordii HR", financeDashboard: "Daashboordii Faayinaansii",
     directorateDashboard: "Daashboordii Qaama", woredaDashboard: "Daashboordii Aanaa",
-    managerDashboard: "Daashboordii Bulchaa", myDashboard: "Daashboordii Koo",
+    managerDashboard: "Daashboordii Bulchaa", teamLeaderDashboard: "Daashboordii Garee",
+    myDashboard: "Daashboordii Koo",
     welcomeBack: "Baga nagaan deebi'te", profile: "Profaayilii", settings: "Qindaa'ina",
     signOut: "Ba'i",
     overview: "Waliigala", organization: "Dhaabbata",
@@ -718,6 +722,7 @@ const I18N = {
     totalEmployees: "Hojjettoota Waliigalaa", payrollHeadcount: "Lakkoofsa Kaffaltii",
     pendingPayments: "Kaffaltiiwwan Eegaa", budgetUtilisation: "Itti Fayyadama Baajataa",
     myDirectorateStaff: "Hojjettoota Qaamaa Koo", myWorkPlans: "Karoora Hojii Koo",
+    myWorkPlanDays: "Guyyoota Karoora Hojii Koo",
     presentToday: "Har'a Argannoo", pendingItems: "Wanti Eegaa",
     officesInMyWoreda: "Waajjiraalee Aanaa Koo", staffInMyWoreda: "Hojjettoota Aanaa Koo",
     myTeam: "Garee Koo", onLeave: "Boqonnaa Irra Jiru",
@@ -735,11 +740,12 @@ const I18N = {
     role_admin: "Bulchaa Garee", role_directorate: "Qaama Naannoo",
     role_cluster_directorate: "Qaama Garee", role_woreda_city: "Aanaa / Magaalaa",
     role_hrm: "Bulchaa HR", role_finance: "Ogeessa Faayinaansii",
-    role_manager: "Bulchaa", role_employee: "Hojjetaa",
+    role_manager: "Bulchaa", role_team_leader: "Hogganaa Garee", role_employee: "Hojjetaa",
     fullSystemAllRegions: "Sirna guutuu — naannoolee hunda",
     regionalAdmin: "Bulchaa Naannoo", hrManagerOrgWide: "Bulchaa HR — dhaabbata guutuu",
     clusterAdmin: "Bulchaa Garee", woredaCity: "Aanaa / Magaalaa", manager: "Bulchaa",
-    employee: "Hojjetaa", allRegions: "Naannoolee Hunda", hrOrgWide: "HR — Dhaabbata guutuu",
+    teamLeader: "Hogganaa Garee", employee: "Hojjetaa",
+    allRegions: "Naannoolee Hunda", hrOrgWide: "HR — Dhaabbata guutuu",
     addOffice: "Waajjira Dabali", addDirectorate: "Qaama Dabali", addCluster: "Garee Dabali",
     addPerson: "Nama Dabali", runPayroll: "Kaffaltii Baasi", requestLeave: "Boqonnaa Gaafadhu",
     addRegion: "Naannoo Dabali", addStaff: "Hojjetaa Dabali", reviewLeave: "Boqonnaa Ilaali",
@@ -764,7 +770,8 @@ const I18N = {
     regionDashboard: "የክልል ዳሽቦርድ", clusterDashboard: "የክላስተር ዳሽቦርድ",
     hrDashboard: "የሰው ኃይል ዳሽቦርድ", financeDashboard: "የፋይናንስ ዳሽቦርድ",
     directorateDashboard: "የዳይሬክቶሬት ዳሽቦርድ", woredaDashboard: "የወረዳ ዳሽቦርድ",
-    managerDashboard: "የሥራ አስኪያጅ ዳሽቦርድ", myDashboard: "የእኔ ዳሽቦርድ",
+    managerDashboard: "የሥራ አስኪያጅ ዳሽቦርድ", teamLeaderDashboard: "የቡድን ዳሽቦርድ",
+    myDashboard: "የእኔ ዳሽቦርድ",
     welcomeBack: "እንኳን ደህና ተመለሱ", profile: "መገለጫ", settings: "ቅንብሮች",
     signOut: "ውጣ",
     overview: "አጠቃላይ እይታ", organization: "ድርጅት",
@@ -791,6 +798,7 @@ const I18N = {
     totalEmployees: "ጠቅላላ ሰራተኞች", payrollHeadcount: "የደመወዝ ቁጥር",
     pendingPayments: "በመጠበቅ ላይ ያሉ ክፍያዎች", budgetUtilisation: "የበጀት አጠቃቀም",
     myDirectorateStaff: "የእኔ ዳይሬክቶሬት ሰራተኞች", myWorkPlans: "የእኔ የሥራ እቅዶች",
+    myWorkPlanDays: "የእኔ የሥራ እቅድ ቀናት",
     presentToday: "ዛሬ የተገኙ", pendingItems: "በመጠበቅ ላይ ያሉ ነገሮች",
     officesInMyWoreda: "በእኔ ወረዳ ያሉ ቢሮዎች", staffInMyWoreda: "በእኔ ወረዳ ያሉ ሰራተኞች",
     myTeam: "የእኔ ቡድን", onLeave: "ፈቃድ ላይ",
@@ -808,11 +816,12 @@ const I18N = {
     role_admin: "የክላስተር አስተዳዳሪ", role_directorate: "የክልል ዳይሬክቶሬት",
     role_cluster_directorate: "የክላስተር ዳይሬክቶሬት", role_woreda_city: "ወረዳ / ከተማ",
     role_hrm: "የሰው ኃይል ሥራ አስኪያጅ", role_finance: "የፋይናንስ ኦፊሰር",
-    role_manager: "ሥራ አስኪያጅ", role_employee: "ሰራተኛ",
+    role_manager: "ሥራ አስኪያጅ", role_team_leader: "የቡድን መሪ", role_employee: "ሰራተኛ",
     fullSystemAllRegions: "ሙሉ ስርዓት — ሁሉም ክልሎች",
     regionalAdmin: "የክልል አስተዳዳሪ", hrManagerOrgWide: "የሰው ኃይል ሥራ አስኪያጅ — በድርጅቱ ሁሉ",
     clusterAdmin: "የክላስተር አስተዳዳሪ", woredaCity: "ወረዳ / ከተማ", manager: "ሥራ አስኪያጅ",
-    employee: "ሰራተኛ", allRegions: "ሁሉም ክልሎች", hrOrgWide: "HR — በድርጅቱ ሁሉ",
+    teamLeader: "የቡድን መሪ", employee: "ሰራተኛ",
+    allRegions: "ሁሉም ክልሎች", hrOrgWide: "HR — በድርጅቱ ሁሉ",
     addOffice: "ቢሮ ጨምር", addDirectorate: "ዳይሬክቶሬት ጨምር", addCluster: "ክላስተር ጨምር",
     addPerson: "ሰው ጨምር", runPayroll: "ደመወዝ አስኪድ", requestLeave: "ፈቃድ ጠይቅ",
     addRegion: "ክልል ጨምር", addStaff: "ሰራተኛ ጨምር", reviewLeave: "ፈቃድ ገምግም",
@@ -939,7 +948,7 @@ const ROLE_LABELS = {
   admin: "role_admin", directorate: "role_directorate",
   cluster_directorate: "role_cluster_directorate", woreda_city: "role_woreda_city",
   hrm: "role_hrm", finance: "role_finance",
-  manager: "role_manager", employee: "role_employee"
+  manager: "role_manager", team_leader: "role_team_leader", employee: "role_employee"
 };
 const roleLabel = (r) => {
   const key = ROLE_LABELS[r];
@@ -955,6 +964,7 @@ const isFinance = () => S?.role === "finance";
 const isDirectorate = () => S?.role === "directorate" || S?.role === "cluster_directorate";
 const isWoredaCity = () => S?.role === "woreda_city";
 const isManager = () => S?.role === "manager";
+const isTeamLeader = () => S?.role === "team_leader";
 const isEmployee = () => S?.role === "employee";
 
 /* ============================================================
@@ -986,6 +996,14 @@ function scopeConstraints() {
     if (S.woredaCode)    return [where("woredaCode",   "==", S.woredaCode)];
     return [where("clusterId", "==", S.clusterId)];
   }
+  // ★ FIXED: team leaders are scoped to their office/department/woreda,
+  //   not to their own empId (which would show only their own record).
+  if (isTeamLeader()) {
+    if (S.officeId)      return [where("officeId",     "==", S.officeId)];
+    if (S.departmentId)  return [where("departmentId", "==", S.departmentId)];
+    if (S.woredaCode)    return [where("woredaCode",   "==", S.woredaCode)];
+    return [where("clusterId", "==", S.clusterId)];
+  }
   return [where("empId", "==", S.empId)];
 }
 
@@ -1008,12 +1026,6 @@ async function scopedCount(collName, extra = []) {
 /* ============================================================
    ATTENDANCE COUNTERS (nested path, client-side date filter)
    ============================================================ */
-
-/**
- * Count attendance records for a specific date.
- * Reads attendance/{YYYY-MM}/records, applies scope constraints server-side,
- * but filters date + status client-side to avoid composite indexes.
- */
 async function countAttendanceForDate(isoDate, statuses = ["present","late","field"]) {
   const ym = isoDate.slice(0,7);
   const base = collection(db, "attendance", ym, "records");
@@ -1025,8 +1037,8 @@ async function countAttendanceForDate(isoDate, statuses = ["present","late","fie
     let n = 0;
     snap.forEach(d => {
       const x = d.data();
-      if (!x || x.date !== isoDate) return;         // date filter in JS
-      if (!statuses.includes(x.status)) return;      // status filter in JS
+      if (!x || x.date !== isoDate) return;
+      if (!statuses.includes(x.status)) return;
       n++;
     });
     console.log("[att-count]", isoDate, "ym=", ym, "constraints=", constraints.length, "->", n);
@@ -1037,10 +1049,6 @@ async function countAttendanceForDate(isoDate, statuses = ["present","late","fie
   }
 }
 
-/**
- * Count employee's own attendance for current month.
- * Reads attendance/{YYYY-MM}/records, filters by employeeId client-side.
- */
 async function countMyMonthAttendance(empId) {
   if (!empId) return 0;
   const ym = new Date().toISOString().slice(0,7);
@@ -1059,6 +1067,26 @@ async function countMyMonthAttendance(empId) {
     console.warn("[my-att]", e.code);
     return 0;
   }
+}
+
+/* ============================================================
+   MY WORK PLAN DAYS
+   ============================================================ */
+async function countMyWorkPlanDays(uid) {
+  if (!uid) return 0;
+  let n = 0;
+  try {
+    const snap = await getDocs(collection(db, "workplans"));
+    snap.forEach(d => {
+      const p = d.data();
+      if (Array.isArray(p.dayIndex)) {
+        p.dayIndex.forEach(day => { if (day.assignedTo === uid) n++; });
+      }
+    });
+  } catch (e) {
+    console.warn("[my-plan-days]", e.code);
+  }
+  return n;
 }
 
 /* ============================================================
@@ -1105,19 +1133,22 @@ const NAV = [
   ]},
   { section:"organization", items:[
     { key:"users",       labelKey:"usersStaff",   href:"users.html",       icon:"users",    roles:["super_admin","regional_admin","admin","hrm"] },
-    { key:"departments", labelKey:"directorates", href:"departments.html", icon:"org",      roles:["super_admin","regional_admin","admin","hrm","manager","directorate","cluster_directorate"] }
+    { key:"departments", labelKey:"directorates", href:"departments.html", icon:"org",      roles:["super_admin","regional_admin","admin","hrm","manager","directorate","cluster_directorate","team_leader"] }
   ]},
   { section:"workPlansSection", items:[
-    { key:"workplans",   labelKey:"workPlans",   href:"workplans.html",   icon:"fileText", roles:["super_admin","regional_admin","directorate","admin","cluster_directorate","woreda_city"] }
+    // ★ FIXED: manager, team_leader and employee can now reach workplans.html
+    { key:"workplans",   labelKey:"workPlans",   href:"workplans.html",   icon:"fileText",
+      roles:["super_admin","regional_admin","directorate","admin",
+             "cluster_directorate","woreda_city","manager","team_leader","employee"] }
   ]},
   { section:"humanResources", items:[
     { key:"recruitment", labelKey:"recruitment", href:"recruitment.html", icon:"userPlus", roles:["super_admin","regional_admin","hrm","admin"] },
-    { key:"training",    labelKey:"training",    href:"training.html",    icon:"book",     roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] },
-    { key:"performance", labelKey:"performance", href:"performance.html", icon:"target",   roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] }
+    { key:"training",    labelKey:"training",    href:"training.html",    icon:"book",     roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] },
+    { key:"performance", labelKey:"performance", href:"performance.html", icon:"target",   roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] }
   ]},
   { section:"operations", items:[
-    { key:"attendance",  labelKey:"attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] },
-    { key:"leave",       labelKey:"leave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] }
+    { key:"attendance",  labelKey:"attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] },
+    { key:"leave",       labelKey:"leave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] }
   ]},
   { section:"finance", items:[
     { key:"payroll",     labelKey:"payroll",     href:"payroll.html",  icon:"wallet", roles:["super_admin","regional_admin","finance","admin"] },
@@ -1219,6 +1250,11 @@ function renderScopeBadge() {
     el.innerHTML = `<span class="scope-badge scope-badge--office">
       <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("manager")} · ${escapeHtml(S.officeName || S.departmentName || "—")}
     </span>`;
+  } else if (isTeamLeader()) {
+    // ★ FIXED: team leaders get their own badge instead of "Employee · …"
+    el.innerHTML = `<span class="scope-badge scope-badge--office">
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${escapeHtml(roleLabel("team_leader"))} · ${escapeHtml(S.departmentName || S.officeName || "—")}
+    </span>`;
   } else {
     el.innerHTML = `<span class="scope-badge scope-badge--office">
       <svg viewBox="0 0 24 24">${ICONS.user}</svg> ${t("employee")} · ${escapeHtml(S.officeName || S.departmentName || "—")}
@@ -1282,7 +1318,8 @@ function renderHeadActions() {
   } else if (isFinance()) {
     btns.push({ labelKey:"runPayroll", href:"payroll.html", primary:true });
     btns.push({ labelKey:"budget", href:"budget.html" });
-  } else if (isDirectorate() || isWoredaCity()) {
+  } else if (isDirectorate() || isWoredaCity() || isTeamLeader()) {
+    // ★ team leaders now get the "Work Plans" CTA
     btns.push({ labelKey:"workPlans", href:"workplans.html", primary:true });
   } else {
     btns.push({ labelKey:"requestLeave", href:"leave.html", primary:true });
@@ -1384,12 +1421,21 @@ async function renderStats() {
       { id:"s-onleave",     labelKey:"onLeave",             icon:"calendar",  color:"gold" },
       { id:"s-pending",     labelKey:"pendingApprovals",    icon:"clock",     color:"red" }
     ];
+  } else if (isTeamLeader()) {
+    // ★ FIXED: team leader card set — mirrors the manager set but scoped to their team
+    cards = [
+      { id:"s-tl-team",     labelKey:"myTeam",              icon:"users",     color:"blue" },
+      { id:"s-tl-plans",    labelKey:"myWorkPlans",         icon:"clipboard", color:"violet" },
+      { id:"s-tl-present",  labelKey:"presentToday",        icon:"check",     color:"green" },
+      { id:"s-tl-pending",  labelKey:"pendingApprovals",    icon:"clock",     color:"red" }
+    ];
   } else {
+    // Employee self-service — adds a "My Work Plan Days" card
     cards = [
       { id:"s-myattend",    labelKey:"myAttendanceMonth",   icon:"check",     color:"green" },
       { id:"s-myleave",     labelKey:"myLeaveRequests",     icon:"calendar",  color:"gold" },
       { id:"s-mypending",   labelKey:"myPendingRequests",   icon:"clock",     color:"red" },
-      { id:"s-mypay",       labelKey:"latestPayslip",       icon:"dollar",    color:"teal" }
+      { id:"s-mydays",      labelKey:"myWorkPlanDays",      icon:"clipboard", color:"violet" }
     ];
   }
 
@@ -1518,16 +1564,21 @@ async function loadStatValues() {
     return;
   }
 
+  if (isTeamLeader()) {
+    // ★ FIXED: team leader stats scoped to their team (office/department/woreda)
+    setStat("s-tl-team",    await scopedCount("employees"));
+    setStat("s-tl-plans",   await scopedCount("workplans"));
+    setStat("s-tl-present", await countAttendanceForDate(today));
+    setStat("s-tl-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
+    return;
+  }
+
   // Employee self
   setStat("s-myattend", await countMyMonthAttendance(S.empId));
-  setStat("s-myleave", await scopedCount("leaveRequests", [where("empId","==",S.empId)]));
-  setStat("s-mypending", await scopedCount("leaveRequests", [
-    where("empId","==",S.empId), where("status","==","pending")
-  ]));
-  try {
-    const snap = await getDoc(doc(db, "payroll", m, "slips", S.empId));
-    setStat("s-mypay", snap.exists() ? "✓" : "—");
-  } catch (e) { setStat("s-mypay", "—"); }
+  // ★ scopedCount already adds where("empId","==",S.empId) via scopeConstraints()
+  setStat("s-myleave",  await scopedCount("leaveRequests"));
+  setStat("s-mypending", await scopedCount("leaveRequests", [where("status","==","pending")]));
+  setStat("s-mydays",   await countMyWorkPlanDays(S.uid));
 }
 
 async function countUsersByRole(role) {
@@ -1696,12 +1747,16 @@ async function renderChartActivityPending() {
   const quickCard = document.getElementById("card-quick");
   const sideCard = document.getElementById("card-side");
 
+  // ★ FIXED: team leaders now get the chart, the pending-approvals card,
+  //   and the team activity feed.
   const showChart = isSuper() || isRegionalAdmin() || isClusterAdmin() || isHRM()
-                    || isFinance() || isDirectorate() || isWoredaCity() || isManager();
+                    || isFinance() || isDirectorate() || isWoredaCity() || isManager()
+                    || isTeamLeader();
   const showActivity = true;
   const showQuick = true;
   const showSide = isSuper() || isRegionalAdmin() || isClusterAdmin() || isHRM()
-                   || isManager() || isDirectorate() || isWoredaCity();
+                   || isManager() || isDirectorate() || isWoredaCity()
+                   || isTeamLeader();
 
   rowChart.style.display = (showChart || showActivity) ? "" : "none";
   chartCard.style.display = showChart ? "" : "none";
@@ -1831,7 +1886,9 @@ async function renderActivity() {
   const host = document.getElementById("activity");
   const events = [];
 
-  if (isSuper() || isRegionalAdmin() || isHRM() || isClusterAdmin() || isDirectorate() || isWoredaCity()) {
+  // ★ FIXED: team leaders get the activity feed too
+  if (isSuper() || isRegionalAdmin() || isHRM() || isClusterAdmin()
+      || isDirectorate() || isWoredaCity() || isTeamLeader()) {
     try {
       const constraints = [...scopeConstraints(), orderBy("createdAt","desc"), limit(4)];
       const snap = await getDocs(query(collection(db,"employees"), ...constraints));
@@ -1851,10 +1908,8 @@ async function renderActivity() {
 
   try {
     const extra = [];
-    if (!isSuper() && !isHRM() && !isRegionalAdmin() && !isClusterAdmin() && !isDirectorate() && !isWoredaCity()) {
-      if (isManager()) extra.push(where("managerId","==",S.uid));
-      else if (S.empId) extra.push(where("empId","==",S.empId));
-    }
+    if (isManager()) extra.push(where("managerId","==",S.uid));
+    else if (isEmployee() && S.empId) extra.push(where("empId","==",S.empId));
     const constraints = [...scopeConstraints(), ...extra, orderBy("appliedAt","desc"), limit(4)];
     const snap = await getDocs(query(collection(db,"leaveRequests"), ...constraints));
     snap.forEach(d => {
@@ -1867,7 +1922,8 @@ async function renderActivity() {
     });
   } catch (e) { console.warn("[activity leave]", e.code); }
 
-  if (isSuper() || isRegionalAdmin() || isClusterAdmin() || isDirectorate() || isWoredaCity()) {
+  if (isSuper() || isRegionalAdmin() || isClusterAdmin()
+      || isDirectorate() || isWoredaCity() || isTeamLeader()) {
     try {
       const constraints = [...scopeConstraints(), orderBy("createdAt","desc"), limit(3)];
       const snap = await getDocs(query(collection(db,"workplans"), ...constraints));
@@ -1947,7 +2003,7 @@ async function renderQuickActions() {
     a.push({ labelKey:"budgets", href:"budget.html", icon:"chart" });
     a.push({ labelKey:"reports", href:"reports.html", icon:"fileText" });
     a.push({ labelKey:"settings", href:"settings.html", icon:"settings" });
-  } else if (isDirectorate() || isWoredaCity()) {
+  } else if (isDirectorate() || isWoredaCity() || isTeamLeader()) {
     a.push({ labelKey:"workPlans", href:"workplans.html", icon:"clipboard" });
     a.push({ labelKey:"attendance", href:"attendance.html", icon:"clock" });
     a.push({ labelKey:"leave", href:"leave.html", icon:"calendar" });
@@ -2019,7 +2075,7 @@ async function renderPending() {
     }
   }
 
-  if (isManager()) title.textContent = t("teamApprovals");
+  if (isManager() || isTeamLeader()) title.textContent = t("teamApprovals");
   else if (isClusterAdmin()) title.textContent = t("clusterApprovals");
   else if (isRegionalAdmin()) title.textContent = t("regionApprovals");
   else if (isDirectorate()) title.textContent = t("directorateApprovals");
@@ -2183,6 +2239,7 @@ onAuthStateChanged(auth, async (user) => {
   else if (isDirectorate()) titleEl.textContent = (S.departmentName || S.clusterName || t("directorateDashboard"));
   else if (isWoredaCity()) titleEl.textContent = (S.woredaName || t("woredaDashboard"));
   else if (isManager()) titleEl.textContent = t("managerDashboard");
+  else if (isTeamLeader()) titleEl.textContent = t("teamLeaderDashboard");
   else titleEl.textContent = t("myDashboard");
 
   renderSidebar();
