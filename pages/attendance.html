@@ -186,7 +186,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .dropdown__divider { height:1px; background:var(--border-soft); margin:6px 0; }
 .dropdown__item--danger { color:var(--danger); }
 
-/* Language switcher */
 .lang-btn { display:inline-flex; align-items:center; gap:7px;
   height:44px; padding:0 12px; border-radius:13px;
   background:transparent; color:var(--text-soft);
@@ -215,7 +214,7 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .scope-badge--super { background:linear-gradient(135deg,#f0eaff,#fff); border-color:#ddd2fb; color:#5b21b6; }
 .scope-badge--cluster { background:linear-gradient(135deg,#ecfdf3,#fff); border-color:#abefc6; color:#067647; }
 .scope-badge--manager { background:linear-gradient(135deg,#e0f5f7,#fff); border-color:#a3dfe6; color:#0e7490; }
-.scope-badge--fp { background:linear-gradient(135deg,#f0eaff,#fff); border-color:#ddd2fb; color:#5b21b6; }
+.scope-badge--fp { background:linear-gradient(135deg,#f0eaff,#fff); border-color:#ddd2fb; color:#5b21b6; cursor:pointer; }
 
 .chain { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
   background:var(--card-bg); border:1px solid var(--border); border-radius:var(--r-lg);
@@ -239,14 +238,11 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .btn--fp::before {
   content:""; position:absolute; inset:0;
   background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,.18) 50%, transparent 70%);
-  transform:translateX(-100%); animation:shine 2.6s ease-in-out infinite;
-  pointer-events:none;
+  transform:translateX(-100%); animation:shine 2.6s ease-in-out infinite; pointer-events:none;
 }
-@keyframes shine { 0%, 60% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
+@keyframes shine { 0%,60% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
 .btn--sm { height:38px; padding:0 14px; font-size:13px; border-radius:10px; }
 .btn--sm svg { width:15px; height:15px; }
-.btn--xs { height:32px; padding:0 10px; font-size:12px; border-radius:8px; gap:6px; }
-.btn--xs svg { width:13px; height:13px; }
 .btn--icon { width:38px; padding:0; }
 .btn--success { color:var(--success); }
 .btn--success:hover { background:#ecfdf3; border-color:#abefc6; }
@@ -265,14 +261,12 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .stat--red { --c1:linear-gradient(90deg,#dc2626,#ef4444); --ic:#fef3f2; --ifc:#b42318; }
 .stat--violet { --c1:linear-gradient(90deg,#6d28d9,#a78bfa); --ic:#f0eaff; --ifc:#5b21b6; }
 .stat--teal { --c1:linear-gradient(90deg,#0e7490,#4dd4c4); --ic:#e0f5f7; --ifc:#0e7490; }
-.stat--pink { --c1:linear-gradient(90deg,#db2777,#f472b6); --ic:#fdeef5; --ifc:#be185d; }
 .stat__head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
 .stat__label { font-size:12.5px; color:var(--muted); font-weight:600; }
 .stat__icon { width:40px; height:40px; border-radius:12px; background:var(--ic); color:var(--ifc);
   display:grid; place-items:center; }
 .stat__icon svg { width:19px; height:19px; stroke:currentColor; stroke-width:2.2; fill:none; }
 .stat__value { font-size:26px; font-weight:800; letter-spacing:-1px; line-height:1; }
-.stat__sub { font-size:11.5px; color:var(--muted); margin-top:6px; }
 
 .toolbar { display:flex; gap:12px; align-items:center; margin-bottom:20px; flex-wrap:wrap;
   background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:14px 18px;
@@ -317,7 +311,7 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   display:grid; place-items:center; flex-shrink:0; overflow:hidden; position:relative; }
 .emp-avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .emp-cell__main { min-width:0; }
-.emp-cell__name { font-weight:700; color:var(--text); font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.emp-cell__name { font-weight:700; color:var(--text); font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:6px; }
 .emp-cell__meta { font-size:12px; color:var(--muted); margin-top:2px; }
 .emp-id { font-family:ui-monospace,Menlo,Consolas,monospace; font-weight:700;
   color:var(--primary-dark); font-size:12px;
@@ -333,32 +327,24 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .status-absent  { background:#fef3f2; color:#b42318; }
 .status-leave   { background:#eaf3fc; color:#0b5cab; }
 .status-field   { background:#f0eaff; color:#5b21b6; }
-.status-half    { background:#fdf2fa; color:#be185d; }
+.status-half_day { background:#fdf2fa; color:#be185d; }
 .status-weekend { background:var(--border-soft); color:var(--muted); }
 .status-holiday { background:#fff7ed; color:#c2410c; }
 .status-none    { background:var(--border-soft); color:var(--muted-light); }
 
-/* Fingerprint UI */
 .fp-badge { display:inline-flex; align-items:center; gap:4px;
   margin-left:6px; padding:2px 7px; border-radius:6px;
   background:var(--violet-soft); color:var(--violet);
   font-size:10px; font-weight:800; letter-spacing:.04em;
   text-transform:uppercase; vertical-align:middle; }
 .fp-badge svg { width:11px; height:11px; stroke:currentColor; stroke-width:2.2; fill:none; }
-.fp-status-pill { display:inline-flex; align-items:center; gap:6px;
-  padding:5px 12px; border-radius:var(--r-full);
-  font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.02em; }
-.fp-status-pill svg { width:13px; height:13px; stroke:currentColor; stroke-width:2.2; fill:none; }
-.fp-status-pill.on { background:#ecfdf3; color:#067647; }
-.fp-status-pill.off { background:var(--border-soft); color:var(--muted); }
 
 /* Fingerprint scanning modal */
 .fp-scan { display:flex; flex-direction:column; align-items:center; justify-content:center;
   padding:26px 12px 14px; text-align:center; }
 .fp-scan__ring { position:relative; width:120px; height:120px; margin-bottom:22px; }
 .fp-scan__ring svg.fp-icon { position:absolute; inset:0; width:100%; height:100%;
-  stroke:var(--violet); stroke-width:1.6; fill:none;
-  transition:opacity .25s; }
+  stroke:var(--violet); stroke-width:1.6; fill:none; transition:opacity .25s; }
 .fp-scan__ring::before, .fp-scan__ring::after {
   content:""; position:absolute; inset:0; border-radius:50%;
   border:2px solid var(--violet); opacity:0; }
@@ -381,11 +367,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .fp-scan__badge svg { width:13px; height:13px; stroke:currentColor; stroke-width:2.2; fill:none; }
 .fp-scan.is-success .fp-scan__badge { background:#ecfdf3; color:#067647; }
 .fp-scan.is-error .fp-scan__badge { background:#fef3f2; color:#b42318; }
-
-.tag { display:inline-flex; align-items:center; gap:4px;
-  padding:3px 10px; border-radius:var(--r-full);
-  font-size:11px; font-weight:800; text-transform:uppercase; }
-.tag--gray { background:var(--border-soft); color:var(--text-soft); }
 
 .modal-backdrop { position:fixed; inset:0; z-index:200; background:rgba(15,23,42,.55);
   backdrop-filter:blur(6px); display:grid; place-items:center; padding:24px; overflow-y:auto; }
@@ -448,8 +429,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .alert svg { width:16px; height:16px; flex-shrink:0; margin-top:2px; stroke:currentColor; stroke-width:2.2; fill:none; }
 .alert--error { background:#fef3f2; color:#b42318; border-color:#fecdca; }
 .alert--info { background:#eaf3fc; color:#0b5cab; border-color:#bdd7f2; }
-.alert--warning { background:#fdf5e0; color:#7a5210; border-color:#f0dcb0; }
-.alert--success { background:#ecfdf3; color:#067647; border-color:#abefc6; }
 
 .toast-wrap { position:fixed; top:24px; right:24px; z-index:300;
   display:flex; flex-direction:column; gap:10px; pointer-events:none; max-width:calc(100vw - 48px); }
@@ -525,8 +504,6 @@ body.sidebar-open .overlay { display:block; }
     </button>
     <div class="topbar__spacer"></div>
     <div class="topbar__actions">
-
-      <!-- Language switcher -->
       <div class="dropdown">
         <button class="lang-btn" data-lang-toggle aria-label="Language">
           <svg viewBox="0 0 24 24">
@@ -551,7 +528,6 @@ body.sidebar-open .overlay { display:block; }
           </button>
         </div>
       </div>
-
       <div class="dropdown">
         <button class="user-btn" data-dropdown-toggle>
           <span class="user-btn__avatar" id="user-avatar">–</span>
@@ -570,13 +546,9 @@ body.sidebar-open .overlay { display:block; }
             <span data-i18n="dashboard">Dashboard</span>
           </a>
           <a class="dropdown__item" href="settings.html">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 1 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span data-i18n="settings">Settings</span>
           </a>
-          <button class="dropdown__item" id="fp-menu-btn">
-            <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
-            <span data-i18n="fpMenu">Fingerprint</span>
-          </button>
           <div class="dropdown__divider"></div>
           <button class="dropdown__item dropdown__item--danger" id="logout-btn">
             <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -650,7 +622,7 @@ body.sidebar-open .overlay { display:block; }
               <th data-i18n="thCheckIn">Check-in</th>
               <th data-i18n="thCheckOut">Check-out</th>
               <th data-i18n="thNotes">Notes</th>
-              <th style="width:100px;text-align:right" data-i18n="thActions">Actions</th>
+              <th style="width:120px;text-align:right" data-i18n="thActions">Actions</th>
             </tr>
           </thead>
           <tbody id="att-tbody">
@@ -666,20 +638,19 @@ body.sidebar-open .overlay { display:block; }
 import { initializeApp } from "firebase/app";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import {
-  getFirestore, doc, getDoc, setDoc, deleteDoc,
-  collection, query, where, onSnapshot,
-  serverTimestamp, getDocs, limit
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+  collection, query, where, onSnapshot, serverTimestamp,
+  getDocs, limit
 } from "firebase/firestore";
 
 /* ============================================================
-   I18N DICTIONARY
+   I18N
    ============================================================ */
 const I18N = {
   en: {
     brandTitle:"Civil Service", brandSubtitle:"Management Information System",
     footerCopy:"© 2026 Civil Service MIS",
     dashboard:"Dashboard", settings:"Settings", signOut:"Sign out",
-    fpMenu:"Fingerprint",
     pageTitle:"Attendance",
     pageSub:"Track daily presence, lateness, leave and field work",
     chainRegion:"Region", chainCluster:"Cluster", chainOffice:"Office",
@@ -703,44 +674,24 @@ const I18N = {
     loading:"Loading…", noEmployeesScope:"No employees in your scope.",
     noEmployeesFilter:"No employees match your filters.",
     markToday:"Mark Today",
-    // Fingerprint
     fpMarkTitle:"Mark with Fingerprint",
-    fpMenuTitle:"Fingerprint Settings",
-    fpMenuSub:"Manage the fingerprint registered to your account.",
-    fpStatus:"Status",
-    fpStatusRegistered:"Registered",
-    fpStatusNotRegistered:"Not registered",
-    fpRegister:"Register Fingerprint",
-    fpReRegister:"Re-register Fingerprint",
-    fpRemove:"Remove Registration",
-    fpRemoveConfirm:"Remove fingerprint registration from this account? You'll need to register again to use fingerprint check-in.",
-    fpRegisteredOk:"Fingerprint registered successfully",
-    fpRemoved:"Fingerprint registration removed",
     fpScanTitle:"Verify your fingerprint",
     fpScanMsg:"Place your finger on the sensor or look at your device's biometric prompt.",
     fpScanRegTitle:"Register your fingerprint",
-    fpScanRegMsg:"Your device will ask you to confirm your fingerprint. This is stored securely on this device only.",
+    fpScanRegMsg:"Your device will ask you to confirm your fingerprint. This is stored securely on this device.",
     fpScanSuccess:"Verified",
     fpScanError:"Failed",
     fpScanWaiting:"Waiting for biometric…",
     fpMarked:"Attendance marked with fingerprint",
     fpCancelled:"Fingerprint cancelled or not recognised",
     fpNotSupported:"Fingerprint authentication is not supported on this device or browser.",
-    fpNotAvailable:"No fingerprint sensor is available on this device. Try a device with Touch ID, Windows Hello, or a fingerprint reader.",
+    fpNotAvailable:"No fingerprint sensor is available on this device.",
     fpNotRegistered:"You haven't registered a fingerprint yet.",
-    fpNoEmployee:"Your account is not linked to an employee record. Ask an administrator to link you.",
+    fpNoEmployee:"Your account is not linked to an employee record.",
     fpAlreadyMarked:"You have already marked attendance for this date.",
-    fpNotHttps:"Fingerprint requires a secure connection (HTTPS). This page must be served over HTTPS.",
+    fpNotHttps:"Fingerprint requires a secure connection (HTTPS).",
     fpVerified:"FP verified",
-    fpBrowserHint:"WebAuthn uses your device's built-in biometric (Touch ID, Windows Hello, Android fingerprint). Nothing is sent to any server except the credential ID.",
-    fpClose:"Close",
-    fpCancel:"Cancel",
-    fpRegisterNow:"Register now",
-    fpYourRegistered:"Your fingerprint is registered on this device.",
-    fpLastUsed:"Last used",
-    fpNever:"Never",
-    fpCreated:"Registered on",
-    // Modals
+    fpCancel:"Cancel", fpClose:"Close",
     modalMarkTitle:"Mark Attendance", modalStatusLabel:"Status",
     modalCheckIn:"Check-in", modalCheckOut:"Check-out", modalNotes:"Notes",
     modalNotesPlaceholder:"Optional — reason for late, absence, etc.",
@@ -770,7 +721,6 @@ const I18N = {
     brandTitle:"Tajaajila Hawaasaa", brandSubtitle:"Sirna Odeeffannoo Bulchiinsaa",
     footerCopy:"© 2026 SIM Tajaajila Hawaasaa",
     dashboard:"Daashboordii", settings:"Qindaa'ina", signOut:"Ba'i",
-    fpMenu:"Mallattoo Quba",
     pageTitle:"Argannoo",
     pageSub:"Argannoo guyyaa, tursiisuu, boqonnaa fi hojii dirree hordofi",
     chainRegion:"Naannoo", chainCluster:"Garee", chainOffice:"Waajjira",
@@ -798,24 +748,11 @@ const I18N = {
     noEmployeesFilter:"Hojjettoonni filannoo keetii waliin hin walsiman.",
     markToday:"Har'a Galmeessi",
     fpMarkTitle:"Mallattoo Qubaatiin Galmeessi",
-    fpMenuTitle:"Qindaa'ina Mallattoo Qubaa",
-    fpMenuSub:"Mallattoo qubaa herrega keetiif galmeeffame bulchi.",
-    fpStatus:"Haala",
-    fpStatusRegistered:"Galmeeffame",
-    fpStatusNotRegistered:"Hin galmeeffamne",
-    fpRegister:"Mallattoo Quba Galmeessi",
-    fpReRegister:"Irra deebi'ii Galmeessi",
-    fpRemove:"Galmee Haqi",
-    fpRemoveConfirm:"Mallattoo qubaa herrega kanaa irraa haquu? Ammas galmeessuu qabda.",
-    fpRegisteredOk:"Mallattoon qubaa milkaa'inaan galmeeffame",
-    fpRemoved:"Galmeen mallattoo qubaa haqame",
     fpScanTitle:"Mallattoo qubaa mirkaneessi",
     fpScanMsg:"Quba kee sensor irra kaa'i ykn afeerraa biometric meeshaa keetii ilaali.",
     fpScanRegTitle:"Mallattoo qubaa galmeessi",
     fpScanRegMsg:"Meeshaan kee mallattoo qubaa mirkaneessu si gaafata. Kun meeshaa kana irratti qofa kuufama.",
-    fpScanSuccess:"Mirkanaa'e",
-    fpScanError:"Kufe",
-    fpScanWaiting:"Biometric eegaa jira…",
+    fpScanSuccess:"Mirkanaa'e", fpScanError:"Kufe", fpScanWaiting:"Biometric eegaa jira…",
     fpMarked:"Argannoon mallattoo qubaatiin galmeeffame",
     fpCancelled:"Mallattoon qubaa haqame ykn hin beekamne",
     fpNotSupported:"Mirkaneessi mallattoo qubaa meeshaa kanaa ykn browser kanaa irratti hin deggeru.",
@@ -824,11 +761,7 @@ const I18N = {
     fpNoEmployee:"Herregni kee galmee hojjetaa waliin hin hidhamne.",
     fpAlreadyMarked:"Guyyaa kanaaf argannoo galmeessiteetta.",
     fpNotHttps:"Mallattoon qubaa walqunnamtii nagaa (HTTPS) barbaachisa.",
-    fpVerified:"FP mirkanaa'e",
-    fpBrowserHint:"WebAuthn biometric meeshaa keetii (Touch ID, Windows Hello, Android fingerprint) fayyadama.",
-    fpClose:"Cufi", fpCancel:"Haqi", fpRegisterNow:"Amma galmeessi",
-    fpYourRegistered:"Mallattoon qubaa kee meeshaa kana irratti galmeeffame.",
-    fpLastUsed:"Yeroo dhumaa itti fayyadame", fpNever:"Gonkumaa", fpCreated:"Kan galmeeffame",
+    fpVerified:"FP mirkanaa'e", fpCancel:"Haqi", fpClose:"Cufi",
     modalMarkTitle:"Argannoo Galmeessi", modalStatusLabel:"Haala",
     modalCheckIn:"Seensa", modalCheckOut:"Ba'insa", modalNotes:"Yaadannoo",
     modalNotesPlaceholder:"Filannoo — sababa tursiisuu, hafuu, fi kkf.",
@@ -840,8 +773,7 @@ const I18N = {
     toastCannotMark:"Hojjetaa kana galmeessuu hin dandeessu",
     toastCannotBulk:"Walumaagalatti galmeessuu hin dandeessu",
     toastNothingToMark:"Wanti galmeessu hin jiru",
-    toastCleared:"Argannoon haqame",
-    toastSaved:"Argannoon olkaa'ame",
+    toastCleared:"Argannoon haqame", toastSaved:"Argannoon olkaa'ame",
     toastSavedMany:"Galmee argannoo {n} olkaa'ame",
     toastChooseStatus:"Maaloo haala filadhu.",
     scopeSuper:"Adeemsa sirna guutuu — argannoo hunda",
@@ -858,7 +790,6 @@ const I18N = {
     brandTitle:"የመንግስት ሰራተኛ", brandSubtitle:"የአስተዳደር መረጃ ስርዓት",
     footerCopy:"© 2026 የመንግስት ሰራተኛ MIS",
     dashboard:"ዳሽቦርድ", settings:"ቅንብሮች", signOut:"ውጣ",
-    fpMenu:"የጣት አሻራ",
     pageTitle:"መገኘት",
     pageSub:"የቀን መገኘት፣ ዘግይቶ መምጣት፣ ፈቃድ እና የመስክ ሥራ ይከታተሉ",
     chainRegion:"ክልል", chainCluster:"ክላስተር", chainOffice:"ቢሮ",
@@ -886,24 +817,11 @@ const I18N = {
     noEmployeesFilter:"ከማጣሪያዎ ጋር የሚዛመዱ ሰራተኞች የለም።",
     markToday:"ዛሬ አስመዝግብ",
     fpMarkTitle:"በጣት አሻራ አስመዝግብ",
-    fpMenuTitle:"የጣት አሻራ ቅንብሮች",
-    fpMenuSub:"ከመለያዎ ጋር የተመዘገበውን የጣት አሻራ ያስተዳድሩ።",
-    fpStatus:"ሁኔታ",
-    fpStatusRegistered:"ተመዝግቧል",
-    fpStatusNotRegistered:"አልተመዘገበም",
-    fpRegister:"የጣት አሻራ ይመዝግቡ",
-    fpReRegister:"እንደገና ይመዝግቡ",
-    fpRemove:"ምዝገባ ያስወግዱ",
-    fpRemoveConfirm:"የጣት አሻራ ምዝገባን ከመለያው ያስወግዱ? እንደገና መመዝገብ ይኖርብዎታል።",
-    fpRegisteredOk:"የጣት አሻራ በተሳካ ሁኔታ ተመዝግቧል",
-    fpRemoved:"የጣት አሻራ ምዝገባ ተወግዷል",
     fpScanTitle:"የጣት አሻራዎን ያረጋግጡ",
     fpScanMsg:"ጣትዎን በሴንሰሩ ላይ ያስቀምጡ ወይም የመሣሪያዎን ባዮሜትሪክ ጥያቄ ይመልከቱ።",
     fpScanRegTitle:"የጣት አሻራዎን ይመዝግቡ",
     fpScanRegMsg:"መሣሪያዎ የጣት አሻራዎን እንዲያረጋግጡ ይጠይቅዎታል። ይህ በዚህ መሣሪያ ላይ ብቻ ይቀመጣል።",
-    fpScanSuccess:"ተረጋግጧል",
-    fpScanError:"አልተሳካም",
-    fpScanWaiting:"ባዮሜትሪክ በመጠበቅ ላይ…",
+    fpScanSuccess:"ተረጋግጧል", fpScanError:"አልተሳካም", fpScanWaiting:"ባዮሜትሪክ በመጠበቅ ላይ…",
     fpMarked:"መገኘት በጣት አሻራ ተመዝግቧል",
     fpCancelled:"የጣት አሻራ ተሰርዟል ወይም አልታወቀም",
     fpNotSupported:"የጣት አሻራ ማረጋገጫ በዚህ መሣሪያ ወይም አሳሽ ላይ አይደገፍም።",
@@ -912,11 +830,7 @@ const I18N = {
     fpNoEmployee:"መለያዎ ከሰራተኛ መዝገብ ጋር አልተገናኘም።",
     fpAlreadyMarked:"ለዚህ ቀን አስቀድመው መዝግበዋል።",
     fpNotHttps:"የጣት አሻራ አስተማማኝ ግንኙነት (HTTPS) ይፈልጋል።",
-    fpVerified:"FP ተረጋግጧል",
-    fpBrowserHint:"WebAuthn የመሣሪያዎን አብሮ የተሰራ ባዮሜትሪክ (Touch ID, Windows Hello, Android fingerprint) ይጠቀማል።",
-    fpClose:"ዝጋ", fpCancel:"ሰርዝ", fpRegisterNow:"አሁን ይመዝግቡ",
-    fpYourRegistered:"የጣት አሻራዎ በዚህ መሣሪያ ላይ ተመዝግቧል።",
-    fpLastUsed:"መጨረሻ ጥቅም ላይ የዋለ", fpNever:"በጭራሽ", fpCreated:"የተመዘገበበት",
+    fpVerified:"FP ተረጋግጧል", fpCancel:"ሰርዝ", fpClose:"ዝጋ",
     modalMarkTitle:"መገኘት ያስመዝግቡ", modalStatusLabel:"ሁኔታ",
     modalCheckIn:"መግቢያ", modalCheckOut:"መውጫ", modalNotes:"ማስታወሻ",
     modalNotesPlaceholder:"አማራጭ — የዘግይቶ መምጣት፣ የመቅረት ምክንያት፣ ወዘተ.",
@@ -928,8 +842,7 @@ const I18N = {
     toastCannotMark:"ይህን ሰራተኛ ማስመዝገብ አይችሉም",
     toastCannotBulk:"በጅምላ ማስመዝገብ አይችሉም",
     toastNothingToMark:"የሚመዘገብ ነገር የለም",
-    toastCleared:"መገኘት ጸድቷል",
-    toastSaved:"መገኘት ተቀምጧል",
+    toastCleared:"መገኘት ጸድቷል", toastSaved:"መገኘት ተቀምጧል",
     toastSavedMany:"{n} የመገኘት መዝገቦች ተቀምጠዋል",
     toastChooseStatus:"እባክዎ ሁኔታ ይምረጡ።",
     scopeSuper:"ሙሉ ስርዓት መዳረሻ — ሁሉም መገኘት",
@@ -1091,7 +1004,7 @@ document.addEventListener("click", async (e)=>{
    STATE
    ============================================================ */
 let S = null;
-let MY_EMP = null;         // current user's employee doc
+let MY_EMP = null;
 let CLUSTERS = [];
 let OFFICES = [];
 let DEPARTMENTS = [];
@@ -1233,7 +1146,6 @@ function visibleEmployees() {
   if (isSuper() || isHRM()) return EMPLOYEES;
   if (isAdmin()) return EMPLOYEES.filter(e => e.clusterId === S.clusterId);
   if (isManager()) {
-    // Managers see their team + themselves
     const team = EMPLOYEES.filter(e => e.managerId === S.uid);
     if (MY_EMP && !team.some(e => e.id === MY_EMP.id)) team.push(MY_EMP);
     return team;
@@ -1243,7 +1155,7 @@ function visibleEmployees() {
 }
 
 /* ============================================================
-   FINGERPRINT / WEBAUTHN
+   FINGERPRINT / WEBAUTHN — MULTI-DEVICE
    ============================================================ */
 const FP_SUPPORTED = !!(window.PublicKeyCredential &&
                         navigator.credentials &&
@@ -1262,10 +1174,8 @@ function fpB64UrlDecode(s) {
   for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
   return buf;
 }
-function fpRandomChallenge() {
-  return crypto.getRandomValues(new Uint8Array(32));
-}
-async function fpIsPlatformAuthenticatorAvailable() {
+function fpRandomChallenge() { return crypto.getRandomValues(new Uint8Array(32)); }
+async function fpAvailable() {
   try {
     if (!FP_SUPPORTED) return false;
     if (!PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) return true;
@@ -1273,26 +1183,22 @@ async function fpIsPlatformAuthenticatorAvailable() {
   } catch (e) { return false; }
 }
 
-/* Register a new fingerprint credential for the current user */
-async function fpRegister(user) {
-  if (!FP_SUPPORTED) throw new Error("WEBAUTHN_UNSUPPORTED");
+/* Register a new credential ON THIS DEVICE */
+async function fpRegisterHere(user) {
   const challenge = fpRandomChallenge();
   const userId = new TextEncoder().encode(user.uid);
   const cred = await navigator.credentials.create({
     publicKey: {
       challenge,
-      rp: {
-        name: "Civil Service MIS",
-        id: location.hostname
-      },
+      rp: { name: "Civil Service MIS", id: location.hostname },
       user: {
         id: userId,
         name: user.email || user.uid,
         displayName: user.name || "User"
       },
       pubKeyCredParams: [
-        { type: "public-key", alg: -7 },   // ES256
-        { type: "public-key", alg: -257 }  // RS256
+        { type: "public-key", alg: -7 },
+        { type: "public-key", alg: -257 }
       ],
       authenticatorSelection: {
         authenticatorAttachment: "platform",
@@ -1306,34 +1212,30 @@ async function fpRegister(user) {
   });
   if (!cred) throw new Error("REGISTRATION_CANCELLED");
   let transports = [];
-  try {
-    if (cred.response && cred.response.getTransports) {
-      transports = cred.response.getTransports();
-    }
-  } catch (e) { /* ignore */ }
+  try { if (cred.response?.getTransports) transports = cred.response.getTransports(); } catch(e) {}
   return {
     credentialId: fpB64UrlEncode(cred.rawId),
     transports,
     rpId: location.hostname,
+    deviceLabel: navigator.platform || "This device",
     createdAt: Date.now()
   };
 }
 
-/* Verify an existing fingerprint credential */
-async function fpVerify(stored) {
+/* Verify against ANY of the stored credentials for this employee on this device */
+async function fpVerifyAny(credentials) {
   if (!FP_SUPPORTED) throw new Error("WEBAUTHN_UNSUPPORTED");
-  if (!stored || !stored.credentialId) throw new Error("NO_CREDENTIAL");
+  if (!credentials || !credentials.length) throw new Error("NO_CREDENTIAL");
   const challenge = fpRandomChallenge();
+  const allow = credentials.map(c => ({
+    id: fpB64UrlDecode(c.credentialId),
+    type: "public-key",
+    transports: (c.transports && c.transports.length) ? c.transports : ["internal"]
+  }));
   const assertion = await navigator.credentials.get({
     publicKey: {
       challenge,
-      allowCredentials: [{
-        id: fpB64UrlDecode(stored.credentialId),
-        type: "public-key",
-        transports: stored.transports && stored.transports.length
-          ? stored.transports
-          : ["internal"]
-      }],
+      allowCredentials: allow,
       userVerification: "required",
       timeout: 60000,
       rpId: location.hostname
@@ -1346,9 +1248,18 @@ async function fpVerify(stored) {
   };
 }
 
-/* Fingerprint scanning modal */
-function openFpScanModal({ mode, title, message }) {
-  // mode: "verify" | "register"
+/* Get normalised fingerprint list from employee doc (supports legacy single-object) */
+function getFingerprintList(emp) {
+  if (!emp) return [];
+  if (Array.isArray(emp.fingerprints)) return emp.fingerprints;
+  if (emp.fingerprint && emp.fingerprint.credentialId) return [emp.fingerprint];
+  return [];
+}
+
+/* ============================================================
+   FINGERPRINT SCANNING MODAL
+   ============================================================ */
+function openFpScanModal({ title, message }) {
   return new Promise((resolve) => {
     const bd = openModal(`
       <div class="modal__body" style="padding:0">
@@ -1356,8 +1267,8 @@ function openFpScanModal({ mode, title, message }) {
           <div class="fp-scan__ring">
             <svg class="fp-icon" viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
           </div>
-          <div class="fp-scan__title" id="fp-title">${escapeHtml(title)}</div>
-          <div class="fp-scan__msg" id="fp-msg">${escapeHtml(message)}</div>
+          <div class="fp-scan__title">${escapeHtml(title)}</div>
+          <div class="fp-scan__msg">${escapeHtml(message)}</div>
           <div class="fp-scan__badge" id="fp-badge">
             <span class="spinner" style="width:12px;height:12px;border-width:2px"></span>
             <span id="fp-badge-text">${escapeHtml(t("fpScanWaiting"))}</span>
@@ -1368,33 +1279,17 @@ function openFpScanModal({ mode, title, message }) {
         <button class="btn" data-close>${escapeHtml(t("fpCancel"))}</button>
       </div>
     `);
-
-    const scanEl = document.getElementById("fp-scan");
-    const badgeEl = document.getElementById("fp-badge");
-    const badgeText = document.getElementById("fp-badge-text");
-    const titleEl = document.getElementById("fp-title");
-    const msgEl = document.getElementById("fp-msg");
-
-    // Handle modal close → reject
-    const closeBtn = bd.querySelector("[data-close]");
-    closeBtn.addEventListener("click", () => resolve({ ok: false, reason: "cancelled" }));
-    bd.addEventListener("click", (e) => { if (e.target === bd) resolve({ ok: false, reason: "cancelled" }); });
-
-    // Expose helpers to caller via return object
+    bd.querySelector("[data-close]").addEventListener("click", () => resolve({ ok:false, reason:"cancelled" }));
+    bd.addEventListener("click", (e) => { if (e.target === bd) resolve({ ok:false, reason:"cancelled" }); });
     resolve.__bd = bd;
-    resolve.__scanEl = scanEl;
-    resolve.__badgeEl = badgeEl;
-    resolve.__badgeText = badgeText;
-    resolve.__titleEl = titleEl;
-    resolve.__msgEl = msgEl;
+    resolve.__scanEl = document.getElementById("fp-scan");
+    resolve.__badgeText = document.getElementById("fp-badge-text");
   });
 }
-
-/* Update the fingerprint modal UI */
 function fpModalSetState(promise, state, customMsg) {
   const scanEl = promise.__scanEl;
   if (!scanEl) return;
-  scanEl.classList.remove("is-scanning", "is-success", "is-error");
+  scanEl.classList.remove("is-scanning","is-success","is-error");
   scanEl.classList.add("is-" + state);
   const badgeText = promise.__badgeText;
   if (state === "scanning") {
@@ -1406,243 +1301,88 @@ function fpModalSetState(promise, state, customMsg) {
   }
 }
 
-/* Main flow: mark attendance using fingerprint */
+/* ============================================================
+   MAIN FLOW — MARK ATTENDANCE WITH FINGERPRINT
+   ============================================================ */
 async function markWithFingerprint(empId = null) {
-  // Check support
-  if (!FP_SUPPORTED) {
-    toast(t("fpNotSupported"), "error");
-    return;
-  }
+  if (!FP_SUPPORTED) { toast(t("fpNotSupported"), "error"); return; }
   if (!location.protocol.startsWith("https") && location.hostname !== "localhost") {
-    toast(t("fpNotHttps"), "error");
-    return;
+    toast(t("fpNotHttps"), "error"); return;
   }
 
   const me = empId
     ? EMPLOYEES.find(e => e.id === empId)
     : (MY_EMP || EMPLOYEES.find(e => e.uid === S.uid));
-
   if (!me) { toast(t("fpNoEmployee"), "error"); return; }
+  if (ATTENDANCE[me.id]) { toast(t("fpAlreadyMarked"), "info"); return; }
 
-  // Check if already marked
-  if (ATTENDANCE[me.id]) {
-    toast(t("fpAlreadyMarked"), "info");
-    return;
-  }
+  const avail = await fpAvailable();
+  if (!avail) { toast(t("fpNotAvailable"), "error"); return; }
 
-  // Platform authenticator available?
-  const available = await fpIsPlatformAuthenticatorAvailable();
-  if (!available) {
-    toast(t("fpNotAvailable"), "error");
-    return;
-  }
+  const storedList = getFingerprintList(me);
 
-  const stored = me.fingerprint && me.fingerprint.credentialId ? me.fingerprint : null;
-
-  if (!stored) {
-    // Register first
-    const regModal = await openFpScanModal({
-      mode: "register",
-      title: t("fpScanRegTitle"),
-      message: t("fpScanRegMsg")
-    });
-    try {
-      fpModalSetState(regModal, "scanning", t("fpScanWaiting"));
-      const reg = await fpRegister({ uid: S.uid, email: S.email, name: S.name });
-      fpModalSetState(regModal, "success", t("fpScanSuccess"));
-      // Persist credential on employee doc
-      await updateDoc(doc(db, "employees", me.id), {
-        fingerprint: {
-          credentialId: reg.credentialId,
-          transports: reg.transports || [],
-          rpId: reg.rpId,
-          createdAt: serverTimestamp(),
-          lastUsedAt: null
-        }
-      });
-      await new Promise(r => setTimeout(r, 550));
-      closeModal();
-      toast(t("fpRegisteredOk"), "success");
-      // Fall through to verify on next click
-      return;
-    } catch (err) {
-      console.warn("[fp-register]", err);
-      fpModalSetState(regModal, "error", err.name === "NotAllowedError" ? t("fpCancelled") : (err.message || t("fpScanError")));
-      await new Promise(r => setTimeout(r, 1400));
-      closeModal();
-      if (err.name !== "NotAllowedError") toast(err.message || t("fpScanError"), "error");
-      return;
-    }
-  }
-
-  // Verify
-  const vModal = await openFpScanModal({
-    mode: "verify",
-    title: t("fpScanTitle"),
-    message: t("fpScanMsg")
+  const scanModal = await openFpScanModal({
+    title: storedList.length ? t("fpScanTitle") : t("fpScanRegTitle"),
+    message: storedList.length ? t("fpScanMsg") : t("fpScanRegMsg")
   });
-  try {
-    fpModalSetState(vModal, "scanning", t("fpScanWaiting"));
-    const result = await fpVerify(stored);
-    fpModalSetState(vModal, "success", t("fpScanSuccess"));
 
-    // Save attendance with fingerprint method
+  try {
+    fpModalSetState(scanModal, "scanning", t("fpScanWaiting"));
+    let usedCredential = null;
+
+    if (storedList.length) {
+      try {
+        /* Try to verify against any stored credential on this device */
+        const result = await fpVerifyAny(storedList);
+        usedCredential = result.credentialId;
+      } catch (err) {
+        /* Credential isn't on this device (or user cancelled). Register this device. */
+        if (err.name === "NotAllowedError" || err.message === "VERIFY_CANCELLED") {
+          fpModalSetState(scanModal, "scanning", "Registering this device…");
+          const reg = await fpRegisterHere({
+            uid: me.uid || S.uid,
+            email: me.email || S.email,
+            name: me.name || fullName(me)
+          });
+          await updateDoc(doc(db, "employees", me.id), {
+            fingerprints: [...storedList, reg]
+          });
+          usedCredential = reg.credentialId;
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      /* First time — register this device */
+      const reg = await fpRegisterHere({
+        uid: me.uid || S.uid,
+        email: me.email || S.email,
+        name: me.name || fullName(me)
+      });
+      await updateDoc(doc(db, "employees", me.id), {
+        fingerprints: [reg]
+      });
+      usedCredential = reg.credentialId;
+    }
+
+    fpModalSetState(scanModal, "success", t("fpScanSuccess"));
+
     await saveAttendance(me, {
       status: "present",
       checkIn: new Date().toTimeString().slice(0,5),
       checkOut: null,
       notes: null,
       method: "fingerprint",
-      credentialId: result.credentialId
+      credentialId: usedCredential
     });
-
-    // Touch the lastUsedAt
-    try {
-      await updateDoc(doc(db, "employees", me.id), {
-        "fingerprint.lastUsedAt": serverTimestamp()
-      });
-    } catch (e) { /* ignore */ }
 
     await new Promise(r => setTimeout(r, 500));
     closeModal();
     toast(t("fpMarked"), "success");
   } catch (err) {
-    console.warn("[fp-verify]", err);
-    fpModalSetState(vModal, "error", err.name === "NotAllowedError" ? t("fpCancelled") : (err.message || t("fpScanError")));
-    await new Promise(r => setTimeout(r, 1400));
-    closeModal();
-    if (err.name !== "NotAllowedError") toast(err.message || t("fpScanError"), "error");
-  }
-}
-
-/* Fingerprint settings modal */
-function openFpSettingsModal() {
-  if (!MY_EMP) {
-    toast(t("fpNoEmployee"), "error");
-    return;
-  }
-  const stored = MY_EMP.fingerprint && MY_EMP.fingerprint.credentialId ? MY_EMP.fingerprint : null;
-
-  const status = stored
-    ? `<span class="fp-status-pill on"><svg viewBox="0 0 24 24">${ICONS.check}</svg> ${escapeHtml(t("fpStatusRegistered"))}</span>`
-    : `<span class="fp-status-pill off"><svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ${escapeHtml(t("fpStatusNotRegistered"))}</span>`;
-
-  const meta = stored ? `
-    <div style="margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.7">
-      <div><strong>${escapeHtml(t("fpCreated"))}:</strong> ${escapeHtml(stored.createdAt ? new Date(stored.createdAt.seconds ? stored.createdAt.seconds * 1000 : stored.createdAt).toLocaleString() : "—")}</div>
-      <div><strong>${escapeHtml(t("fpLastUsed"))}:</strong> ${escapeHtml(stored.lastUsedAt ? new Date(stored.lastUsedAt.seconds ? stored.lastUsedAt.seconds * 1000 : stored.lastUsedAt).toLocaleString() : t("fpNever"))}</div>
-    </div>
-  ` : "";
-
-  openModal(`
-    <div class="modal__head">
-      <div>
-        <div class="modal__title">${escapeHtml(t("fpMenuTitle"))}</div>
-        <div class="modal__sub">${escapeHtml(t("fpMenuSub"))}</div>
-      </div>
-      <button class="modal__close" data-close><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
-    </div>
-    <div class="modal__body">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:44px;height:44px;border-radius:12px;background:var(--violet-soft);color:var(--violet);display:grid;place-items:center">
-            <svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:currentColor;stroke-width:1.8;fill:none">${ICONS.fingerprint}</svg>
-          </div>
-          <div>
-            <div style="font-weight:800">${escapeHtml(fullName(MY_EMP))}</div>
-            <div style="font-size:12px;color:var(--muted)">${escapeHtml(MY_EMP.empId || "—")}</div>
-          </div>
-        </div>
-        ${status}
-      </div>
-
-      ${stored ? `<div class="alert alert--success" style="margin-top:16px;margin-bottom:0">
-        <svg viewBox="0 0 24 24">${ICONS.check}</svg>
-        <div>${escapeHtml(t("fpYourRegistered"))}</div>
-      </div>${meta}` : `
-        <div class="alert alert--info" style="margin-top:16px">
-          <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
-          <div>${escapeHtml(t("fpBrowserHint"))}</div>
-        </div>
-      `}
-    </div>
-    <div class="modal__foot">
-      ${stored ? `
-        <button class="btn btn--danger" id="fp-remove">
-          <svg viewBox="0 0 24 24">${ICONS.trash}</svg> ${escapeHtml(t("fpRemove"))}
-        </button>
-        <div class="spacer"></div>
-        <button class="btn" data-close>${escapeHtml(t("fpClose"))}</button>
-        <button class="btn btn--primary" id="fp-reregister">
-          <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ${escapeHtml(t("fpReRegister"))}
-        </button>
-      ` : `
-        <button class="btn" data-close>${escapeHtml(t("fpClose"))}</button>
-        <button class="btn btn--fp" id="fp-register-now">
-          <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ${escapeHtml(t("fpRegisterNow"))}
-        </button>
-      `}
-    </div>
-  `);
-
-  document.getElementById("fp-register-now")?.addEventListener("click", async () => {
-    closeModal();
-    await new Promise(r => setTimeout(r, 80));
-    // Reuse markWithFingerprint's registration path by calling a dedicated register function
-    await fpRegisterFlow();
-  });
-  document.getElementById("fp-reregister")?.addEventListener("click", async () => {
-    closeModal();
-    await new Promise(r => setTimeout(r, 80));
-    await fpRegisterFlow();
-  });
-  document.getElementById("fp-remove")?.addEventListener("click", async () => {
-    if (!confirm(t("fpRemoveConfirm"))) return;
-    try {
-      await updateDoc(doc(db, "employees", MY_EMP.id), { fingerprint: null });
-      closeModal();
-      toast(t("fpRemoved"), "success");
-    } catch (err) {
-      toast(err.message || t("fpScanError"), "error");
-    }
-  });
-}
-
-/* Dedicated registration flow (from settings) */
-async function fpRegisterFlow() {
-  if (!MY_EMP) { toast(t("fpNoEmployee"), "error"); return; }
-  if (!FP_SUPPORTED) { toast(t("fpNotSupported"), "error"); return; }
-  if (!location.protocol.startsWith("https") && location.hostname !== "localhost") {
-    toast(t("fpNotHttps"), "error");
-    return;
-  }
-  const available = await fpIsPlatformAuthenticatorAvailable();
-  if (!available) { toast(t("fpNotAvailable"), "error"); return; }
-
-  const regModal = await openFpScanModal({
-    mode: "register",
-    title: t("fpScanRegTitle"),
-    message: t("fpScanRegMsg")
-  });
-  try {
-    fpModalSetState(regModal, "scanning");
-    const reg = await fpRegister({ uid: S.uid, email: S.email, name: S.name });
-    fpModalSetState(regModal, "success");
-    await updateDoc(doc(db, "employees", MY_EMP.id), {
-      fingerprint: {
-        credentialId: reg.credentialId,
-        transports: reg.transports || [],
-        rpId: reg.rpId,
-        createdAt: serverTimestamp(),
-        lastUsedAt: null
-      }
-    });
-    await new Promise(r => setTimeout(r, 550));
-    closeModal();
-    toast(t("fpRegisteredOk"), "success");
-  } catch (err) {
-    console.warn("[fp-register]", err);
-    fpModalSetState(regModal, "error", err.name === "NotAllowedError" ? t("fpCancelled") : (err.message || t("fpScanError")));
+    console.warn("[fp]", err);
+    fpModalSetState(scanModal, "error",
+      err.name === "NotAllowedError" ? t("fpCancelled") : (err.message || t("fpScanError")));
     await new Promise(r => setTimeout(r, 1400));
     closeModal();
     if (err.name !== "NotAllowedError") toast(err.message || t("fpScanError"), "error");
@@ -1706,15 +1446,18 @@ function renderScopeBadge() {
     </span>`;
   }
 
-  // Append fingerprint status chip
+  /* Fingerprint status chip */
   if (MY_EMP) {
-    const has = MY_EMP.fingerprint && MY_EMP.fingerprint.credentialId;
+    const fpCount = getFingerprintList(MY_EMP).length;
     const chip = document.createElement("span");
     chip.className = "scope-badge scope-badge--fp";
-    chip.innerHTML = `<svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ${escapeHtml(has ? t("fpStatusRegistered") : t("fpStatusNotRegistered"))}`;
-    chip.style.marginLeft = "8px";
-    chip.style.cursor = "pointer";
-    chip.addEventListener("click", openFpSettingsModal);
+    chip.innerHTML = `<svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ` +
+      (fpCount
+        ? escapeHtml(`FP registered (${fpCount} device${fpCount>1?"s":""})`)
+        : escapeHtml("No fingerprint yet"));
+    chip.addEventListener("click", () => {
+      if (!fpCount) markWithFingerprint();
+    });
     el.appendChild(chip);
   }
 }
@@ -1722,12 +1465,14 @@ function renderHeadActions() {
   const host = document.getElementById("head-actions");
   const btns = [];
 
-  // Fingerprint self check-in (only if user has an employee record)
+  /* Fingerprint button — always shown if user has an employee record and no mark yet */
   if (MY_EMP) {
     const marked = !!ATTENDANCE[MY_EMP.id];
     const fpReady = FP_SUPPORTED;
-    btns.push(`<button class="btn btn--fp" id="fp-mark-btn" ${marked || !fpReady ? "disabled" : ""} title="${escapeHtml(fpReady ? t("fpMarkTitle") : t("fpNotSupported"))}">
-      <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ${escapeHtml(t("fpMarkTitle"))}
+    const fpCount = getFingerprintList(MY_EMP).length;
+    const label = fpCount ? t("fpMarkTitle") : "Register Fingerprint & Mark";
+    btns.push(`<button class="btn btn--fp" id="fp-mark-btn" ${marked || !fpReady ? "disabled" : ""} title="${escapeHtml(fpReady ? label : t("fpNotSupported"))}">
+      <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ${escapeHtml(label)}
     </button>`);
   }
 
@@ -1896,6 +1641,10 @@ function renderTable() {
     const editable = canMarkOthers() || e.uid === S.uid;
     const isSelf = e.uid === S.uid;
     const fpMarked = rec && rec.method === "fingerprint";
+
+    /* Fingerprint button only for the current user, unmarked */
+    const showFp = isSelf && FP_SUPPORTED && !rec;
+
     return `
       <tr data-emp-id="${e.id}">
         <td>
@@ -1914,7 +1663,7 @@ function renderTable() {
         <td>${rec?.checkOut ? escapeHtml(rec.checkOut) : "—"}</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(rec?.notes || "—")}</td>
         <td style="text-align:right">
-          ${isSelf && FP_SUPPORTED && !rec ? `
+          ${showFp ? `
             <button class="btn btn--sm btn--icon btn--fp" data-action="fp" data-id="${e.id}" title="${escapeHtml(t("fpMarkTitle"))}" style="margin-right:4px">
               <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
             </button>` : ""}
@@ -2231,11 +1980,8 @@ async function saveAttendance(emp, opts) {
     employeeId: emp.id,
     employeeName: fullName(emp),
     photoURL: emp.photoURL || null,
-    status,
-    checkIn,
-    checkOut,
-    notes,
-    method,                          // "manual" | "bulk" | "fingerprint"
+    status, checkIn, checkOut, notes,
+    method,
     regionCode: emp.regionCode || null,
     regionName: emp.regionName || null,
     clusterId: emp.clusterId || null,
@@ -2362,11 +2108,6 @@ document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
     document.querySelectorAll("[data-dropdown-panel]").forEach(p => p.classList.add("hidden"));
     if (!open) panel.classList.remove("hidden");
   });
-});
-document.getElementById("fp-menu-btn")?.addEventListener("click", (e) => {
-  e.stopPropagation();
-  document.querySelectorAll("[data-dropdown-panel]").forEach(p => p.classList.add("hidden"));
-  openFpSettingsModal();
 });
 
 /* Language dropdown */
