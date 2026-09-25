@@ -88,6 +88,8 @@ html.theme-dark .btn:hover { background:#1e293b; }
 html.theme-dark .scope-badge { background:linear-gradient(135deg,#1a2433,#0f172a); border-color:#1e293b; color:#c5cdd9; }
 html.theme-dark .phase-bar__step { background:#111a2c; border-color:#1e293b; }
 html.theme-dark .emp-avatar { background:linear-gradient(135deg,#1e3a5f,#2d4a72); color:#e4e8f0; }
+html.theme-dark .hist-row { border-bottom-color:#1a2433; }
+html.theme-dark .hist-stat { background:#111a2c; border-color:#1e293b; }
 
 html.compact-mode { --pad-main:18px; --topbar-h:60px; }
 html[data-ethiopic="true"] body { font-family:"Noto Sans Ethiopic","Inter",sans-serif; }
@@ -308,6 +310,20 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   background:linear-gradient(135deg,#fdf5e0 0%, #fff 50%, #fff 100%);
   border-color:#f0dcb0;
 }
+.scan-panel.is-late-absent {
+  background:linear-gradient(135deg,#fff7ed 0%, #fff 50%, #fff 100%);
+  border-color:#fdba74;
+}
+.scan-panel.is-late-absent::before {
+  background:radial-gradient(circle at 15% 50%, rgba(234,88,12,.10), transparent 40%);
+}
+.scan-panel.is-late-absent .scan-panel__ring { border-color:#ea580c; opacity:.4; }
+.scan-panel.is-late-absent .scan-panel__ring-2 { border-color:#ea580c; opacity:.22; }
+.scan-panel.is-late-absent .scan-panel__finger svg { stroke:#ea580c; }
+.scan-panel.is-late-absent .scan-panel__status { background:#ea580c; }
+.scan-panel.is-late-absent .scan-panel__eyebrow { color:#c2410c; }
+.scan-panel.is-late-absent .scan-success__badge { background:#ea580c; box-shadow:0 4px 12px rgba(234,88,12,.3); }
+.scan-panel.is-late-absent .scan-success__countdown { border-top-color:#fdba74; color:#c2410c; }
 
 .scan-panel__stage {
   position:relative; z-index:1;
@@ -320,10 +336,12 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .scan-panel__stage:active { transform:scale(.97); }
 .scan-panel.is-success .scan-panel__stage,
 .scan-panel.is-error .scan-panel__stage,
-.scan-panel.is-blocked .scan-panel__stage { cursor:default; }
+.scan-panel.is-blocked .scan-panel__stage,
+.scan-panel.is-late-absent .scan-panel__stage { cursor:default; }
 .scan-panel.is-success .scan-panel__stage:hover,
 .scan-panel.is-error .scan-panel__stage:hover,
-.scan-panel.is-blocked .scan-panel__stage:hover { transform:none; }
+.scan-panel.is-blocked .scan-panel__stage:hover,
+.scan-panel.is-late-absent .scan-panel__stage:hover { transform:none; }
 
 .scan-panel__ring { position:absolute; inset:0; border-radius:50%;
   border:3px dashed var(--violet); opacity:.35; }
@@ -389,6 +407,15 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   font-size:13.5px; color:var(--muted); line-height:1.55;
   max-width:520px;
 }
+
+/* Late-absent notice inside the success panel */
+.scan-late-notice {
+  margin-top:12px; padding:10px 14px; border-radius:10px;
+  background:#fff7ed; border:1px solid #fdba74; color:#9a3412;
+  font-size:13px; font-weight:600; line-height:1.5;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.scan-late-notice svg { width:16px; height:16px; flex-shrink:0; margin-top:2px; stroke:currentColor; stroke-width:2.3; fill:none; }
 
 /* Success card */
 .scan-success {
@@ -566,6 +593,8 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .btn--icon { width:38px; padding:0; }
 .btn--danger { color:var(--danger); }
 .btn--danger:hover { background:#fef3f2; border-color:#f0a5ab; }
+.btn--view { color:#0b5cab; }
+.btn--view:hover { background:#eaf3fc; border-color:#bdd7f2; }
 .btn:disabled { opacity:.55; pointer-events:none; }
 
 /* Stats */
@@ -667,6 +696,7 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .modal { background:var(--card-bg); border-radius:var(--r-lg); box-shadow:0 30px 60px rgba(20,40,70,.12);
   width:100%; max-width:560px; max-height:92vh; display:flex; flex-direction:column; margin:auto; }
 .modal--lg { max-width:820px; }
+.modal--xl { max-width:1100px; }
 .modal__head { padding:24px 28px; border-bottom:1px solid var(--border-soft);
   display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
 .modal__title { font-size:20px; font-weight:800; }
@@ -706,6 +736,101 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .bulk-item select { height:38px; padding:0 30px 0 10px; border:1px solid var(--border);
   border-radius:9px; background:var(--bg-soft); font-size:12.5px; font-weight:700; }
 
+/* ============================================================
+   HISTORY MODAL
+   ============================================================ */
+.hist-toolbar {
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  padding:14px 16px; background:var(--bg-soft); border-radius:12px;
+  border:1px solid var(--border-soft); margin-bottom:18px;
+}
+.hist-mode-group {
+  display:inline-flex; background:#fff; border:1px solid var(--border); border-radius:10px;
+  padding:3px; gap:2px;
+}
+.hist-mode-btn {
+  height:34px; padding:0 14px; border-radius:8px;
+  font-size:12.5px; font-weight:800; color:var(--text-soft);
+  cursor:pointer; transition:.12s;
+}
+.hist-mode-btn:hover { background:var(--border-soft); }
+.hist-mode-btn.is-on {
+  background:linear-gradient(135deg, var(--primary), var(--secondary));
+  color:#fff; box-shadow:0 4px 10px rgba(11,92,171,.22);
+}
+.hist-date-input {
+  height:38px; padding:0 12px; border:1px solid var(--border); border-radius:10px;
+  background:#fff; font-size:13px; font-weight:600; color:var(--text-soft);
+}
+.hist-range-label {
+  font-size:12.5px; font-weight:700; color:var(--muted);
+  margin-left:auto; padding:6px 12px; background:#fff;
+  border:1px solid var(--border-soft); border-radius:8px;
+}
+.hist-summary {
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));
+  gap:10px; margin-bottom:16px;
+}
+.hist-stat {
+  padding:12px 14px; background:var(--card-bg); border:1px solid var(--border);
+  border-radius:12px; text-align:left;
+}
+.hist-stat__label {
+  font-size:10.5px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--muted); margin-bottom:4px;
+}
+.hist-stat__value { font-size:20px; font-weight:800; letter-spacing:-.4px; line-height:1; }
+.hist-stat__value.c-green  { color:#067647; }
+.hist-stat__value.c-gold   { color:#b8860b; }
+.hist-stat__value.c-red    { color:#b42318; }
+.hist-stat__value.c-blue   { color:#0b5cab; }
+.hist-stat__value.c-violet { color:#5b21b6; }
+
+.hist-table-wrap {
+  border:1px solid var(--border); border-radius:12px; overflow:hidden;
+  max-height:480px; overflow-y:auto;
+}
+.hist-table { width:100%; border-collapse:collapse; font-size:13px; }
+.hist-table thead th {
+  position:sticky; top:0; z-index:1;
+  text-align:left; padding:11px 14px;
+  background:var(--bg-soft); border-bottom:1px solid var(--border);
+  font-size:11px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.05em; color:var(--muted); white-space:nowrap;
+}
+.hist-table tbody td {
+  padding:11px 14px; border-bottom:1px solid var(--border-soft);
+  color:var(--text-soft); vertical-align:middle;
+}
+.hist-row:hover td { background:var(--bg-soft); }
+.hist-row:last-child td { border-bottom:none; }
+.hist-day {
+  font-family:ui-monospace,Menlo,Consolas,monospace; font-weight:800;
+  font-size:13px; color:var(--text); white-space:nowrap;
+}
+.hist-day-sub {
+  display:block; font-family:"Inter",sans-serif;
+  font-size:10.5px; font-weight:700; color:var(--muted);
+  letter-spacing:.02em; margin-top:2px; text-transform:uppercase;
+}
+.hist-time {
+  font-family:ui-monospace,Menlo,Consolas,monospace; font-weight:700; font-size:12.5px;
+}
+.hist-time--empty { color:var(--muted-light); font-weight:600; }
+.hist-time--in   { color:var(--violet); }
+.hist-time--out  { color:var(--orange); }
+.hist-empty {
+  padding:48px 24px; text-align:center; color:var(--muted);
+}
+.hist-empty svg {
+  width:44px; height:44px; margin:0 auto 12px;
+  stroke:var(--muted-light); stroke-width:1.6; fill:none;
+}
+.hist-empty__title {
+  font-size:15px; font-weight:800; color:var(--text); margin-bottom:4px;
+}
+.hist-empty__msg { font-size:13px; line-height:1.5; max-width:380px; margin:0 auto; }
+
 /* Toast + spinner */
 .toast-wrap { position:fixed; top:24px; right:24px; z-index:300;
   display:flex; flex-direction:column; gap:10px; pointer-events:none; max-width:calc(100vw - 48px); }
@@ -737,6 +862,9 @@ body.sidebar-open .overlay { display:block; }
   .page-head__title { font-size:24px; }
   .modal__head, .modal__body, .modal__foot { padding-left:18px; padding-right:18px; }
   .toolbar__count { display:none; }
+  .hist-mode-group { flex-wrap:wrap; }
+  .hist-mode-btn { padding:0 10px; font-size:11.5px; }
+  .hist-range-label { margin-left:0; width:100%; text-align:center; }
 }
 </style>
 </head>
@@ -821,7 +949,7 @@ body.sidebar-open .overlay { display:block; }
             <span data-i18n="dashboard">Dashboard</span>
           </a>
           <a class="dropdown__item" href="settings.html">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 1 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span data-i18n="settings">Settings</span>
           </a>
           <div class="dropdown__divider"></div>
@@ -848,7 +976,6 @@ body.sidebar-open .overlay { display:block; }
     <div id="work-hours-host"></div>
     <div id="scan-panel-host"></div>
     <div id="phase-bar-host"></div>
-    <div class="rules-banner" id="rules-banner" style="display:none"></div>
 
     <div class="chain">
       <span class="chain__node" data-i18n="chainRegion">Region</span><span class="chain__arrow">›</span>
@@ -895,7 +1022,7 @@ body.sidebar-open .overlay { display:block; }
               <th data-i18n="thMorning">Morning</th>
               <th data-i18n="thAfternoon">Afternoon</th>
               <th data-i18n="thNotes">Notes</th>
-              <th style="width:120px;text-align:right" data-i18n="thActions">Actions</th>
+              <th style="width:160px;text-align:right" data-i18n="thActions">Actions</th>
             </tr>
           </thead>
           <tbody id="att-tbody">
@@ -918,16 +1045,21 @@ import {
 /* ============================================================
    TIME RULES
    ------------------------------------------------------------
-   Morning arrival:
-     ≤ 08:45 → present
-     08:46 – 09:00 → late
-     ≥ 09:01 → absent
-   Afternoon arrival:
-     13:30 – 13:45 → present
-     13:46 – 14:00 → late
-     ≥ 14:01 → absent
+   MORNING (arrival):
+     ≤ 08:45  → Present
+     08:46 – 09:00 → Late
+     ≥ 09:01  → Absent
+     (After 09:01 the fingerprint still records the arrival times,
+      but the status is saved as Absent for the morning session.
+      A note tells the employee to contact their Administrator.)
+
+   AFTERNOON (arrival):
+     13:30 – 13:45 → Present
+     13:46 – 14:00 → Late
+     ≥ 14:01       → Absent
+
    Working-hour locks:
-     • Morning check-out only after 12:30 (lunch break)
+     • Morning check-out only after 12:30
      • Afternoon check-in only after 13:30
      • Afternoon check-out only after 17:30
    ============================================================ */
@@ -937,11 +1069,13 @@ const ATTENDANCE_RULES = {
 };
 const WORKING_HOURS = {
   morningStart:   "08:30",
-  lunchStart:     "12:30",   // morning check-out opens
-  afternoonStart: "13:30",   // afternoon check-in opens
-  eveningStart:   "17:30",   // afternoon check-out opens
-  dayEnd:         "23:59"
+  lunchStart:     "12:30",
+  afternoonStart: "13:30",
+  eveningStart:   "17:30"
 };
+/* Anything at or after this is treated as Absent for the whole session */
+const LATE_ABSENT_MORNING   = "09:01";
+const LATE_ABSENT_AFTERNOON = "14:01";
 
 /* ============================================================
    I18N
@@ -976,12 +1110,10 @@ const I18N = {
     noEmployeesFilter:"No employees match your filters.",
     markToday:"Mark Today",
 
-    /* Phase names */
     phaseMorningIn:"Morning In", phaseMorningOut:"Morning Out",
     phaseAfternoonIn:"Afternoon In", phaseAfternoonOut:"Afternoon Out",
     phaseDone:"Day Complete",
 
-    /* Scan panel */
     scanEyebrowIn:"Ready to scan",
     scanEyebrowScanning:"Scanning…",
     scanEyebrowSuccess:"Identified",
@@ -1005,11 +1137,10 @@ const I18N = {
     scanNoCredential:"No registered fingerprint matched. Ask an administrator to register one for you.",
     scanAlreadyDone:"{name} has already completed all four scans for today.",
 
-    /* Success card */
-    scanSuccessCheckIn:"{phase} recorded",
-    scanSuccessCheckOut:"{phase} recorded",
+    /* Late-arrival notice shown on the success panel */
+    scanLateMorning:"You are recorded as Absent this Morning — Join Your Administrator.",
+    scanLateAfternoon:"You are recorded as Absent this Afternoon — Join Your Administrator.",
 
-    /* Working hours card */
     whTitle:"Working hours today",
     whMorning:"Morning session",
     whMorningVal:"08:30 – 12:30",
@@ -1019,18 +1150,14 @@ const I18N = {
     whAfternoonVal:"13:30 – 17:30",
     whEvening:"End of day",
     whEveningVal:"after 17:30",
-    whNow:"Current",
-    whBlocked:"Blocked",
-    whOpen:"Open",
+    whNow:"Current", whBlocked:"Blocked", whOpen:"Open",
 
-    /* Block messages */
     blockMorningOut:"This is working time — you cannot check out yet. Morning check-out opens at 12:30. Ask your Administrator.",
     blockAfternoonIn:"You cannot check in for the afternoon yet. Afternoon check-in opens at 13:30.",
     blockAfternoonOut:"This is working time — you cannot check out yet. Afternoon check-out opens at 17:30. Ask your Administrator.",
     blockAlreadyDone:"{name} has already completed all four scans today.",
     blockGeneric:"This action is not allowed at the current time.",
 
-    /* Not-linked alert */
     notLinkedTitle:"Your account is not linked to an employee record",
     notLinkedMsg:"To use the fingerprint scanner you first need an employee record. An administrator can create and link it for you.",
     notLinkedAdminMsg:"Your own account is not linked to an employee record. You can still use the scanner for other employees, or go to Users & Staff to create or link records.",
@@ -1044,15 +1171,6 @@ const I18N = {
     fpNoEmployee:"Your account is not linked to an employee record.",
     fpNotHttps:"Fingerprint requires a secure connection (HTTPS).",
     fpVerified:"FP", fpCancel:"Cancel", fpClose:"Close",
-
-    ruleMorningNotice:"Morning (arrival):",
-    ruleMorningPresent:"≤ 08:45 → Present",
-    ruleMorningLate:"08:46 – 09:00 → Late",
-    ruleMorningAbsent:"≥ 09:01 → Absent",
-    ruleAfternoonNotice:"Afternoon (after lunch):",
-    ruleAfternoonPresent:"13:30 – 13:45 → Present",
-    ruleAfternoonLate:"13:46 – 14:00 → Late",
-    ruleAfternoonAbsent:"≥ 14:01 → Absent",
 
     modalMarkTitle:"Mark Attendance", modalStatusLabel:"Status",
     modalMorningIn:"Morning In", modalMorningOut:"Morning Out",
@@ -1080,9 +1198,29 @@ const I18N = {
     role_super_admin:"Super Admin", role_admin:"Cluster Admin",
     role_hrm:"HR Manager", role_manager:"Manager", role_employee:"Employee",
     role_finance:"Finance Officer",
-    day:"day", days:"days"
+    day:"day", days:"days",
+
+    /* History modal */
+    histTitle:"Attendance History",
+    histSub:"{name} · {empid}",
+    histModeDay:"Daily", histModeWeek:"Weekly", histModeMonth:"Monthly", histModeYear:"Yearly",
+    histRange:"Range",
+    histColDate:"Date", histColDay:"Day", histColStatus:"Status",
+    histColMorning:"Morning", histColAfternoon:"Afternoon",
+    histColNotes:"Notes",
+    histEmpty:"No attendance records in this range.",
+    histEmptyMsg:"Try a different range, or check that this employee has scanned attendance during the selected period.",
+    histPresent:"Present", histLate:"Late", histAbsent:"Absent",
+    histLeave:"On Leave", histField:"Field", histHalf:"Half day",
+    histUnmarked:"—",
+    histSessionsCount:"{n} record(s)",
+    histTotalDays:"Days with records",
+    histWorking:"Working days",
+    histPrev:"◀ Prev", histNext:"Next ▶", histToday:"Today",
+    histLoading:"Loading records…"
   },
   om: {
+    /* reuse English for history labels in Oromo — short fallback */
     brandTitle:"Tajaajila Hawaasaa", brandSubtitle:"Sirna Odeeffannoo Bulchiinsaa",
     footerCopy:"© 2026 SIM Tajaajila Hawaasaa",
     dashboard:"Daashboordii", settings:"Qindaa'ina", signOut:"Ba'i",
@@ -1129,8 +1267,8 @@ const I18N = {
     scanNotHttps:"Mallattoon qubaa HTTPS barbaachisa.",
     scanNoCredential:"Mallattoo qubaa galmeeffame hin argamne. Bulchaa gaafadhu.",
     scanAlreadyDone:"{name} har'a mallattoowwan afur hunda xumureera.",
-    scanSuccessCheckIn:"{phase} galmeeffame",
-    scanSuccessCheckOut:"{phase} galmeeffame",
+    scanLateMorning:"Ganama kanaaf hafuun galmeeffamteetta — Bulchaa kee gaafadhu.",
+    scanLateAfternoon:"Waaree kanaaf hafuun galmeeffamteetta — Bulchaa kee gaafadhu.",
     whTitle:"Sa'aatii hojii har'a",
     whMorning:"Ganama", whMorningVal:"08:30 – 12:30",
     whLunch:"Boqonnaa", whLunchVal:"12:30 – 13:30",
@@ -1154,14 +1292,6 @@ const I18N = {
     fpNoEmployee:"Herregni kee galmee hojjetaa waliin hin hidhamne.",
     fpNotHttps:"Mallattoon qubaa HTTPS barbaachisa.",
     fpVerified:"FP", fpCancel:"Haqi", fpClose:"Cufi",
-    ruleMorningNotice:"Ganama (dhufaatii):",
-    ruleMorningPresent:"≤ 08:45 → Argame",
-    ruleMorningLate:"08:46 – 09:00 → Tursiise",
-    ruleMorningAbsent:"≥ 09:01 → Hin argamne",
-    ruleAfternoonNotice:"Waaree (booda):",
-    ruleAfternoonPresent:"13:30 – 13:45 → Argame",
-    ruleAfternoonLate:"13:46 – 14:00 → Tursiise",
-    ruleAfternoonAbsent:"≥ 14:01 → Hin argamne",
     modalMarkTitle:"Argannoo Galmeessi", modalStatusLabel:"Haala",
     modalMorningIn:"Ganama Seensa", modalMorningOut:"Ganama Ba'insa",
     modalAfternoonIn:"Waaree Seensa", modalAfternoonOut:"Waaree Ba'insa",
@@ -1177,7 +1307,7 @@ const I18N = {
     toastCleared:"Argannoon haqame", toastSaved:"Argannoon olkaa'ame",
     toastSavedMany:"Galmee argannoo {n} olkaa'ame",
     toastChooseStatus:"Maaloo haala filadhu.",
-    toastAutoAbsent:"Hojjettoonni {n} hin galmeeffamne guyyaa {date} hafuun galmeeffaman",
+    toastAutoAbsent:"Hojjettoonni {n} hafuun ofumaan galmeeffaman guyyaa {date}",
     scopeSuper:"Adeemsa sirna guutuu — argannoo hunda",
     scopeHrm:"Bulchaa HR — dhaabbata guutuu",
     scopeCluster:"Bulchaa Garee",
@@ -1186,9 +1316,25 @@ const I18N = {
     role_super_admin:"Bulchaa Olaanaa", role_admin:"Bulchaa Garee",
     role_hrm:"Bulchaa HR", role_manager:"Bulchaa", role_employee:"Hojjetaa",
     role_finance:"Ogeessa Faayinaansii",
-    day:"guyyaa", days:"guyyoota"
+    day:"guyyaa", days:"guyyoota",
+    histTitle:"Seenaa Argannoo", histSub:"{name} · {empid}",
+    histModeDay:"Guyyaa", histModeWeek:"Torban", histModeMonth:"Ji'a", histModeYear:"Waggaa",
+    histRange:"Hangii",
+    histColDate:"Guyyaa", histColDay:"Guyyaa", histColStatus:"Haala",
+    histColMorning:"Ganama", histColAfternoon:"Waaree", histColNotes:"Yaadannoo",
+    histEmpty:"Hangi kana keessatti galmeen argannoo hin jiru.",
+    histEmptyMsg:"Hangii biraa filadhu, ykn hojjetaan kun yeroo filatame keessatti galmee qabaachuu isaa mirkaneessi.",
+    histPresent:"Argame", histLate:"Tursiise", histAbsent:"Hin argamne",
+    histLeave:"Boqonnaa", histField:"Dirree", histHalf:"Walakkaa",
+    histUnmarked:"—",
+    histSessionsCount:"Galmee {n}",
+    histTotalDays:"Guyyoota galmee qaban",
+    histWorking:"Guyyoota hojii",
+    histPrev:"◀ Dura", histNext:"Itti aanu ▶", histToday:"Har'a",
+    histLoading:"Galmeewwan fe'aa jira…"
   },
   am: {
+    /* reuse English for history labels — Amharic overrides below */
     brandTitle:"የመንግስት ሰራተኛ", brandSubtitle:"የአስተዳደር መረጃ ስርዓት",
     footerCopy:"© 2026 የመንግስት ሰራተኛ MIS",
     dashboard:"ዳሽቦርድ", settings:"ቅንብሮች", signOut:"ውጣ",
@@ -1235,8 +1381,8 @@ const I18N = {
     scanNotHttps:"የጣት አሻራ HTTPS ይፈልጋል።",
     scanNoCredential:"የተመዘገበ የጣት አሻራ አልተገኘም። አስተዳዳሪ ይጠይቁ።",
     scanAlreadyDone:"{name} ዛሬ አራቱንም ስካኖች ጨርሷል።",
-    scanSuccessCheckIn:"{phase} ተመዝግቧል",
-    scanSuccessCheckOut:"{phase} ተመዝግቧል",
+    scanLateMorning:"ዛሬ ጠዋት ቀርቷል ተብለው ተመዝግበዋል — አስተዳዳሪዎን ያግኙ።",
+    scanLateAfternoon:"ዛሬ ከሰዓት ቀርቷል ተብለው ተመዝግበዋል — አስተዳዳሪዎን ያግኙ።",
     whTitle:"የዛሬ የሥራ ሰዓቶች",
     whMorning:"የጠዋት ክፍለ ጊዜ", whMorningVal:"08:30 – 12:30",
     whLunch:"የምሳ እረፍት", whLunchVal:"12:30 – 13:30",
@@ -1260,14 +1406,6 @@ const I18N = {
     fpNoEmployee:"መለያዎ ከሰራተኛ መዝገብ ጋር አልተገናኘም።",
     fpNotHttps:"የጣት አሻራ HTTPS ይፈልጋል።",
     fpVerified:"FP", fpCancel:"ሰርዝ", fpClose:"ዝጋ",
-    ruleMorningNotice:"ጠዋት (መድረሻ):",
-    ruleMorningPresent:"≤ 08:45 → ተገኝቷል",
-    ruleMorningLate:"08:46 – 09:00 → ዘግይቷል",
-    ruleMorningAbsent:"≥ 09:01 → ቀርቷል",
-    ruleAfternoonNotice:"ከሰዓት (ከምሳ በኋላ):",
-    ruleAfternoonPresent:"13:30 – 13:45 → ተገኝቷል",
-    ruleAfternoonLate:"13:46 – 14:00 → ዘግይቷል",
-    ruleAfternoonAbsent:"≥ 14:01 → ቀርቷል",
     modalMarkTitle:"መገኘት ያስመዝግቡ", modalStatusLabel:"ሁኔታ",
     modalMorningIn:"ጠዋት መግቢያ", modalMorningOut:"ጠዋት መውጫ",
     modalAfternoonIn:"ከሰዓት መግቢያ", modalAfternoonOut:"ከሰዓት መውጫ",
@@ -1283,7 +1421,7 @@ const I18N = {
     toastCleared:"መገኘት ጸድቷል", toastSaved:"መገኘት ተቀምጧል",
     toastSavedMany:"{n} የመገኘት መዝገቦች ተቀምጠዋል",
     toastChooseStatus:"እባክዎ ሁኔታ ይምረጡ።",
-    toastAutoAbsent:"{n} ሰራተኞች ላልተመዘገቡበት {date} ቀርቷል ተብለው ተመዝግበዋል",
+    toastAutoAbsent:"{n} ሰራተኞች በራስ-ሰር ቀርቷል ተብለው ተመዝግበዋል ለ {date}",
     scopeSuper:"ሙሉ ስርዓት መዳረሻ — ሁሉም መገኘት",
     scopeHrm:"የሰው ኃይል ሥራ አስኪያጅ — በድርጅቱ ሁሉ",
     scopeCluster:"የክላስተር አስተዳዳሪ",
@@ -1292,7 +1430,22 @@ const I18N = {
     role_super_admin:"ዋና አስተዳዳሪ", role_admin:"የክላስተር አስተዳዳሪ",
     role_hrm:"የሰው ኃይል ሥራ አስኪያጅ", role_manager:"ሥራ አስኪያጅ",
     role_employee:"ሰራተኛ", role_finance:"የፋይናንስ ኦፊሰር",
-    day:"ቀን", days:"ቀናት"
+    day:"ቀን", days:"ቀናት",
+    histTitle:"የመገኘት ታሪክ", histSub:"{name} · {empid}",
+    histModeDay:"በቀን", histModeWeek:"በሳምንት", histModeMonth:"በወር", histModeYear:"በዓመት",
+    histRange:"ክልል",
+    histColDate:"ቀን", histColDay:"ቀን", histColStatus:"ሁኔታ",
+    histColMorning:"ጠዋት", histColAfternoon:"ከሰዓት", histColNotes:"ማስታወሻ",
+    histEmpty:"በዚህ ክልል ውስጥ የመገኘት መዝገብ የለም።",
+    histEmptyMsg:"ሌላ ክልል ይሞክሩ ወይም ሰራተኛው በተመረጠው ጊዜ ውስጥ መዝገብ እንዳለው ያረጋግጡ።",
+    histPresent:"ተገኝቷል", histLate:"ዘግይቷል", histAbsent:"ቀርቷል",
+    histLeave:"ፈቃድ", histField:"መስክ", histHalf:"ግማሽ",
+    histUnmarked:"—",
+    histSessionsCount:"{n} መዝገብ",
+    histTotalDays:"መዝገብ ያላቸው ቀናት",
+    histWorking:"የሥራ ቀናት",
+    histPrev:"◀ ቀዳሚ", histNext:"ቀጣይ ▶", histToday:"ዛሬ",
+    histLoading:"መዝገቦችን በመጫን ላይ…"
   }
 };
 
@@ -1444,7 +1597,7 @@ let EMPLOYEES = [];
 let ATTENDANCE = {};
 
 let SCAN_PANEL = {
-  state: "idle",   // idle | scanning | success | error | blocked
+  state: "idle",   // idle | scanning | success | error | blocked | late-absent
   data: null,
   error: null,
   resetTimer: null
@@ -1522,43 +1675,27 @@ const PHASE_KEYS = {
 };
 
 /* ============================================================
-   PHASE LOCK — enforce working-hour rules
-   ------------------------------------------------------------
-   Returns { allowed: bool, reason: string, message: string }
+   PHASE LOCK — working-hour rules
    ============================================================ */
 function getPhaseLock(phase) {
-  if (phase === "done") {
-    return { allowed: false, message: t("blockGeneric") };
-  }
+  if (phase === "done") return { allowed: false, message: t("blockGeneric") };
   const now = nowMinutes();
   const M = (s) => timeToMinutes(s);
-
-  if (phase === "morning-in") {
-    // Anyone can check in any time before they've checked in once
-    return { allowed: true };
-  }
+  if (phase === "morning-in") return { allowed: true };
   if (phase === "morning-out") {
-    if (now < M(WORKING_HOURS.lunchStart)) {
-      return { allowed: false, message: t("blockMorningOut") };
-    }
+    if (now < M(WORKING_HOURS.lunchStart)) return { allowed: false, message: t("blockMorningOut") };
     return { allowed: true };
   }
   if (phase === "afternoon-in") {
-    if (now < M(WORKING_HOURS.afternoonStart)) {
-      return { allowed: false, message: t("blockAfternoonIn") };
-    }
+    if (now < M(WORKING_HOURS.afternoonStart)) return { allowed: false, message: t("blockAfternoonIn") };
     return { allowed: true };
   }
   if (phase === "afternoon-out") {
-    if (now < M(WORKING_HOURS.eveningStart)) {
-      return { allowed: false, message: t("blockAfternoonOut") };
-    }
+    if (now < M(WORKING_HOURS.eveningStart)) return { allowed: false, message: t("blockAfternoonOut") };
     return { allowed: true };
   }
   return { allowed: false, message: t("blockGeneric") };
 }
-
-/* Current working-hour window — for the info card */
 function currentWindow() {
   const now = nowMinutes();
   const M = (s) => timeToMinutes(s);
@@ -1595,9 +1732,9 @@ const ICONS = {
   user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
   refresh:'<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
   sunrise:'<path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/>',
-  sunrise2:'<path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/>',
   lunch:'<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>',
-  moon:'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
+  moon:'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+  eye:'<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>'
 };
 
 /* ============================================================
@@ -1697,6 +1834,17 @@ function visibleEmployees() {
   if (isEmployee()) return EMPLOYEES.filter(e => e.uid === S.uid);
   return [];
 }
+function canViewEmployee(emp) {
+  if (!emp) return false;
+  if (isSuper() || isHRM()) return true;
+  if (isAdmin()) return emp.clusterId === S.clusterId;
+  if (isManager()) {
+    if (emp.managerId === S.uid) return true;
+    if (MY_EMP && emp.id === MY_EMP.id) return true;
+  }
+  if (isEmployee()) return emp.uid === S.uid;
+  return false;
+}
 
 /* ============================================================
    FINGERPRINT / WEBAUTHN
@@ -1781,23 +1929,19 @@ function renderNotLinkedAlert() {
   const host = document.getElementById("not-linked-host");
   if (!host) return;
   if (MY_EMP) { host.innerHTML = ""; return; }
-
   const showLink = canManageUsers();
   const title = t("notLinkedTitle");
   const msg = showLink ? t("notLinkedAdminMsg") : t("notLinkedMsg");
-
   host.innerHTML = `
     <div class="scan-alert">
       <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
       <div>
         <div class="scan-alert__title">${escapeHtml(title)}</div>
         <div class="scan-alert__msg">${escapeHtml(msg)}</div>
-        ${showLink ? `
-          <a class="scan-alert__link" href="users.html">
+        ${showLink ? `<a class="scan-alert__link" href="users.html">
             <svg viewBox="0 0 24 24">${ICONS.userCheck}</svg>
             ${escapeHtml(t("notLinkedLink"))}
-          </a>
-        ` : `<div class="scan-alert__msg" style="margin-top:6px;font-weight:700">${escapeHtml(t("notLinkedContact"))}</div>`}
+          </a>` : `<div class="scan-alert__msg" style="margin-top:6px;font-weight:700">${escapeHtml(t("notLinkedContact"))}</div>`}
       </div>
     </div>
   `;
@@ -1809,28 +1953,13 @@ function renderNotLinkedAlert() {
 function renderWorkHoursCard() {
   const host = document.getElementById("work-hours-host");
   if (!host) return;
-
   const cur = currentWindow();
-  const cls = (key, isActive) => {
-    let base = "work-hours-slot";
-    if (isActive) base += " is-active";
-    return base;
-  };
-
-  const M = (s) => timeToMinutes(s);
-  const now = nowMinutes();
-
-  // Determine states
   const morningActive   = cur === "morning-working";
   const lunchActive     = cur === "lunch-break";
   const afternoonActive = cur === "afternoon-working";
   const eveningActive   = cur === "evening";
-
-  // For each slot, determine if it's currently blocked
-  const morningBlocked = false;
-  const lunchOpen      = lunchActive;
-  const afternoonOpen  = eveningActive;
-  const eveningOpen    = eveningActive;
+  const lunchOpen       = lunchActive;
+  const eveningOpen     = eveningActive;
 
   host.innerHTML = `
     <div class="work-hours-card">
@@ -1841,7 +1970,6 @@ function renderWorkHoursCard() {
           <div class="work-hours-slot__value">${escapeHtml(t("whMorningVal"))}</div>
         </div>
       </div>
-
       <div class="work-hours-slot ${lunchActive ? "is-active" : ""} ${lunchOpen ? "is-open" : "is-blocked"}">
         <div class="work-hours-slot__icon"><svg viewBox="0 0 24 24">${ICONS.lunch}</svg></div>
         <div class="work-hours-slot__main">
@@ -1849,15 +1977,13 @@ function renderWorkHoursCard() {
           <div class="work-hours-slot__value">${escapeHtml(t("whLunchVal"))}</div>
         </div>
       </div>
-
       <div class="work-hours-slot ${afternoonActive ? "is-active" : ""}">
-        <div class="work-hours-slot__icon"><svg viewBox="0 0 24 24">${ICONS.sunrise2}</svg></div>
+        <div class="work-hours-slot__icon"><svg viewBox="0 0 24 24">${ICONS.sunrise}</svg></div>
         <div class="work-hours-slot__main">
           <div class="work-hours-slot__label">${escapeHtml(t("whAfternoon"))}</div>
           <div class="work-hours-slot__value">${escapeHtml(t("whAfternoonVal"))}</div>
         </div>
       </div>
-
       <div class="work-hours-slot ${eveningActive ? "is-active" : ""} ${eveningOpen ? "is-open" : "is-blocked"}">
         <div class="work-hours-slot__icon"><svg viewBox="0 0 24 24">${ICONS.moon}</svg></div>
         <div class="work-hours-slot__main">
@@ -1876,8 +2002,8 @@ function renderScanPanel() {
   const host = document.getElementById("scan-panel-host");
   if (!host) return;
 
-  /* --- SUCCESS --- */
-  if (SCAN_PANEL.state === "success" && SCAN_PANEL.data) {
+  /* --- SUCCESS / LATE-ABSENT --- */
+  if ((SCAN_PANEL.state === "success" || SCAN_PANEL.state === "late-absent") && SCAN_PANEL.data) {
     const d = SCAN_PANEL.data;
     const emp = d.employee;
     const photo = emp.photoURL || null;
@@ -1889,18 +2015,25 @@ function renderScanPanel() {
       ? `<span class="scan-success__status-pill ${d.status}">${escapeHtml(statusLabel(d.status))}</span>`
       : "";
 
+    const late = SCAN_PANEL.state === "late-absent";
+    const lateNote = late
+      ? (d.phaseInfo.session === "afternoon"
+          ? t("scanLateAfternoon")
+          : t("scanLateMorning"))
+      : "";
+
     host.innerHTML = `
-      <div class="scan-panel is-success" id="scan-panel">
+      <div class="scan-panel ${late ? "is-late-absent" : "is-success"}" id="scan-panel">
         <div class="scan-panel__stage">
           <div class="scan-panel__ring"></div>
           <div class="scan-panel__ring-2"></div>
           <div class="scan-panel__finger">
-            <svg viewBox="0 0 24 24">${ICONS.check}</svg>
+            <svg viewBox="0 0 24 24">${late ? ICONS.alert : ICONS.check}</svg>
           </div>
-          <span class="scan-panel__status">${escapeHtml(t("scanStatusSuccess"))}</span>
+          <span class="scan-panel__status">${escapeHtml(t(late ? "scanStatusBlocked" : "scanStatusSuccess"))}</span>
         </div>
         <div class="scan-panel__main">
-          <div class="scan-panel__eyebrow">${escapeHtml(t("scanEyebrowSuccess"))}</div>
+          <div class="scan-panel__eyebrow">${escapeHtml(t(late ? "scanEyebrowBlocked" : "scanEyebrowSuccess"))}</div>
           <div class="scan-success">
             <div class="scan-success__avatar">
               ${photo ? `<img src="${escapeHtml(photo)}" alt="">` : escapeHtml(initials(name))}
@@ -1918,10 +2051,14 @@ function renderScanPanel() {
                 </span>
               </div>
               <div class="scan-success__badge">
-                <svg viewBox="0 0 24 24">${ICONS.check}</svg>
+                <svg viewBox="0 0 24 24">${late ? ICONS.alert : ICONS.check}</svg>
                 ${escapeHtml(phaseLabel)} · <span class="scan-success__time">${escapeHtml(d.time)}</span>
                 ${statusPillHtml ? " · " + statusPillHtml : ""}
               </div>
+              ${late ? `<div class="scan-late-notice">
+                <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+                <div>${escapeHtml(lateNote)}</div>
+              </div>` : ""}
             </div>
             <div class="scan-success__countdown">
               <svg viewBox="0 0 24 24">${ICONS.refresh}</svg>
@@ -1941,7 +2078,7 @@ function renderScanPanel() {
     return;
   }
 
-  /* --- BLOCKED (working hour rules) --- */
+  /* --- BLOCKED --- */
   if (SCAN_PANEL.state === "blocked" && SCAN_PANEL.data) {
     const d = SCAN_PANEL.data;
     host.innerHTML = `
@@ -1967,8 +2104,7 @@ function renderScanPanel() {
         </div>
       </div>
     `;
-    const cta = document.getElementById("scan-cta");
-    cta?.addEventListener("click", () => { resetScanPanel(); });
+    document.getElementById("scan-cta")?.addEventListener("click", resetScanPanel);
     return;
   }
 
@@ -1997,8 +2133,7 @@ function renderScanPanel() {
         </div>
       </div>
     `;
-    const cta = document.getElementById("scan-cta");
-    cta?.addEventListener("click", () => { resetScanPanel(); });
+    document.getElementById("scan-cta")?.addEventListener("click", resetScanPanel);
     return;
   }
 
@@ -2087,47 +2222,40 @@ function resetScanPanel() {
 }
 
 /* ============================================================
-   KIOSK SCAN — with phase lock enforcement
+   KIOSK SCAN — with phase lock + late-absent flag
    ============================================================ */
 async function startKioskScan() {
   if (!FP_SUPPORTED) { toast(t("fpNotSupported"), "error"); return; }
   if (!location.protocol.startsWith("https") && location.hostname !== "localhost") {
     toast(t("fpNotHttps"), "error"); return;
   }
-
   if (SCAN_PANEL.resetTimer) clearTimeout(SCAN_PANEL.resetTimer);
 
-  /* Load all credentials */
   let creds = [];
   try {
     const snap = await getDocs(collection(db, "employees"));
     snap.forEach(d => {
       const data = d.data();
       getFingerprintList(data).forEach(c => {
-        if (c.credentialId) {
-          creds.push({
-            credentialId: c.credentialId,
-            transports: c.transports || [],
-            employee: { id: d.id, ...data }
-          });
-        }
+        if (c.credentialId) creds.push({
+          credentialId: c.credentialId,
+          transports: c.transports || [],
+          employee: { id: d.id, ...data }
+        });
       });
     });
   } catch (e) {
-    console.warn("[kiosk scan] load failed:", e.code);
+    console.warn("[kiosk] load failed:", e.code);
     if (MY_EMP) {
       getFingerprintList(MY_EMP).forEach(c => {
-        if (c.credentialId) {
-          creds.push({
-            credentialId: c.credentialId,
-            transports: c.transports || [],
-            employee: MY_EMP
-          });
-        }
+        if (c.credentialId) creds.push({
+          credentialId: c.credentialId,
+          transports: c.transports || [],
+          employee: MY_EMP
+        });
       });
     }
   }
-
   if (!creds.length) {
     SCAN_PANEL.state = "error";
     SCAN_PANEL.error = { title: t("scanStatusError"), message: t("scanNoCredential") };
@@ -2150,10 +2278,8 @@ async function startKioskScan() {
 
   try {
     const result = await fpVerifyAll(creds.map(c => ({
-      credentialId: c.credentialId,
-      transports: c.transports
+      credentialId: c.credentialId, transports: c.transports
     })));
-
     const match = creds.find(c => c.credentialId === result.credentialId);
     if (!match) throw new Error("NO_MATCH");
 
@@ -2161,7 +2287,6 @@ async function startKioskScan() {
     const phase = todayPhaseFor(employee.id);
     const phaseInfo = PHASE_KEYS[phase];
 
-    /* ---- Already done for today ---- */
     if (phase === "done") {
       SCAN_PANEL.state = "blocked";
       SCAN_PANEL.data = {
@@ -2174,7 +2299,6 @@ async function startKioskScan() {
       return;
     }
 
-    /* ---- TIME LOCK CHECK ---- */
     const lock = getPhaseLock(phase);
     if (!lock.allowed) {
       SCAN_PANEL.state = "blocked";
@@ -2188,12 +2312,18 @@ async function startKioskScan() {
       return;
     }
 
-    /* ---- Proceed with the scan ---- */
     const now = nowHHMM();
+    const nowMin = timeToMinutes(now);
     let savedStatus = null;
+    let isLateAbsent = false;
 
     if (phase === "morning-in") {
       savedStatus = determineStatusFromCheckIn(now, "morning");
+      /* Late → Absent note if arrival is at/after 09:01 */
+      if (nowMin >= timeToMinutes(LATE_ABSENT_MORNING)) {
+        isLateAbsent = true;
+        savedStatus = "absent";
+      }
       await saveAttendanceFor(employee, {
         status: savedStatus,
         morningCheckIn: now,
@@ -2213,6 +2343,11 @@ async function startKioskScan() {
       });
     } else if (phase === "afternoon-in") {
       savedStatus = determineStatusFromCheckIn(now, "afternoon");
+      /* Late → Absent note if arrival is at/after 14:01 */
+      if (nowMin >= timeToMinutes(LATE_ABSENT_AFTERNOON)) {
+        isLateAbsent = true;
+        savedStatus = "absent";
+      }
       await saveAttendanceFor(employee, {
         afternoonCheckIn: now,
         afternoonCheckInAt: serverTimestamp(),
@@ -2235,12 +2370,13 @@ async function startKioskScan() {
 
     const dept = DEPARTMENTS.find(x => x.id === employee.departmentId)?.name || employee.departmentName || "—";
 
-    SCAN_PANEL.state = "success";
+    SCAN_PANEL.state = isLateAbsent ? "late-absent" : "success";
     SCAN_PANEL.data = {
       employee, phaseInfo, time: now, status: savedStatus, departmentName: dept
     };
     renderScanPanel();
-    SCAN_PANEL.resetTimer = setTimeout(resetScanPanel, 5000);
+    /* Keep the late-absent message on screen longer so the employee reads it */
+    SCAN_PANEL.resetTimer = setTimeout(resetScanPanel, isLateAbsent ? 8000 : 5000);
 
   } catch (err) {
     console.warn("[kiosk scan]", err);
@@ -2258,15 +2394,13 @@ async function startKioskScan() {
   }
 }
 
-/* ============================================================
-   LIVE CLOCK + WINDOW REFRESH
-   ============================================================ */
+/* Live clock refresh */
 setInterval(() => {
   if (SCAN_PANEL.state !== "idle") return;
   const el = document.getElementById("scan-panel-clock");
   if (el) el.textContent = nowHHMM();
   renderWorkHoursCard();
-}, 20000);  // every 20 seconds
+}, 20000);
 
 /* ============================================================
    RENDER SHELL
@@ -2323,7 +2457,7 @@ function renderHeadActions() {
 }
 
 /* ============================================================
-   PHASE BAR (own record only)
+   PHASE BAR
    ============================================================ */
 function renderPhaseBar() {
   const host = document.getElementById("phase-bar-host");
@@ -2358,7 +2492,7 @@ function renderPhaseBar() {
 }
 
 /* ============================================================
-   STATS + TABLE
+   STATS
    ============================================================ */
 function renderStats() {
   const list = filteredEmployeesForStats();
@@ -2396,8 +2530,7 @@ function statCard(label, value, cls, iconKey) {
     </div>`;
 }
 function filteredEmployeesForStats() {
-  const list = visibleEmployees();
-  return list.filter(e => {
+  return visibleEmployees().filter(e => {
     if (filterRegion     && e.regionCode !== filterRegion) return false;
     if (filterCluster    && e.clusterId  !== filterCluster) return false;
     if (filterOffice     && e.officeId   !== filterOffice) return false;
@@ -2405,6 +2538,10 @@ function filteredEmployeesForStats() {
     return true;
   });
 }
+
+/* ============================================================
+   FILTERS + TABLE
+   ============================================================ */
 function populateFilters() {
   const emps = visibleEmployees();
   const regionSel = document.getElementById("region-filter");
@@ -2504,6 +2641,7 @@ function renderTable() {
     const dep = DEPARTMENTS.find(d => d.id === e.departmentId);
     const avatar = e.photoURL ? `<img src="${escapeHtml(e.photoURL)}" alt="">` : escapeHtml(initials(fullName(e)));
     const editable = canMarkOthers() || e.uid === S.uid;
+    const viewable = canViewEmployee(e);
     return `
       <tr data-emp-id="${e.id}">
         <td>
@@ -2522,16 +2660,25 @@ function renderTable() {
         <td>${sessionCell(rec?.afternoonCheckIn, rec?.afternoonCheckOut)}</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(rec?.notes || "—")}</td>
         <td style="text-align:right">
-          ${editable ? `
-            <button class="btn btn--sm btn--icon" data-action="mark" data-id="${e.id}">
-              <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
-            </button>` : ""}
+          <div style="display:inline-flex;gap:4px;justify-content:flex-end">
+            ${viewable ? `
+              <button class="btn btn--sm btn--icon btn--view" data-action="view" data-id="${e.id}" title="View full history">
+                <svg viewBox="0 0 24 24">${ICONS.eye}</svg>
+              </button>` : ""}
+            ${editable ? `
+              <button class="btn btn--sm btn--icon" data-action="mark" data-id="${e.id}" title="Mark attendance">
+                <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
+              </button>` : ""}
+          </div>
         </td>
       </tr>`;
   }).join("");
 
   tbody.querySelectorAll("[data-action='mark']").forEach(btn => {
     btn.addEventListener("click", ()=>openMarkSingleModal(btn.dataset.id));
+  });
+  tbody.querySelectorAll("[data-action='view']").forEach(btn => {
+    btn.addEventListener("click", ()=>openHistoryModal(btn.dataset.id));
   });
 }
 function render() {
@@ -2780,10 +2927,270 @@ function openBulkMarkModal() {
 }
 
 /* ============================================================
-   AUTO-ABSENT FOR PREVIOUS DAY
+   HISTORY MODAL
    ------------------------------------------------------------
-   Runs once per day, on page load, for admins/HR only.
-   Marks any employee without a morning check-in as "absent".
+   Fetch monthly shards for a date range and render a filterable
+   table (Daily / Weekly / Monthly / Yearly).
+   ============================================================ */
+const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+async function fetchHistory(empId, fromISO, toISO) {
+  /* Enumerate every month touched by [fromISO, toISO] */
+  const months = new Set();
+  const start = new Date(fromISO + "T00:00:00");
+  const end   = new Date(toISO   + "T00:00:00");
+  const cur = new Date(start.getFullYear(), start.getMonth(), 1);
+  while (cur <= end) {
+    const y = cur.getFullYear();
+    const m = String(cur.getMonth() + 1).padStart(2, "0");
+    months.add(`${y}-${m}`);
+    cur.setMonth(cur.getMonth() + 1);
+  }
+  const records = [];
+  for (const mk of months) {
+    try {
+      const snap = await getDoc(doc(db, "attendance", mk, "records", empId));
+      if (snap.exists()) {
+        const rec = { id: snap.id, ...snap.data() };
+        if (rec.date && rec.date >= fromISO && rec.date <= toISO) records.push(rec);
+      }
+    } catch (e) { /* shard may not exist */ }
+  }
+  records.sort((a, b) => b.date.localeCompare(a.date));
+  return records;
+}
+
+function histRangeFor(mode, anchorISO) {
+  const d = new Date(anchorISO + "T00:00:00");
+  let from = new Date(d), to = new Date(d);
+  if (mode === "day") {
+    from = new Date(d); to = new Date(d);
+  } else if (mode === "week") {
+    const dow = d.getDay(); // 0 Sunday
+    /* Week = Mon..Sun */
+    const delta = (dow + 6) % 7; // days since Monday
+    from = new Date(d.getFullYear(), d.getMonth(), d.getDate() - delta);
+    to   = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 6);
+  } else if (mode === "month") {
+    from = new Date(d.getFullYear(), d.getMonth(), 1);
+    to   = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  } else if (mode === "year") {
+    from = new Date(d.getFullYear(), 0, 1);
+    to   = new Date(d.getFullYear(), 11, 31);
+  }
+  const iso = (x) => `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`;
+  return { fromISO: iso(from), toISO: iso(to), fromDate: from, toDate: to };
+}
+
+function shiftAnchor(mode, anchorISO, direction) {
+  const d = new Date(anchorISO + "T00:00:00");
+  if (mode === "day")   d.setDate(d.getDate() + direction);
+  if (mode === "week")  d.setDate(d.getDate() + 7 * direction);
+  if (mode === "month") d.setMonth(d.getMonth() + direction);
+  if (mode === "year")  d.setFullYear(d.getFullYear() + direction);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+function formatRangeLabel(mode, fromISO, toISO) {
+  const f = new Date(fromISO + "T00:00:00");
+  const tt = new Date(toISO + "T00:00:00");
+  const opts = { year: "numeric", month: "short", day: "numeric" };
+  if (mode === "day")   return f.toLocaleDateString(undefined, { ...opts, weekday: "long" });
+  if (mode === "week")  return f.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " – " +
+                               tt.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  if (mode === "month") return f.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  if (mode === "year")  return String(f.getFullYear());
+  return "";
+}
+
+function renderHistRow(rec) {
+  const d = new Date(rec.date + "T00:00:00");
+  const dayName = DAY_NAMES[d.getDay()];
+  const status = combineDayStatus(rec) || rec.status || null;
+  const s = status ? (STATUS_MAP[status] || { key:"none" }) : { key:"none" };
+  const statusTxt = status ? statusLabel(status) : t("histUnmarked");
+  const mIn   = rec.morningCheckIn    || "";
+  const mOut  = rec.morningCheckOut   || "";
+  const aIn   = rec.afternoonCheckIn  || "";
+  const aOut  = rec.afternoonCheckOut || "";
+  const notes = rec.notes || "—";
+
+  const fmtTime = (v, cls) => v
+    ? `<span class="hist-time ${cls}">${escapeHtml(v)}</span>`
+    : `<span class="hist-time hist-time--empty">—:—</span>`;
+
+  return `
+    <tr class="hist-row">
+      <td>
+        <span class="hist-day">${escapeHtml(rec.date)}</span>
+        <span class="hist-day-sub">${escapeHtml(dayName)}</span>
+      </td>
+      <td>
+        <span class="status-pill status-${s.key}" style="cursor:default">${escapeHtml(statusTxt)}</span>
+        ${rec.autoMarked ? `<span class="fp-badge" style="background:#fef3f2;color:#b42318;margin-left:4px">AUTO</span>` : ""}
+      </td>
+      <td>${fmtTime(mIn,  "hist-time--in")}</td>
+      <td>${fmtTime(mOut, "hist-time--out")}</td>
+      <td>${fmtTime(aIn,  "hist-time--in")}</td>
+      <td>${fmtTime(aOut, "hist-time--out")}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(notes)}</td>
+    </tr>`;
+}
+
+async function openHistoryModal(empId) {
+  const emp = EMPLOYEES.find(e => e.id === empId);
+  if (!emp) { toast("Employee not found", "error"); return; }
+  if (!canViewEmployee(emp)) { toast("You cannot view this employee's history", "error"); return; }
+
+  let mode  = "month";
+  let anchor = selectedDate;
+  let loading = true;
+  let records = [];
+
+  const modal = openModal(`
+    <div class="modal__head">
+      <div>
+        <div class="modal__title">${escapeHtml(t("histTitle"))}</div>
+        <div class="modal__sub" id="histSub"></div>
+      </div>
+      <button class="modal__close" data-close><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
+    </div>
+    <div class="modal__body" id="histBody"></div>
+    <div class="modal__foot">
+      <div class="spacer"></div>
+      <button class="btn" data-close>${escapeHtml(t("fpClose"))}</button>
+    </div>
+  `, { size: "xl" });
+
+  const body = modal.querySelector("#histBody");
+  const sub  = modal.querySelector("#histSub");
+  sub.textContent = t("histSub", { name: fullName(emp), empid: emp.empId || "—" });
+
+  async function refresh() {
+    const { fromISO, toISO } = histRangeFor(mode, anchor);
+    loading = true;
+    draw();
+    try {
+      records = await fetchHistory(emp.id, fromISO, toISO);
+    } catch (e) {
+      console.warn("[history]", e);
+      records = [];
+    }
+    loading = false;
+    draw();
+  }
+
+  function draw() {
+    const { fromISO, toISO } = histRangeFor(mode, anchor);
+
+    /* Summary stats */
+    let present = 0, late = 0, absent = 0;
+    for (const r of records) {
+      const st = combineDayStatus(r) || r.status;
+      if (st === "present") present++;
+      else if (st === "late") late++;
+      else if (st === "absent") absent++;
+    }
+
+    let tableHtml = "";
+    if (loading) {
+      tableHtml = `<div class="hist-empty">
+        <svg viewBox="0 0 24 24">${ICONS.clock}</svg>
+        <div class="hist-empty__title">${escapeHtml(t("histLoading"))}</div>
+      </div>`;
+    } else if (!records.length) {
+      tableHtml = `<div class="hist-empty">
+        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+        <div class="hist-empty__title">${escapeHtml(t("histEmpty"))}</div>
+        <div class="hist-empty__msg">${escapeHtml(t("histEmptyMsg"))}</div>
+      </div>`;
+    } else {
+      tableHtml = `
+        <div class="hist-table-wrap">
+          <table class="hist-table">
+            <thead>
+              <tr>
+                <th>${escapeHtml(t("histColDate"))}</th>
+                <th>${escapeHtml(t("histColStatus"))}</th>
+                <th>${escapeHtml(t("histColMorning"))} In</th>
+                <th>${escapeHtml(t("histColMorning"))} Out</th>
+                <th>${escapeHtml(t("histColAfternoon"))} In</th>
+                <th>${escapeHtml(t("histColAfternoon"))} Out</th>
+                <th>${escapeHtml(t("histColNotes"))}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${records.map(renderHistRow).join("")}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+    body.innerHTML = `
+      <div class="hist-toolbar">
+        <div class="hist-mode-group" role="tablist">
+          <button class="hist-mode-btn ${mode==="day"?"is-on":""}"   data-mode="day">${escapeHtml(t("histModeDay"))}</button>
+          <button class="hist-mode-btn ${mode==="week"?"is-on":""}"  data-mode="week">${escapeHtml(t("histModeWeek"))}</button>
+          <button class="hist-mode-btn ${mode==="month"?"is-on":""}" data-mode="month">${escapeHtml(t("histModeMonth"))}</button>
+          <button class="hist-mode-btn ${mode==="year"?"is-on":""}"  data-mode="year">${escapeHtml(t("histModeYear"))}</button>
+        </div>
+        <button class="btn btn--sm" id="histPrev">${escapeHtml(t("histPrev"))}</button>
+        <input type="date" id="histAnchor" class="hist-date-input" value="${escapeHtml(anchor)}">
+        <button class="btn btn--sm" id="histNext">${escapeHtml(t("histNext"))}</button>
+        <button class="btn btn--sm" id="histToday">${escapeHtml(t("histToday"))}</button>
+        <span class="hist-range-label">${escapeHtml(formatRangeLabel(mode, fromISO, toISO))}</span>
+      </div>
+
+      <div class="hist-summary">
+        <div class="hist-stat"><div class="hist-stat__label">${escapeHtml(t("histPresent"))}</div><div class="hist-stat__value c-green">${present}</div></div>
+        <div class="hist-stat"><div class="hist-stat__label">${escapeHtml(t("histLate"))}</div><div class="hist-stat__value c-gold">${late}</div></div>
+        <div class="hist-stat"><div class="hist-stat__label">${escapeHtml(t("histAbsent"))}</div><div class="hist-stat__value c-red">${absent}</div></div>
+        <div class="hist-stat"><div class="hist-stat__label">${escapeHtml(t("histSessionsCount", { n: "" })).replace("  "," ").replace("  "," ")}</div><div class="hist-stat__value c-blue">${records.length}</div></div>
+      </div>
+
+      ${tableHtml}
+    `;
+
+    /* Re-bind controls */
+    body.querySelectorAll(".hist-mode-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        mode = btn.dataset.mode;
+        refresh();
+      });
+    });
+    body.querySelector("#histAnchor")?.addEventListener("change", (e) => {
+      anchor = e.target.value || selectedDate;
+      refresh();
+    });
+    body.querySelector("#histPrev")?.addEventListener("click", () => {
+      anchor = shiftAnchor(mode, anchor, -1);
+      refresh();
+    });
+    body.querySelector("#histNext")?.addEventListener("click", () => {
+      anchor = shiftAnchor(mode, anchor, +1);
+      refresh();
+    });
+    body.querySelector("#histToday")?.addEventListener("click", () => {
+      anchor = new Date().toISOString().slice(0,10);
+      refresh();
+    });
+  }
+
+  /* Draw first (with loading state), then fetch */
+  draw();
+  try {
+    const { fromISO, toISO } = histRangeFor(mode, anchor);
+    records = await fetchHistory(emp.id, fromISO, toISO);
+  } catch (e) {
+    console.warn(e);
+    records = [];
+  }
+  loading = false;
+  draw();
+}
+
+/* ============================================================
+   AUTO-ABSENT RECONCILE (previous day)
    ============================================================ */
 async function reconcilePreviousDay() {
   if (!canManageUsers()) return;
@@ -2796,12 +3203,9 @@ async function reconcilePreviousDay() {
     const alreadyRecorded = new Set();
     snap.forEach(d => {
       const rec = d.data();
-      if (rec.date === yesterday && rec.morningCheckIn) {
-        alreadyRecorded.add(rec.employeeId);
-      }
+      if (rec.date === yesterday && rec.morningCheckIn) alreadyRecorded.add(rec.employeeId);
     });
 
-    /* Only mark employees visible to the current admin */
     const empsToMark = EMPLOYEES.filter(e => !alreadyRecorded.has(e.id));
     let count = 0;
     for (const e of empsToMark) {
@@ -2831,9 +3235,7 @@ async function reconcilePreviousDay() {
           updatedBy: S.uid
         }, { merge: true });
         count++;
-      } catch (err) {
-        console.warn("[auto-absent]", e.id, err.code);
-      }
+      } catch (err) { console.warn("[auto-absent]", e.id, err.code); }
     }
 
     localStorage.setItem("cs.lastReconciledDate", yesterday);
@@ -2843,13 +3245,9 @@ async function reconcilePreviousDay() {
   }
 }
 
-/* ============================================================
-   DAY ROLLOVER — watch for date change
-   ============================================================ */
 function checkDateRollover() {
   const today = new Date().toISOString().slice(0,10);
   if (today !== selectedDate && selectedDate === new Date(Date.now() - 24*60*60*1000).toISOString().slice(0,10)) {
-    // day just changed — jump to today
     selectedDate = today;
     const dateEl = document.getElementById("date-picker");
     if (dateEl) dateEl.value = today;
@@ -3038,9 +3436,8 @@ onAuthStateChanged(auth, async (user)=>{
   subscribeEmployees();
   subscribeMyEmployee();
   subscribeAttendance();
-  /* Reconcile previous day (admins only, once per day) */
   setTimeout(reconcilePreviousDay, 1500);
-  console.log("[attendance] booted — working-hour locks enabled");
+  console.log("[attendance] booted — working-hour locks + late-absent + history enabled");
 });
 </script>
 
