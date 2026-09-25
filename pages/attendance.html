@@ -88,8 +88,18 @@ html.theme-dark .btn:hover { background:#1e293b; }
 html.theme-dark .scope-badge { background:linear-gradient(135deg,#1a2433,#0f172a); border-color:#1e293b; color:#c5cdd9; }
 html.theme-dark .phase-bar__step { background:#111a2c; border-color:#1e293b; }
 html.theme-dark .emp-avatar { background:linear-gradient(135deg,#1e3a5f,#2d4a72); color:#e4e8f0; }
-html.theme-dark .hist-row { border-bottom-color:#1a2433; }
-html.theme-dark .hist-stat { background:#111a2c; border-color:#1e293b; }
+html.theme-dark .hist-row:hover td { background:#111a2c; }
+html.theme-dark .hist-stat { background:#0f172a; border-color:#1e293b; }
+html.theme-dark .hist-table-wrap { border-color:#1e293b; }
+html.theme-dark .hist-table thead th { background:#111a2c; border-bottom-color:#1e293b; }
+html.theme-dark .hist-table tbody td { border-bottom-color:#1a2433; }
+html.theme-dark .hist-toolbar { background:#0f172a; border-color:#1e293b; }
+html.theme-dark .hist-mode-group { background:#0f172a; border-color:#1e293b; }
+html.theme-dark .hist-mode-btn { color:#c5cdd9; }
+html.theme-dark .hist-mode-btn:hover { background:#1a2433; }
+html.theme-dark .hist-date-input { background:#0f172a; border-color:#1e293b; color:#e4e8f0; }
+html.theme-dark .hist-range-label { background:#0f172a; border-color:#1e293b; }
+html.theme-dark .hist-worked { color:#93c5fd; }
 
 html.compact-mode { --pad-main:18px; --topbar-h:60px; }
 html[data-ethiopic="true"] body { font-family:"Noto Sans Ethiopic","Inter",sans-serif; }
@@ -185,7 +195,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .dropdown__item svg { width:17px; height:17px; stroke:currentColor; stroke-width:2; fill:none; }
 .dropdown__divider { height:1px; background:var(--border-soft); margin:6px 0; }
 .dropdown__item--danger { color:var(--danger); }
-
 .lang-btn { display:inline-flex; align-items:center; gap:7px;
   height:44px; padding:0 12px; border-radius:13px;
   background:transparent; color:var(--text-soft);
@@ -211,7 +220,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .scope-badge svg { width:15px; height:15px; stroke:currentColor; stroke-width:2.2; fill:none; }
 .scope-badge--cluster { background:linear-gradient(135deg,#ecfdf3,#fff); border-color:#abefc6; color:#067647; }
 
-/* Not-linked alert */
 .scan-alert {
   display:flex; gap:12px; padding:14px 18px; border-radius:14px;
   background:linear-gradient(135deg,#fdf5e0,#fff);
@@ -230,7 +238,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 }
 .scan-alert__link svg { width:14px; height:14px; stroke:currentColor; stroke-width:2.4; fill:none; }
 
-/* Working-hours info card */
 .work-hours-card {
   display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
   gap:10px; margin-bottom:16px;
@@ -255,6 +262,10 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   background:linear-gradient(135deg,#ecfdf3,#fff);
   border-color:#abefc6;
 }
+.work-hours-slot.is-friday {
+  background:linear-gradient(135deg,#fff7ed,#fff);
+  border-color:#fed7aa;
+}
 .work-hours-slot__icon {
   width:34px; height:34px; border-radius:10px;
   display:grid; place-items:center; flex-shrink:0;
@@ -264,17 +275,24 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .work-hours-slot.is-active .work-hours-slot__icon { background:var(--violet); color:#fff; }
 .work-hours-slot.is-blocked .work-hours-slot__icon { background:#b42318; color:#fff; }
 .work-hours-slot.is-open .work-hours-slot__icon { background:#067647; color:#fff; }
+.work-hours-slot.is-friday .work-hours-slot__icon { background:#c2410c; color:#fff; }
 .work-hours-slot__main { min-width:0; }
 .work-hours-slot__label {
   font-size:10.5px; font-weight:800; text-transform:uppercase;
   letter-spacing:.05em; color:var(--muted);
+  display:flex; align-items:center; gap:6px;
 }
 .work-hours-slot__value {
   font-family:ui-monospace,Menlo,Consolas,monospace;
   font-weight:800; font-size:13px; color:var(--text); margin-top:2px;
 }
+.work-hours-slot__friday-tag {
+  display:inline-block; padding:1px 6px; border-radius:5px;
+  background:#c2410c; color:#fff;
+  font-size:9px; font-weight:800; letter-spacing:.04em;
+  text-transform:uppercase;
+}
 
-/* Scan panel */
 .scan-panel {
   display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:26px;
   background:linear-gradient(135deg,#faf5ff 0%, #fff 45%, #fff7ed 100%);
@@ -324,7 +342,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .scan-panel.is-late-absent .scan-panel__eyebrow { color:#c2410c; }
 .scan-panel.is-late-absent .scan-success__badge { background:#ea580c; box-shadow:0 4px 12px rgba(234,88,12,.3); }
 .scan-panel.is-late-absent .scan-success__countdown { border-top-color:#fdba74; color:#c2410c; }
-
 .scan-panel__stage {
   position:relative; z-index:1;
   width:170px; height:170px; flex-shrink:0;
@@ -342,7 +359,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .scan-panel.is-error .scan-panel__stage:hover,
 .scan-panel.is-blocked .scan-panel__stage:hover,
 .scan-panel.is-late-absent .scan-panel__stage:hover { transform:none; }
-
 .scan-panel__ring { position:absolute; inset:0; border-radius:50%;
   border:3px dashed var(--violet); opacity:.35; }
 .scan-panel__ring-2 { position:absolute; inset:14px; border-radius:50%;
@@ -356,7 +372,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   0% { opacity:.6; transform:scale(.9); }
   100% { opacity:0; transform:scale(1.18); }
 }
-
 .scan-panel__finger {
   position:relative; z-index:2;
   width:120px; height:120px;
@@ -377,7 +392,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   0%,100% { filter:drop-shadow(0 0 6px rgba(109,40,217,.4)); }
   50%     { filter:drop-shadow(0 0 18px rgba(109,40,217,.7)); }
 }
-
 .scan-panel__status {
   position:absolute; bottom:-8px; left:50%; transform:translateX(-50%);
   background:var(--violet); color:#fff;
@@ -390,7 +404,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .scan-panel.is-success .scan-panel__status { background:#067647; }
 .scan-panel.is-error .scan-panel__status { background:#b42318; }
 .scan-panel.is-blocked .scan-panel__status { background:#b8860b; }
-
 .scan-panel__main { position:relative; z-index:1; min-width:0; }
 .scan-panel__eyebrow {
   font-size:11.5px; font-weight:800; text-transform:uppercase;
@@ -407,8 +420,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   font-size:13.5px; color:var(--muted); line-height:1.55;
   max-width:520px;
 }
-
-/* Late-absent notice inside the success panel */
 .scan-late-notice {
   margin-top:12px; padding:10px 14px; border-radius:10px;
   background:#fff7ed; border:1px solid #fdba74; color:#9a3412;
@@ -416,8 +427,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   display:flex; gap:10px; align-items:flex-start;
 }
 .scan-late-notice svg { width:16px; height:16px; flex-shrink:0; margin-top:2px; stroke:currentColor; stroke-width:2.3; fill:none; }
-
-/* Success card */
 .scan-success {
   display:grid; grid-template-columns:auto 1fr; gap:16px 20px;
   align-items:center; width:100%;
@@ -456,7 +465,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .scan-success__status-pill.present { background:#ecfdf3; color:#067647; }
 .scan-success__status-pill.late    { background:#fdf5e0; color:#b8860b; }
 .scan-success__status-pill.absent  { background:#fef3f2; color:#b42318; }
-
 .scan-success__countdown {
   grid-column:1 / -1;
   margin-top:6px; padding-top:14px; border-top:1px solid #abefc6;
@@ -476,7 +484,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   from { transform:scaleX(1); }
   to   { transform:scaleX(0); }
 }
-
 .scan-panel__actions {
   position:relative; z-index:1; display:flex; flex-direction:column; gap:8px;
   align-items:flex-end; flex-shrink:0;
@@ -514,7 +521,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   font-size:11px; color:var(--muted); text-align:right;
   line-height:1.4; max-width:240px;
 }
-
 @media (max-width: 900px) {
   .scan-panel { grid-template-columns:1fr; gap:20px; padding:22px 20px; text-align:center; }
   .scan-panel__stage { margin:0 auto; width:150px; height:150px; }
@@ -527,8 +533,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   .scan-success__avatar { margin:0 auto; grid-row:auto; }
   .scan-success__meta { justify-content:center; }
 }
-
-/* Phase bar */
 .phase-bar {
   display:flex; align-items:stretch; gap:0; flex-wrap:nowrap; overflow-x:auto;
   background:var(--card-bg); border:1px solid var(--border); border-radius:var(--r-lg);
@@ -570,16 +574,12 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   background:var(--border); margin:0 -3px; z-index:1;
 }
 .phase-bar__line.is-done { background:#067647; }
-
-/* Chain */
 .chain { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
   background:var(--card-bg); border:1px solid var(--border); border-radius:var(--r-lg);
   padding:16px 22px; margin-bottom:24px; box-shadow:var(--sh-sm); font-size:13px; font-weight:700; }
 .chain__node { padding:6px 14px; border-radius:999px; background:var(--border-soft); color:var(--text-soft); }
 .chain__node.hi { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff; }
 .chain__arrow { color:#cbd5e1; font-weight:400; }
-
-/* Buttons */
 .btn { display:inline-flex; align-items:center; justify-content:center; gap:9px;
   height:46px; padding:0 20px; border-radius:13px;
   border:1px solid #d9dee7; background:var(--card-bg);
@@ -596,8 +596,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .btn--view { color:#0b5cab; }
 .btn--view:hover { background:#eaf3fc; border-color:#bdd7f2; }
 .btn:disabled { opacity:.55; pointer-events:none; }
-
-/* Stats */
 .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:24px; }
 .stat { position:relative; background:var(--card-bg); border:1px solid var(--border);
   border-radius:var(--r-lg); padding:18px; box-shadow:var(--sh-sm); overflow:hidden; }
@@ -616,8 +614,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   display:grid; place-items:center; }
 .stat__icon svg { width:19px; height:19px; stroke:currentColor; stroke-width:2.2; fill:none; }
 .stat__value { font-size:26px; font-weight:800; letter-spacing:-1px; line-height:1; }
-
-/* Toolbar */
 .toolbar { display:flex; gap:12px; align-items:center; margin-bottom:20px; flex-wrap:wrap;
   background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:14px 18px;
   box-shadow:var(--sh-sm); }
@@ -638,8 +634,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .toolbar__date { height:44px; padding:0 14px; border:1px solid var(--border); border-radius:11px;
   background:var(--bg-soft); font-size:13.5px; font-weight:600; color:var(--text-soft); cursor:pointer; }
 .toolbar__count { font-size:13px; font-weight:700; color:var(--muted); padding:0 8px; margin-left:auto; }
-
-/* Table */
 .att-table { background:var(--card-bg); border:1px solid var(--border); border-radius:16px;
   overflow:hidden; box-shadow:var(--sh-sm); }
 .att-table__scroll { overflow-x:auto; }
@@ -650,7 +644,6 @@ table.data thead th { text-align:left; padding:14px 18px; background:var(--bg-so
 table.data tbody td { padding:14px 18px; border-bottom:1px solid var(--border-soft);
   font-size:13.5px; color:var(--text-soft); vertical-align:middle; }
 table.data tbody tr:hover { background:var(--bg-soft); }
-
 .emp-cell { display:flex; align-items:center; gap:12px; }
 .emp-avatar { width:42px; height:42px; border-radius:50%;
   background:linear-gradient(135deg, #eaf3fc, #bdd7f2);
@@ -661,7 +654,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .emp-cell__meta { font-size:12px; color:var(--muted); margin-top:2px; }
 .emp-id { font-family:ui-monospace,Menlo,Consolas,monospace; font-weight:700;
   color:var(--primary-dark); font-size:12px; padding:3px 8px; border-radius:6px; background:#f4f8fd; }
-
 .status-pill { display:inline-flex; align-items:center; gap:6px;
   padding:5px 12px; border-radius:var(--r-full);
   font-size:11.5px; font-weight:800; text-transform:uppercase; cursor:pointer; }
@@ -672,7 +664,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .status-field   { background:#f0eaff; color:#5b21b6; }
 .status-half_day { background:#fdf2fa; color:#be185d; }
 .status-none    { background:var(--border-soft); color:var(--muted-light); }
-
 .session-cell { display:flex; flex-direction:column; gap:3px; min-width:110px; }
 .session-cell__row { display:flex; align-items:center; gap:6px;
   font-family:ui-monospace,Menlo,Consolas,monospace; font-weight:700; font-size:12px; }
@@ -682,21 +673,18 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .session-cell__time--empty { color:var(--muted-light); font-weight:600; }
 .session-cell__row--in .session-cell__time { color:var(--violet); }
 .session-cell__row--out .session-cell__time { color:var(--orange); }
-
 .fp-badge { display:inline-flex; align-items:center; gap:4px;
   margin-left:6px; padding:2px 7px; border-radius:6px;
   background:var(--violet-soft); color:var(--violet);
   font-size:10px; font-weight:800; letter-spacing:.04em;
   text-transform:uppercase; vertical-align:middle; }
 .fp-badge svg { width:11px; height:11px; stroke:currentColor; stroke-width:2.2; fill:none; }
-
-/* Modal */
 .modal-backdrop { position:fixed; inset:0; z-index:200; background:rgba(15,23,42,.55);
   backdrop-filter:blur(6px); display:grid; place-items:center; padding:24px; overflow-y:auto; }
 .modal { background:var(--card-bg); border-radius:var(--r-lg); box-shadow:0 30px 60px rgba(20,40,70,.12);
   width:100%; max-width:560px; max-height:92vh; display:flex; flex-direction:column; margin:auto; }
 .modal--lg { max-width:820px; }
-.modal--xl { max-width:1100px; }
+.modal--xl { max-width:1180px; }
 .modal__head { padding:24px 28px; border-bottom:1px solid var(--border-soft);
   display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
 .modal__title { font-size:20px; font-weight:800; }
@@ -709,7 +697,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .modal__foot { padding:18px 28px; border-top:1px solid var(--border-soft);
   display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; align-items:center; }
 .modal__foot .spacer { flex:1; }
-
 .field { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
 .field > label { font-size:13px; font-weight:700; color:var(--text-soft); }
 .field input, .field select, .field textarea {
@@ -717,7 +704,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   background:var(--bg-soft); font-size:14px; color:var(--text); }
 .field textarea { height:auto; min-height:80px; padding:12px 14px; resize:vertical; }
 .field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-
 .status-picker { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));
   gap:10px; margin-bottom:16px; }
 .status-opt { display:flex; align-items:center; justify-content:center; gap:8px;
@@ -725,7 +711,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   background:var(--card-bg); cursor:pointer; font-weight:700; font-size:13px; }
 .status-opt.is-on { border-color:var(--primary); background:#eaf3fc; }
 .status-opt__dot { width:10px; height:10px; border-radius:50%; }
-
 .bulk-list { border:1px solid var(--border); border-radius:12px; overflow:hidden;
   max-height:400px; overflow-y:auto; }
 .bulk-item { display:flex; align-items:center; gap:12px; padding:11px 14px;
@@ -735,10 +720,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .bulk-item__meta { font-size:11.5px; color:var(--muted); margin-top:2px; }
 .bulk-item select { height:38px; padding:0 30px 0 10px; border:1px solid var(--border);
   border-radius:9px; background:var(--bg-soft); font-size:12.5px; font-weight:700; }
-
-/* ============================================================
-   HISTORY MODAL
-   ============================================================ */
 .hist-toolbar {
   display:flex; gap:10px; flex-wrap:wrap; align-items:center;
   padding:14px 16px; background:var(--bg-soft); border-radius:12px;
@@ -785,7 +766,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .hist-stat__value.c-red    { color:#b42318; }
 .hist-stat__value.c-blue   { color:#0b5cab; }
 .hist-stat__value.c-violet { color:#5b21b6; }
-
 .hist-table-wrap {
   border:1px solid var(--border); border-radius:12px; overflow:hidden;
   max-height:480px; overflow-y:auto;
@@ -819,6 +799,12 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .hist-time--empty { color:var(--muted-light); font-weight:600; }
 .hist-time--in   { color:var(--violet); }
 .hist-time--out  { color:var(--orange); }
+.hist-worked {
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-weight:800; font-size:12.5px;
+  color:#0b5cab; white-space:nowrap;
+}
+.hist-worked--empty { color:var(--muted-light); font-weight:600; }
 .hist-empty {
   padding:48px 24px; text-align:center; color:var(--muted);
 }
@@ -830,8 +816,6 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   font-size:15px; font-weight:800; color:var(--text); margin-bottom:4px;
 }
 .hist-empty__msg { font-size:13px; line-height:1.5; max-width:380px; margin:0 auto; }
-
-/* Toast + spinner */
 .toast-wrap { position:fixed; top:24px; right:24px; z-index:300;
   display:flex; flex-direction:column; gap:10px; pointer-events:none; max-width:calc(100vw - 48px); }
 .toast { background:var(--text); color:#fff; padding:13px 18px; border-radius:12px;
@@ -841,14 +825,11 @@ table.data tbody tr:hover { background:var(--bg-soft); }
 .toast--error { background:#b42318; }
 .toast--info { background:#0b5cab; }
 .toast svg { width:17px; height:17px; stroke:currentColor; stroke-width:2.5; fill:none; flex-shrink:0; }
-
 .spinner { width:16px; height:16px; border:2px solid currentColor;
   border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
 @keyframes spin { to { transform:rotate(360deg); } }
-
 .overlay { display:none; position:fixed; inset:0; background:rgba(13,21,32,.45); z-index:25; }
 body.sidebar-open .overlay { display:block; }
-
 @media (max-width:900px) {
   .app { grid-template-columns:1fr !important; grid-template-areas:"topbar" "main"; }
   .sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w) !important;
@@ -949,7 +930,7 @@ body.sidebar-open .overlay { display:block; }
             <span data-i18n="dashboard">Dashboard</span>
           </a>
           <a class="dropdown__item" href="settings.html">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 1 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span data-i18n="settings">Settings</span>
           </a>
           <div class="dropdown__divider"></div>
@@ -1048,34 +1029,64 @@ import {
    MORNING (arrival):
      ≤ 08:45  → Present
      08:46 – 09:00 → Late
-     ≥ 09:01  → Absent
-     (After 09:01 the fingerprint still records the arrival times,
-      but the status is saved as Absent for the morning session.
-      A note tells the employee to contact their Administrator.)
+     ≥ 09:01  → Absent (even if scanned)
+                 Note: "You are recorded as Absent this Morning
+                 — Join Your Administrator."
 
    AFTERNOON (arrival):
      13:30 – 13:45 → Present
      13:46 – 14:00 → Late
-     ≥ 14:01       → Absent
+     ≥ 14:01       → Absent (even if scanned)
+                     Note: "You are recorded as Absent this
+                     Afternoon — Join Your Administrator."
 
-   Working-hour locks:
-     • Morning check-out only after 12:30
-     • Afternoon check-in only after 13:30
-     • Afternoon check-out only after 17:30
+   WORKING HOURS:
+     Mon–Thu:
+       Morning   08:30 – 12:30  (check-out opens at 12:30)
+       Lunch     12:30 – 13:30
+       Afternoon 13:30 – 17:30  (check-out opens at 17:30)
+
+     Friday (half-day morning):
+       Morning   08:30 – 11:30  (check-out opens at 11:30)
+       Lunch     11:30 – 13:30
+       Afternoon 13:30 – 17:30  (check-out opens at 17:30)
+
+   WORKED TIME (per day, in History):
+     Morning   = morningCheckOut − morningCheckIn
+     Afternoon = afternoonCheckOut − afternoonCheckIn
+     Total     = Morning + Afternoon (lunch break is NOT counted)
+     A session missing an in/out is skipped.
    ============================================================ */
 const ATTENDANCE_RULES = {
   morning:   { presentUntil: "08:45", lateUntil: "09:00" },
   afternoon: { presentUntil: "13:45", lateUntil: "14:00" }
 };
-const WORKING_HOURS = {
+const LATE_ABSENT_MORNING   = "09:01";
+const LATE_ABSENT_AFTERNOON = "14:01";
+
+const BASE_SCHEDULE = {
   morningStart:   "08:30",
   lunchStart:     "12:30",
   afternoonStart: "13:30",
   eveningStart:   "17:30"
 };
-/* Anything at or after this is treated as Absent for the whole session */
-const LATE_ABSENT_MORNING   = "09:01";
-const LATE_ABSENT_AFTERNOON = "14:01";
+const FRIDAY_SCHEDULE = {
+  morningStart:   "08:30",
+  lunchStart:     "11:30",
+  afternoonStart: "13:30",
+  eveningStart:   "17:30"
+};
+function todaySchedule() {
+  const isFri = new Date().getDay() === 5;
+  const s = isFri ? FRIDAY_SCHEDULE : BASE_SCHEDULE;
+  return {
+    isFriday:       isFri,
+    morningStart:   s.morningStart,
+    lunchStart:     s.lunchStart,
+    afternoonStart: s.afternoonStart,
+    eveningStart:   s.eveningStart
+  };
+}
 
 /* ============================================================
    I18N
@@ -1109,11 +1120,9 @@ const I18N = {
     loading:"Loading…", noEmployeesScope:"No employees in your scope.",
     noEmployeesFilter:"No employees match your filters.",
     markToday:"Mark Today",
-
     phaseMorningIn:"Morning In", phaseMorningOut:"Morning Out",
     phaseAfternoonIn:"Afternoon In", phaseAfternoonOut:"Afternoon Out",
     phaseDone:"Day Complete",
-
     scanEyebrowIn:"Ready to scan",
     scanEyebrowScanning:"Scanning…",
     scanEyebrowSuccess:"Identified",
@@ -1136,34 +1145,32 @@ const I18N = {
     scanNotHttps:"Fingerprint requires a secure connection (HTTPS).",
     scanNoCredential:"No registered fingerprint matched. Ask an administrator to register one for you.",
     scanAlreadyDone:"{name} has already completed all four scans for today.",
-
-    /* Late-arrival notice shown on the success panel */
     scanLateMorning:"You are recorded as Absent this Morning — Join Your Administrator.",
     scanLateAfternoon:"You are recorded as Absent this Afternoon — Join Your Administrator.",
-
     whTitle:"Working hours today",
     whMorning:"Morning session",
     whMorningVal:"08:30 – 12:30",
+    whMorningFriVal:"08:30 – 11:30",
     whLunch:"Lunch break",
     whLunchVal:"12:30 – 13:30",
+    whLunchFriVal:"11:30 – 13:30",
     whAfternoon:"Afternoon session",
     whAfternoonVal:"13:30 – 17:30",
     whEvening:"End of day",
     whEveningVal:"after 17:30",
+    whFridayTag:"Friday",
     whNow:"Current", whBlocked:"Blocked", whOpen:"Open",
-
     blockMorningOut:"This is working time — you cannot check out yet. Morning check-out opens at 12:30. Ask your Administrator.",
+    blockMorningOutFri:"This is working time — you cannot check out yet. On Fridays, morning check-out opens at 11:30. Ask your Administrator.",
     blockAfternoonIn:"You cannot check in for the afternoon yet. Afternoon check-in opens at 13:30.",
     blockAfternoonOut:"This is working time — you cannot check out yet. Afternoon check-out opens at 17:30. Ask your Administrator.",
     blockAlreadyDone:"{name} has already completed all four scans today.",
     blockGeneric:"This action is not allowed at the current time.",
-
     notLinkedTitle:"Your account is not linked to an employee record",
     notLinkedMsg:"To use the fingerprint scanner you first need an employee record. An administrator can create and link it for you.",
     notLinkedAdminMsg:"Your own account is not linked to an employee record. You can still use the scanner for other employees, or go to Users & Staff to create or link records.",
     notLinkedLink:"Go to Users & Staff →",
     notLinkedContact:"Please contact an administrator.",
-
     fpScanSuccess:"Verified", fpScanError:"Failed", fpScanWaiting:"Waiting for biometric…",
     fpCancelled:"Fingerprint cancelled or not recognised",
     fpNotSupported:"Fingerprint authentication is not supported on this device or browser.",
@@ -1171,7 +1178,6 @@ const I18N = {
     fpNoEmployee:"Your account is not linked to an employee record.",
     fpNotHttps:"Fingerprint requires a secure connection (HTTPS).",
     fpVerified:"FP", fpCancel:"Cancel", fpClose:"Close",
-
     modalMarkTitle:"Mark Attendance", modalStatusLabel:"Status",
     modalMorningIn:"Morning In", modalMorningOut:"Morning Out",
     modalAfternoonIn:"Afternoon In", modalAfternoonOut:"Afternoon Out",
@@ -1199,28 +1205,24 @@ const I18N = {
     role_hrm:"HR Manager", role_manager:"Manager", role_employee:"Employee",
     role_finance:"Finance Officer",
     day:"day", days:"days",
-
-    /* History modal */
     histTitle:"Attendance History",
     histSub:"{name} · {empid}",
     histModeDay:"Daily", histModeWeek:"Weekly", histModeMonth:"Monthly", histModeYear:"Yearly",
     histRange:"Range",
     histColDate:"Date", histColDay:"Day", histColStatus:"Status",
     histColMorning:"Morning", histColAfternoon:"Afternoon",
-    histColNotes:"Notes",
+    histColWorked:"Worked", histColNotes:"Notes",
     histEmpty:"No attendance records in this range.",
     histEmptyMsg:"Try a different range, or check that this employee has scanned attendance during the selected period.",
     histPresent:"Present", histLate:"Late", histAbsent:"Absent",
     histLeave:"On Leave", histField:"Field", histHalf:"Half day",
     histUnmarked:"—",
-    histSessionsCount:"{n} record(s)",
-    histTotalDays:"Days with records",
-    histWorking:"Working days",
+    histSessionsCount:"Records",
+    histTotalWorked:"Total worked",
     histPrev:"◀ Prev", histNext:"Next ▶", histToday:"Today",
     histLoading:"Loading records…"
   },
   om: {
-    /* reuse English for history labels in Oromo — short fallback */
     brandTitle:"Tajaajila Hawaasaa", brandSubtitle:"Sirna Odeeffannoo Bulchiinsaa",
     footerCopy:"© 2026 SIM Tajaajila Hawaasaa",
     dashboard:"Daashboordii", settings:"Qindaa'ina", signOut:"Ba'i",
@@ -1270,12 +1272,13 @@ const I18N = {
     scanLateMorning:"Ganama kanaaf hafuun galmeeffamteetta — Bulchaa kee gaafadhu.",
     scanLateAfternoon:"Waaree kanaaf hafuun galmeeffamteetta — Bulchaa kee gaafadhu.",
     whTitle:"Sa'aatii hojii har'a",
-    whMorning:"Ganama", whMorningVal:"08:30 – 12:30",
-    whLunch:"Boqonnaa", whLunchVal:"12:30 – 13:30",
+    whMorning:"Ganama", whMorningVal:"08:30 – 12:30", whMorningFriVal:"08:30 – 11:30",
+    whLunch:"Boqonnaa", whLunchVal:"12:30 – 13:30", whLunchFriVal:"11:30 – 13:30",
     whAfternoon:"Waaree", whAfternoonVal:"13:30 – 17:30",
     whEvening:"Guyyaa xumura", whEveningVal:"17:30 booda",
-    whNow:"Amma", whBlocked:"Dhorkame", whOpen:"Banaa",
+    whFridayTag:"Jimaata", whNow:"Amma", whBlocked:"Dhorkame", whOpen:"Banaa",
     blockMorningOut:"Yeroon kun yeroo hojii ti — amma ba'uu hin dandeessu. Boqonnaan 12:30 irratti bana. Bulchaa gaafadhu.",
+    blockMorningOutFri:"Yeroon kun yeroo hojii ti — amma ba'uu hin dandeessu. Jimaata, boqonnaan 11:30 irratti bana. Bulchaa gaafadhu.",
     blockAfternoonIn:"Amma waaree seenuu hin dandeessu. Waareen 13:30 irratti bana.",
     blockAfternoonOut:"Yeroon kun yeroo hojii ti — amma ba'uu hin dandeessu. Waareen 17:30 irratti bana. Bulchaa gaafadhu.",
     blockAlreadyDone:"{name} har'a mallattoowwan afur hunda xumureera.",
@@ -1321,20 +1324,19 @@ const I18N = {
     histModeDay:"Guyyaa", histModeWeek:"Torban", histModeMonth:"Ji'a", histModeYear:"Waggaa",
     histRange:"Hangii",
     histColDate:"Guyyaa", histColDay:"Guyyaa", histColStatus:"Haala",
-    histColMorning:"Ganama", histColAfternoon:"Waaree", histColNotes:"Yaadannoo",
+    histColMorning:"Ganama", histColAfternoon:"Waaree",
+    histColWorked:"Hojjetame", histColNotes:"Yaadannoo",
     histEmpty:"Hangi kana keessatti galmeen argannoo hin jiru.",
     histEmptyMsg:"Hangii biraa filadhu, ykn hojjetaan kun yeroo filatame keessatti galmee qabaachuu isaa mirkaneessi.",
     histPresent:"Argame", histLate:"Tursiise", histAbsent:"Hin argamne",
     histLeave:"Boqonnaa", histField:"Dirree", histHalf:"Walakkaa",
     histUnmarked:"—",
-    histSessionsCount:"Galmee {n}",
-    histTotalDays:"Guyyoota galmee qaban",
-    histWorking:"Guyyoota hojii",
+    histSessionsCount:"Galmee",
+    histTotalWorked:"Waliigala hojjetame",
     histPrev:"◀ Dura", histNext:"Itti aanu ▶", histToday:"Har'a",
     histLoading:"Galmeewwan fe'aa jira…"
   },
   am: {
-    /* reuse English for history labels — Amharic overrides below */
     brandTitle:"የመንግስት ሰራተኛ", brandSubtitle:"የአስተዳደር መረጃ ስርዓት",
     footerCopy:"© 2026 የመንግስት ሰራተኛ MIS",
     dashboard:"ዳሽቦርድ", settings:"ቅንብሮች", signOut:"ውጣ",
@@ -1384,12 +1386,13 @@ const I18N = {
     scanLateMorning:"ዛሬ ጠዋት ቀርቷል ተብለው ተመዝግበዋል — አስተዳዳሪዎን ያግኙ።",
     scanLateAfternoon:"ዛሬ ከሰዓት ቀርቷል ተብለው ተመዝግበዋል — አስተዳዳሪዎን ያግኙ።",
     whTitle:"የዛሬ የሥራ ሰዓቶች",
-    whMorning:"የጠዋት ክፍለ ጊዜ", whMorningVal:"08:30 – 12:30",
-    whLunch:"የምሳ እረፍት", whLunchVal:"12:30 – 13:30",
+    whMorning:"የጠዋት ክፍለ ጊዜ", whMorningVal:"08:30 – 12:30", whMorningFriVal:"08:30 – 11:30",
+    whLunch:"የምሳ እረፍት", whLunchVal:"12:30 – 13:30", whLunchFriVal:"11:30 – 13:30",
     whAfternoon:"የከሰዓት ክፍለ ጊዜ", whAfternoonVal:"13:30 – 17:30",
     whEvening:"የቀን መጨረሻ", whEveningVal:"ከ 17:30 በኋላ",
-    whNow:"የአሁን", whBlocked:"ታግዷል", whOpen:"ክፍት",
+    whFridayTag:"ዓርብ", whNow:"የአሁን", whBlocked:"ታግዷል", whOpen:"ክፍት",
     blockMorningOut:"ይህ የሥራ ሰዓት ነው — አሁን መውጣት አይችሉም። የጠዋት መውጫ በ 12:30 ይከፈታል። አስተዳዳሪዎን ይጠይቁ።",
+    blockMorningOutFri:"ይህ የሥራ ሰዓት ነው — አሁን መውጣት አይችሉም። ዓርብ የጠዋት መውጫ በ 11:30 ይከፈታል። አስተዳዳሪዎን ይጠይቁ።",
     blockAfternoonIn:"አሁን ለከሰዓት መግባት አይችሉም። የከሰዓት መግቢያ በ 13:30 ይከፈታል።",
     blockAfternoonOut:"ይህ የሥራ ሰዓት ነው — አሁን መውጣት አይችሉም። የከሰዓት መውጫ በ 17:30 ይከፈታል። አስተዳዳሪዎን ይጠይቁ።",
     blockAlreadyDone:"{name} ዛሬ አራቱንም ስካኖች ጨርሷል።",
@@ -1435,15 +1438,15 @@ const I18N = {
     histModeDay:"በቀን", histModeWeek:"በሳምንት", histModeMonth:"በወር", histModeYear:"በዓመት",
     histRange:"ክልል",
     histColDate:"ቀን", histColDay:"ቀን", histColStatus:"ሁኔታ",
-    histColMorning:"ጠዋት", histColAfternoon:"ከሰዓት", histColNotes:"ማስታወሻ",
+    histColMorning:"ጠዋት", histColAfternoon:"ከሰዓት",
+    histColWorked:"የሠራው ጊዜ", histColNotes:"ማስታወሻ",
     histEmpty:"በዚህ ክልል ውስጥ የመገኘት መዝገብ የለም።",
     histEmptyMsg:"ሌላ ክልል ይሞክሩ ወይም ሰራተኛው በተመረጠው ጊዜ ውስጥ መዝገብ እንዳለው ያረጋግጡ።",
     histPresent:"ተገኝቷል", histLate:"ዘግይቷል", histAbsent:"ቀርቷል",
     histLeave:"ፈቃድ", histField:"መስክ", histHalf:"ግማሽ",
     histUnmarked:"—",
-    histSessionsCount:"{n} መዝገብ",
-    histTotalDays:"መዝገብ ያላቸው ቀናት",
-    histWorking:"የሥራ ቀናት",
+    histSessionsCount:"መዝገቦች",
+    histTotalWorked:"ጠቅላላ የሠራው",
     histPrev:"◀ ቀዳሚ", histNext:"ቀጣይ ▶", histToday:"ዛሬ",
     histLoading:"መዝገቦችን በመጫን ላይ…"
   }
@@ -1479,9 +1482,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* ============================================================
-   REGIONS
-   ============================================================ */
 const REGIONS = [
   { code:"01", en:"Tigray", am:"ትግራይ", om:"Tigraay" },
   { code:"02", en:"Afar", am:"አፋር", om:"Afar" },
@@ -1506,9 +1506,6 @@ const regionLabel = (code) => {
   return r.code + " — " + name;
 };
 
-/* ============================================================
-   SETTINGS
-   ============================================================ */
 const STATE = { lang:"en", theme:"light", compact:false };
 function applyTheme(theme) {
   STATE.theme = theme;
@@ -1550,9 +1547,6 @@ async function loadUserSettings(uid) {
   applyLanguage(STATE.lang);
 }
 
-/* ============================================================
-   GUARD
-   ============================================================ */
 const INDEX_URL = "../index.html";
 let unsubClusters = null, unsubOffices = null, unsubDepartments = null,
     unsubEmployees = null, unsubAttendance = null, unsubMyEmp = null;
@@ -1585,9 +1579,6 @@ document.addEventListener("click", async (e)=>{
   window.location.replace(INDEX_URL);
 });
 
-/* ============================================================
-   STATE
-   ============================================================ */
 let S = null;
 let MY_EMP = null;
 let CLUSTERS = [];
@@ -1597,7 +1588,7 @@ let EMPLOYEES = [];
 let ATTENDANCE = {};
 
 let SCAN_PANEL = {
-  state: "idle",   // idle | scanning | success | error | blocked | late-absent
+  state: "idle",
   data: null,
   error: null,
   resetTimer: null
@@ -1666,6 +1657,32 @@ function todayPhaseFor(empId) {
   if (!rec.afternoonCheckOut) return "afternoon-out";
   return "done";
 }
+
+/* -------- Worked-time helpers -------- */
+function minutesBetween(hhmm1, hhmm2) {
+  const a = timeToMinutes(hhmm1);
+  const b = timeToMinutes(hhmm2);
+  if (a == null || b == null) return null;
+  if (b <= a) return null;
+  return b - a;
+}
+function calcWorkedMinutes(rec) {
+  if (!rec) return null;
+  const m = minutesBetween(rec.morningCheckIn,   rec.morningCheckOut);
+  const a = minutesBetween(rec.afternoonCheckIn, rec.afternoonCheckOut);
+  if (m == null && a == null) return null;
+  return (m || 0) + (a || 0);
+}
+function formatDuration(mins) {
+  if (mins == null || mins < 0 || !isFinite(mins)) return "—";
+  if (mins === 0) return "0m";
+  const h = Math.floor(mins / 60);
+  const m = Math.round(mins % 60);
+  if (h === 0) return m + "m";
+  if (m === 0) return h + "h";
+  return h + "h " + m + "m";
+}
+
 const PHASE_KEYS = {
   "morning-in":   { labelKey:"phaseMorningIn",   icon:"logIn",  isOut:false, session:"morning"   },
   "morning-out":  { labelKey:"phaseMorningOut",  icon:"logOut", isOut:true,  session:"morning"   },
@@ -1674,35 +1691,37 @@ const PHASE_KEYS = {
   "done":         { labelKey:"phaseDone",        icon:"check",  isOut:false, session:null        }
 };
 
-/* ============================================================
-   PHASE LOCK — working-hour rules
-   ============================================================ */
 function getPhaseLock(phase) {
   if (phase === "done") return { allowed: false, message: t("blockGeneric") };
+  const sched = todaySchedule();
   const now = nowMinutes();
   const M = (s) => timeToMinutes(s);
   if (phase === "morning-in") return { allowed: true };
   if (phase === "morning-out") {
-    if (now < M(WORKING_HOURS.lunchStart)) return { allowed: false, message: t("blockMorningOut") };
+    if (now < M(sched.lunchStart)) return {
+      allowed: false,
+      message: sched.isFriday ? t("blockMorningOutFri") : t("blockMorningOut")
+    };
     return { allowed: true };
   }
   if (phase === "afternoon-in") {
-    if (now < M(WORKING_HOURS.afternoonStart)) return { allowed: false, message: t("blockAfternoonIn") };
+    if (now < M(sched.afternoonStart)) return { allowed: false, message: t("blockAfternoonIn") };
     return { allowed: true };
   }
   if (phase === "afternoon-out") {
-    if (now < M(WORKING_HOURS.eveningStart)) return { allowed: false, message: t("blockAfternoonOut") };
+    if (now < M(sched.eveningStart)) return { allowed: false, message: t("blockAfternoonOut") };
     return { allowed: true };
   }
   return { allowed: false, message: t("blockGeneric") };
 }
 function currentWindow() {
+  const sched = todaySchedule();
   const now = nowMinutes();
   const M = (s) => timeToMinutes(s);
-  if (now < M(WORKING_HOURS.morningStart))         return "before-morning";
-  if (now < M(WORKING_HOURS.lunchStart))           return "morning-working";
-  if (now < M(WORKING_HOURS.afternoonStart))       return "lunch-break";
-  if (now < M(WORKING_HOURS.eveningStart))         return "afternoon-working";
+  if (now < M(sched.morningStart))         return "before-morning";
+  if (now < M(sched.lunchStart))           return "morning-working";
+  if (now < M(sched.afternoonStart))       return "lunch-break";
+  if (now < M(sched.eveningStart))         return "afternoon-working";
   return "evening";
 }
 
@@ -1737,9 +1756,6 @@ const ICONS = {
   eye:'<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>'
 };
 
-/* ============================================================
-   NAV
-   ============================================================ */
 const NAV = [
   { section:"navOverview", items:[
     { key:"dashboard", labelKey:"navDashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
@@ -1763,9 +1779,6 @@ const NAV = [
   ]}
 ];
 
-/* ============================================================
-   HELPERS
-   ============================================================ */
 const escapeHtml = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g,
   (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 const initials = (n) => (n || "?").split(/\s+/).slice(0,2).map(s => s[0]).join("").toUpperCase();
@@ -1948,12 +1961,15 @@ function renderNotLinkedAlert() {
 }
 
 /* ============================================================
-   WORKING HOURS CARD
+   WORKING HOURS CARD — Friday-aware
    ============================================================ */
 function renderWorkHoursCard() {
   const host = document.getElementById("work-hours-host");
   if (!host) return;
   const cur = currentWindow();
+  const sched = todaySchedule();
+  const isFriday = sched.isFriday;
+
   const morningActive   = cur === "morning-working";
   const lunchActive     = cur === "lunch-break";
   const afternoonActive = cur === "afternoon-working";
@@ -1961,20 +1977,29 @@ function renderWorkHoursCard() {
   const lunchOpen       = lunchActive;
   const eveningOpen     = eveningActive;
 
+  const morningVal = isFriday ? t("whMorningFriVal") : t("whMorningVal");
+  const lunchVal   = isFriday ? t("whLunchFriVal")   : t("whLunchVal");
+
   host.innerHTML = `
     <div class="work-hours-card">
-      <div class="work-hours-slot ${morningActive ? "is-active" : ""}">
+      <div class="work-hours-slot ${morningActive ? "is-active" : ""} ${isFriday ? "is-friday" : ""}">
         <div class="work-hours-slot__icon"><svg viewBox="0 0 24 24">${ICONS.sunrise}</svg></div>
         <div class="work-hours-slot__main">
-          <div class="work-hours-slot__label">${escapeHtml(t("whMorning"))}</div>
-          <div class="work-hours-slot__value">${escapeHtml(t("whMorningVal"))}</div>
+          <div class="work-hours-slot__label">
+            ${escapeHtml(t("whMorning"))}
+            ${isFriday ? `<span class="work-hours-slot__friday-tag">${escapeHtml(t("whFridayTag"))}</span>` : ""}
+          </div>
+          <div class="work-hours-slot__value">${escapeHtml(morningVal)}</div>
         </div>
       </div>
-      <div class="work-hours-slot ${lunchActive ? "is-active" : ""} ${lunchOpen ? "is-open" : "is-blocked"}">
+      <div class="work-hours-slot ${lunchActive ? "is-active" : ""} ${isFriday ? "is-friday" : ""} ${lunchOpen ? "is-open" : "is-blocked"}">
         <div class="work-hours-slot__icon"><svg viewBox="0 0 24 24">${ICONS.lunch}</svg></div>
         <div class="work-hours-slot__main">
-          <div class="work-hours-slot__label">${escapeHtml(t("whLunch"))}</div>
-          <div class="work-hours-slot__value">${escapeHtml(t("whLunchVal"))}</div>
+          <div class="work-hours-slot__label">
+            ${escapeHtml(t("whLunch"))}
+            ${isFriday ? `<span class="work-hours-slot__friday-tag">${escapeHtml(t("whFridayTag"))}</span>` : ""}
+          </div>
+          <div class="work-hours-slot__value">${escapeHtml(lunchVal)}</div>
         </div>
       </div>
       <div class="work-hours-slot ${afternoonActive ? "is-active" : ""}">
@@ -2002,7 +2027,7 @@ function renderScanPanel() {
   const host = document.getElementById("scan-panel-host");
   if (!host) return;
 
-  /* --- SUCCESS / LATE-ABSENT --- */
+  /* SUCCESS / LATE-ABSENT */
   if ((SCAN_PANEL.state === "success" || SCAN_PANEL.state === "late-absent") && SCAN_PANEL.data) {
     const d = SCAN_PANEL.data;
     const emp = d.employee;
@@ -2014,12 +2039,9 @@ function renderScanPanel() {
     const statusPillHtml = d.status
       ? `<span class="scan-success__status-pill ${d.status}">${escapeHtml(statusLabel(d.status))}</span>`
       : "";
-
     const late = SCAN_PANEL.state === "late-absent";
     const lateNote = late
-      ? (d.phaseInfo.session === "afternoon"
-          ? t("scanLateAfternoon")
-          : t("scanLateMorning"))
+      ? (d.phaseInfo.session === "afternoon" ? t("scanLateAfternoon") : t("scanLateMorning"))
       : "";
 
     host.innerHTML = `
@@ -2078,7 +2100,7 @@ function renderScanPanel() {
     return;
   }
 
-  /* --- BLOCKED --- */
+  /* BLOCKED */
   if (SCAN_PANEL.state === "blocked" && SCAN_PANEL.data) {
     const d = SCAN_PANEL.data;
     host.innerHTML = `
@@ -2086,9 +2108,7 @@ function renderScanPanel() {
         <div class="scan-panel__stage">
           <div class="scan-panel__ring"></div>
           <div class="scan-panel__ring-2"></div>
-          <div class="scan-panel__finger">
-            <svg viewBox="0 0 24 24">${ICONS.lock}</svg>
-          </div>
+          <div class="scan-panel__finger"><svg viewBox="0 0 24 24">${ICONS.lock}</svg></div>
           <span class="scan-panel__status">${escapeHtml(t("scanStatusBlocked"))}</span>
         </div>
         <div class="scan-panel__main">
@@ -2108,16 +2128,14 @@ function renderScanPanel() {
     return;
   }
 
-  /* --- ERROR --- */
+  /* ERROR */
   if (SCAN_PANEL.state === "error" && SCAN_PANEL.error) {
     host.innerHTML = `
       <div class="scan-panel is-error" id="scan-panel">
         <div class="scan-panel__stage">
           <div class="scan-panel__ring"></div>
           <div class="scan-panel__ring-2"></div>
-          <div class="scan-panel__finger">
-            <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-          </div>
+          <div class="scan-panel__finger"><svg viewBox="0 0 24 24">${ICONS.alert}</svg></div>
           <span class="scan-panel__status">${escapeHtml(t("scanStatusError"))}</span>
         </div>
         <div class="scan-panel__main">
@@ -2137,16 +2155,14 @@ function renderScanPanel() {
     return;
   }
 
-  /* --- SCANNING --- */
+  /* SCANNING */
   if (SCAN_PANEL.state === "scanning") {
     host.innerHTML = `
       <div class="scan-panel is-scanning" id="scan-panel">
         <div class="scan-panel__stage">
           <div class="scan-panel__ring"></div>
           <div class="scan-panel__ring-2"></div>
-          <div class="scan-panel__finger">
-            <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
-          </div>
+          <div class="scan-panel__finger"><svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg></div>
           <span class="scan-panel__status">${escapeHtml(t("scanStatusScanning"))}</span>
         </div>
         <div class="scan-panel__main">
@@ -2163,14 +2179,12 @@ function renderScanPanel() {
     return;
   }
 
-  /* --- IDLE --- */
+  /* IDLE */
   const httpsOk = location.protocol.startsWith("https") || location.hostname === "localhost";
   const canScan = FP_SUPPORTED && httpsOk;
-
   let statusText = t("scanStatusReady");
   if (!FP_SUPPORTED) statusText = "Not supported";
   else if (!httpsOk) statusText = "HTTPS required";
-
   let hint = t("scanHintIn");
   if (!FP_SUPPORTED) hint = t("scanNotSupported");
   else if (!httpsOk) hint = t("scanNotHttps");
@@ -2180,9 +2194,7 @@ function renderScanPanel() {
       <div class="scan-panel__stage" id="scan-stage" role="button" tabindex="0">
         <div class="scan-panel__ring"></div>
         <div class="scan-panel__ring-2"></div>
-        <div class="scan-panel__finger">
-          <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
-        </div>
+        <div class="scan-panel__finger"><svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg></div>
         <span class="scan-panel__status">${escapeHtml(statusText)}</span>
       </div>
       <div class="scan-panel__main">
@@ -2319,7 +2331,6 @@ async function startKioskScan() {
 
     if (phase === "morning-in") {
       savedStatus = determineStatusFromCheckIn(now, "morning");
-      /* Late → Absent note if arrival is at/after 09:01 */
       if (nowMin >= timeToMinutes(LATE_ABSENT_MORNING)) {
         isLateAbsent = true;
         savedStatus = "absent";
@@ -2343,7 +2354,6 @@ async function startKioskScan() {
       });
     } else if (phase === "afternoon-in") {
       savedStatus = determineStatusFromCheckIn(now, "afternoon");
-      /* Late → Absent note if arrival is at/after 14:01 */
       if (nowMin >= timeToMinutes(LATE_ABSENT_AFTERNOON)) {
         isLateAbsent = true;
         savedStatus = "absent";
@@ -2369,13 +2379,11 @@ async function startKioskScan() {
     }
 
     const dept = DEPARTMENTS.find(x => x.id === employee.departmentId)?.name || employee.departmentName || "—";
-
     SCAN_PANEL.state = isLateAbsent ? "late-absent" : "success";
     SCAN_PANEL.data = {
       employee, phaseInfo, time: now, status: savedStatus, departmentName: dept
     };
     renderScanPanel();
-    /* Keep the late-absent message on screen longer so the employee reads it */
     SCAN_PANEL.resetTimer = setTimeout(resetScanPanel, isLateAbsent ? 8000 : 5000);
 
   } catch (err) {
@@ -2456,9 +2464,6 @@ function renderHeadActions() {
   document.getElementById("mark-all-btn")?.addEventListener("click", ()=>openBulkMarkModal());
 }
 
-/* ============================================================
-   PHASE BAR
-   ============================================================ */
 function renderPhaseBar() {
   const host = document.getElementById("phase-bar-host");
   if (!MY_EMP) { host.innerHTML = ""; return; }
@@ -2491,9 +2496,6 @@ function renderPhaseBar() {
   host.innerHTML = html;
 }
 
-/* ============================================================
-   STATS
-   ============================================================ */
 function renderStats() {
   const list = filteredEmployeesForStats();
   const counts = { present:0, late:0, absent:0, leave:0, field:0, half_day:0, none:0, total:list.length };
@@ -2539,9 +2541,6 @@ function filteredEmployeesForStats() {
   });
 }
 
-/* ============================================================
-   FILTERS + TABLE
-   ============================================================ */
 function populateFilters() {
   const emps = visibleEmployees();
   const regionSel = document.getElementById("region-filter");
@@ -2661,14 +2660,12 @@ function renderTable() {
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(rec?.notes || "—")}</td>
         <td style="text-align:right">
           <div style="display:inline-flex;gap:4px;justify-content:flex-end">
-            ${viewable ? `
-              <button class="btn btn--sm btn--icon btn--view" data-action="view" data-id="${e.id}" title="View full history">
-                <svg viewBox="0 0 24 24">${ICONS.eye}</svg>
-              </button>` : ""}
-            ${editable ? `
-              <button class="btn btn--sm btn--icon" data-action="mark" data-id="${e.id}" title="Mark attendance">
-                <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
-              </button>` : ""}
+            ${viewable ? `<button class="btn btn--sm btn--icon btn--view" data-action="view" data-id="${e.id}" title="View full history">
+              <svg viewBox="0 0 24 24">${ICONS.eye}</svg>
+            </button>` : ""}
+            ${editable ? `<button class="btn btn--sm btn--icon" data-action="mark" data-id="${e.id}" title="Mark attendance">
+              <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
+            </button>` : ""}
           </div>
         </td>
       </tr>`;
@@ -2929,13 +2926,13 @@ function openBulkMarkModal() {
 /* ============================================================
    HISTORY MODAL
    ------------------------------------------------------------
-   Fetch monthly shards for a date range and render a filterable
-   table (Daily / Weekly / Monthly / Yearly).
+   Daily / Weekly / Monthly / Yearly views over the monthly
+   attendance shards. Each row shows Morning and Afternoon
+   times plus total Worked time (lunch break is not counted).
    ============================================================ */
 const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
 async function fetchHistory(empId, fromISO, toISO) {
-  /* Enumerate every month touched by [fromISO, toISO] */
   const months = new Set();
   const start = new Date(fromISO + "T00:00:00");
   const end   = new Date(toISO   + "T00:00:00");
@@ -2959,16 +2956,14 @@ async function fetchHistory(empId, fromISO, toISO) {
   records.sort((a, b) => b.date.localeCompare(a.date));
   return records;
 }
-
 function histRangeFor(mode, anchorISO) {
   const d = new Date(anchorISO + "T00:00:00");
   let from = new Date(d), to = new Date(d);
   if (mode === "day") {
     from = new Date(d); to = new Date(d);
   } else if (mode === "week") {
-    const dow = d.getDay(); // 0 Sunday
-    /* Week = Mon..Sun */
-    const delta = (dow + 6) % 7; // days since Monday
+    const dow = d.getDay();
+    const delta = (dow + 6) % 7;
     from = new Date(d.getFullYear(), d.getMonth(), d.getDate() - delta);
     to   = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 6);
   } else if (mode === "month") {
@@ -2981,7 +2976,6 @@ function histRangeFor(mode, anchorISO) {
   const iso = (x) => `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`;
   return { fromISO: iso(from), toISO: iso(to), fromDate: from, toDate: to };
 }
-
 function shiftAnchor(mode, anchorISO, direction) {
   const d = new Date(anchorISO + "T00:00:00");
   if (mode === "day")   d.setDate(d.getDate() + direction);
@@ -2990,7 +2984,6 @@ function shiftAnchor(mode, anchorISO, direction) {
   if (mode === "year")  d.setFullYear(d.getFullYear() + direction);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
-
 function formatRangeLabel(mode, fromISO, toISO) {
   const f = new Date(fromISO + "T00:00:00");
   const tt = new Date(toISO + "T00:00:00");
@@ -3002,7 +2995,6 @@ function formatRangeLabel(mode, fromISO, toISO) {
   if (mode === "year")  return String(f.getFullYear());
   return "";
 }
-
 function renderHistRow(rec) {
   const d = new Date(rec.date + "T00:00:00");
   const dayName = DAY_NAMES[d.getDay()];
@@ -3014,7 +3006,8 @@ function renderHistRow(rec) {
   const aIn   = rec.afternoonCheckIn  || "";
   const aOut  = rec.afternoonCheckOut || "";
   const notes = rec.notes || "—";
-
+  const workedMins = calcWorkedMinutes(rec);
+  const workedTxt  = formatDuration(workedMins);
   const fmtTime = (v, cls) => v
     ? `<span class="hist-time ${cls}">${escapeHtml(v)}</span>`
     : `<span class="hist-time hist-time--empty">—:—</span>`;
@@ -3033,6 +3026,7 @@ function renderHistRow(rec) {
       <td>${fmtTime(mOut, "hist-time--out")}</td>
       <td>${fmtTime(aIn,  "hist-time--in")}</td>
       <td>${fmtTime(aOut, "hist-time--out")}</td>
+      <td><span class="hist-worked ${workedMins == null ? "hist-worked--empty" : ""}">${escapeHtml(workedTxt)}</span></td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(notes)}</td>
     </tr>`;
 }
@@ -3070,12 +3064,8 @@ async function openHistoryModal(empId) {
     const { fromISO, toISO } = histRangeFor(mode, anchor);
     loading = true;
     draw();
-    try {
-      records = await fetchHistory(emp.id, fromISO, toISO);
-    } catch (e) {
-      console.warn("[history]", e);
-      records = [];
-    }
+    try { records = await fetchHistory(emp.id, fromISO, toISO); }
+    catch (e) { console.warn("[history]", e); records = []; }
     loading = false;
     draw();
   }
@@ -3083,13 +3073,14 @@ async function openHistoryModal(empId) {
   function draw() {
     const { fromISO, toISO } = histRangeFor(mode, anchor);
 
-    /* Summary stats */
-    let present = 0, late = 0, absent = 0;
+    let present = 0, late = 0, absent = 0, totalWorkedMin = 0;
     for (const r of records) {
       const st = combineDayStatus(r) || r.status;
       if (st === "present") present++;
       else if (st === "late") late++;
       else if (st === "absent") absent++;
+      const wm = calcWorkedMinutes(r);
+      if (wm != null) totalWorkedMin += wm;
     }
 
     let tableHtml = "";
@@ -3116,6 +3107,7 @@ async function openHistoryModal(empId) {
                 <th>${escapeHtml(t("histColMorning"))} Out</th>
                 <th>${escapeHtml(t("histColAfternoon"))} In</th>
                 <th>${escapeHtml(t("histColAfternoon"))} Out</th>
+                <th>${escapeHtml(t("histColWorked"))}</th>
                 <th>${escapeHtml(t("histColNotes"))}</th>
               </tr>
             </thead>
@@ -3145,46 +3137,35 @@ async function openHistoryModal(empId) {
         <div class="hist-stat"><div class="hist-stat__label">${escapeHtml(t("histPresent"))}</div><div class="hist-stat__value c-green">${present}</div></div>
         <div class="hist-stat"><div class="hist-stat__label">${escapeHtml(t("histLate"))}</div><div class="hist-stat__value c-gold">${late}</div></div>
         <div class="hist-stat"><div class="hist-stat__label">${escapeHtml(t("histAbsent"))}</div><div class="hist-stat__value c-red">${absent}</div></div>
-        <div class="hist-stat"><div class="hist-stat__label">${escapeHtml(t("histSessionsCount", { n: "" })).replace("  "," ").replace("  "," ")}</div><div class="hist-stat__value c-blue">${records.length}</div></div>
+        <div class="hist-stat"><div class="hist-stat__label">${escapeHtml(t("histSessionsCount"))}</div><div class="hist-stat__value c-blue">${records.length}</div></div>
+        <div class="hist-stat"><div class="hist-stat__label">${escapeHtml(t("histTotalWorked"))}</div><div class="hist-stat__value c-violet">${escapeHtml(formatDuration(totalWorkedMin))}</div></div>
       </div>
 
       ${tableHtml}
     `;
 
-    /* Re-bind controls */
     body.querySelectorAll(".hist-mode-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        mode = btn.dataset.mode;
-        refresh();
-      });
+      btn.addEventListener("click", () => { mode = btn.dataset.mode; refresh(); });
     });
     body.querySelector("#histAnchor")?.addEventListener("change", (e) => {
-      anchor = e.target.value || selectedDate;
-      refresh();
+      anchor = e.target.value || selectedDate; refresh();
     });
     body.querySelector("#histPrev")?.addEventListener("click", () => {
-      anchor = shiftAnchor(mode, anchor, -1);
-      refresh();
+      anchor = shiftAnchor(mode, anchor, -1); refresh();
     });
     body.querySelector("#histNext")?.addEventListener("click", () => {
-      anchor = shiftAnchor(mode, anchor, +1);
-      refresh();
+      anchor = shiftAnchor(mode, anchor, +1); refresh();
     });
     body.querySelector("#histToday")?.addEventListener("click", () => {
-      anchor = new Date().toISOString().slice(0,10);
-      refresh();
+      anchor = new Date().toISOString().slice(0,10); refresh();
     });
   }
 
-  /* Draw first (with loading state), then fetch */
   draw();
   try {
     const { fromISO, toISO } = histRangeFor(mode, anchor);
     records = await fetchHistory(emp.id, fromISO, toISO);
-  } catch (e) {
-    console.warn(e);
-    records = [];
-  }
+  } catch (e) { records = []; }
   loading = false;
   draw();
 }
@@ -3437,7 +3418,7 @@ onAuthStateChanged(auth, async (user)=>{
   subscribeMyEmployee();
   subscribeAttendance();
   setTimeout(reconcilePreviousDay, 1500);
-  console.log("[attendance] booted — working-hour locks + late-absent + history enabled");
+  console.log("[attendance] booted — Friday rule, late-absent, history + worked time enabled");
 });
 </script>
 
