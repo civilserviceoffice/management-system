@@ -527,18 +527,14 @@ import {
 
    AUTO-ABSENT: Once the morning arrival window closes (09:15),
                 any employee without a morning check-in is marked
-                absent for the whole day — UNLESS:
-                  • a fingerprint scan exists (morningCheckIn set)
-                  • an admin/manual/bulk save exists (method = manual|bulk)
-                  • the record was already marked absent by auto-absent
-                    (idempotent — safe to re-run)
+                absent for the whole day.
    ============================================================ */
 const ATTENDANCE_RULES = {
   morning:   { presentUntil: "08:45", lateUntil: "09:00" },
   afternoon: { presentUntil: "13:45", lateUntil: "14:00" }
 };
 
-const MORNING_ABSENT_CUTOFF = "09:15";
+const MORNING_ABSENT_CUTOFF = "09:15";   // auto-absent triggers at this time
 
 const BASE_SCHEDULE = {
   morningStart:   "08:30",
@@ -1749,14 +1745,7 @@ async function startKioskScan() {
    ------------------------------------------------------------
    Marks any employee without a morning check-in as absent
    once the morning arrival window has closed (09:15).
-
-   SKIP RULES (in order):
-     1. Record has a morningCheckIn / afternoonCheckIn   → scanned, leave it
-     2. Record was saved with method "manual" or "bulk"  → human decision
-     3. Record has autoMarked === false                  → explicit "not auto"
-     4. Record has a status AND autoMarked !== true      → any human-set status
-     5. Record is already autoMarked === true && absent  → idempotent
-   Only a genuinely untouched record (or a stale auto-mark) gets marked.
+   Also runs for yesterday if it wasn't done.
    ============================================================ */
 async function autoMarkAbsentForDate(isoDate) {
   if (!canManageUsers()) return 0;
@@ -1772,25 +1761,16 @@ async function autoMarkAbsentForDate(isoDate) {
       existing.set(rec.employeeId, rec);
     });
 
+    const SPECIAL = ["leave", "holiday", "weekend", "field", "half_day"];
     const list = visibleEmployees();
     let count = 0, errors = 0;
 
     for (const e of list) {
       const rec = existing.get(e.id);
-
       if (rec) {
-        /* 1. Any real scan wins */
-        if (rec.morningCheckIn || rec.afternoonCheckIn) continue;
-        /* 2. Any human decision wins */
-        if (rec.method === "manual" || rec.method === "bulk") continue;
-        /* 3. Explicit "not auto" flag */
-        if (rec.autoMarked === false) continue;
-        /* 4. Human-set status that isn't already an auto-mark */
-        if (rec.status && rec.autoMarked !== true) continue;
-        /* 5. Already auto-marked → idempotent, nothing to do */
-        if (rec.autoMarked === true && rec.status === "absent") continue;
+        if (rec.morningCheckIn) continue;
+        if (rec.status && SPECIAL.includes(rec.status)) continue;
       }
-
       try {
         await setDoc(doc(db, "attendance", monthKey(isoDate), "records", e.id), {
           date: isoDate,
@@ -1811,7 +1791,6 @@ async function autoMarkAbsentForDate(isoDate) {
           status: "absent",
           autoMarked: true,
           autoMarkedReason: "No morning check-in",
-          method: "auto",
           createdAt: serverTimestamp(),
           createdBy: S.uid,
           updatedAt: serverTimestamp(),
@@ -2113,11 +2092,6 @@ function render() {
 
 /* ============================================================
    SAVE ATTENDANCE
-   ------------------------------------------------------------
-   Whitelist now includes autoMarked + autoMarkedReason so a
-   manual or bulk save actually CLEARS the auto-mark flag.
-   (Previously these two keys were dropped silently, which let
-    auto-absent overwrite an admin's decision at 09:15.)
    ============================================================ */
 function monthKey(isoDate) { return isoDate.slice(0,7); }
 async function saveAttendanceFor(emp, opts) {
@@ -2149,8 +2123,7 @@ async function saveAttendanceFor(emp, opts) {
    "morningStatus","afternoonStatus",
    "morningCheckInMethod","morningCheckOutMethod","afternoonCheckInMethod","afternoonCheckOutMethod",
    "morningCheckInCredentialId","morningCheckOutCredentialId",
-   "afternoonCheckInCredentialId","afternoonCheckOutCredentialId",
-   "autoMarked","autoMarkedReason"].forEach(k => { if (k in o) payload[k] = o[k]; });
+   "afternoonCheckInCredentialId","afternoonCheckOutCredentialId"].forEach(k => { if (k in o) payload[k] = o[k]; });
   if ("morningCheckInAt" in o)    payload.morningCheckInAt    = o.morningCheckInAt;
   if ("morningCheckOutAt" in o)   payload.morningCheckOutAt   = o.morningCheckOutAt;
   if ("afternoonCheckInAt" in o)  payload.afternoonCheckInAt  = o.afternoonCheckInAt;
@@ -2248,8 +2221,7 @@ function openMarkSingleModal(empId) {
         afternoonCheckIn: afternoonIn, afternoonCheckOut: afternoonOut,
         morningStatus, afternoonStatus, notes,
         checkIn: morningIn, checkOut: afternoonOut, method: "manual",
-        autoMarked: false,
-        autoMarkedReason: null
+        autoMarked: false
       });
       toast(t("toastSaved"), "success");
       closeModal();
@@ -2330,10 +2302,7 @@ function openBulkMarkModal() {
     const old = label.textContent; label.textContent = t("modalSaving");
     try {
       for (const e of list) {
-        await saveAttendanceFor(e, {
-          status: choices[e.id], notes: null,
-          method: "bulk", autoMarked: false, autoMarkedReason: null
-        });
+        await saveAttendanceFor(e, { status: choices[e.id], notes: null, method: "bulk", autoMarked: false });
       }
       toast(t("toastSavedMany", { n: list.length }), "success");
       closeModal();
