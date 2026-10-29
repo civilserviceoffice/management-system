@@ -224,7 +224,6 @@ body.sidebar-collapsed .sidebar__footer::after { content:"©"; display:block; fo
 .dropdown__divider { height:1px; background:var(--border-soft); margin:6px 0; }
 .dropdown__item--danger { color:var(--danger); }
 
-/* Language switcher */
 .lang-btn { display:inline-flex; align-items:center; gap:7px;
   height:44px; padding:0 12px; border-radius:13px;
   background:transparent; color:var(--text-soft);
@@ -464,7 +463,6 @@ body.sidebar-open .overlay { display:block; }
     <div class="topbar__spacer"></div>
     <div class="topbar__actions">
 
-      <!-- ===== Language switcher ===== -->
       <div class="dropdown">
         <button class="lang-btn" data-lang-toggle aria-label="Language">
           <svg viewBox="0 0 24 24">
@@ -608,235 +606,271 @@ import {
 } from "firebase/firestore";
 
 /* ============================================================
-   I18N DICTIONARY
+   I18N
    ============================================================ */
 const I18N = {
   en: {
-    brandTitle: "Civil Service",
-    brandSubtitle: "Management Information System",
-    footerCopy: "© 2026 Civil Service MIS",
-    dashboard: "Dashboard", nationalDashboard: "National Dashboard",
-    regionDashboard: "Region Dashboard", clusterDashboard: "Cluster Dashboard",
-    hrDashboard: "HR Dashboard", financeDashboard: "Finance Dashboard",
-    directorateDashboard: "Directorate Dashboard", woredaDashboard: "Woreda Dashboard",
-    managerDashboard: "Manager Dashboard", teamLeaderDashboard: "Team Dashboard",
-    myDashboard: "My Dashboard",
-    welcomeBack: "Welcome back", profile: "Profile", settings: "Settings", signOut: "Sign out",
-    overview: "Overview", organization: "Organization",
-    usersStaff: "Users & Staff", directorates: "Directorates",
-    workPlansSection: "Work Plans", workPlans: "Work Plans",
-    humanResources: "Human Resources", recruitment: "Recruitment", training: "Training", performance: "Performance",
-    operations: "Operations", attendance: "Attendance", leave: "Leave",
-    finance: "Finance", payroll: "Payroll", budget: "Budget",
-    administration: "Administration", offices: "Offices", reports: "Reports",
-    notifications: "Notifications",
-    orgAtGlance: "Organisation at a glance",
-    attendanceTrend: "Attendance Trend", last7Days: "Last 7 days",
-    monthlyPayroll: "Monthly Payroll", last7Months: "Last 7 months",
-    recentActivity: "Recent Activity", latestUpdates: "Latest updates in your scope",
-    quickActions: "Quick Actions", pendingApprovals: "Pending Approvals",
-    awaitingAction: "Awaiting your action", viewAll: "View all →",
-    loading: "Loading…", noDataYet: "No data yet",
-    noActivity: "No activity yet in your scope", nothingPending: "Nothing pending",
-    error: "Error", noData: "No data",
-    regions: "Regions", regionalAdmins: "Regional Admins",
-    clusters: "Clusters", woredasCities: "Woredas / Cities",
-    employees: "Employees", payrollThisMonth: "Payroll (this month)",
-    pendingLeave: "Pending Leave", clusterDirectorates: "Cluster Directorates",
-    totalEmployees: "Total Employees", payrollHeadcount: "Payroll Headcount",
-    pendingPayments: "Pending Payments", budgetUtilisation: "Budget Utilisation",
-    myDirectorateStaff: "My Directorate Staff", myWorkPlans: "My Work Plans",
-    myWorkPlanDays: "My Work Plan Days",
-    presentToday: "Present Today", pendingItems: "Pending Items",
-    officesInMyWoreda: "Offices in my woreda", staffInMyWoreda: "Staff in my woreda",
-    myTeam: "My Team", onLeave: "On Leave",
-    myAttendanceMonth: "My Attendance (month)", myLeaveRequests: "My Leave Requests",
-    myPendingRequests: "My Pending Requests", latestPayslip: "Latest Payslip",
-    allRegionsN: "All {n} regions", fullNationalCoverage: "Full national coverage",
-    yourRegion: "Your region", regionalDirectorates: "Regional Directorates",
-    regionLevelDepartments: "Region-level departments",
-    clusterDirectoratesCard: "Cluster Directorates",
-    clusterLevelDepartments: "Cluster-level departments",
-    administrativeClusters: "Administrative clusters",
-    acrossAllClusters: "Across all clusters", governmentOffices: "Government offices",
-    totalStaff: "Total staff", allDirectorates: "All directorates",
-    role_super_admin: "Super Admin", role_regional_admin: "Regional Admin",
-    role_admin: "Cluster Admin", role_directorate: "Regional Directorate",
-    role_cluster_directorate: "Cluster Directorate", role_woreda_city: "Woreda / City",
-    role_hrm: "HR Manager", role_finance: "Finance Officer",
-    role_manager: "Manager", role_team_leader: "Team Leader", role_employee: "Employee",
-    fullSystemAllRegions: "Full system — all regions",
-    regionalAdmin: "Regional Admin", hrManagerOrgWide: "HR Manager — organisation-wide",
-    clusterAdmin: "Cluster Admin", woredaCity: "Woreda / City", manager: "Manager",
-    teamLeader: "Team Leader", employee: "Employee",
-    allRegions: "All Regions", hrOrgWide: "HR — Organisation-wide",
-    addOffice: "Add Office", addDirectorate: "Add Directorate", addCluster: "Add Cluster",
-    addPerson: "Add Person", runPayroll: "Run Payroll", requestLeave: "Request Leave",
-    addRegion: "Add Region", addStaff: "Add Staff", reviewLeave: "Review Leave",
-    budgets: "Budgets", myPayslip: "My Payslip",
-    teamApprovals: "Team Approvals", clusterApprovals: "Cluster Approvals",
-    regionApprovals: "Region Approvals", directorateApprovals: "Directorate Approvals",
-    woredaApprovals: "Woreda Approvals", budgetBreakdown: "Budget Breakdown",
-    allocatedVsSpent: "Allocated vs spent", utilisation: "Utilisation",
-    noBudgetsDefined: "No budgets defined",
-    present: "present", couldNotLoad: "Could not load attendance",
-    mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun",
-    jan: "Jan", feb: "Feb", mar: "Mar", apr: "Apr", may: "May", jun: "Jun",
-    jul: "Jul", aug: "Aug", sep: "Sep", oct: "Oct", nov: "Nov", dec: "Dec",
-    joinedAs: "joined as", requestedLeave: "requested leave", createdBy: "created by",
-    day: "day(s)"
+    brandTitle:"Civil Service", brandSubtitle:"Management Information System",
+    footerCopy:"© 2026 Civil Service MIS",
+    dashboard:"Dashboard", nationalDashboard:"National Dashboard",
+    regionDashboard:"Region Dashboard", clusterDashboard:"Cluster Dashboard",
+    hrDashboard:"HR Dashboard", financeDashboard:"Finance Dashboard",
+    directorateDashboard:"Directorate Dashboard", woredaDashboard:"Woreda Dashboard",
+    managerDashboard:"Manager Dashboard", teamLeaderDashboard:"Team Dashboard",
+    myDashboard:"My Dashboard", welcomeBack:"Welcome back",
+    profile:"Profile", settings:"Settings", signOut:"Sign out",
+    overview:"Overview", organization:"Organization", usersStaff:"Users & Staff",
+    directorates:"Directorates", workPlansSection:"Work Plans", workPlans:"Work Plans",
+    humanResources:"Human Resources", recruitment:"Recruitment", training:"Training",
+    performance:"Performance", operations:"Operations", attendance:"Attendance",
+    leave:"Leave", finance:"Finance", payroll:"Payroll", budget:"Budget",
+    administration:"Administration", offices:"Offices", reports:"Reports",
+    notifications:"Notifications", orgAtGlance:"Organisation at a glance",
+    attendanceTrend:"Attendance Trend", last7Days:"Last 7 days",
+    monthlyPayroll:"Monthly Payroll", last7Months:"Last 7 months",
+    recentActivity:"Recent Activity", latestUpdates:"Latest updates in your scope",
+    quickActions:"Quick Actions", pendingApprovals:"Pending Approvals",
+    awaitingAction:"Awaiting your action", viewAll:"View all →",
+    loading:"Loading…", noDataYet:"No data yet",
+    noActivity:"No activity yet in your scope", nothingPending:"Nothing pending",
+    error:"Error", noData:"No data", regions:"Regions",
+    regionalAdmins:"Regional Admins", clusters:"Clusters",
+    woredasCities:"Woredas / Cities", employees:"Employees",
+    payrollThisMonth:"Payroll (this month)", pendingLeave:"Pending Leave",
+    clusterDirectorates:"Cluster Directorates", totalEmployees:"Total Employees",
+    payrollHeadcount:"Payroll Headcount", pendingPayments:"Pending Payments",
+    budgetUtilisation:"Budget Utilisation", myDirectorateStaff:"My Directorate Staff",
+    myWorkPlans:"My Work Plans", myWorkPlanDays:"My Work Plan Days",
+    presentToday:"Present Today", pendingItems:"Pending Items",
+    officesInMyWoreda:"Offices in my woreda", staffInMyWoreda:"Staff in my woreda",
+    myTeam:"My Team", onLeave:"On Leave",
+    myAttendanceMonth:"My Attendance (month)", myLeaveRequests:"My Leave Requests",
+    myPendingRequests:"My Pending Requests", latestPayslip:"Latest Payslip",
+    allRegionsN:"All {n} regions", fullNationalCoverage:"Full national coverage",
+    yourRegion:"Your region", regionalDirectorates:"Regional Directorates",
+    regionLevelDepartments:"Region-level departments",
+    clusterDirectoratesCard:"Cluster Directorates",
+    clusterLevelDepartments:"Cluster-level departments",
+    administrativeClusters:"Administrative clusters", acrossAllClusters:"Across all clusters",
+    governmentOffices:"Government offices", totalStaff:"Total staff",
+    allDirectorates:"All directorates",
+    role_super_admin:"Super Admin", role_hrm:"National HR",
+    role_finance:"National Finance",
+    role_regional_admin:"Regional Admin", role_regional_hrm:"Regional HR",
+    role_regional_finance:"Regional Finance", role_directorate:"Regional Directorate",
+    role_admin:"Cluster Admin", role_cluster_hrm:"Cluster HR",
+    role_cluster_finance:"Cluster Finance", role_cluster_directorate:"Cluster Directorate",
+    role_woreda_admin:"Woreda Admin", role_woreda_hrm:"Woreda HR",
+    role_woreda_finance:"Woreda Finance", role_woreda_city:"Woreda / City",
+    role_manager:"Manager", role_team_leader:"Team Leader", role_employee:"Employee",
+    fullSystemAllRegions:"Full system — all regions",
+    nationalHR:"National HR — organisation-wide",
+    nationalFinance:"National Finance — organisation-wide",
+    regionalAdmin:"Regional Admin", regionalHR:"Regional HR",
+    regionalFinance:"Regional Finance", clusterAdmin:"Cluster Admin",
+    clusterHR:"Cluster HR", clusterFinance:"Cluster Finance",
+    woredaAdmin:"Woreda Admin", woredaHR:"Woreda HR",
+    woredaFinance:"Woreda Finance", woredaCity:"Woreda / City",
+    manager:"Manager", teamLeader:"Team Leader", employee:"Employee",
+    allRegions:"All Regions", hrOrgWide:"HR — Organisation-wide",
+    addOffice:"Add Office", addDirectorate:"Add Directorate", addCluster:"Add Cluster",
+    addPerson:"Add Person", runPayroll:"Run Payroll", requestLeave:"Request Leave",
+    addRegion:"Add Region", addStaff:"Add Staff", reviewLeave:"Review Leave",
+    budgets:"Budgets", myPayslip:"My Payslip",
+    teamApprovals:"Team Approvals", clusterApprovals:"Cluster Approvals",
+    regionApprovals:"Region Approvals", directorateApprovals:"Directorate Approvals",
+    woredaApprovals:"Woreda Approvals", budgetBreakdown:"Budget Breakdown",
+    allocatedVsSpent:"Allocated vs spent", utilisation:"Utilisation",
+    noBudgetsDefined:"No budgets defined", present:"present",
+    couldNotLoad:"Could not load attendance",
+    mon:"Mon", tue:"Tue", wed:"Wed", thu:"Thu", fri:"Fri", sat:"Sat", sun:"Sun",
+    jan:"Jan", feb:"Feb", mar:"Mar", apr:"Apr", may:"May", jun:"Jun",
+    jul:"Jul", aug:"Aug", sep:"Sep", oct:"Oct", nov:"Nov", dec:"Dec",
+    joinedAs:"joined as", requestedLeave:"requested leave",
+    createdBy:"created by", day:"day(s)"
   },
   om: {
-    brandTitle: "Tajaajila Hawaasaa",
-    brandSubtitle: "Sirna Odeeffannoo Bulchiinsaa",
-    footerCopy: "© 2026 SIM Tajaajila Hawaasaa",
-    dashboard: "Daashboordii", nationalDashboard: "Daashboordii Biyyaalessaa",
-    regionDashboard: "Daashboordii Naannoo", clusterDashboard: "Daashboordii Garee",
-    hrDashboard: "Daashboordii HR", financeDashboard: "Daashboordii Faayinaansii",
-    directorateDashboard: "Daashboordii Qaama", woredaDashboard: "Daashboordii Aanaa",
-    managerDashboard: "Daashboordii Bulchaa", teamLeaderDashboard: "Daashboordii Garee",
-    myDashboard: "Daashboordii Koo",
-    welcomeBack: "Baga nagaan deebi'te", profile: "Profaayilii", settings: "Qindaa'ina",
-    signOut: "Ba'i",
-    overview: "Waliigala", organization: "Dhaabbata",
-    usersStaff: "Fayyadamtoota fi Hojjettoota", directorates: "Qaamolee",
-    workPlansSection: "Karoora Hojii", workPlans: "Karoora Hojii",
-    humanResources: "Rakkoo Namoomaa", recruitment: "Qaccee", training: "Leenjii", performance: "Raawwii",
-    operations: "Hojimaata", attendance: "Argannoo", leave: "Boqonnaa",
-    finance: "Faayinaansii", payroll: "Kaffaltii Hojjettootaa", budget: "Baajata",
-    administration: "Bulchiinsa", offices: "Waajjiraalee", reports: "Gabaasaalee",
-    notifications: "Beeksisaalee",
-    orgAtGlance: "Dhaabbata ilaalcha gabaabaa",
-    attendanceTrend: "Adeemsa Argannoo", last7Days: "Guyyoota 7 darban",
-    monthlyPayroll: "Kaffaltii Ji'aa", last7Months: "Ji'oota 7 darban",
-    recentActivity: "Sochii Dhiyoo", latestUpdates: "Haaromsa dhiyoo naannoo keetii",
-    quickActions: "Gochaalee Saffisaa", pendingApprovals: "Mirkaneessaa Eegaa",
-    awaitingAction: "Gocha kee eegaa", viewAll: "Hunda ilaali →",
-    loading: "Fe'aa jira…", noDataYet: "Ragaan hin jiru",
-    noActivity: "Sochiin naannoo keetii hin jiru", nothingPending: "Wanti eegaa hin jiru",
-    error: "Dogoggora", noData: "Ragaan hin jiru",
-    regions: "Naannoolee", regionalAdmins: "Bulchitoota Naannoo",
-    clusters: "Gareewwan", woredasCities: "Aanaalee / Magaalaalee",
-    employees: "Hojjettoota", payrollThisMonth: "Kaffaltii (ji'a kana)",
-    pendingLeave: "Boqonnaa Eegaa", clusterDirectorates: "Qaamolee Garee",
-    totalEmployees: "Hojjettoota Waliigalaa", payrollHeadcount: "Lakkoofsa Kaffaltii",
-    pendingPayments: "Kaffaltiiwwan Eegaa", budgetUtilisation: "Itti Fayyadama Baajataa",
-    myDirectorateStaff: "Hojjettoota Qaamaa Koo", myWorkPlans: "Karoora Hojii Koo",
-    myWorkPlanDays: "Guyyoota Karoora Hojii Koo",
-    presentToday: "Har'a Argannoo", pendingItems: "Wanti Eegaa",
-    officesInMyWoreda: "Waajjiraalee Aanaa Koo", staffInMyWoreda: "Hojjettoota Aanaa Koo",
-    myTeam: "Garee Koo", onLeave: "Boqonnaa Irra Jiru",
-    myAttendanceMonth: "Argannoo Koo (ji'a)", myLeaveRequests: "Gaaffii Boqonnaa Koo",
-    myPendingRequests: "Gaaffii Koo Eegaa", latestPayslip: "Waraqaa Kaffaltii Dhiyoo",
-    allRegionsN: "Naannoolee {n} hunda", fullNationalCoverage: "Hammata biyyaalessaa",
-    yourRegion: "Naannoo keetii", regionalDirectorates: "Qaamolee Naannoo",
-    regionLevelDepartments: "Qaamolee sadarkaa naannoo",
-    clusterDirectoratesCard: "Qaamolee Garee",
-    clusterLevelDepartments: "Qaamolee sadarkaa garee",
-    administrativeClusters: "Gareewwan bulchiinsaa",
-    acrossAllClusters: "Gareewwan hunda keessatti", governmentOffices: "Waajjiraalee mootummaa",
-    totalStaff: "Hojjettoota waliigalaa", allDirectorates: "Qaamolee hunda",
-    role_super_admin: "Bulchaa Olaanaa", role_regional_admin: "Bulchaa Naannoo",
-    role_admin: "Bulchaa Garee", role_directorate: "Qaama Naannoo",
-    role_cluster_directorate: "Qaama Garee", role_woreda_city: "Aanaa / Magaalaa",
-    role_hrm: "Bulchaa HR", role_finance: "Ogeessa Faayinaansii",
-    role_manager: "Bulchaa", role_team_leader: "Hogganaa Garee", role_employee: "Hojjetaa",
-    fullSystemAllRegions: "Sirna guutuu — naannoolee hunda",
-    regionalAdmin: "Bulchaa Naannoo", hrManagerOrgWide: "Bulchaa HR — dhaabbata guutuu",
-    clusterAdmin: "Bulchaa Garee", woredaCity: "Aanaa / Magaalaa", manager: "Bulchaa",
-    teamLeader: "Hogganaa Garee", employee: "Hojjetaa",
-    allRegions: "Naannoolee Hunda", hrOrgWide: "HR — Dhaabbata guutuu",
-    addOffice: "Waajjira Dabali", addDirectorate: "Qaama Dabali", addCluster: "Garee Dabali",
-    addPerson: "Nama Dabali", runPayroll: "Kaffaltii Baasi", requestLeave: "Boqonnaa Gaafadhu",
-    addRegion: "Naannoo Dabali", addStaff: "Hojjetaa Dabali", reviewLeave: "Boqonnaa Ilaali",
-    budgets: "Baajataalee", myPayslip: "Waraqaa Kaffaltii Koo",
-    teamApprovals: "Mirkaneessaa Garee", clusterApprovals: "Mirkaneessaa Garee",
-    regionApprovals: "Mirkaneessaa Naannoo", directorateApprovals: "Mirkaneessaa Qaamaa",
-    woredaApprovals: "Mirkaneessaa Aanaa", budgetBreakdown: "Hir'ina Baajataa",
-    allocatedVsSpent: "Ramadame vs Baafame", utilisation: "Itti Fayyadama",
-    noBudgetsDefined: "Baajanni hin ibsamne",
-    present: "argame", couldNotLoad: "Argannoo fe'uu hin dandeenye",
-    mon: "Wiix", tue: "Qib", wed: "Rob", thu: "Kam", fri: "Jim", sat: "San", sun: "Dil",
-    jan: "Ama", feb: "Gur", mar: "Bit", apr: "Elb", may: "Cam", jun: "Wax",
-    jul: "Ado", aug: "Hag", sep: "Ful", oct: "Onk", nov: "Sad", dec: "Mud",
-    joinedAs: "makama galeera", requestedLeave: "boqonnaa gaafateera", createdBy: "uumee",
-    day: "guyyaa"
+    brandTitle:"Tajaajila Hawaasaa", brandSubtitle:"Sirna Odeeffannoo Bulchiinsaa",
+    footerCopy:"© 2026 SIM Tajaajila Hawaasaa",
+    dashboard:"Daashboordii", nationalDashboard:"Daashboordii Biyyaalessaa",
+    regionDashboard:"Daashboordii Naannoo", clusterDashboard:"Daashboordii Garee",
+    hrDashboard:"Daashboordii HR", financeDashboard:"Daashboordii Faayinaansii",
+    directorateDashboard:"Daashboordii Qaama", woredaDashboard:"Daashboordii Aanaa",
+    managerDashboard:"Daashboordii Bulchaa", teamLeaderDashboard:"Daashboordii Garee",
+    myDashboard:"Daashboordii Koo", welcomeBack:"Baga nagaan deebi'te",
+    profile:"Profaayilii", settings:"Qindaa'ina", signOut:"Ba'i",
+    overview:"Waliigala", organization:"Dhaabbata",
+    usersStaff:"Fayyadamtoota fi Hojjettoota", directorates:"Qaamolee",
+    workPlansSection:"Karoora Hojii", workPlans:"Karoora Hojii",
+    humanResources:"Rakkoo Namoomaa", recruitment:"Qaccee", training:"Leenjii",
+    performance:"Raawwii", operations:"Hojimaata", attendance:"Argannoo",
+    leave:"Boqonnaa", finance:"Faayinaansii", payroll:"Kaffaltii Hojjettootaa",
+    budget:"Baajata", administration:"Bulchiinsa", offices:"Waajjiraalee",
+    reports:"Gabaasaalee", notifications:"Beeksisaalee",
+    orgAtGlance:"Dhaabbata ilaalcha gabaabaa",
+    attendanceTrend:"Adeemsa Argannoo", last7Days:"Guyyoota 7 darban",
+    monthlyPayroll:"Kaffaltii Ji'aa", last7Months:"Ji'oota 7 darban",
+    recentActivity:"Sochii Dhiyoo", latestUpdates:"Haaromsa dhiyoo naannoo keetii",
+    quickActions:"Gochaalee Saffisaa", pendingApprovals:"Mirkaneessaa Eegaa",
+    awaitingAction:"Gocha kee eegaa", viewAll:"Hunda ilaali →",
+    loading:"Fe'aa jira…", noDataYet:"Ragaan hin jiru",
+    noActivity:"Sochiin naannoo keetii hin jiru", nothingPending:"Wanti eegaa hin jiru",
+    error:"Dogoggora", noData:"Ragaan hin jiru",
+    regions:"Naannoolee", regionalAdmins:"Bulchitoota Naannoo",
+    clusters:"Gareewwan", woredasCities:"Aanaalee / Magaalaalee",
+    employees:"Hojjettoota", payrollThisMonth:"Kaffaltii (ji'a kana)",
+    pendingLeave:"Boqonnaa Eegaa", clusterDirectorates:"Qaamolee Garee",
+    totalEmployees:"Hojjettoota Waliigalaa", payrollHeadcount:"Lakkoofsa Kaffaltii",
+    pendingPayments:"Kaffaltiiwwan Eegaa", budgetUtilisation:"Itti Fayyadama Baajataa",
+    myDirectorateStaff:"Hojjettoota Qaamaa Koo", myWorkPlans:"Karoora Hojii Koo",
+    myWorkPlanDays:"Guyyoota Karoora Hojii Koo",
+    presentToday:"Har'a Argannoo", pendingItems:"Wanti Eegaa",
+    officesInMyWoreda:"Waajjiraalee Aanaa Koo", staffInMyWoreda:"Hojjettoota Aanaa Koo",
+    myTeam:"Garee Koo", onLeave:"Boqonnaa Irra Jiru",
+    myAttendanceMonth:"Argannoo Koo (ji'a)", myLeaveRequests:"Gaaffii Boqonnaa Koo",
+    myPendingRequests:"Gaaffii Koo Eegaa", latestPayslip:"Waraqaa Kaffaltii Dhiyoo",
+    allRegionsN:"Naannoolee {n} hunda", fullNationalCoverage:"Hammata biyyaalessaa",
+    yourRegion:"Naannoo keetii", regionalDirectorates:"Qaamolee Naannoo",
+    regionLevelDepartments:"Qaamolee sadarkaa naannoo",
+    clusterDirectoratesCard:"Qaamolee Garee",
+    clusterLevelDepartments:"Qaamolee sadarkaa garee",
+    administrativeClusters:"Gareewwan bulchiinsaa",
+    acrossAllClusters:"Gareewwan hunda keessatti",
+    governmentOffices:"Waajjiraalee mootummaa",
+    totalStaff:"Hojjettoota waliigalaa", allDirectorates:"Qaamolee hunda",
+    role_super_admin:"Bulchaa Olaanaa", role_hrm:"HR Biyyaalessaa",
+    role_finance:"Faayinaansii Biyyaalessaa",
+    role_regional_admin:"Bulchaa Naannoo", role_regional_hrm:"HR Naannoo",
+    role_regional_finance:"Faayinaansii Naannoo",
+    role_directorate:"Qaama Naannoo",
+    role_admin:"Bulchaa Garee", role_cluster_hrm:"HR Garee",
+    role_cluster_finance:"Faayinaansii Garee",
+    role_cluster_directorate:"Qaama Garee",
+    role_woreda_admin:"Bulchaa Aanaa", role_woreda_hrm:"HR Aanaa",
+    role_woreda_finance:"Faayinaansii Aanaa", role_woreda_city:"Aanaa / Magaalaa",
+    role_manager:"Bulchaa", role_team_leader:"Hogganaa Garee", role_employee:"Hojjetaa",
+    fullSystemAllRegions:"Sirna guutuu — naannoolee hunda",
+    nationalHR:"HR Biyyaalessaa — dhaabbata guutuu",
+    nationalFinance:"Faayinaansii Biyyaalessaa — dhaabbata guutuu",
+    regionalAdmin:"Bulchaa Naannoo", regionalHR:"HR Naannoo",
+    regionalFinance:"Faayinaansii Naannoo", clusterAdmin:"Bulchaa Garee",
+    clusterHR:"HR Garee", clusterFinance:"Faayinaansii Garee",
+    woredaAdmin:"Bulchaa Aanaa", woredaHR:"HR Aanaa",
+    woredaFinance:"Faayinaansii Aanaa", woredaCity:"Aanaa / Magaalaa",
+    manager:"Bulchaa", teamLeader:"Hogganaa Garee", employee:"Hojjetaa",
+    allRegions:"Naannoolee Hunda", hrOrgWide:"HR — Dhaabbata guutuu",
+    addOffice:"Waajjira Dabali", addDirectorate:"Qaama Dabali",
+    addCluster:"Garee Dabali", addPerson:"Nama Dabali",
+    runPayroll:"Kaffaltii Baasi", requestLeave:"Boqonnaa Gaafadhu",
+    addRegion:"Naannoo Dabali", addStaff:"Hojjetaa Dabali",
+    reviewLeave:"Boqonnaa Ilaali", budgets:"Baajataalee",
+    myPayslip:"Waraqaa Kaffaltii Koo", teamApprovals:"Mirkaneessaa Garee",
+    clusterApprovals:"Mirkaneessaa Garee", regionApprovals:"Mirkaneessaa Naannoo",
+    directorateApprovals:"Mirkaneessaa Qaamaa", woredaApprovals:"Mirkaneessaa Aanaa",
+    budgetBreakdown:"Hir'ina Baajataa", allocatedVsSpent:"Ramadame vs Baafame",
+    utilisation:"Itti Fayyadama", noBudgetsDefined:"Baajanni hin ibsamne",
+    present:"argame", couldNotLoad:"Argannoo fe'uu hin dandeenye",
+    mon:"Wiix", tue:"Qib", wed:"Rob", thu:"Kam", fri:"Jim", sat:"San", sun:"Dil",
+    jan:"Ama", feb:"Gur", mar:"Bit", apr:"Elb", may:"Cam", jun:"Wax",
+    jul:"Ado", aug:"Hag", sep:"Ful", oct:"Onk", nov:"Sad", dec:"Mud",
+    joinedAs:"makama galeera", requestedLeave:"boqonnaa gaafateera",
+    createdBy:"uumee", day:"guyyaa"
   },
   am: {
-    brandTitle: "የመንግስት ሰራተኛ",
-    brandSubtitle: "የአስተዳደር መረጃ ስርዓት",
-    footerCopy: "© 2026 የመንግስት ሰራተኛ MIS",
-    dashboard: "ዳሽቦርድ", nationalDashboard: "ብሔራዊ ዳሽቦርድ",
-    regionDashboard: "የክልል ዳሽቦርድ", clusterDashboard: "የክላስተር ዳሽቦርድ",
-    hrDashboard: "የሰው ኃይል ዳሽቦርድ", financeDashboard: "የፋይናንስ ዳሽቦርድ",
-    directorateDashboard: "የዳይሬክቶሬት ዳሽቦርድ", woredaDashboard: "የወረዳ ዳሽቦርድ",
-    managerDashboard: "የሥራ አስኪያጅ ዳሽቦርድ", teamLeaderDashboard: "የቡድን ዳሽቦርድ",
-    myDashboard: "የእኔ ዳሽቦርድ",
-    welcomeBack: "እንኳን ደህና ተመለሱ", profile: "መገለጫ", settings: "ቅንብሮች",
-    signOut: "ውጣ",
-    overview: "አጠቃላይ እይታ", organization: "ድርጅት",
-    usersStaff: "ተጠቃሚዎች እና ሰራተኞች", directorates: "ዳይሬክቶሬቶች",
-    workPlansSection: "የሥራ እቅዶች", workPlans: "የሥራ እቅዶች",
-    humanResources: "የሰው ኃይል", recruitment: "ቅጥር", training: "ስልጠና", performance: "አፈጻጸም",
-    operations: "ክንውኖች", attendance: "መገኘት", leave: "ፈቃድ",
-    finance: "ፋይናንስ", payroll: "ደመወዝ", budget: "በጀት",
-    administration: "አስተዳደር", offices: "ቢሮዎች", reports: "ሪፖርቶች",
-    notifications: "ማሳወቂያዎች",
-    orgAtGlance: "ድርጅቱ በጨረፍታ",
-    attendanceTrend: "የመገኘት አዝማሚያ", last7Days: "ያለፉት 7 ቀናት",
-    monthlyPayroll: "ወርሃዊ ደመወዝ", last7Months: "ያለፉት 7 ወራት",
-    recentActivity: "የቅርብ ጊዜ እንቅስቃሴ", latestUpdates: "በአካባቢዎ የቅርብ ጊዜ ዝመናዎች",
-    quickActions: "ፈጣን እርምጃዎች", pendingApprovals: "በመጠበቅ ላይ ያሉ ማጽደቆች",
-    awaitingAction: "እርምጃዎን በመጠበቅ ላይ", viewAll: "ሁሉንም ይመልከቱ →",
-    loading: "በመጫን ላይ…", noDataYet: "እስካሁን መረጃ የለም",
-    noActivity: "በአካባቢዎ እንቅስቃሴ የለም", nothingPending: "በመጠበቅ ላይ ያለ ነገር የለም",
-    error: "ስህተት", noData: "መረጃ የለም",
-    regions: "ክልሎች", regionalAdmins: "የክልል አስተዳዳሪዎች",
-    clusters: "ክላስተሮች", woredasCities: "ወረዳዎች / ከተሞች",
-    employees: "ሰራተኞች", payrollThisMonth: "ደመወዝ (በዚህ ወር)",
-    pendingLeave: "በመጠበቅ ላይ ያለ ፈቃድ", clusterDirectorates: "የክላስተር ዳይሬክቶሬቶች",
-    totalEmployees: "ጠቅላላ ሰራተኞች", payrollHeadcount: "የደመወዝ ቁጥር",
-    pendingPayments: "በመጠበቅ ላይ ያሉ ክፍያዎች", budgetUtilisation: "የበጀት አጠቃቀም",
-    myDirectorateStaff: "የእኔ ዳይሬክቶሬት ሰራተኞች", myWorkPlans: "የእኔ የሥራ እቅዶች",
-    myWorkPlanDays: "የእኔ የሥራ እቅድ ቀናት",
-    presentToday: "ዛሬ የተገኙ", pendingItems: "በመጠበቅ ላይ ያሉ ነገሮች",
-    officesInMyWoreda: "በእኔ ወረዳ ያሉ ቢሮዎች", staffInMyWoreda: "በእኔ ወረዳ ያሉ ሰራተኞች",
-    myTeam: "የእኔ ቡድን", onLeave: "ፈቃድ ላይ",
-    myAttendanceMonth: "የእኔ መገኘት (ወር)", myLeaveRequests: "የእኔ የፈቃድ ጥያቄዎች",
-    myPendingRequests: "በመጠበቅ ላይ ያሉ ጥያቄዎቼ", latestPayslip: "የቅርብ ጊዜ የደመወዝ ወረቀት",
-    allRegionsN: "ሁሉም {n} ክልሎች", fullNationalCoverage: "ሙሉ ብሔራዊ ሽፋን",
-    yourRegion: "የእርስዎ ክልል", regionalDirectorates: "የክልል ዳይሬክቶሬቶች",
-    regionLevelDepartments: "የክልል ደረጃ ክፍሎች",
-    clusterDirectoratesCard: "የክላስተር ዳይሬክቶሬቶች",
-    clusterLevelDepartments: "የክላስተር ደረጃ ክፍሎች",
-    administrativeClusters: "የአስተዳደር ክላስተሮች",
-    acrossAllClusters: "በሁሉም ክላስተሮች ውስጥ", governmentOffices: "የመንግስት ቢሮዎች",
-    totalStaff: "ጠቅላላ ሰራተኞች", allDirectorates: "ሁሉም ዳይሬክቶሬቶች",
-    role_super_admin: "ዋና አስተዳዳሪ", role_regional_admin: "የክልል አስተዳዳሪ",
-    role_admin: "የክላስተር አስተዳዳሪ", role_directorate: "የክልል ዳይሬክቶሬት",
-    role_cluster_directorate: "የክላስተር ዳይሬክቶሬት", role_woreda_city: "ወረዳ / ከተማ",
-    role_hrm: "የሰው ኃይል ሥራ አስኪያጅ", role_finance: "የፋይናንስ ኦፊሰር",
-    role_manager: "ሥራ አስኪያጅ", role_team_leader: "የቡድን መሪ", role_employee: "ሰራተኛ",
-    fullSystemAllRegions: "ሙሉ ስርዓት — ሁሉም ክልሎች",
-    regionalAdmin: "የክልል አስተዳዳሪ", hrManagerOrgWide: "የሰው ኃይል ሥራ አስኪያጅ — በድርጅቱ ሁሉ",
-    clusterAdmin: "የክላስተር አስተዳዳሪ", woredaCity: "ወረዳ / ከተማ", manager: "ሥራ አስኪያጅ",
-    teamLeader: "የቡድን መሪ", employee: "ሰራተኛ",
-    allRegions: "ሁሉም ክልሎች", hrOrgWide: "HR — በድርጅቱ ሁሉ",
-    addOffice: "ቢሮ ጨምር", addDirectorate: "ዳይሬክቶሬት ጨምር", addCluster: "ክላስተር ጨምር",
-    addPerson: "ሰው ጨምር", runPayroll: "ደመወዝ አስኪድ", requestLeave: "ፈቃድ ጠይቅ",
-    addRegion: "ክልል ጨምር", addStaff: "ሰራተኛ ጨምር", reviewLeave: "ፈቃድ ገምግም",
-    budgets: "በጀቶች", myPayslip: "የእኔ የደመወዝ ወረቀት",
-    teamApprovals: "የቡድን ማጽደቆች", clusterApprovals: "የክላስተር ማጽደቆች",
-    regionApprovals: "የክልል ማጽደቆች", directorateApprovals: "የዳይሬክቶሬት ማጽደቆች",
-    woredaApprovals: "የወረዳ ማጽደቆች", budgetBreakdown: "የበጀት ዝርዝር",
-    allocatedVsSpent: "የተመደበ vs የወጣ", utilisation: "አጠቃቀም",
-    noBudgetsDefined: "በጀቶች አልተገለጹም",
-    present: "ተገኝቷል", couldNotLoad: "መገኘትን መጫን አልተቻለም",
-    mon: "ሰኞ", tue: "ማክሰ", wed: "ረቡ", thu: "ሐሙ", fri: "ዓርብ", sat: "ቅዳሜ", sun: "እሁድ",
-    jan: "ጃን", feb: "ፌብ", mar: "ማርች", apr: "ኤፕሪ", may: "ሜይ", jun: "ጁን",
-    jul: "ጁላይ", aug: "ኦገስ", sep: "ሴፕ", oct: "ኦክቶ", nov: "ኖቬ", dec: "ዲሴ",
-    joinedAs: "ተቀላቅሏል", requestedLeave: "ፈቃድ ጠይቋል", createdBy: "ፈጠረ",
-    day: "ቀን"
+    brandTitle:"የመንግስት ሰራተኛ", brandSubtitle:"የአስተዳደር መረጃ ስርዓት",
+    footerCopy:"© 2026 የመንግስት ሰራተኛ MIS",
+    dashboard:"ዳሽቦርድ", nationalDashboard:"ብሔራዊ ዳሽቦርድ",
+    regionDashboard:"የክልል ዳሽቦርድ", clusterDashboard:"የክላስተር ዳሽቦርድ",
+    hrDashboard:"የሰው ኃይል ዳሽቦርድ", financeDashboard:"የፋይናንስ ዳሽቦርድ",
+    directorateDashboard:"የዳይሬክቶሬት ዳሽቦርድ", woredaDashboard:"የወረዳ ዳሽቦርድ",
+    managerDashboard:"የሥራ አስኪያጅ ዳሽቦርድ", teamLeaderDashboard:"የቡድን ዳሽቦርድ",
+    myDashboard:"የእኔ ዳሽቦርድ", welcomeBack:"እንኳን ደህና ተመለሱ",
+    profile:"መገለጫ", settings:"ቅንብሮች", signOut:"ውጣ",
+    overview:"አጠቃላይ እይታ", organization:"ድርጅት",
+    usersStaff:"ተጠቃሚዎች እና ሰራተኞች", directorates:"ዳይሬክቶሬቶች",
+    workPlansSection:"የሥራ እቅዶች", workPlans:"የሥራ እቅዶች",
+    humanResources:"የሰው ኃይል", recruitment:"ቅጥር", training:"ስልጠና",
+    performance:"አፈጻጸም", operations:"ክንውኖች", attendance:"መገኘት",
+    leave:"ፈቃድ", finance:"ፋይናንስ", payroll:"ደመወዝ", budget:"በጀት",
+    administration:"አስተዳደር", offices:"ቢሮዎች", reports:"ሪፖርቶች",
+    notifications:"ማሳወቂያዎች", orgAtGlance:"ድርጅቱ በጨረፍታ",
+    attendanceTrend:"የመገኘት አዝማሚያ", last7Days:"ያለፉት 7 ቀናት",
+    monthlyPayroll:"ወርሃዊ ደመወዝ", last7Months:"ያለፉት 7 ወራት",
+    recentActivity:"የቅርብ ጊዜ እንቅስቃሴ",
+    latestUpdates:"በአካባቢዎ የቅርብ ጊዜ ዝመናዎች",
+    quickActions:"ፈጣን እርምጃዎች", pendingApprovals:"በመጠበቅ ላይ ያሉ ማጽደቆች",
+    awaitingAction:"እርምጃዎን በመጠበቅ ላይ", viewAll:"ሁሉንም ይመልከቱ →",
+    loading:"በመጫን ላይ…", noDataYet:"እስካሁን መረጃ የለም",
+    noActivity:"በአካባቢዎ እንቅስቃሴ የለም",
+    nothingPending:"በመጠበቅ ላይ ያለ ነገር የለም",
+    error:"ስህተት", noData:"መረጃ የለም",
+    regions:"ክልሎች", regionalAdmins:"የክልል አስተዳዳሪዎች",
+    clusters:"ክላስተሮች", woredasCities:"ወረዳዎች / ከተሞች",
+    employees:"ሰራተኞች", payrollThisMonth:"ደመወዝ (በዚህ ወር)",
+    pendingLeave:"በመጠበቅ ላይ ያለ ፈቃድ",
+    clusterDirectorates:"የክላስተር ዳይሬክቶሬቶች",
+    totalEmployees:"ጠቅላላ ሰራተኞች", payrollHeadcount:"የደመወዝ ቁጥር",
+    pendingPayments:"በመጠበቅ ላይ ያሉ ክፍያዎች",
+    budgetUtilisation:"የበጀት አጠቃቀም",
+    myDirectorateStaff:"የእኔ ዳይሬክቶሬት ሰራተኞች",
+    myWorkPlans:"የእኔ የሥራ እቅዶች",
+    myWorkPlanDays:"የእኔ የሥራ እቅድ ቀናት",
+    presentToday:"ዛሬ የተገኙ", pendingItems:"በመጠበቅ ላይ ያሉ ነገሮች",
+    officesInMyWoreda:"በእኔ ወረዳ ያሉ ቢሮዎች",
+    staffInMyWoreda:"በእኔ ወረዳ ያሉ ሰራተኞች",
+    myTeam:"የእኔ ቡድን", onLeave:"ፈቃድ ላይ",
+    myAttendanceMonth:"የእኔ መገኘት (ወር)",
+    myLeaveRequests:"የእኔ የፈቃድ ጥያቄዎች",
+    myPendingRequests:"በመጠበቅ ላይ ያሉ ጥያቄዎቼ",
+    latestPayslip:"የቅርብ ጊዜ የደመወዝ ወረቀት",
+    allRegionsN:"ሁሉም {n} ክልሎች", fullNationalCoverage:"ሙሉ ብሔራዊ ሽፋን",
+    yourRegion:"የእርስዎ ክልል", regionalDirectorates:"የክልል ዳይሬክቶሬቶች",
+    regionLevelDepartments:"የክልል ደረጃ ክፍሎች",
+    clusterDirectoratesCard:"የክላስተር ዳይሬክቶሬቶች",
+    clusterLevelDepartments:"የክላስተር ደረጃ ክፍሎች",
+    administrativeClusters:"የአስተዳደር ክላስተሮች",
+    acrossAllClusters:"በሁሉም ክላስተሮች ውስጥ",
+    governmentOffices:"የመንግስት ቢሮዎች",
+    totalStaff:"ጠቅላላ ሰራተኞች", allDirectorates:"ሁሉም ዳይሬክቶሬቶች",
+    role_super_admin:"ዋና አስተዳዳሪ", role_hrm:"ብሔራዊ የሰው ኃይል",
+    role_finance:"ብሔራዊ ፋይናንስ",
+    role_regional_admin:"የክልል አስተዳዳሪ", role_regional_hrm:"የክልል ሰው ኃይል",
+    role_regional_finance:"የክልል ፋይናንስ",
+    role_directorate:"የክልል ዳይሬክቶሬት",
+    role_admin:"የክላስተር አስተዳዳሪ", role_cluster_hrm:"የክላስተር ሰው ኃይል",
+    role_cluster_finance:"የክላስተር ፋይናንስ",
+    role_cluster_directorate:"የክላስተር ዳይሬክቶሬት",
+    role_woreda_admin:"የወረዳ አስተዳዳሪ", role_woreda_hrm:"የወረዳ ሰው ኃይል",
+    role_woreda_finance:"የወረዳ ፋይናንስ", role_woreda_city:"ወረዳ / ከተማ",
+    role_manager:"ሥራ አስኪያጅ", role_team_leader:"የቡድን መሪ", role_employee:"ሰራተኛ",
+    fullSystemAllRegions:"ሙሉ ስርዓት — ሁሉም ክልሎች",
+    nationalHR:"ብሔራዊ HR — በድርጅቱ ሁሉ",
+    nationalFinance:"ብሔራዊ ፋይናንስ — በድርጅቱ ሁሉ",
+    regionalAdmin:"የክልል አስተዳዳሪ", regionalHR:"የክልል ሰው ኃይል",
+    regionalFinance:"የክልል ፋይናንስ", clusterAdmin:"የክላስተር አስተዳዳሪ",
+    clusterHR:"የክላስተር ሰው ኃይል", clusterFinance:"የክላስተር ፋይናንስ",
+    woredaAdmin:"የወረዳ አስተዳዳሪ", woredaHR:"የወረዳ ሰው ኃይል",
+    woredaFinance:"የወረዳ ፋይናንስ", woredaCity:"ወረዳ / ከተማ",
+    manager:"ሥራ አስኪያጅ", teamLeader:"የቡድን መሪ", employee:"ሰራተኛ",
+    allRegions:"ሁሉም ክልሎች", hrOrgWide:"HR — በድርጅቱ ሁሉ",
+    addOffice:"ቢሮ ጨምር", addDirectorate:"ዳይሬክቶሬት ጨምር",
+    addCluster:"ክላስተር ጨምር", addPerson:"ሰው ጨምር",
+    runPayroll:"ደመወዝ አስኪድ", requestLeave:"ፈቃድ ጠይቅ",
+    addRegion:"ክልል ጨምር", addStaff:"ሰራተኛ ጨምር", reviewLeave:"ፈቃድ ገምግም",
+    budgets:"በጀቶች", myPayslip:"የእኔ የደመወዝ ወረቀት",
+    teamApprovals:"የቡድን ማጽደቆች", clusterApprovals:"የክላስተር ማጽደቆች",
+    regionApprovals:"የክልል ማጽደቆች",
+    directorateApprovals:"የዳይሬክቶሬት ማጽደቆች",
+    woredaApprovals:"የወረዳ ማጽደቆች",
+    budgetBreakdown:"የበጀት ዝርዝር",
+    allocatedVsSpent:"የተመደበ vs የወጣ",
+    utilisation:"አጠቃቀም", noBudgetsDefined:"በጀቶች አልተገለጹም",
+    present:"ተገኝቷል", couldNotLoad:"መገኘትን መጫን አልተቻለም",
+    mon:"ሰኞ", tue:"ማክሰ", wed:"ረቡ", thu:"ሐሙ", fri:"ዓርብ", sat:"ቅዳሜ", sun:"እሁድ",
+    jan:"ጃን", feb:"ፌብ", mar:"ማርች", apr:"ኤፕሪ", may:"ሜይ", jun:"ጁን",
+    jul:"ጁላይ", aug:"ኦገስ", sep:"ሴፕ", oct:"ኦክቶ", nov:"ኖቬ", dec:"ዲሴ",
+    joinedAs:"ተቀላቅሏል", requestedLeave:"ፈቃድ ጠይቋል",
+    createdBy:"ፈጠረ", day:"ቀን"
   }
 };
 
@@ -847,7 +881,6 @@ function t(key, vars) {
   if (vars) Object.keys(vars).forEach(k => { s = s.replace("{"+k+"}", vars[k]); });
   return s;
 }
-
 function applyStaticI18n() {
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
@@ -858,6 +891,9 @@ function applyStaticI18n() {
   const fc = document.getElementById("footer-copy"); if (fc) fc.textContent = t("footerCopy");
 }
 
+/* ============================================================
+   FIREBASE
+   ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyASE2f6DVivrH7koQXAFZeOrj6Wng45Uq4",
   authDomain: "civil-service-system-f2d46.firebaseapp.com",
@@ -941,14 +977,26 @@ document.addEventListener("click", async (e) => {
 });
 
 /* ============================================================
-   ROLE CONSTANTS
+   ROLE LABELS
    ============================================================ */
 const ROLE_LABELS = {
-  super_admin: "role_super_admin", regional_admin: "role_regional_admin",
-  admin: "role_admin", directorate: "role_directorate",
-  cluster_directorate: "role_cluster_directorate", woreda_city: "role_woreda_city",
-  hrm: "role_hrm", finance: "role_finance",
-  manager: "role_manager", team_leader: "role_team_leader", employee: "role_employee"
+  super_admin:"role_super_admin",
+  hrm:"role_hrm", finance:"role_finance",
+  regional_admin:"role_regional_admin",
+  regional_hrm:"role_regional_hrm",
+  regional_finance:"role_regional_finance",
+  directorate:"role_directorate",
+  admin:"role_admin",
+  cluster_hrm:"role_cluster_hrm",
+  cluster_finance:"role_cluster_finance",
+  cluster_directorate:"role_cluster_directorate",
+  woreda_admin:"role_woreda_admin",
+  woreda_hrm:"role_woreda_hrm",
+  woreda_finance:"role_woreda_finance",
+  woreda_city:"role_woreda_city",
+  manager:"role_manager",
+  team_leader:"role_team_leader",
+  employee:"role_employee"
 };
 const roleLabel = (r) => {
   const key = ROLE_LABELS[r];
@@ -956,55 +1004,103 @@ const roleLabel = (r) => {
   return (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
 };
 
-const isSuper = () => S?.role === "super_admin";
-const isRegionalAdmin = () => S?.role === "regional_admin";
-const isClusterAdmin = () => S?.role === "admin";
-const isHRM = () => S?.role === "hrm";
-const isFinance = () => S?.role === "finance";
-const isDirectorate = () => S?.role === "directorate" || S?.role === "cluster_directorate";
-const isWoredaCity = () => S?.role === "woreda_city";
-const isManager = () => S?.role === "manager";
-const isTeamLeader = () => S?.role === "team_leader";
-const isEmployee = () => S?.role === "employee";
+/* ============================================================
+   ROLE PREDICATES
+   ============================================================ */
+const isSuper           = () => S?.role === "super_admin";
+const isNationalHR      = () => S?.role === "hrm";
+const isNationalFinance = () => S?.role === "finance";
+
+const isRegionalAdmin   = () => S?.role === "regional_admin";
+const isRegionalHR      = () => S?.role === "regional_hrm";
+const isRegionalFinance = () => S?.role === "regional_finance";
+const isRegionalDirectorate = () => S?.role === "directorate";
+
+const isClusterAdmin    = () => S?.role === "admin";
+const isClusterHR       = () => S?.role === "cluster_hrm";
+const isClusterFinance  = () => S?.role === "cluster_finance";
+const isClusterDirectorate = () => S?.role === "cluster_directorate";
+
+const isWoredaAdmin     = () => S?.role === "woreda_admin";
+const isWoredaHR        = () => S?.role === "woreda_hrm";
+const isWoredaFinance   = () => S?.role === "woreda_finance";
+const isWoredaCity      = () => S?.role === "woreda_city";
+
+const isManager         = () => S?.role === "manager";
+const isTeamLeader      = () => S?.role === "team_leader";
+const isEmployee        = () => S?.role === "employee";
+
+const isHR              = () => isNationalHR() || isRegionalHR() || isClusterHR() || isWoredaHR();
+const isFinance         = () => isNationalFinance() || isRegionalFinance() || isClusterFinance() || isWoredaFinance();
+const isDirectorate     = () => isRegionalDirectorate() || isClusterDirectorate() || isWoredaCity();
+
+const isAnyAdmin        = () => isSuper() || isRegionalAdmin() || isClusterAdmin() || isWoredaAdmin();
+const isAnyNonSelf      = () => !isEmployee();
 
 /* ============================================================
-   SCOPE HELPERS
+   SCOPE CONSTRAINTS — the single source of truth
    ============================================================ */
 function scopeConstraints() {
   if (!S) return [];
-  if (isSuper())    return [];
-  if (isHRM())      return [];
-  if (isRegionalAdmin()) return [where("regionCode", "==", S.regionCode)];
-  if (isClusterAdmin() || S.role === "cluster_directorate") {
-    if (S.clusterId) return [where("clusterId", "==", S.clusterId)];
-    return [where("regionCode", "==", S.regionCode)];
+  const role = S.role;
+
+  // national — all regions
+  if (role === "super_admin" || role === "hrm" || role === "finance") return [];
+
+  // regional
+  if (role === "regional_admin" || role === "regional_hrm" ||
+      role === "regional_finance" || role === "directorate") {
+    if (!S.regionCode) return [];
+    const c = [where("regionCode", "==", S.regionCode)];
+    if (role === "directorate") {
+      if (S.officeId)          c.push(where("officeId",     "==", S.officeId));
+      else if (S.departmentId) c.push(where("departmentId", "==", S.departmentId));
+    }
+    return c;
   }
-  if (isDirectorate()) {
-    if (S.officeId)       return [where("officeId",     "==", S.officeId)];
-    if (S.departmentId)   return [where("departmentId", "==", S.departmentId)];
-    if (S.clusterId)      return [where("clusterId",    "==", S.clusterId)];
-    return [where("regionCode", "==", S.regionCode)];
+
+  // cluster / zone
+  if (role === "admin" || role === "cluster_hrm" ||
+      role === "cluster_finance" || role === "cluster_directorate") {
+    const c = [];
+    if (S.clusterId)      c.push(where("clusterId", "==", S.clusterId));
+    else if (S.regionCode) c.push(where("regionCode","==", S.regionCode));
+    if (role === "cluster_directorate") {
+      if (S.officeId)          c.push(where("officeId",     "==", S.officeId));
+      else if (S.departmentId) c.push(where("departmentId", "==", S.departmentId));
+    }
+    return c;
   }
-  if (isWoredaCity()) {
-    if (S.officeId)      return [where("officeId",   "==", S.officeId)];
-    if (S.woredaCode)    return [where("woredaCode", "==", S.woredaCode)];
-    return [where("clusterId", "==", S.clusterId)];
+
+  // woreda
+  if (role === "woreda_admin" || role === "woreda_hrm" ||
+      role === "woreda_finance" || role === "woreda_city") {
+    const c = [];
+    if (S.officeId)       c.push(where("officeId",   "==", S.officeId));
+    else if (S.woredaCode) c.push(where("woredaCode","==", S.woredaCode));
+    else if (S.clusterId)  c.push(where("clusterId", "==", S.clusterId));
+    return c;
   }
-  if (isManager()) {
-    if (S.officeId)      return [where("officeId",     "==", S.officeId)];
-    if (S.departmentId)  return [where("departmentId", "==", S.departmentId)];
-    if (S.woredaCode)    return [where("woredaCode",   "==", S.woredaCode)];
-    return [where("clusterId", "==", S.clusterId)];
+
+  // manager
+  if (role === "manager") {
+    if (S.officeId)     return [where("officeId",     "==", S.officeId)];
+    if (S.departmentId) return [where("departmentId", "==", S.departmentId)];
+    if (S.woredaCode)   return [where("woredaCode",   "==", S.woredaCode)];
+    if (S.clusterId)    return [where("clusterId",    "==", S.clusterId)];
+    return [];
   }
-  // ★ FIXED: team leaders are scoped to their office/department/woreda,
-  //   not to their own empId (which would show only their own record).
-  if (isTeamLeader()) {
-    if (S.officeId)      return [where("officeId",     "==", S.officeId)];
-    if (S.departmentId)  return [where("departmentId", "==", S.departmentId)];
-    if (S.woredaCode)    return [where("woredaCode",   "==", S.woredaCode)];
-    return [where("clusterId", "==", S.clusterId)];
+
+  // team leader
+  if (role === "team_leader") {
+    if (S.officeId)     return [where("officeId",     "==", S.officeId)];
+    if (S.departmentId) return [where("departmentId", "==", S.departmentId)];
+    if (S.woredaCode)   return [where("woredaCode",   "==", S.woredaCode)];
+    return [];
   }
-  return [where("empId", "==", S.empId)];
+
+  // employee — self only
+  return S.empId ? [where("empId", "==", S.empId)] : [];
 }
 
 function scopedQuery(collName, extra = []) {
@@ -1012,7 +1108,6 @@ function scopedQuery(collName, extra = []) {
   const constraints = [...scopeConstraints(), ...extra];
   return constraints.length ? query(base, ...constraints) : base;
 }
-
 async function scopedCount(collName, extra = []) {
   try {
     const snap = await getCountFromServer(scopedQuery(collName, extra));
@@ -1024,13 +1119,12 @@ async function scopedCount(collName, extra = []) {
 }
 
 /* ============================================================
-   ATTENDANCE COUNTERS (nested path, client-side date filter)
+   ATTENDANCE COUNTERS
    ============================================================ */
 async function countAttendanceForDate(isoDate, statuses = ["present","late","field"]) {
   const ym = isoDate.slice(0,7);
   const base = collection(db, "attendance", ym, "records");
-  const constraints = [];
-  scopeConstraints().forEach(c => constraints.push(c));
+  const constraints = [...scopeConstraints()];
   try {
     const q = constraints.length ? query(base, ...constraints) : base;
     const snap = await getDocs(q);
@@ -1041,14 +1135,12 @@ async function countAttendanceForDate(isoDate, statuses = ["present","late","fie
       if (!statuses.includes(x.status)) return;
       n++;
     });
-    console.log("[att-count]", isoDate, "ym=", ym, "constraints=", constraints.length, "->", n);
     return n;
   } catch (e) {
     console.warn("[att-count] FAILED", isoDate, e.code, e.message);
     return 0;
   }
 }
-
 async function countMyMonthAttendance(empId) {
   if (!empId) return 0;
   const ym = new Date().toISOString().slice(0,7);
@@ -1063,15 +1155,8 @@ async function countMyMonthAttendance(empId) {
       n++;
     });
     return n;
-  } catch (e) {
-    console.warn("[my-att]", e.code);
-    return 0;
-  }
+  } catch (e) { console.warn("[my-att]", e.code); return 0; }
 }
-
-/* ============================================================
-   MY WORK PLAN DAYS
-   ============================================================ */
 async function countMyWorkPlanDays(uid) {
   if (!uid) return 0;
   let n = 0;
@@ -1083,9 +1168,7 @@ async function countMyWorkPlanDays(uid) {
         p.dayIndex.forEach(day => { if (day.assignedTo === uid) n++; });
       }
     });
-  } catch (e) {
-    console.warn("[my-plan-days]", e.code);
-  }
+  } catch (e) { console.warn("[my-plan-days]", e.code); }
   return n;
 }
 
@@ -1125,40 +1208,48 @@ const ICONS = {
 };
 
 /* ============================================================
-   NAV
+   NAV — every role gets a tailored sidebar
    ============================================================ */
 const NAV = [
   { section:"overview", items:[
     { key:"dashboard", labelKey:"dashboard", href:"dashboard.html", icon:"grid", roles:["*"] }
   ]},
   { section:"organization", items:[
-    { key:"users",       labelKey:"usersStaff",   href:"users.html",       icon:"users",    roles:["super_admin","regional_admin","admin","hrm"] },
-    { key:"departments", labelKey:"directorates", href:"departments.html", icon:"org",      roles:["super_admin","regional_admin","admin","hrm","manager","directorate","cluster_directorate","team_leader"] }
+    { key:"users", labelKey:"usersStaff", href:"users.html", icon:"users",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm"] },
+    { key:"departments", labelKey:"directorates", href:"departments.html", icon:"org",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","directorate","admin","cluster_hrm","cluster_directorate","woreda_admin","woreda_hrm","woreda_city","manager","team_leader"] }
   ]},
   { section:"workPlansSection", items:[
-    // ★ FIXED: manager, team_leader and employee can now reach workplans.html
-    { key:"workplans",   labelKey:"workPlans",   href:"workplans.html",   icon:"fileText",
-      roles:["super_admin","regional_admin","directorate","admin",
-             "cluster_directorate","woreda_city","manager","team_leader","employee"] }
+    { key:"workplans", labelKey:"workPlans", href:"workplans.html", icon:"fileText",
+      roles:["super_admin","hrm","finance","regional_admin","regional_hrm","regional_finance","directorate","admin","cluster_hrm","cluster_finance","cluster_directorate","woreda_admin","woreda_hrm","woreda_finance","woreda_city","manager","team_leader","employee"] }
   ]},
   { section:"humanResources", items:[
-    { key:"recruitment", labelKey:"recruitment", href:"recruitment.html", icon:"userPlus", roles:["super_admin","regional_admin","hrm","admin"] },
-    { key:"training",    labelKey:"training",    href:"training.html",    icon:"book",     roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] },
-    { key:"performance", labelKey:"performance", href:"performance.html", icon:"target",   roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] }
+    { key:"recruitment", labelKey:"recruitment", href:"recruitment.html", icon:"userPlus",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm"] },
+    { key:"training", labelKey:"training", href:"training.html", icon:"book",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] },
+    { key:"performance", labelKey:"performance", href:"performance.html", icon:"target",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] }
   ]},
   { section:"operations", items:[
-    { key:"attendance",  labelKey:"attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] },
-    { key:"leave",       labelKey:"leave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city","team_leader"] }
+    { key:"attendance", labelKey:"attendance", href:"attendance.html", icon:"clock",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] },
+    { key:"leave", labelKey:"leave", href:"leave.html", icon:"calendar",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] }
   ]},
   { section:"finance", items:[
-    { key:"payroll",     labelKey:"payroll",     href:"payroll.html",  icon:"wallet", roles:["super_admin","regional_admin","finance","admin"] },
-    { key:"budget",      labelKey:"budget",      href:"budget.html",   icon:"chart",  roles:["super_admin","regional_admin","finance"] }
+    { key:"payroll", labelKey:"payroll", href:"payroll.html", icon:"wallet",
+      roles:["super_admin","finance","regional_admin","regional_finance","admin","cluster_finance","woreda_admin","woreda_finance"] },
+    { key:"budget", labelKey:"budget", href:"budget.html", icon:"chart",
+      roles:["super_admin","finance","regional_admin","regional_finance","admin","cluster_finance","woreda_admin","woreda_finance"] }
   ]},
   { section:"administration", items:[
-    { key:"offices",       labelKey:"offices",       href:"offices.html",       icon:"building", roles:["super_admin","regional_admin","admin"] },
-    { key:"reports",       labelKey:"reports",       href:"reports.html",       icon:"fileText", roles:["*"] },
-    { key:"notifications", labelKey:"notifications", href:"notifications.html", icon:"bell",     roles:["*"] },
-    { key:"settings",      labelKey:"settings",      href:"settings.html",      icon:"settings", roles:["*"] }
+    { key:"offices", labelKey:"offices", href:"offices.html", icon:"building",
+      roles:["super_admin","regional_admin","admin","woreda_admin"] },
+    { key:"reports", labelKey:"reports", href:"reports.html", icon:"fileText", roles:["*"] },
+    { key:"notifications", labelKey:"notifications", href:"notifications.html", icon:"bell", roles:["*"] },
+    { key:"settings", labelKey:"settings", href:"settings.html", icon:"settings", roles:["*"] }
   ]}
 ];
 
@@ -1214,52 +1305,69 @@ function renderUser() {
 }
 
 /* ============================================================
-   SCOPE BADGE
+   SCOPE BADGE — every role has its own
    ============================================================ */
 function renderScopeBadge() {
   const el = document.getElementById("scope-badge");
-  if (isSuper()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--super">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${t("fullSystemAllRegions")}
-    </span>`;
-  } else if (isRegionalAdmin()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--regional">
-      <svg viewBox="0 0 24 24">${ICONS.pin}</svg> ${t("regionalAdmin")} · ${escapeHtml(regionLabel(S.regionCode))}
-    </span>`;
-  } else if (isHRM()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--cluster">
-      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("hrManagerOrgWide")}
-    </span>`;
-  } else if (isClusterAdmin()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--cluster">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${t("clusterAdmin")} · ${escapeHtml(S.clusterName || "—")}
-    </span>`;
-  } else if (isDirectorate()) {
-    const parts = [];
-    if (S.departmentName) parts.push(S.departmentName);
-    if (S.officeName)     parts.push(S.officeName);
-    if (!parts.length && S.clusterName) parts.push(S.clusterName);
-    el.innerHTML = `<span class="scope-badge scope-badge--office">
-      <svg viewBox="0 0 24 24">${ICONS.org}</svg> ${escapeHtml(roleLabel(S.role))} · ${escapeHtml(parts.join(" · ") || "—")}
-    </span>`;
-  } else if (isWoredaCity()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--office">
-      <svg viewBox="0 0 24 24">${ICONS.building}</svg> ${t("woredaCity")} · ${escapeHtml(S.woredaName || "—")}
-    </span>`;
-  } else if (isManager()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--office">
-      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("manager")} · ${escapeHtml(S.officeName || S.departmentName || "—")}
-    </span>`;
-  } else if (isTeamLeader()) {
-    // ★ FIXED: team leaders get their own badge instead of "Employee · …"
-    el.innerHTML = `<span class="scope-badge scope-badge--office">
-      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${escapeHtml(roleLabel("team_leader"))} · ${escapeHtml(S.departmentName || S.officeName || "—")}
-    </span>`;
+  const role = S.role;
+  let html = "";
+
+  if (role === "super_admin") {
+    html = `<span class="scope-badge scope-badge--super">
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${t("fullSystemAllRegions")}</span>`;
+  } else if (role === "hrm") {
+    html = `<span class="scope-badge scope-badge--super">
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("nationalHR")}</span>`;
+  } else if (role === "finance") {
+    html = `<span class="scope-badge scope-badge--super">
+      <svg viewBox="0 0 24 24">${ICONS.wallet}</svg> ${t("nationalFinance")}</span>`;
+  } else if (role === "regional_admin") {
+    html = `<span class="scope-badge scope-badge--regional">
+      <svg viewBox="0 0 24 24">${ICONS.pin}</svg> ${t("regionalAdmin")} · ${escapeHtml(regionLabel(S.regionCode))}</span>`;
+  } else if (role === "regional_hrm") {
+    html = `<span class="scope-badge scope-badge--regional">
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("regionalHR")} · ${escapeHtml(regionLabel(S.regionCode))}</span>`;
+  } else if (role === "regional_finance") {
+    html = `<span class="scope-badge scope-badge--regional">
+      <svg viewBox="0 0 24 24">${ICONS.wallet}</svg> ${t("regionalFinance")} · ${escapeHtml(regionLabel(S.regionCode))}</span>`;
+  } else if (role === "directorate") {
+    html = `<span class="scope-badge scope-badge--regional">
+      <svg viewBox="0 0 24 24">${ICONS.org}</svg> ${t("role_directorate")} · ${escapeHtml(S.departmentName || S.officeName || "—")}</span>`;
+  } else if (role === "admin") {
+    html = `<span class="scope-badge scope-badge--cluster">
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${t("clusterAdmin")} · ${escapeHtml(S.clusterName || "—")}</span>`;
+  } else if (role === "cluster_hrm") {
+    html = `<span class="scope-badge scope-badge--cluster">
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("clusterHR")} · ${escapeHtml(S.clusterName || "—")}</span>`;
+  } else if (role === "cluster_finance") {
+    html = `<span class="scope-badge scope-badge--cluster">
+      <svg viewBox="0 0 24 24">${ICONS.wallet}</svg> ${t("clusterFinance")} · ${escapeHtml(S.clusterName || "—")}</span>`;
+  } else if (role === "cluster_directorate") {
+    html = `<span class="scope-badge scope-badge--cluster">
+      <svg viewBox="0 0 24 24">${ICONS.org}</svg> ${t("role_cluster_directorate")} · ${escapeHtml(S.departmentName || "—")}</span>`;
+  } else if (role === "woreda_admin") {
+    html = `<span class="scope-badge scope-badge--office">
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${t("woredaAdmin")} · ${escapeHtml(S.woredaName || "—")}</span>`;
+  } else if (role === "woreda_hrm") {
+    html = `<span class="scope-badge scope-badge--office">
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("woredaHR")} · ${escapeHtml(S.woredaName || "—")}</span>`;
+  } else if (role === "woreda_finance") {
+    html = `<span class="scope-badge scope-badge--office">
+      <svg viewBox="0 0 24 24">${ICONS.wallet}</svg> ${t("woredaFinance")} · ${escapeHtml(S.woredaName || "—")}</span>`;
+  } else if (role === "woreda_city") {
+    html = `<span class="scope-badge scope-badge--office">
+      <svg viewBox="0 0 24 24">${ICONS.building}</svg> ${t("woredaCity")} · ${escapeHtml(S.woredaName || "—")}</span>`;
+  } else if (role === "manager") {
+    html = `<span class="scope-badge scope-badge--office">
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("manager")} · ${escapeHtml(S.officeName || S.departmentName || "—")}</span>`;
+  } else if (role === "team_leader") {
+    html = `<span class="scope-badge scope-badge--office">
+      <svg viewBox="0 0 24 24">${ICONS.users}</svg> ${t("teamLeader")} · ${escapeHtml(S.departmentName || S.officeName || "—")}</span>`;
   } else {
-    el.innerHTML = `<span class="scope-badge scope-badge--office">
-      <svg viewBox="0 0 24 24">${ICONS.user}</svg> ${t("employee")} · ${escapeHtml(S.officeName || S.departmentName || "—")}
-    </span>`;
+    html = `<span class="scope-badge scope-badge--office">
+      <svg viewBox="0 0 24 24">${ICONS.user}</svg> ${t("employee")} · ${escapeHtml(S.officeName || S.departmentName || "—")}</span>`;
   }
+  el.innerHTML = html;
 }
 
 /* ============================================================
@@ -1267,29 +1375,18 @@ function renderScopeBadge() {
    ============================================================ */
 function renderBreadcrumb() {
   const el = document.getElementById("breadcrumb");
-  const items = [];
-
-  if (isSuper()) {
+  if (isSuper() || isNationalHR() || isNationalFinance()) {
     el.innerHTML = `<span class="breadcrumb__item is-active">${t("allRegions")}</span>`;
     return;
   }
-  if (isHRM()) {
-    el.innerHTML = `<span class="breadcrumb__item is-active">${t("allRegions")}</span>
-      <span class="breadcrumb__arrow">›</span>
-      <span class="breadcrumb__item">${t("hrOrgWide")}</span>`;
-    return;
-  }
-
-  if (S.regionCode) items.push({ label: regionLabel(S.regionCode) });
-  if (S.clusterName) items.push({ label: S.clusterName });
-  if (S.woredaName) items.push({ label: S.woredaName });
-  if (S.officeName) items.push({ label: S.officeName });
+  const items = [];
+  if (S.regionCode)     items.push({ label: regionLabel(S.regionCode) });
+  if (S.clusterName)    items.push({ label: S.clusterName });
+  if (S.woredaName)     items.push({ label: S.woredaName });
+  if (S.officeName)     items.push({ label: S.officeName });
   if (S.departmentName) items.push({ label: S.departmentName });
 
-  if (!items.length) {
-    el.style.display = "none";
-    return;
-  }
+  if (!items.length) { el.style.display = "none"; return; }
   el.style.display = "";
   el.innerHTML = items.map((it, i) => `
     <span class="breadcrumb__item ${i === items.length-1 ? "is-active" : ""}">${escapeHtml(it.label)}</span>
@@ -1298,31 +1395,64 @@ function renderBreadcrumb() {
 }
 
 /* ============================================================
-   HEADER ACTIONS
+   HEAD ACTIONS — every role gets its own CTA pair
    ============================================================ */
 function renderHeadActions() {
   const host = document.getElementById("head-actions");
   const btns = [];
-  if (isSuper()) {
-    btns.push({ labelKey:"addOffice", href:"offices.html", primary:true });
-    btns.push({ labelKey:"usersStaff", href:"users.html" });
-  } else if (isRegionalAdmin()) {
+  const role = S.role;
+
+  if (role === "super_admin") {
+    btns.push({ labelKey:"addOffice",   href:"offices.html",     primary:true });
+    btns.push({ labelKey:"usersStaff",  href:"users.html" });
+  } else if (role === "hrm") {
+    btns.push({ labelKey:"usersStaff",  href:"users.html",       primary:true });
+    btns.push({ labelKey:"reports",     href:"reports.html" });
+  } else if (role === "finance") {
+    btns.push({ labelKey:"runPayroll",  href:"payroll.html",     primary:true });
+    btns.push({ labelKey:"budget",      href:"budget.html" });
+  } else if (role === "regional_admin") {
     btns.push({ labelKey:"addDirectorate", href:"departments.html", primary:true });
-    btns.push({ labelKey:"addCluster", href:"offices.html" });
-  } else if (isClusterAdmin()) {
-    btns.push({ labelKey:"addPerson", href:"users.html", primary:true });
-    btns.push({ labelKey:"directorates", href:"departments.html" });
-  } else if (isHRM()) {
-    btns.push({ labelKey:"usersStaff", href:"users.html", primary:true });
-    btns.push({ labelKey:"reports", href:"reports.html" });
-  } else if (isFinance()) {
-    btns.push({ labelKey:"runPayroll", href:"payroll.html", primary:true });
-    btns.push({ labelKey:"budget", href:"budget.html" });
-  } else if (isDirectorate() || isWoredaCity() || isTeamLeader()) {
-    // ★ team leaders now get the "Work Plans" CTA
-    btns.push({ labelKey:"workPlans", href:"workplans.html", primary:true });
+    btns.push({ labelKey:"addCluster",     href:"offices.html" });
+  } else if (role === "regional_hrm") {
+    btns.push({ labelKey:"addStaff",    href:"users.html",       primary:true });
+    btns.push({ labelKey:"reviewLeave", href:"leave.html" });
+  } else if (role === "regional_finance") {
+    btns.push({ labelKey:"runPayroll",  href:"payroll.html",     primary:true });
+    btns.push({ labelKey:"budgets",     href:"budget.html" });
+  } else if (role === "directorate") {
+    btns.push({ labelKey:"workPlans",   href:"workplans.html",   primary:true });
+    btns.push({ labelKey:"attendance",  href:"attendance.html" });
+  } else if (role === "admin") {
+    btns.push({ labelKey:"addPerson",   href:"users.html",       primary:true });
+    btns.push({ labelKey:"directorates",href:"departments.html" });
+  } else if (role === "cluster_hrm") {
+    btns.push({ labelKey:"addStaff",    href:"users.html",       primary:true });
+    btns.push({ labelKey:"reviewLeave", href:"leave.html" });
+  } else if (role === "cluster_finance") {
+    btns.push({ labelKey:"runPayroll",  href:"payroll.html",     primary:true });
+    btns.push({ labelKey:"budgets",     href:"budget.html" });
+  } else if (role === "cluster_directorate") {
+    btns.push({ labelKey:"workPlans",   href:"workplans.html",   primary:true });
+    btns.push({ labelKey:"attendance",  href:"attendance.html" });
+  } else if (role === "woreda_admin") {
+    btns.push({ labelKey:"addPerson",   href:"users.html",       primary:true });
+    btns.push({ labelKey:"offices",     href:"offices.html" });
+  } else if (role === "woreda_hrm") {
+    btns.push({ labelKey:"addStaff",    href:"users.html",       primary:true });
+    btns.push({ labelKey:"reviewLeave", href:"leave.html" });
+  } else if (role === "woreda_finance") {
+    btns.push({ labelKey:"runPayroll",  href:"payroll.html",     primary:true });
+    btns.push({ labelKey:"budgets",     href:"budget.html" });
+  } else if (role === "woreda_city") {
+    btns.push({ labelKey:"workPlans",   href:"workplans.html",   primary:true });
+    btns.push({ labelKey:"attendance",  href:"attendance.html" });
+  } else if (role === "manager" || role === "team_leader") {
+    btns.push({ labelKey:"workPlans",   href:"workplans.html",   primary:true });
+    btns.push({ labelKey:"reviewLeave", href:"leave.html" });
   } else {
-    btns.push({ labelKey:"requestLeave", href:"leave.html", primary:true });
+    btns.push({ labelKey:"requestLeave",href:"leave.html",       primary:true });
+    btns.push({ labelKey:"myPayslip",   href:"payroll.html" });
   }
   host.innerHTML = btns.map(b => `
     <a class="btn ${b.primary ? "btn--primary" : ""} btn--sm" href="${b.href}">
@@ -1334,7 +1464,7 @@ function renderHeadActions() {
 /* ============================================================
    STATS
    ============================================================ */
-function statCard(id, labelKey, cls, iconKey, hint) {
+function statCard(id, labelKey, cls, iconKey) {
   return `
     <div class="stat stat--${cls}" data-stat="${id}">
       <div class="stat__head">
@@ -1342,7 +1472,6 @@ function statCard(id, labelKey, cls, iconKey, hint) {
         <div class="stat__icon"><svg viewBox="0 0 24 24">${ICONS[iconKey]}</svg></div>
       </div>
       <div class="stat__value" id="${id}">…</div>
-      ${hint ? `<div class="stat__hint">${hint}</div>` : ""}
     </div>`;
 }
 function setStat(id, value) {
@@ -1352,90 +1481,145 @@ function setStat(id, value) {
 
 async function renderStats() {
   const host = document.getElementById("stats");
+  const role = S.role;
   let cards = [];
 
-  if (isSuper()) {
+  if (role === "super_admin") {
     cards = [
-      { id:"s-regions",     labelKey:"regions",             icon:"pin",       color:"violet" },
-      { id:"s-regadmins",   labelKey:"regionalAdmins",      icon:"shield",    color:"gold" },
-      { id:"s-depts",       labelKey:"directorates",        icon:"org",       color:"teal" },
-      { id:"s-clusters",    labelKey:"clusters",            icon:"cluster",   color:"blue" },
-      { id:"s-woredas",     labelKey:"woredasCities",       icon:"pin",       color:"pink" },
-      { id:"s-offices",     labelKey:"offices",             icon:"building",  color:"green" },
-      { id:"s-emps",        labelKey:"employees",           icon:"users",     color:"blue" },
-      { id:"s-plans",       labelKey:"workPlans",           icon:"clipboard", color:"violet" }
+      { id:"s-regions",   labelKey:"regions",          icon:"pin",       color:"violet" },
+      { id:"s-regadmins", labelKey:"regionalAdmins",   icon:"shield",    color:"gold" },
+      { id:"s-depts",     labelKey:"directorates",     icon:"org",       color:"teal" },
+      { id:"s-clusters",  labelKey:"clusters",         icon:"cluster",   color:"blue" },
+      { id:"s-woredas",   labelKey:"woredasCities",    icon:"pin",       color:"pink" },
+      { id:"s-offices",   labelKey:"offices",          icon:"building",  color:"green" },
+      { id:"s-emps",      labelKey:"employees",        icon:"users",     color:"blue" },
+      { id:"s-plans",     labelKey:"workPlans",        icon:"clipboard", color:"violet" }
     ];
-  } else if (isRegionalAdmin()) {
+  } else if (role === "hrm") {
     cards = [
-      { id:"s-depts",       labelKey:"directorates",        icon:"org",       color:"teal" },
-      { id:"s-cldept",      labelKey:"clusterDirectorates", icon:"org",       color:"violet" },
-      { id:"s-clusters",    labelKey:"clusters",            icon:"cluster",   color:"blue" },
-      { id:"s-woredas",     labelKey:"woredasCities",       icon:"pin",       color:"pink" },
-      { id:"s-offices",     labelKey:"offices",             icon:"building",  color:"green" },
-      { id:"s-emps",        labelKey:"employees",           icon:"users",     color:"gold" },
-      { id:"s-plans",       labelKey:"workPlans",           icon:"clipboard", color:"violet" },
-      { id:"s-payroll",     labelKey:"payrollThisMonth",    icon:"wallet",    color:"red" }
+      { id:"s-emps",      labelKey:"totalEmployees",   icon:"users",     color:"green" },
+      { id:"s-depts",     labelKey:"directorates",     icon:"org",       color:"teal" },
+      { id:"s-clusters",  labelKey:"clusters",         icon:"cluster",   color:"blue" },
+      { id:"s-offices",   labelKey:"offices",          icon:"building",  color:"pink" },
+      { id:"s-pending",   labelKey:"pendingLeave",     icon:"clock",     color:"red" }
     ];
-  } else if (isClusterAdmin()) {
+  } else if (role === "finance") {
     cards = [
-      { id:"s-depts",       labelKey:"clusterDirectorates", icon:"org",       color:"violet" },
-      { id:"s-woredas",     labelKey:"woredasCities",       icon:"pin",       color:"pink" },
-      { id:"s-offices",     labelKey:"offices",             icon:"building",  color:"green" },
-      { id:"s-emps",        labelKey:"employees",           icon:"users",     color:"blue" },
-      { id:"s-plans",       labelKey:"workPlans",           icon:"clipboard", color:"teal" },
-      { id:"s-pending",     labelKey:"pendingLeave",        icon:"clock",     color:"red" }
+      { id:"s-payroll",   labelKey:"payrollThisMonth", icon:"wallet",    color:"gold" },
+      { id:"s-headcount", labelKey:"payrollHeadcount", icon:"users",     color:"blue" },
+      { id:"s-pending",   labelKey:"pendingPayments",  icon:"clock",     color:"red" },
+      { id:"s-budget",    labelKey:"budgetUtilisation",icon:"pieChart",  color:"violet" }
     ];
-  } else if (isHRM()) {
+  } else if (role === "regional_admin") {
     cards = [
-      { id:"s-emps",        labelKey:"totalEmployees",      icon:"users",     color:"green" },
-      { id:"s-depts",       labelKey:"directorates",        icon:"org",       color:"teal" },
-      { id:"s-clusters",    labelKey:"clusters",            icon:"cluster",   color:"blue" },
-      { id:"s-offices",     labelKey:"offices",             icon:"building",  color:"pink" },
-      { id:"s-pending",     labelKey:"pendingLeave",        icon:"clock",     color:"red" }
+      { id:"s-depts",     labelKey:"directorates",     icon:"org",       color:"teal" },
+      { id:"s-cldept",    labelKey:"clusterDirectorates", icon:"org",    color:"violet" },
+      { id:"s-clusters",  labelKey:"clusters",         icon:"cluster",   color:"blue" },
+      { id:"s-woredas",   labelKey:"woredasCities",    icon:"pin",       color:"pink" },
+      { id:"s-offices",   labelKey:"offices",          icon:"building",  color:"green" },
+      { id:"s-emps",      labelKey:"employees",        icon:"users",     color:"gold" },
+      { id:"s-plans",     labelKey:"workPlans",        icon:"clipboard", color:"violet" },
+      { id:"s-payroll",   labelKey:"payrollThisMonth", icon:"wallet",    color:"red" }
     ];
-  } else if (isFinance()) {
+  } else if (role === "regional_hrm") {
     cards = [
-      { id:"s-payroll",     labelKey:"payrollThisMonth",    icon:"wallet",    color:"gold" },
-      { id:"s-headcount",   labelKey:"payrollHeadcount",    icon:"users",     color:"blue" },
-      { id:"s-pending",     labelKey:"pendingPayments",     icon:"clock",     color:"red" },
-      { id:"s-budget",      labelKey:"budgetUtilisation",   icon:"pieChart",  color:"violet" }
+      { id:"s-emps",      labelKey:"totalEmployees",   icon:"users",     color:"green" },
+      { id:"s-depts",     labelKey:"directorates",     icon:"org",       color:"teal" },
+      { id:"s-clusters",  labelKey:"clusters",         icon:"cluster",   color:"blue" },
+      { id:"s-offices",   labelKey:"offices",          icon:"building",  color:"pink" },
+      { id:"s-pending",   labelKey:"pendingLeave",     icon:"clock",     color:"red" }
     ];
-  } else if (isDirectorate()) {
+  } else if (role === "regional_finance") {
     cards = [
-      { id:"s-dir-staff",   labelKey:"myDirectorateStaff",  icon:"users",     color:"blue" },
-      { id:"s-dir-plans",   labelKey:"myWorkPlans",         icon:"clipboard", color:"violet" },
-      { id:"s-dir-present", labelKey:"presentToday",        icon:"check",     color:"green" },
-      { id:"s-dir-pending", labelKey:"pendingItems",        icon:"clock",     color:"red" }
+      { id:"s-payroll",   labelKey:"payrollThisMonth", icon:"wallet",    color:"gold" },
+      { id:"s-headcount", labelKey:"payrollHeadcount", icon:"users",     color:"blue" },
+      { id:"s-pending",   labelKey:"pendingPayments",  icon:"clock",     color:"red" },
+      { id:"s-budget",    labelKey:"budgetUtilisation",icon:"pieChart",  color:"violet" }
     ];
-  } else if (isWoredaCity()) {
+  } else if (role === "directorate") {
     cards = [
-      { id:"s-wor-offices", labelKey:"officesInMyWoreda",   icon:"building",  color:"blue" },
-      { id:"s-wor-staff",   labelKey:"staffInMyWoreda",     icon:"users",     color:"green" },
-      { id:"s-wor-present", labelKey:"presentToday",        icon:"check",     color:"teal" },
-      { id:"s-wor-pending", labelKey:"pendingApprovals",    icon:"clock",     color:"red" }
+      { id:"s-dir-staff",  labelKey:"myDirectorateStaff", icon:"users",     color:"blue" },
+      { id:"s-dir-plans",  labelKey:"myWorkPlans",        icon:"clipboard", color:"violet" },
+      { id:"s-dir-present",labelKey:"presentToday",       icon:"check",     color:"green" },
+      { id:"s-dir-pending",labelKey:"pendingItems",       icon:"clock",     color:"red" }
     ];
-  } else if (isManager()) {
+  } else if (role === "admin") {
     cards = [
-      { id:"s-myteam",      labelKey:"myTeam",              icon:"users",     color:"blue" },
-      { id:"s-present",     labelKey:"presentToday",        icon:"check",     color:"green" },
-      { id:"s-onleave",     labelKey:"onLeave",             icon:"calendar",  color:"gold" },
-      { id:"s-pending",     labelKey:"pendingApprovals",    icon:"clock",     color:"red" }
+      { id:"s-depts",     labelKey:"clusterDirectorates", icon:"org",       color:"violet" },
+      { id:"s-woredas",   labelKey:"woredasCities",       icon:"pin",       color:"pink" },
+      { id:"s-offices",   labelKey:"offices",             icon:"building",  color:"green" },
+      { id:"s-emps",      labelKey:"employees",           icon:"users",     color:"blue" },
+      { id:"s-plans",     labelKey:"workPlans",           icon:"clipboard", color:"teal" },
+      { id:"s-pending",   labelKey:"pendingLeave",        icon:"clock",     color:"red" }
     ];
-  } else if (isTeamLeader()) {
-    // ★ FIXED: team leader card set — mirrors the manager set but scoped to their team
+  } else if (role === "cluster_hrm") {
     cards = [
-      { id:"s-tl-team",     labelKey:"myTeam",              icon:"users",     color:"blue" },
-      { id:"s-tl-plans",    labelKey:"myWorkPlans",         icon:"clipboard", color:"violet" },
-      { id:"s-tl-present",  labelKey:"presentToday",        icon:"check",     color:"green" },
-      { id:"s-tl-pending",  labelKey:"pendingApprovals",    icon:"clock",     color:"red" }
+      { id:"s-emps",      labelKey:"totalEmployees",   icon:"users",     color:"green" },
+      { id:"s-depts",     labelKey:"directorates",     icon:"org",       color:"teal" },
+      { id:"s-offices",   labelKey:"offices",          icon:"building",  color:"pink" },
+      { id:"s-pending",   labelKey:"pendingLeave",     icon:"clock",     color:"red" }
+    ];
+  } else if (role === "cluster_finance") {
+    cards = [
+      { id:"s-payroll",   labelKey:"payrollThisMonth", icon:"wallet",    color:"gold" },
+      { id:"s-headcount", labelKey:"payrollHeadcount", icon:"users",     color:"blue" },
+      { id:"s-pending",   labelKey:"pendingPayments",  icon:"clock",     color:"red" },
+      { id:"s-budget",    labelKey:"budgetUtilisation",icon:"pieChart",  color:"violet" }
+    ];
+  } else if (role === "cluster_directorate") {
+    cards = [
+      { id:"s-dir-staff",  labelKey:"myDirectorateStaff", icon:"users",     color:"blue" },
+      { id:"s-dir-plans",  labelKey:"myWorkPlans",        icon:"clipboard", color:"violet" },
+      { id:"s-dir-present",labelKey:"presentToday",       icon:"check",     color:"green" },
+      { id:"s-dir-pending",labelKey:"pendingItems",       icon:"clock",     color:"red" }
+    ];
+  } else if (role === "woreda_admin") {
+    cards = [
+      { id:"s-wor-offices", labelKey:"officesInMyWoreda", icon:"building",  color:"blue" },
+      { id:"s-wor-staff",   labelKey:"staffInMyWoreda",   icon:"users",     color:"green" },
+      { id:"s-plans",       labelKey:"workPlans",         icon:"clipboard", color:"violet" },
+      { id:"s-wor-pending", labelKey:"pendingApprovals",  icon:"clock",     color:"red" }
+    ];
+  } else if (role === "woreda_hrm") {
+    cards = [
+      { id:"s-emps",      labelKey:"totalEmployees",   icon:"users",     color:"green" },
+      { id:"s-wor-offices", labelKey:"officesInMyWoreda", icon:"building", color:"blue" },
+      { id:"s-pending",   labelKey:"pendingLeave",     icon:"clock",     color:"red" }
+    ];
+  } else if (role === "woreda_finance") {
+    cards = [
+      { id:"s-payroll",   labelKey:"payrollThisMonth", icon:"wallet",    color:"gold" },
+      { id:"s-headcount", labelKey:"payrollHeadcount", icon:"users",     color:"blue" },
+      { id:"s-pending",   labelKey:"pendingPayments",  icon:"clock",     color:"red" },
+      { id:"s-budget",    labelKey:"budgetUtilisation",icon:"pieChart",  color:"violet" }
+    ];
+  } else if (role === "woreda_city") {
+    cards = [
+      { id:"s-wor-offices", labelKey:"officesInMyWoreda", icon:"building",  color:"blue" },
+      { id:"s-wor-staff",   labelKey:"staffInMyWoreda",   icon:"users",     color:"green" },
+      { id:"s-wor-present", labelKey:"presentToday",      icon:"check",     color:"teal" },
+      { id:"s-wor-pending", labelKey:"pendingApprovals",  icon:"clock",     color:"red" }
+    ];
+  } else if (role === "manager") {
+    cards = [
+      { id:"s-myteam",  labelKey:"myTeam",           icon:"users",    color:"blue" },
+      { id:"s-present", labelKey:"presentToday",     icon:"check",    color:"green" },
+      { id:"s-onleave", labelKey:"onLeave",          icon:"calendar", color:"gold" },
+      { id:"s-pending", labelKey:"pendingApprovals", icon:"clock",    color:"red" }
+    ];
+  } else if (role === "team_leader") {
+    cards = [
+      { id:"s-tl-team",    labelKey:"myTeam",           icon:"users",     color:"blue" },
+      { id:"s-tl-plans",   labelKey:"myWorkPlans",      icon:"clipboard", color:"violet" },
+      { id:"s-tl-present", labelKey:"presentToday",     icon:"check",     color:"green" },
+      { id:"s-tl-pending", labelKey:"pendingApprovals", icon:"clock",     color:"red" }
     ];
   } else {
-    // Employee self-service — adds a "My Work Plan Days" card
     cards = [
-      { id:"s-myattend",    labelKey:"myAttendanceMonth",   icon:"check",     color:"green" },
-      { id:"s-myleave",     labelKey:"myLeaveRequests",     icon:"calendar",  color:"gold" },
-      { id:"s-mypending",   labelKey:"myPendingRequests",   icon:"clock",     color:"red" },
-      { id:"s-mydays",      labelKey:"myWorkPlanDays",      icon:"clipboard", color:"violet" }
+      { id:"s-myattend",  labelKey:"myAttendanceMonth", icon:"check",     color:"green" },
+      { id:"s-myleave",   labelKey:"myLeaveRequests",   icon:"calendar",  color:"gold" },
+      { id:"s-mypending", labelKey:"myPendingRequests", icon:"clock",     color:"red" },
+      { id:"s-mydays",    labelKey:"myWorkPlanDays",    icon:"clipboard", color:"violet" }
     ];
   }
 
@@ -1446,8 +1630,9 @@ async function renderStats() {
 async function loadStatValues() {
   const m = new Date().toISOString().slice(0,7);
   const today = new Date().toISOString().slice(0,10);
+  const role = S.role;
 
-  if (isSuper()) {
+  if (role === "super_admin") {
     setStat("s-regions", REGIONS.length);
     setStat("s-regadmins", await countUsersByRole("regional_admin"));
     setStat("s-depts", await scopedCount("departments"));
@@ -1455,54 +1640,12 @@ async function loadStatValues() {
     setStat("s-offices", await scopedCount("offices"));
     setStat("s-emps", await scopedCount("employees"));
     setStat("s-plans", await scopedCount("workplans"));
-    let woredasTotal = 0;
-    try {
-      const snap = await getDocs(collection(db, "clusters"));
-      snap.forEach(d => { woredasTotal += (d.data().woredas || []).length; });
-    } catch (e) {}
-    setStat("s-woredas", woredasTotal);
-    return;
-  }
-
-  if (isRegionalAdmin()) {
-    setStat("s-depts", await scopedCount("departments", [where("level","==","regional")]));
-    setStat("s-cldept", await scopedCount("departments", [where("level","==","cluster")]));
-    setStat("s-clusters", await scopedCount("clusters"));
-    let woredasTotal = 0;
-    try {
-      const snap = await getDocs(query(collection(db, "clusters"),
-        where("regionCode","==",S.regionCode)));
-      snap.forEach(d => { woredasTotal += (d.data().woredas || []).length; });
-    } catch (e) {}
-    setStat("s-woredas", woredasTotal);
-    setStat("s-offices", await scopedCount("offices"));
-    setStat("s-emps", await scopedCount("employees"));
-    setStat("s-plans", await scopedCount("workplans"));
-    try {
-      const snap = await getDocs(query(collection(db, "payrollRuns"),
-        where("month","==",m), where("regionCode","==",S.regionCode), limit(1)));
-      setStat("s-payroll", snap.empty ? "ETB 0" : money(snap.docs[0].data().totalAmount));
-    } catch (e) { setStat("s-payroll", "ETB 0"); }
-    return;
-  }
-
-  if (isClusterAdmin()) {
-    setStat("s-depts", await scopedCount("departments", [where("level","==","cluster")]));
     let w = 0;
-    try {
-      const snap = await getDocs(query(collection(db, "clusters"),
-        where("__name__","==",S.clusterId)));
-      if (!snap.empty) w = (snap.docs[0].data().woredas || []).length;
-    } catch (e) {}
+    try { (await getDocs(collection(db,"clusters"))).forEach(d => { w += (d.data().woredas||[]).length; }); } catch (e) {}
     setStat("s-woredas", w);
-    setStat("s-offices", await scopedCount("offices"));
-    setStat("s-emps", await scopedCount("employees"));
-    setStat("s-plans", await scopedCount("workplans"));
-    setStat("s-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
-
-  if (isHRM()) {
+  if (role === "hrm") {
     setStat("s-emps", await scopedCount("employees"));
     setStat("s-depts", await scopedCount("departments"));
     setStat("s-clusters", await scopedCount("clusters"));
@@ -1510,51 +1653,120 @@ async function loadStatValues() {
     setStat("s-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
-
-  if (isFinance()) {
+  if (role === "finance") {
     let amount = 0, headcount = 0, pending = 0;
     try {
-      const snap = await getDocs(query(collection(db, "payrollRuns"), where("month","==",m), limit(1)));
+      const snap = await getDocs(query(collection(db,"payrollRuns"), where("month","==",m), limit(1)));
       if (!snap.empty) {
         const p = snap.docs[0].data();
-        amount = p.totalAmount || 0;
-        headcount = p.headcount || 0;
-        pending = p.pending || 0;
+        amount = p.totalAmount || 0; headcount = p.headcount || 0; pending = p.pending || 0;
       }
     } catch (e) {}
     setStat("s-payroll", money(amount));
     setStat("s-headcount", headcount || await scopedCount("employees"));
     setStat("s-pending", pending);
-
     let alloc = 0, spent = 0;
     try {
-      const snap = await getDocs(collection(db, "budgets"));
-      snap.forEach(d => {
+      (await getDocs(collection(db,"budgets"))).forEach(d => {
         alloc += Number(d.data().allocated || 0);
         spent += Number(d.data().spent || 0);
       });
     } catch (e) {}
-    setStat("s-budget", alloc ? Math.round((spent / alloc) * 100) + "%" : "0%");
+    setStat("s-budget", alloc ? Math.round((spent/alloc)*100) + "%" : "0%");
     return;
   }
-
-  if (isDirectorate()) {
+  if (role === "regional_admin") {
+    setStat("s-depts",  await scopedCount("departments", [where("level","==","regional")]));
+    setStat("s-cldept", await scopedCount("departments", [where("level","==","cluster")]));
+    setStat("s-clusters", await scopedCount("clusters"));
+    let w = 0;
+    try {
+      (await getDocs(query(collection(db,"clusters"), where("regionCode","==",S.regionCode))))
+        .forEach(d => { w += (d.data().woredas||[]).length; });
+    } catch (e) {}
+    setStat("s-woredas", w);
+    setStat("s-offices", await scopedCount("offices"));
+    setStat("s-emps", await scopedCount("employees"));
+    setStat("s-plans", await scopedCount("workplans"));
+    try {
+      const snap = await getDocs(query(collection(db,"payrollRuns"),
+        where("month","==",m), where("regionCode","==",S.regionCode), limit(1)));
+      setStat("s-payroll", snap.empty ? "ETB 0" : money(snap.docs[0].data().totalAmount));
+    } catch (e) { setStat("s-payroll","ETB 0"); }
+    return;
+  }
+  if (role === "regional_hrm" || role === "cluster_hrm" || role === "woreda_hrm") {
+    setStat("s-emps", await scopedCount("employees"));
+    setStat("s-depts", await scopedCount("departments"));
+    setStat("s-clusters", await scopedCount("clusters"));
+    setStat("s-offices", await scopedCount("offices"));
+    if (document.getElementById("s-wor-offices")) setStat("s-wor-offices", await scopedCount("offices"));
+    setStat("s-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
+    return;
+  }
+  if (role === "regional_finance" || role === "cluster_finance" || role === "woreda_finance") {
+    let amount = 0, headcount = 0, pending = 0;
+    const extras = [];
+    if (role === "regional_finance") extras.push(where("regionCode","==",S.regionCode));
+    if (role === "cluster_finance")  extras.push(where("clusterId","==",S.clusterId));
+    if (role === "woreda_finance")   extras.push(where("woredaCode","==",S.woredaCode));
+    try {
+      const snap = await getDocs(query(collection(db,"payrollRuns"),
+        where("month","==",m), ...extras, limit(1)));
+      if (!snap.empty) {
+        const p = snap.docs[0].data();
+        amount = p.totalAmount || 0; headcount = p.headcount || 0; pending = p.pending || 0;
+      }
+    } catch (e) {}
+    setStat("s-payroll", money(amount));
+    setStat("s-headcount", headcount || await scopedCount("employees"));
+    setStat("s-pending", pending);
+    let alloc = 0, spent = 0;
+    try {
+      (await getDocs(scopedQuery("budgets"))).forEach(d => {
+        alloc += Number(d.data().allocated || 0);
+        spent += Number(d.data().spent || 0);
+      });
+    } catch (e) {}
+    setStat("s-budget", alloc ? Math.round((spent/alloc)*100) + "%" : "0%");
+    return;
+  }
+  if (role === "directorate" || role === "cluster_directorate") {
     setStat("s-dir-staff", await scopedCount("employees"));
     setStat("s-dir-plans", await scopedCount("workplans"));
     setStat("s-dir-present", await countAttendanceForDate(today));
     setStat("s-dir-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
-
-  if (isWoredaCity()) {
+  if (role === "admin") {
+    setStat("s-depts",  await scopedCount("departments", [where("level","==","cluster")]));
+    setStat("s-offices", await scopedCount("offices"));
+    setStat("s-emps", await scopedCount("employees"));
+    setStat("s-plans", await scopedCount("workplans"));
+    setStat("s-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
+    let w = 0;
+    try {
+      const snap = await getDocs(query(collection(db,"clusters"), where("__name__","==",S.clusterId)));
+      if (!snap.empty) w = (snap.docs[0].data().woredas||[]).length;
+    } catch (e) {}
+    setStat("s-woredas", w);
+    return;
+  }
+  if (role === "woreda_admin") {
+    setStat("s-wor-offices", await scopedCount("offices"));
+    setStat("s-wor-staff", await scopedCount("employees"));
+    setStat("s-plans", await scopedCount("workplans"));
+    setStat("s-wor-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
+    return;
+  }
+  if (role === "woreda_city") {
     setStat("s-wor-offices", await scopedCount("offices"));
     setStat("s-wor-staff", await scopedCount("employees"));
     setStat("s-wor-present", await countAttendanceForDate(today));
     setStat("s-wor-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
-
-  if (isManager()) {
+  if (role === "manager") {
     setStat("s-myteam", await scopedCount("employees"));
     setStat("s-present", await countAttendanceForDate(today));
     setStat("s-onleave", await countAttendanceForDate(today, ["leave"]));
@@ -1563,166 +1775,122 @@ async function loadStatValues() {
     ]));
     return;
   }
-
-  if (isTeamLeader()) {
-    // ★ FIXED: team leader stats scoped to their team (office/department/woreda)
-    setStat("s-tl-team",    await scopedCount("employees"));
-    setStat("s-tl-plans",   await scopedCount("workplans"));
+  if (role === "team_leader") {
+    setStat("s-tl-team", await scopedCount("employees"));
+    setStat("s-tl-plans", await scopedCount("workplans"));
     setStat("s-tl-present", await countAttendanceForDate(today));
     setStat("s-tl-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
-
-  // Employee self
+  // employee
   setStat("s-myattend", await countMyMonthAttendance(S.empId));
-  // ★ scopedCount already adds where("empId","==",S.empId) via scopeConstraints()
-  setStat("s-myleave",  await scopedCount("leaveRequests"));
+  setStat("s-myleave", await scopedCount("leaveRequests"));
   setStat("s-mypending", await scopedCount("leaveRequests", [where("status","==","pending")]));
-  setStat("s-mydays",   await countMyWorkPlanDays(S.uid));
+  setStat("s-mydays", await countMyWorkPlanDays(S.uid));
 }
 
 async function countUsersByRole(role) {
   try {
-    const snap = await getCountFromServer(query(collection(db, "users"), where("role","==",role)));
+    const snap = await getCountFromServer(query(collection(db,"users"), where("role","==",role)));
     return snap.data().count;
   } catch (e) { return 0; }
 }
 
 /* ============================================================
-   HIERARCHY OVERVIEW
+   HIERARCHY
    ============================================================ */
 async function renderHierarchy() {
   const sec = document.getElementById("hierarchy");
   const title = document.getElementById("hierarchy-title");
-  const host = document.getElementById("hierarchy");
+  const role = S.role;
 
-  if (!isSuper() && !isRegionalAdmin() && !isHRM()) {
-    sec.style.display = "none";
-    title.style.display = "none";
+  if (role !== "super_admin" && role !== "hrm" && role !== "regional_admin") {
+    sec.style.display = "none"; title.style.display = "none";
     return;
   }
-
-  sec.style.display = "";
-  title.style.display = "";
+  sec.style.display = ""; title.style.display = "";
 
   const cards = [];
 
-  let clusters = [];
-  try {
-    const q2 = isRegionalAdmin()
-      ? query(collection(db, "clusters"), where("regionCode","==",S.regionCode))
-      : collection(db, "clusters");
-    const snap = await getDocs(q2);
-    clusters = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch (e) { console.warn("[hierarchy clusters]", e); }
-
-  if (isSuper()) {
-    cards.push({
-      icon:"pin", cls:"violet",
-      name: t("allRegionsN", { n: REGIONS.length }),
-      meta: t("fullNationalCoverage"),
-      value: REGIONS.length,
-      href:"offices.html"
-    });
-  } else if (isRegionalAdmin()) {
-    cards.push({
-      icon:"pin", cls:"gold",
-      name: regionLabel(S.regionCode),
-      meta: t("yourRegion"),
-      value:"1",
-      href:"offices.html"
-    });
+  if (role === "super_admin") {
+    cards.push({ icon:"pin", cls:"violet",
+      name: t("allRegionsN", { n: REGIONS.length }), meta: t("fullNationalCoverage"),
+      value: REGIONS.length, href:"offices.html" });
+  } else if (role === "regional_admin") {
+    cards.push({ icon:"pin", cls:"gold",
+      name: regionLabel(S.regionCode), meta: t("yourRegion"),
+      value:"1", href:"offices.html" });
   }
 
   try {
-    const dq = isRegionalAdmin()
-      ? query(collection(db, "departments"), where("regionCode","==",S.regionCode), where("level","==","regional"))
-      : query(collection(db, "departments"), where("level","==","regional"));
+    const dq = role === "regional_admin"
+      ? query(collection(db,"departments"), where("regionCode","==",S.regionCode), where("level","==","regional"))
+      : query(collection(db,"departments"), where("level","==","regional"));
     const snap = await getDocs(dq);
-    cards.push({
-      icon:"org", cls:"violet",
-      name: t("regionalDirectorates"),
-      meta: t("regionLevelDepartments"),
-      value:snap.size,
-      href:"departments.html"
-    });
+    cards.push({ icon:"org", cls:"violet",
+      name: t("regionalDirectorates"), meta: t("regionLevelDepartments"),
+      value:snap.size, href:"departments.html" });
   } catch (e) {}
 
   try {
-    const dq = isRegionalAdmin()
-      ? query(collection(db, "departments"), where("regionCode","==",S.regionCode), where("level","==","cluster"))
-      : query(collection(db, "departments"), where("level","==","cluster"));
+    const dq = role === "regional_admin"
+      ? query(collection(db,"departments"), where("regionCode","==",S.regionCode), where("level","==","cluster"))
+      : query(collection(db,"departments"), where("level","==","cluster"));
     const snap = await getDocs(dq);
-    cards.push({
-      icon:"org", cls:"teal",
-      name: t("clusterDirectoratesCard"),
-      meta: t("clusterLevelDepartments"),
-      value:snap.size,
-      href:"departments.html"
-    });
+    cards.push({ icon:"org", cls:"teal",
+      name: t("clusterDirectoratesCard"), meta: t("clusterLevelDepartments"),
+      value:snap.size, href:"departments.html" });
   } catch (e) {}
 
-  cards.push({
-    icon:"cluster", cls:"blue",
-    name: t("clusters"),
-    meta: t("administrativeClusters"),
-    value:clusters.length,
-    href:"offices.html"
-  });
+  let clusters = [];
+  try {
+    const q2 = role === "regional_admin"
+      ? query(collection(db,"clusters"), where("regionCode","==",S.regionCode))
+      : collection(db,"clusters");
+    clusters = (await getDocs(q2)).docs.map(d => ({ id:d.id, ...d.data() }));
+  } catch (e) {}
 
-  let woredaTotal = 0;
-  clusters.forEach(c => woredaTotal += (c.woredas || []).length);
-  cards.push({
-    icon:"pin", cls:"pink",
-    name: t("woredasCities"),
-    meta: t("acrossAllClusters"),
-    value:woredaTotal,
-    href:"offices.html"
-  });
+  cards.push({ icon:"cluster", cls:"blue",
+    name: t("clusters"), meta: t("administrativeClusters"),
+    value:clusters.length, href:"offices.html" });
+
+  let wt = 0;
+  clusters.forEach(c => wt += (c.woredas||[]).length);
+  cards.push({ icon:"pin", cls:"pink",
+    name: t("woredasCities"), meta: t("acrossAllClusters"),
+    value:wt, href:"offices.html" });
 
   try {
-    const oq = isRegionalAdmin()
-      ? query(collection(db, "offices"), where("regionCode","==",S.regionCode))
-      : collection(db, "offices");
+    const oq = role === "regional_admin"
+      ? query(collection(db,"offices"), where("regionCode","==",S.regionCode))
+      : collection(db,"offices");
     const snap = await getDocs(oq);
-    cards.push({
-      icon:"building", cls:"green",
-      name: t("offices"),
-      meta: t("governmentOffices"),
-      value:snap.size,
-      href:"offices.html"
-    });
+    cards.push({ icon:"building", cls:"green",
+      name: t("offices"), meta: t("governmentOffices"),
+      value:snap.size, href:"offices.html" });
   } catch (e) {}
 
   try {
-    const eq = isRegionalAdmin()
-      ? query(collection(db, "employees"), where("regionCode","==",S.regionCode))
-      : collection(db, "employees");
+    const eq = role === "regional_admin"
+      ? query(collection(db,"employees"), where("regionCode","==",S.regionCode))
+      : collection(db,"employees");
     const snap = await getCountFromServer(eq);
-    cards.push({
-      icon:"users", cls:"blue",
-      name: t("employees"),
-      meta: t("totalStaff"),
-      value:snap.data().count,
-      href:"users.html"
-    });
+    cards.push({ icon:"users", cls:"blue",
+      name: t("employees"), meta: t("totalStaff"),
+      value:snap.data().count, href:"users.html" });
   } catch (e) {}
 
   try {
-    const pq = isRegionalAdmin()
-      ? query(collection(db, "workplans"), where("regionCode","==",S.regionCode))
-      : collection(db, "workplans");
+    const pq = role === "regional_admin"
+      ? query(collection(db,"workplans"), where("regionCode","==",S.regionCode))
+      : collection(db,"workplans");
     const snap = await getCountFromServer(pq);
-    cards.push({
-      icon:"clipboard", cls:"violet",
-      name: t("workPlans"),
-      meta: t("allDirectorates"),
-      value:snap.data().count,
-      href:"workplans.html"
-    });
+    cards.push({ icon:"clipboard", cls:"violet",
+      name: t("workPlans"), meta: t("allDirectorates"),
+      value:snap.data().count, href:"workplans.html" });
   } catch (e) {}
 
-  host.innerHTML = cards.map(c => `
+  sec.innerHTML = cards.map(c => `
     <a class="hierarchy-card" href="${c.href}">
       <div class="hierarchy-card__icon hierarchy-card__icon--${c.cls}">
         <svg viewBox="0 0 24 24">${ICONS[c.icon]}</svg>
@@ -1737,7 +1905,7 @@ async function renderHierarchy() {
 }
 
 /* ============================================================
-   CHART + ACTIVITY + PENDING
+   CHART / ACTIVITY / QUICK / PENDING
    ============================================================ */
 async function renderChartActivityPending() {
   const rowChart = document.getElementById("row-chart-activity");
@@ -1747,16 +1915,16 @@ async function renderChartActivityPending() {
   const quickCard = document.getElementById("card-quick");
   const sideCard = document.getElementById("card-side");
 
-  // ★ FIXED: team leaders now get the chart, the pending-approvals card,
-  //   and the team activity feed.
-  const showChart = isSuper() || isRegionalAdmin() || isClusterAdmin() || isHRM()
-                    || isFinance() || isDirectorate() || isWoredaCity() || isManager()
-                    || isTeamLeader();
+  const role = S.role;
+
+  const showChart =
+    !(role === "employee") &&
+    !(role === "hrm" && false);   // everyone except employee gets a chart
   const showActivity = true;
   const showQuick = true;
-  const showSide = isSuper() || isRegionalAdmin() || isClusterAdmin() || isHRM()
-                   || isManager() || isDirectorate() || isWoredaCity()
-                   || isTeamLeader();
+  const showSide =
+    role !== "employee" && role !== "hrm" && role !== "regional_hrm" &&
+    role !== "cluster_hrm" && role !== "woreda_hrm";
 
   rowChart.style.display = (showChart || showActivity) ? "" : "none";
   chartCard.style.display = showChart ? "" : "none";
@@ -1775,8 +1943,8 @@ function getWeekdayLabels() {
   return [t("mon"), t("tue"), t("wed"), t("thu"), t("fri"), t("sat"), t("sun")];
 }
 function getMonthLabels() {
-  return [t("jan"), t("feb"), t("mar"), t("apr"), t("may"), t("jun"),
-          t("jul"), t("aug"), t("sep"), t("oct"), t("nov"), t("dec")];
+  return [t("jan"),t("feb"),t("mar"),t("apr"),t("may"),t("jun"),
+          t("jul"),t("aug"),t("sep"),t("oct"),t("nov"),t("dec")];
 }
 
 async function renderChart() {
@@ -1784,10 +1952,9 @@ async function renderChart() {
   const titleEl = document.getElementById("chart-title");
   const subEl = document.getElementById("chart-sub");
   const tagEl = document.getElementById("chart-tag");
+  const role = S.role;
 
-  const days = getWeekdayLabels();
-
-  /* ---------- Finance: monthly payroll ---------- */
+  /* finance roles → payroll chart */
   if (isFinance()) {
     titleEl.textContent = t("monthlyPayroll");
     subEl.textContent = t("last7Months");
@@ -1796,68 +1963,67 @@ async function renderChart() {
     const monthShort = getMonthLabels();
     const months = [];
     for (let i = 6; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
       months.push({ ym: d.toISOString().slice(0,7), label: monthShort[d.getMonth()] });
     }
     for (const mo of months) {
       labels.push(mo.label);
       try {
-        const snap = await getDocs(query(collection(db,"payrollRuns"), where("month","==",mo.ym), limit(1)));
-        values.push(snap.empty ? 0 : Number(snap.docs[0].data().totalAmount || 0) / 1000);
+        const extras = [];
+        if (role === "regional_finance") extras.push(where("regionCode","==",S.regionCode));
+        if (role === "cluster_finance")  extras.push(where("clusterId","==",S.clusterId));
+        if (role === "woreda_finance")   extras.push(where("woredaCode","==",S.woredaCode));
+        const snap = await getDocs(query(collection(db,"payrollRuns"),
+          where("month","==",mo.ym), ...extras, limit(1)));
+        values.push(snap.empty ? 0 : Number(snap.docs[0].data().totalAmount||0)/1000);
       } catch (e) { values.push(0); }
     }
     drawChart(chart, labels, values, "K");
     return;
   }
 
-  /* ---------- Attendance trend (nested subcollection) ---------- */
+  /* everyone else → attendance chart */
   titleEl.textContent = t("attendanceTrend");
   subEl.textContent = t("last7Days");
+  const days = getWeekdayLabels();
 
   const dayList = [];
   for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
+    const d = new Date(); d.setDate(d.getDate()-i);
     dayList.push(d.toISOString().slice(0,10));
   }
-
   const buckets = {};
   dayList.forEach(iso => {
     const ym = iso.slice(0,7);
     if (!buckets[ym]) buckets[ym] = [];
     buckets[ym].push(iso);
   });
-
   const byDate = {};
   dayList.forEach(iso => byDate[iso] = 0);
 
   try {
     for (const ym of Object.keys(buckets)) {
-      const base = collection(db, "attendance", ym, "records");
-      const constraints = [];
-      scopeConstraints().forEach(c => constraints.push(c));
+      const base = collection(db,"attendance", ym, "records");
+      const constraints = [...scopeConstraints()];
       const q = constraints.length ? query(base, ...constraints) : base;
-
       const snap = await getDocs(q);
       snap.forEach(d => {
         const x = d.data();
         if (!x || !x.date) return;
         if (!dayList.includes(x.date)) return;
         if (!["present","late","field"].includes(x.status)) return;
-        byDate[x.date] = (byDate[x.date] || 0) + 1;
+        byDate[x.date] = (byDate[x.date]||0) + 1;
       });
     }
-
     const labels = dayList.map(iso => {
       const d = new Date(iso + "T00:00:00");
       return days[(d.getDay()+6)%7];
     });
-    const values = dayList.map(iso => byDate[iso] || 0);
+    const values = dayList.map(iso => byDate[iso]||0);
     drawChart(chart, labels, values, t("present"));
-
   } catch (e) {
-    console.error("[chart] attendance query failed:", e.code, e.message);
-    chart.innerHTML = `<div class="chart-empty">${escapeHtml(t("couldNotLoad"))} (${escapeHtml(e.code || "error")})</div>`;
+    console.error("[chart]", e.code, e.message);
+    chart.innerHTML = `<div class="chart-empty">${escapeHtml(t("couldNotLoad"))} (${escapeHtml(e.code||"error")})</div>`;
     tagEl.className = "tag tag--red";
     tagEl.textContent = t("error");
   }
@@ -1874,10 +2040,10 @@ function drawChart(chart, labels, values, unit) {
     return;
   }
   chart.innerHTML = values.map((v,i) => {
-    const pct = Math.max(6, Math.round((v / max) * 100));
+    const pct = Math.max(6, Math.round((v/max)*100));
     return `<div class="chart__bar" style="height:${pct}%" data-label="${escapeHtml(labels[i])}"></div>`;
   }).join("");
-  const latest = values[values.length - 1];
+  const latest = values[values.length-1];
   tag.className = "tag tag--green";
   tag.textContent = latest + " " + unit;
 }
@@ -1885,58 +2051,52 @@ function drawChart(chart, labels, values, unit) {
 async function renderActivity() {
   const host = document.getElementById("activity");
   const events = [];
+  const role = S.role;
 
-  // ★ FIXED: team leaders get the activity feed too
-  if (isSuper() || isRegionalAdmin() || isHRM() || isClusterAdmin()
-      || isDirectorate() || isWoredaCity() || isTeamLeader()) {
-    try {
-      const constraints = [...scopeConstraints(), orderBy("createdAt","desc"), limit(4)];
-      const snap = await getDocs(query(collection(db,"employees"), ...constraints));
-      snap.forEach(d => {
-        const e = d.data();
-        events.push({
-          name: fullName(e),
-          action: t("joinedAs") + " " + (e.position || t("employee")) +
-                  (e.departmentName ? " · " + e.departmentName :
-                   e.officeName     ? " · " + e.officeName : ""),
-          photoURL: e.photoURL,
-          at: e.createdAt
-        });
+  try {
+    const constraints = [...scopeConstraints(), orderBy("createdAt","desc"), limit(4)];
+    const snap = await getDocs(query(collection(db,"employees"), ...constraints));
+    snap.forEach(d => {
+      const e = d.data();
+      events.push({
+        name: fullName(e),
+        action: t("joinedAs") + " " + (e.position || t("employee")) +
+                (e.departmentName ? " · " + e.departmentName :
+                 e.officeName     ? " · " + e.officeName : ""),
+        photoURL: e.photoURL, at: e.createdAt
       });
-    } catch (e) { console.warn("[activity emp]", e.code); }
-  }
+    });
+  } catch (e) { console.warn("[activity emp]", e.code); }
 
   try {
     const extra = [];
-    if (isManager()) extra.push(where("managerId","==",S.uid));
-    else if (isEmployee() && S.empId) extra.push(where("empId","==",S.empId));
+    if (role === "manager") extra.push(where("managerId","==",S.uid));
+    else if (role === "employee" && S.empId) extra.push(where("empId","==",S.empId));
     const constraints = [...scopeConstraints(), ...extra, orderBy("appliedAt","desc"), limit(4)];
     const snap = await getDocs(query(collection(db,"leaveRequests"), ...constraints));
     snap.forEach(d => {
       const r = d.data();
       events.push({
         name: r.employeeName || r.empId || t("employee"),
-        action: t("requestedLeave") + " · " + (r.days || 0) + " " + t("day"),
+        action: t("requestedLeave") + " · " + (r.days||0) + " " + t("day"),
         at: r.appliedAt
       });
     });
   } catch (e) { console.warn("[activity leave]", e.code); }
 
-  if (isSuper() || isRegionalAdmin() || isClusterAdmin()
-      || isDirectorate() || isWoredaCity() || isTeamLeader()) {
-    try {
-      const constraints = [...scopeConstraints(), orderBy("createdAt","desc"), limit(3)];
-      const snap = await getDocs(query(collection(db,"workplans"), ...constraints));
-      snap.forEach(d => {
-        const p = d.data();
-        events.push({
-          name: p.title || p.workTypeName || t("workPlans"),
-          action: t("createdBy") + " " + (p.departmentName || p.sectorName || t("directorates")) + " · " + (p.status || "draft"),
-          at: p.createdAt
-        });
+  try {
+    const constraints = [...scopeConstraints(), orderBy("createdAt","desc"), limit(3)];
+    const snap = await getDocs(query(collection(db,"workplans"), ...constraints));
+    snap.forEach(d => {
+      const p = d.data();
+      events.push({
+        name: p.title || p.workTypeName || t("workPlans"),
+        action: t("createdBy") + " " + (p.departmentName || p.sectorName || t("directorates")) +
+                " · " + (p.status || "draft"),
+        at: p.createdAt
       });
-    } catch (e) { console.warn("[activity plans]", e.code); }
-  }
+    });
+  } catch (e) { console.warn("[activity plans]", e.code); }
 
   const ts = (v) => {
     if (!v) return 0;
@@ -1953,7 +2113,6 @@ async function renderActivity() {
       <div>${escapeHtml(t("noActivity"))}</div></li>`;
     return;
   }
-
   host.innerHTML = top.map(it => {
     const avatar = it.photoURL
       ? `<img src="${escapeHtml(it.photoURL)}" alt="">`
@@ -1972,45 +2131,92 @@ async function renderActivity() {
 async function renderQuickActions() {
   const host = document.getElementById("quick-actions");
   const a = [];
+  const role = S.role;
 
-  if (isSuper()) {
-    a.push({ labelKey:"addRegion", href:"offices.html", icon:"pin" });
-    a.push({ labelKey:"addCluster", href:"offices.html", icon:"cluster" });
-    a.push({ labelKey:"usersStaff", href:"users.html", icon:"users" });
+  if (role === "super_admin") {
+    a.push({ labelKey:"addRegion",    href:"offices.html",     icon:"pin" });
+    a.push({ labelKey:"addCluster",   href:"offices.html",     icon:"cluster" });
+    a.push({ labelKey:"usersStaff",   href:"users.html",       icon:"users" });
     a.push({ labelKey:"directorates", href:"departments.html", icon:"org" });
-    a.push({ labelKey:"workPlans", href:"workplans.html", icon:"clipboard" });
-    a.push({ labelKey:"reports", href:"reports.html", icon:"fileText" });
-  } else if (isRegionalAdmin()) {
+    a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+  } else if (role === "hrm") {
+    a.push({ labelKey:"usersStaff",   href:"users.html",       icon:"users" });
+    a.push({ labelKey:"recruitment",  href:"recruitment.html", icon:"userPlus" });
+    a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+  } else if (role === "finance") {
+    a.push({ labelKey:"runPayroll",   href:"payroll.html",     icon:"wallet" });
+    a.push({ labelKey:"budgets",      href:"budget.html",      icon:"chart" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+    a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
+  } else if (role === "regional_admin") {
     a.push({ labelKey:"addDirectorate", href:"departments.html", icon:"org" });
-    a.push({ labelKey:"addCluster", href:"offices.html", icon:"cluster" });
-    a.push({ labelKey:"addStaff", href:"users.html", icon:"userPlus" });
-    a.push({ labelKey:"workPlans", href:"workplans.html", icon:"clipboard" });
-    a.push({ labelKey:"reports", href:"reports.html", icon:"fileText" });
-    a.push({ labelKey:"settings", href:"settings.html", icon:"settings" });
-  } else if (isClusterAdmin()) {
+    a.push({ labelKey:"addCluster",   href:"offices.html",     icon:"cluster" });
+    a.push({ labelKey:"addStaff",     href:"users.html",       icon:"userPlus" });
+    a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+    a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
+  } else if (role === "regional_hrm") {
+    a.push({ labelKey:"addStaff",     href:"users.html",       icon:"userPlus" });
+    a.push({ labelKey:"recruitment",  href:"recruitment.html", icon:"users" });
+    a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+  } else if (role === "regional_finance") {
+    a.push({ labelKey:"runPayroll",   href:"payroll.html",     icon:"wallet" });
+    a.push({ labelKey:"budgets",      href:"budget.html",      icon:"chart" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+    a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
+  } else if (role === "directorate") {
+    a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
+    a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
+    a.push({ labelKey:"leave",        href:"leave.html",       icon:"calendar" });
+  } else if (role === "admin") {
     a.push({ labelKey:"addDirectorate", href:"departments.html", icon:"org" });
-    a.push({ labelKey:"addOffice", href:"offices.html", icon:"building" });
-    a.push({ labelKey:"addStaff", href:"users.html", icon:"userPlus" });
-    a.push({ labelKey:"workPlans", href:"workplans.html", icon:"clipboard" });
-    a.push({ labelKey:"reports", href:"reports.html", icon:"fileText" });
-  } else if (isHRM()) {
-    a.push({ labelKey:"usersStaff", href:"users.html", icon:"users" });
-    a.push({ labelKey:"recruitment", href:"recruitment.html", icon:"userPlus" });
-    a.push({ labelKey:"reviewLeave", href:"leave.html", icon:"calendar" });
-    a.push({ labelKey:"reports", href:"reports.html", icon:"fileText" });
-  } else if (isFinance()) {
-    a.push({ labelKey:"runPayroll", href:"payroll.html", icon:"wallet" });
-    a.push({ labelKey:"budgets", href:"budget.html", icon:"chart" });
-    a.push({ labelKey:"reports", href:"reports.html", icon:"fileText" });
-    a.push({ labelKey:"settings", href:"settings.html", icon:"settings" });
-  } else if (isDirectorate() || isWoredaCity() || isTeamLeader()) {
-    a.push({ labelKey:"workPlans", href:"workplans.html", icon:"clipboard" });
-    a.push({ labelKey:"attendance", href:"attendance.html", icon:"clock" });
-    a.push({ labelKey:"leave", href:"leave.html", icon:"calendar" });
+    a.push({ labelKey:"addOffice",    href:"offices.html",     icon:"building" });
+    a.push({ labelKey:"addStaff",     href:"users.html",       icon:"userPlus" });
+    a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+  } else if (role === "cluster_hrm") {
+    a.push({ labelKey:"addStaff",     href:"users.html",       icon:"userPlus" });
+    a.push({ labelKey:"recruitment",  href:"recruitment.html", icon:"users" });
+    a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+  } else if (role === "cluster_finance") {
+    a.push({ labelKey:"runPayroll",   href:"payroll.html",     icon:"wallet" });
+    a.push({ labelKey:"budgets",      href:"budget.html",      icon:"chart" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+    a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
+  } else if (role === "cluster_directorate") {
+    a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
+    a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
+    a.push({ labelKey:"leave",        href:"leave.html",       icon:"calendar" });
+  } else if (role === "woreda_admin") {
+    a.push({ labelKey:"addOffice",    href:"offices.html",     icon:"building" });
+    a.push({ labelKey:"addStaff",     href:"users.html",       icon:"userPlus" });
+    a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+  } else if (role === "woreda_hrm") {
+    a.push({ labelKey:"addStaff",     href:"users.html",       icon:"userPlus" });
+    a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+  } else if (role === "woreda_finance") {
+    a.push({ labelKey:"runPayroll",   href:"payroll.html",     icon:"wallet" });
+    a.push({ labelKey:"budgets",      href:"budget.html",      icon:"chart" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+    a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
+  } else if (role === "woreda_city") {
+    a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
+    a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
+    a.push({ labelKey:"leave",        href:"leave.html",       icon:"calendar" });
+  } else if (role === "manager" || role === "team_leader") {
+    a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
+    a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
+    a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
   } else {
-    a.push({ labelKey:"requestLeave", href:"leave.html", icon:"calendar" });
-    a.push({ labelKey:"myPayslip", href:"payroll.html", icon:"dollar" });
-    a.push({ labelKey:"attendance", href:"attendance.html", icon:"clock" });
+    a.push({ labelKey:"requestLeave", href:"leave.html",       icon:"calendar" });
+    a.push({ labelKey:"myPayslip",    href:"payroll.html",     icon:"dollar" });
+    a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
   }
 
   host.innerHTML = a.map(x => `
@@ -2026,29 +2232,29 @@ async function renderPending() {
   const title = document.getElementById("pending-title");
   const sub = document.getElementById("pending-sub");
   const link = document.getElementById("pending-link");
+  const role = S.role;
 
+  /* finance roles get budget breakdown */
   if (isFinance()) {
     title.textContent = t("budgetBreakdown");
     sub.textContent = t("allocatedVsSpent");
     if (link) link.style.display = "none";
-
     try {
-      const snap = await getDocs(collection(db, "budgets"));
+      const snap = await getDocs(scopedQuery("budgets"));
       if (snap.empty) {
         host.innerHTML = `<li class="list-empty">
           <svg viewBox="0 0 24 24">${ICONS.pieChart}</svg>
           <div>${escapeHtml(t("noBudgetsDefined"))}</div></li>`;
         return;
       }
-      const rows = [];
-      let alloc = 0, spent = 0;
+      const rows = []; let alloc = 0, spent = 0;
       snap.forEach(d => {
         const x = d.data();
-        const a2 = Number(x.allocated || 0), s = Number(x.spent || 0);
+        const a2 = Number(x.allocated||0), s = Number(x.spent||0);
         alloc += a2; spent += s;
         rows.push({ name: x.name || d.id, allocated: a2, spent: s });
       });
-      const pct = alloc ? Math.round((spent / alloc) * 100) : 0;
+      const pct = alloc ? Math.round((spent/alloc)*100) : 0;
       host.innerHTML = `
         <li style="padding:18px 24px 0">
           <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">
@@ -2058,14 +2264,14 @@ async function renderPending() {
             <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#0b5cab,#0e7490)"></div>
           </div>
         </li>
-        ${rows.slice(0, 5).map(r => `
+        ${rows.slice(0,5).map(r => `
           <li class="list__item">
             <div class="list__main">
               <div class="list__title">${escapeHtml(r.name)}</div>
               <div class="list__meta">${money(r.spent)} / ${money(r.allocated)}</div>
             </div>
             <span class="tag ${r.spent > r.allocated ? "tag--red" : "tag--green"}">
-              ${r.allocated ? Math.round((r.spent / r.allocated) * 100) : 0}%
+              ${r.allocated ? Math.round((r.spent/r.allocated)*100) : 0}%
             </span>
           </li>`).join("")}`;
       return;
@@ -2075,11 +2281,49 @@ async function renderPending() {
     }
   }
 
-  if (isManager() || isTeamLeader()) title.textContent = t("teamApprovals");
-  else if (isClusterAdmin()) title.textContent = t("clusterApprovals");
-  else if (isRegionalAdmin()) title.textContent = t("regionApprovals");
-  else if (isDirectorate()) title.textContent = t("directorateApprovals");
-  else if (isWoredaCity()) title.textContent = t("woredaApprovals");
+  /* HR roles: they manage — no personal pending list, show leave queue */
+  if (isHR()) {
+    title.textContent = t("pendingLeave");
+    sub.textContent = t("awaitingAction");
+    if (link) link.style.display = "";
+    try {
+      const constraints = [
+        ...scopeConstraints(),
+        where("status","==","pending"),
+        orderBy("appliedAt","desc"),
+        limit(5)
+      ];
+      const snap = await getDocs(query(collection(db,"leaveRequests"), ...constraints));
+      if (snap.empty) {
+        host.innerHTML = `<li class="list-empty">
+          <svg viewBox="0 0 24 24">${ICONS.inbox}</svg>
+          <div>${escapeHtml(t("nothingPending"))}</div></li>`;
+        return;
+      }
+      host.innerHTML = snap.docs.map(d => {
+        const r = d.data();
+        const name = r.employeeName || r.empId || t("employee");
+        return `
+          <li class="list__item">
+            <div class="list__avatar">${initials(name)}</div>
+            <div class="list__main">
+              <div class="list__title">${escapeHtml(name)}</div>
+              <div class="list__meta">${escapeHtml(r.typeId || t("leave"))} · ${r.days||"—"} ${t("day")}</div>
+            </div>
+            <span class="tag tag--gold">${LANG === "am" ? "በመጠበቅ" : LANG === "om" ? "Eegaa" : "Pending"}</span>
+          </li>`;
+      }).join("");
+    } catch (e) {
+      host.innerHTML = `<li class="list-empty">${escapeHtml(t("nothingPending"))}</li>`;
+    }
+    return;
+  }
+
+  /* everyone else: role-specific title + leave approvals */
+  if (role === "manager" || role === "team_leader") title.textContent = t("teamApprovals");
+  else if (role === "admin" || role === "cluster_directorate") title.textContent = t("clusterApprovals");
+  else if (role === "regional_admin" || role === "directorate") title.textContent = t("regionApprovals");
+  else if (role === "woreda_admin" || role === "woreda_city") title.textContent = t("woredaApprovals");
   else title.textContent = t("pendingApprovals");
 
   try {
@@ -2104,7 +2348,7 @@ async function renderPending() {
           <div class="list__avatar">${initials(name)}</div>
           <div class="list__main">
             <div class="list__title">${escapeHtml(name)}</div>
-            <div class="list__meta">${escapeHtml(r.typeId || t("leave"))} · ${r.days || "—"} ${t("day")}</div>
+            <div class="list__meta">${escapeHtml(r.typeId || t("leave"))} · ${r.days||"—"} ${t("day")}</div>
           </div>
           <span class="tag tag--gold">${LANG === "am" ? "በመጠበቅ" : LANG === "om" ? "Eegaa" : "Pending"}</span>
         </li>`;
@@ -2132,7 +2376,6 @@ document.getElementById("sidebar-nav").addEventListener("click", (e) => {
   if (e.target.closest(".nav-item")) document.body.classList.remove("sidebar-open");
 });
 
-/* User dropdown */
 document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -2143,7 +2386,6 @@ document.querySelectorAll("[data-dropdown-toggle]").forEach(btn => {
   });
 });
 
-/* Language dropdown */
 function updateLangUI() {
   const label = document.getElementById("lang-label");
   if (label) label.textContent = LANG.toUpperCase();
@@ -2163,9 +2405,7 @@ document.querySelectorAll("[data-lang-toggle]").forEach(btn => {
 document.querySelectorAll("[data-set-lang]").forEach(btn => {
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
-    const lang = btn.dataset.setLang;
-    try { localStorage.setItem("cs.language", lang); } catch (err) {}
-    // Reload so all dynamic content re-renders in the new language
+    try { localStorage.setItem("cs.language", btn.dataset.setLang); } catch (err) {}
     window.location.reload();
   });
 });
@@ -2179,11 +2419,18 @@ try {
 /* ============================================================
    BOOT
    ============================================================ */
+const VALID_ROLES = new Set([
+  "super_admin","hrm","finance",
+  "regional_admin","regional_hrm","regional_finance","directorate",
+  "admin","cluster_hrm","cluster_finance","cluster_directorate",
+  "woreda_admin","woreda_hrm","woreda_finance","woreda_city",
+  "manager","team_leader","employee"
+]);
+
 onAuthStateChanged(auth, async (user) => {
   if (kick.done) return;
   if (!user) { kick("no-user"); return; }
 
-  // Read language
   try { LANG = localStorage.getItem("cs.language") || "en"; } catch (e) { LANG = "en"; }
   if (!I18N[LANG]) LANG = "en";
   applyStaticI18n();
@@ -2215,32 +2462,44 @@ onAuthStateChanged(auth, async (user) => {
     empId: myDoc?.empId || "",
     isDirector: myDoc?.isDirector === true
   };
+
+  if (!VALID_ROLES.has(S.role)) {
+    console.warn("[boot] unknown role:", S.role, "— defaulting to employee");
+    S.role = "employee";
+  }
+
   console.log("[dashboard] scope:", {
-    role: S.role,
-    region: S.regionCode,
-    cluster: S.clusterName,
-    woreda: S.woredaName,
-    office: S.officeName,
-    department: S.departmentName,
-    empId: S.empId,
-    lang: LANG
+    role: S.role, region: S.regionCode, cluster: S.clusterName,
+    woreda: S.woredaName, office: S.officeName,
+    department: S.departmentName, empId: S.empId, lang: LANG
   });
 
+  /* greeting */
   const greeting = document.getElementById("greeting");
   const first = S.name.split(" ")[0] || "";
   greeting.textContent = t("welcomeBack") + (first ? ", " + first : "");
 
+  /* page title — unique per role */
   const titleEl = document.getElementById("page-title");
-  if (isSuper()) titleEl.textContent = t("nationalDashboard");
-  else if (isRegionalAdmin()) titleEl.textContent = regionName(S.regionCode) + " " + t("regionDashboard");
-  else if (isClusterAdmin()) titleEl.textContent = (S.clusterName || t("clusterDashboard"));
-  else if (isHRM()) titleEl.textContent = t("hrDashboard");
-  else if (isFinance()) titleEl.textContent = t("financeDashboard");
-  else if (isDirectorate()) titleEl.textContent = (S.departmentName || S.clusterName || t("directorateDashboard"));
-  else if (isWoredaCity()) titleEl.textContent = (S.woredaName || t("woredaDashboard"));
-  else if (isManager()) titleEl.textContent = t("managerDashboard");
-  else if (isTeamLeader()) titleEl.textContent = t("teamLeaderDashboard");
-  else titleEl.textContent = t("myDashboard");
+  const role = S.role;
+  if (role === "super_admin")             titleEl.textContent = t("nationalDashboard");
+  else if (role === "hrm")                titleEl.textContent = t("hrDashboard");
+  else if (role === "finance")            titleEl.textContent = t("financeDashboard");
+  else if (role === "regional_admin")     titleEl.textContent = regionName(S.regionCode) + " " + t("regionDashboard");
+  else if (role === "regional_hrm")       titleEl.textContent = regionName(S.regionCode) + " " + t("hrDashboard");
+  else if (role === "regional_finance")   titleEl.textContent = regionName(S.regionCode) + " " + t("financeDashboard");
+  else if (role === "directorate")        titleEl.textContent = (S.departmentName || S.clusterName || t("directorateDashboard"));
+  else if (role === "admin")              titleEl.textContent = (S.clusterName || t("clusterDashboard"));
+  else if (role === "cluster_hrm")        titleEl.textContent = (S.clusterName || "") + " " + t("hrDashboard");
+  else if (role === "cluster_finance")    titleEl.textContent = (S.clusterName || "") + " " + t("financeDashboard");
+  else if (role === "cluster_directorate")titleEl.textContent = (S.departmentName || t("directorateDashboard"));
+  else if (role === "woreda_admin")       titleEl.textContent = (S.woredaName || t("woredaDashboard"));
+  else if (role === "woreda_hrm")         titleEl.textContent = (S.woredaName || "") + " " + t("hrDashboard");
+  else if (role === "woreda_finance")     titleEl.textContent = (S.woredaName || "") + " " + t("financeDashboard");
+  else if (role === "woreda_city")        titleEl.textContent = (S.woredaName || t("woredaDashboard"));
+  else if (role === "manager")            titleEl.textContent = t("managerDashboard");
+  else if (role === "team_leader")        titleEl.textContent = t("teamLeaderDashboard");
+  else                                    titleEl.textContent = t("myDashboard");
 
   renderSidebar();
   renderUser();
