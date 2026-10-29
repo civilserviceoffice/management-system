@@ -342,7 +342,9 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   background-repeat:no-repeat; background-position:right 14px center; }
 .field input:focus, .field select:focus, .field textarea:focus {
   outline:none; background:#fff; border-color:#70a8d9; box-shadow:0 0 0 4px rgba(11,92,171,.08); }
-.field input:disabled, .field select:disabled { background:#f1f5f9; color:var(--muted); cursor:not-allowed; }
+.field input:disabled, .field select:disabled,
+.field input[readonly], .field select[readonly] {
+  background:#f1f5f9; color:var(--muted); cursor:not-allowed; }
 .field input[aria-invalid="true"] { border-color:#f0a5ab; background:#fef5f5; }
 .field__hint { font-size:12px; color:var(--muted); }
 .field__error { font-size:12px; color:var(--danger); font-weight:600; display:none; }
@@ -660,7 +662,7 @@ body.sidebar-open .overlay { display:block; }
     <div class="page-head">
       <div>
         <h1 class="page-head__title">Users &amp; Staff</h1>
-        <p class="page-head__sub">Step 1 — Add Person · Step 2 — Assign Role (creates the login)</p>
+        <p class="page-head__sub">Step 1 — Add Person (records everything) · Step 2 — Assign Role (creates the login)</p>
         <div id="scope-badge"></div>
       </div>
       <div class="page-head__actions" id="head-actions"></div>
@@ -776,12 +778,11 @@ function regionName(code) {
 }
 
 /* ============================================================
-   REGION_ZONES — canonical zone & city list per region.
-   Every entry is tagged with `kind: "zone" | "city"` so the
-   dropdown can group them. Firestore `clusters` merge on top.
+   REGION_ZONES — canonical zones & cities per region.
+   Oromia = EXACTLY 6 zones + 8 cities in a single "04" key.
    ============================================================ */
 const REGION_ZONES = {
-  "01": [ // Tigray
+  "01": [
     { code:"01-Z1", name:"North Western Tigray", kind:"zone" },
     { code:"01-Z2", name:"Central Tigray",       kind:"zone" },
     { code:"01-Z3", name:"Eastern Tigray",       kind:"zone" },
@@ -789,31 +790,31 @@ const REGION_ZONES = {
     { code:"01-Z5", name:"Western Tigray",       kind:"zone" },
     { code:"01-C1", name:"Mekelle City",         kind:"city" }
   ],
-  "02": [ // Afar
-    { code:"02-Z1", name:"Awsi Rasu (Zone 1)",   kind:"zone" },
-    { code:"02-Z2", name:"Kilbati Rasu (Zone 2)",kind:"zone" },
-    { code:"02-Z3", name:"Gabi Rasu (Zone 3)",   kind:"zone" },
-    { code:"02-Z4", name:"Fanti Rasu (Zone 4)",  kind:"zone" },
-    { code:"02-Z5", name:"Hari Rasu (Zone 5)",   kind:"zone" },
-    { code:"02-Z6", name:"Mahi Rasu (Zone 6)",   kind:"zone" }
+  "02": [
+    { code:"02-Z1", name:"Awsi Rasu (Zone 1)",    kind:"zone" },
+    { code:"02-Z2", name:"Kilbati Rasu (Zone 2)", kind:"zone" },
+    { code:"02-Z3", name:"Gabi Rasu (Zone 3)",    kind:"zone" },
+    { code:"02-Z4", name:"Fanti Rasu (Zone 4)",   kind:"zone" },
+    { code:"02-Z5", name:"Hari Rasu (Zone 5)",    kind:"zone" },
+    { code:"02-Z6", name:"Mahi Rasu (Zone 6)",    kind:"zone" }
   ],
-  "03": [ // Amhara
-    { code:"03-Z1",  name:"North Gondar",           kind:"zone" },
-    { code:"03-Z2",  name:"South Gondar",           kind:"zone" },
-    { code:"03-Z3",  name:"North Wollo",            kind:"zone" },
-    { code:"03-Z4",  name:"South Wollo",            kind:"zone" },
-    { code:"03-Z5",  name:"North Shewa (Amhara)",   kind:"zone" },
-    { code:"03-Z6",  name:"East Gojjam",            kind:"zone" },
-    { code:"03-Z7",  name:"West Gojjam",            kind:"zone" },
-    { code:"03-Z8",  name:"Wag Hemra",              kind:"zone" },
-    { code:"03-Z9",  name:"Awi",                    kind:"zone" },
-    { code:"03-Z10", name:"Oromia Special (Amhara)",kind:"zone" },
-    { code:"03-C1",  name:"Bahir Dar City",         kind:"city" },
-    { code:"03-C2",  name:"Gondar City",            kind:"city" },
-    { code:"03-C3",  name:"Dessie City",            kind:"city" },
-    { code:"03-C4",  name:"Kombolcha City",         kind:"city" }
+  "03": [
+    { code:"03-Z1",  name:"North Gondar",            kind:"zone" },
+    { code:"03-Z2",  name:"South Gondar",            kind:"zone" },
+    { code:"03-Z3",  name:"North Wollo",             kind:"zone" },
+    { code:"03-Z4",  name:"South Wollo",             kind:"zone" },
+    { code:"03-Z5",  name:"North Shewa (Amhara)",    kind:"zone" },
+    { code:"03-Z6",  name:"East Gojjam",             kind:"zone" },
+    { code:"03-Z7",  name:"West Gojjam",             kind:"zone" },
+    { code:"03-Z8",  name:"Wag Hemra",               kind:"zone" },
+    { code:"03-Z9",  name:"Awi",                     kind:"zone" },
+    { code:"03-Z10", name:"Oromia Special (Amhara)", kind:"zone" },
+    { code:"03-C1",  name:"Bahir Dar City",          kind:"city" },
+    { code:"03-C2",  name:"Gondar City",             kind:"city" },
+    { code:"03-C3",  name:"Dessie City",             kind:"city" },
+    { code:"03-C4",  name:"Kombolcha City",          kind:"city" }
   ],
-  "04": [ // Oromia — 6 zones + 8 cities
+  "04": [ /* Oromia — 6 zones + 8 cities (deduplicated) */
     { code:"04-Z1", name:"Central Oromia",    kind:"zone" },
     { code:"04-Z2", name:"East Oromia",       kind:"zone" },
     { code:"04-Z3", name:"West Oromia",       kind:"zone" },
@@ -830,7 +831,7 @@ const REGION_ZONES = {
     { code:"04-C7", name:"Ambo City",       kind:"city" },
     { code:"04-C8", name:"Shashemane City", kind:"city" }
   ],
-  "05": [ // Somali
+  "05": [
     { code:"05-Z1",  name:"Sitti",         kind:"zone" },
     { code:"05-Z2",  name:"Fafan",         kind:"zone" },
     { code:"05-Z3",  name:"Jarar",         kind:"zone" },
@@ -845,51 +846,51 @@ const REGION_ZONES = {
     { code:"05-C1",  name:"Jigjiga City",  kind:"city" },
     { code:"05-C2",  name:"Gode City",     kind:"city" }
   ],
-  "06": [ // Benishangul-Gumuz
+  "06": [
     { code:"06-Z1", name:"Metekel",            kind:"zone" },
     { code:"06-Z2", name:"Assosa",             kind:"zone" },
     { code:"06-Z3", name:"Kamashi",            kind:"zone" },
     { code:"06-Z4", name:"Mao-Komo (special)", kind:"zone" },
     { code:"06-C1", name:"Assosa City",        kind:"city" }
   ],
-  "07": [ // SNNPR
-    { code:"07-Z1",  name:"Sidama",              kind:"zone" },
-    { code:"07-Z2",  name:"Gedeo",               kind:"zone" },
-    { code:"07-Z3",  name:"Wolayita",            kind:"zone" },
-    { code:"07-Z4",  name:"Hadiya",              kind:"zone" },
-    { code:"07-Z5",  name:"Kembata-Tembaro",     kind:"zone" },
-    { code:"07-Z6",  name:"Gurage",              kind:"zone" },
-    { code:"07-Z7",  name:"Silte",               kind:"zone" },
-    { code:"07-Z8",  name:"Keffa",               kind:"zone" },
-    { code:"07-Z9",  name:"Sheka",               kind:"zone" },
-    { code:"07-Z10", name:"Bench Sheko",         kind:"zone" },
-    { code:"07-Z11", name:"Dawro",               kind:"zone" },
-    { code:"07-Z12", name:"Gamo",                kind:"zone" },
-    { code:"07-Z13", name:"Gofa",                kind:"zone" },
-    { code:"07-Z14", name:"Konta (special)",     kind:"zone" },
-    { code:"07-Z15", name:"South Omo",           kind:"zone" },
-    { code:"07-Z16", name:"Konso",               kind:"zone" },
-    { code:"07-Z17", name:"Amaro (special)",     kind:"zone" },
-    { code:"07-Z18", name:"Basketo (special)",   kind:"zone" },
-    { code:"07-Z19", name:"Burji (special)",     kind:"zone" },
-    { code:"07-Z20", name:"Derashe (special)",   kind:"zone" },
-    { code:"07-Z21", name:"Dirashe (special)",   kind:"zone" },
-    { code:"07-Z22", name:"Yem (special)",       kind:"zone" },
-    { code:"07-C1",  name:"Hawassa City",        kind:"city" },
-    { code:"07-C2",  name:"Sodo City",           kind:"city" },
-    { code:"07-C3",  name:"Dilla City",          kind:"city" }
+  "07": [
+    { code:"07-Z1",  name:"Sidama",            kind:"zone" },
+    { code:"07-Z2",  name:"Gedeo",             kind:"zone" },
+    { code:"07-Z3",  name:"Wolayita",          kind:"zone" },
+    { code:"07-Z4",  name:"Hadiya",            kind:"zone" },
+    { code:"07-Z5",  name:"Kembata-Tembaro",   kind:"zone" },
+    { code:"07-Z6",  name:"Gurage",            kind:"zone" },
+    { code:"07-Z7",  name:"Silte",             kind:"zone" },
+    { code:"07-Z8",  name:"Keffa",             kind:"zone" },
+    { code:"07-Z9",  name:"Sheka",             kind:"zone" },
+    { code:"07-Z10", name:"Bench Sheko",       kind:"zone" },
+    { code:"07-Z11", name:"Dawro",             kind:"zone" },
+    { code:"07-Z12", name:"Gamo",              kind:"zone" },
+    { code:"07-Z13", name:"Gofa",              kind:"zone" },
+    { code:"07-Z14", name:"Konta (special)",   kind:"zone" },
+    { code:"07-Z15", name:"South Omo",         kind:"zone" },
+    { code:"07-Z16", name:"Konso",             kind:"zone" },
+    { code:"07-Z17", name:"Amaro (special)",   kind:"zone" },
+    { code:"07-Z18", name:"Basketo (special)", kind:"zone" },
+    { code:"07-Z19", name:"Burji (special)",   kind:"zone" },
+    { code:"07-Z20", name:"Derashe (special)", kind:"zone" },
+    { code:"07-Z21", name:"Dirashe (special)", kind:"zone" },
+    { code:"07-Z22", name:"Yem (special)",     kind:"zone" },
+    { code:"07-C1",  name:"Hawassa City",      kind:"city" },
+    { code:"07-C2",  name:"Sodo City",         kind:"city" },
+    { code:"07-C3",  name:"Dilla City",        kind:"city" }
   ],
-  "08": [ // Gambella
-    { code:"08-Z1", name:"Anuak",          kind:"zone" },
-    { code:"08-Z2", name:"Nuer",           kind:"zone" },
-    { code:"08-Z3", name:"Majang",         kind:"zone" },
-    { code:"08-Z4", name:"Itang (special)",kind:"zone" },
-    { code:"08-C1", name:"Gambella City",  kind:"city" }
+  "08": [
+    { code:"08-Z1", name:"Anuak",           kind:"zone" },
+    { code:"08-Z2", name:"Nuer",            kind:"zone" },
+    { code:"08-Z3", name:"Majang",          kind:"zone" },
+    { code:"08-Z4", name:"Itang (special)", kind:"zone" },
+    { code:"08-C1", name:"Gambella City",   kind:"city" }
   ],
-  "09": [ // Harari
-    { code:"09-C1", name:"Harar City",     kind:"city" }
+  "09": [
+    { code:"09-C1", name:"Harar City", kind:"city" }
   ],
-  "10": [ // Sidama
+  "10": [
     { code:"10-Z1", name:"Sidama Central", kind:"zone" },
     { code:"10-Z2", name:"Aleta Wondo",    kind:"zone" },
     { code:"10-Z3", name:"Bensa",          kind:"zone" },
@@ -897,22 +898,22 @@ const REGION_ZONES = {
     { code:"10-Z5", name:"Dale",           kind:"zone" },
     { code:"10-C1", name:"Hawassa City",   kind:"city" }
   ],
-  "11": [ // South West Ethiopia
-    { code:"11-Z1", name:"Buno Bedele",     kind:"zone" },
-    { code:"11-Z2", name:"Illu Ababora",    kind:"zone" },
-    { code:"11-Z3", name:"Jimma",           kind:"zone" },
-    { code:"11-Z4", name:"Keffa (SW)",      kind:"zone" },
-    { code:"11-Z5", name:"Sheka (SW)",      kind:"zone" },
-    { code:"11-Z6", name:"Bench Sheko (SW)",kind:"zone" },
-    { code:"11-Z7", name:"West Omo (SW)",   kind:"zone" },
-    { code:"11-Z8", name:"Dawro (SW)",      kind:"zone" },
+  "11": [
+    { code:"11-Z1", name:"Buno Bedele",         kind:"zone" },
+    { code:"11-Z2", name:"Illu Ababora",        kind:"zone" },
+    { code:"11-Z3", name:"Jimma",               kind:"zone" },
+    { code:"11-Z4", name:"Keffa (SW)",          kind:"zone" },
+    { code:"11-Z5", name:"Sheka (SW)",          kind:"zone" },
+    { code:"11-Z6", name:"Bench Sheko (SW)",    kind:"zone" },
+    { code:"11-Z7", name:"West Omo (SW)",       kind:"zone" },
+    { code:"11-Z8", name:"Dawro (SW)",          kind:"zone" },
     { code:"11-Z9", name:"Konta (SW, special)", kind:"zone" },
-    { code:"11-C1", name:"Bonga City",      kind:"city" }
+    { code:"11-C1", name:"Bonga City",          kind:"city" }
   ],
-  "12": [ // Dire Dawa
-    { code:"12-C1", name:"Dire Dawa City",  kind:"city" }
+  "12": [
+    { code:"12-C1", name:"Dire Dawa City", kind:"city" }
   ],
-  "13": [ // Addis Ababa
+  "13": [
     { code:"13-C1",  name:"Addis Ketema",     kind:"city" },
     { code:"13-C2",  name:"Akaki Kaliti",     kind:"city" },
     { code:"13-C3",  name:"Arada",            kind:"city" },
@@ -925,21 +926,21 @@ const REGION_ZONES = {
     { code:"13-C10", name:"Yeka",             kind:"city" },
     { code:"13-C11", name:"Lemi Kura",        kind:"city" }
   ],
-  "14": [ // Central Ethiopia
-    { code:"14-Z1",  name:"Hadiya (Central)",     kind:"zone" },
-    { code:"14-Z2",  name:"Halaba",               kind:"zone" },
-    { code:"14-Z3",  name:"Kembata-Tembaro (Central)", kind:"zone" },
-    { code:"14-Z4",  name:"Silte (Central)",      kind:"zone" },
-    { code:"14-Z5",  name:"Wolayita (Central)",   kind:"zone" },
-    { code:"14-Z6",  name:"Gurage (Central)",     kind:"zone" },
-    { code:"14-Z7",  name:"Yem (Central)",        kind:"zone" },
-    { code:"14-Z8",  name:"Kebena (special)",     kind:"zone" },
-    { code:"14-Z9",  name:"Mareko (special)",     kind:"zone" },
-    { code:"14-Z10", name:"Endegagn (special)",   kind:"zone" },
-    { code:"14-Z11", name:"Enemorina Eaner (special)", kind:"zone" },
-    { code:"14-C1",  name:"Hosaena City",         kind:"city" }
+  "14": [
+    { code:"14-Z1",  name:"Hadiya (Central)",            kind:"zone" },
+    { code:"14-Z2",  name:"Halaba",                      kind:"zone" },
+    { code:"14-Z3",  name:"Kembata-Tembaro (Central)",   kind:"zone" },
+    { code:"14-Z4",  name:"Silte (Central)",             kind:"zone" },
+    { code:"14-Z5",  name:"Wolayita (Central)",          kind:"zone" },
+    { code:"14-Z6",  name:"Gurage (Central)",            kind:"zone" },
+    { code:"14-Z7",  name:"Yem (Central)",               kind:"zone" },
+    { code:"14-Z8",  name:"Kebena (special)",            kind:"zone" },
+    { code:"14-Z9",  name:"Mareko (special)",            kind:"zone" },
+    { code:"14-Z10", name:"Endegagn (special)",          kind:"zone" },
+    { code:"14-Z11", name:"Enemorina Eaner (special)",   kind:"zone" },
+    { code:"14-C1",  name:"Hosaena City",                kind:"city" }
   ],
-  "15": [ // South Ethiopia
+  "15": [
     { code:"15-Z1",  name:"Gamo (South)",     kind:"zone" },
     { code:"15-Z2",  name:"Gofa (South)",     kind:"zone" },
     { code:"15-Z3",  name:"Dawro (South)",    kind:"zone" },
@@ -1156,7 +1157,8 @@ const ICONS = {
   save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
   family:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
-  key:'<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>'
+  key:'<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
+  info:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
 };
 
 /* ============================================================
@@ -1573,7 +1575,6 @@ function zonesForRegion(regionCode) {
   return out;
 }
 
-/* Build the grouped <option> string for a zone select */
 function buildZoneOptions(selectedRegion, selectedZoneId) {
   const zones = zonesForRegion(selectedRegion);
   if (!selectedRegion) return `<option value="">Select a region first</option>`;
@@ -1663,12 +1664,12 @@ function renderHeadActions() {
   const host = document.getElementById("head-actions");
   const btns = [];
   if (canAddStaff()) {
-    btns.push(`<button class="btn btn--primary" id="add-staff-btn" title="Step 1 — create the person record">
+    btns.push(`<button class="btn btn--primary" id="add-staff-btn" title="Step 1 — create the person record with everything">
       <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg> Add Person
     </button>`);
   }
   if (canAssignRoles()) {
-    btns.push(`<button class="btn btn--gold" id="assign-btn" title="Step 2 — creates the login and assigns role">
+    btns.push(`<button class="btn btn--gold" id="assign-btn" title="Step 2 — creates the login">
       <svg viewBox="0 0 24 24">${ICONS.userCheck}</svg> Assign Role &amp; Work Area
     </button>`);
   }
@@ -1782,7 +1783,7 @@ function renderTable() {
         <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px">No people yet</div>
         <div style="font-size:13.5px;line-height:1.6;max-width:520px;margin:0 auto">
           ${canAddStaff()
-            ? "Click <strong>Add Person</strong> to create the first record. Then click <strong>Assign Role</strong> to create their login and set role/work area."
+            ? "Click <strong>Add Person</strong> to create the first record. Then click <strong>Assign Role</strong> to create their login."
             : "No users are visible for your role."}
         </div>
       </td></tr>`;
@@ -2248,9 +2249,210 @@ function wireAddressFields(root, data, { prefix = "addr" } = {}, refresh) {
 }
 
 /* ============================================================
-   CREATE WIZARD — Add Person
-   Steps: Personal → Family → Address → Contact → Fingerprint → Review
-   No login. No users/{uid}. No empId yet.
+   PLACEMENT / EMPLOYMENT / ROLE — shared renderers
+   (used by Add Person and Edit)
+   ============================================================ */
+function renderPlacementFields(d, { prefix = "emp" } = {}) {
+  const P = (k) => `${prefix}_${k}`;
+  const regionSectors = getRegionSectors(d[P("regionCode")] || S.regionCode);
+  const deptList = d[P("sectorId")] ? departmentsForSector(d[P("sectorId")]) : [];
+  const isCluster = d[P("workLevel")] === "cluster";
+  const selectedCluster = CLUSTERS.find(c => c.id === d[P("clusterId")]);
+  const woredas = selectedCluster ? normalizeWoredas(selectedCluster.woredas) : [];
+  const isWoredaStaff = isCluster && d[P("clusterLevel")] === "woreda";
+
+  let sectorOpts = '<option value="">— Choose a sector —</option>';
+  for (const s of regionSectors) {
+    sectorOpts += `<option value="${s.id}" ${d[P("sectorId")] === s.id ? "selected" : ""}>${escapeHtml(s.code || "??")} &middot; ${escapeHtml(s.name || "Unnamed")}</option>`;
+  }
+  let deptOpts = `<option value="">${deptList.length ? "— Choose a department —" : (d[P("sectorId")] ? "No departments in this sector" : "Select a sector first")}</option>`;
+  for (const dep of deptList) {
+    deptOpts += `<option value="${dep.id}" ${d[P("departmentId")] === dep.id ? "selected" : ""}>${escapeHtml(dep.code || "??")} &middot; ${escapeHtml(dep.name || "Unnamed")}</option>`;
+  }
+  let clusterOpts = '<option value="">— Choose a cluster / zone / city —</option>';
+  const availCl = (() => {
+    const lvl = scope();
+    if (lvl === "national") return CLUSTERS;
+    if (lvl === "region") return CLUSTERS.filter(c => c.regionCode === (S.regionCode || S.region));
+    if (lvl === "cluster") return CLUSTERS.filter(c => c.id === S.clusterId);
+    if (lvl === "woreda") return CLUSTERS.filter(c => normalizeWoredas(c.woredas).some(w => w.code === S.woredaCode));
+    return [];
+  })();
+  for (const c of availCl) {
+    clusterOpts += `<option value="${c.id}" ${d[P("clusterId")] === c.id ? "selected" : ""}>${escapeHtml(c.code || "??")} &middot; ${escapeHtml(c.name || "Unnamed")} — ${escapeHtml(regionName(c.regionCode))}</option>`;
+  }
+  let woredaOpts = `<option value="">${woredas.length ? "— Choose a woreda / city —" : (d[P("clusterId")] ? "No woredas in this cluster" : "Select a cluster first")}</option>`;
+  for (const w of woredas) {
+    woredaOpts += `<option value="${escapeHtml(w.code)}" ${d[P("woredaCode")] === w.code ? "selected" : ""}>${escapeHtml(w.code)} — ${escapeHtml(w.name)}</option>`;
+  }
+
+  return `
+    <div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.alert}</svg>
+      <div>Pick a <strong>Sector</strong>, <strong>Department</strong>, then <strong>Regional</strong> or <strong>Cluster</strong>.</div>
+    </div>
+    <div class="field"><label class="field__required">1. Sector</label>
+      <select data-field="${P("sectorId")}" id="${P("sectorId")}" ${regionSectors.length ? "" : "disabled"}>${sectorOpts}</select></div>
+    <div class="field"><label class="field__required">2. Department / Directorate</label>
+      <select data-field="${P("departmentId")}" id="${P("departmentId")}" ${deptList.length ? "" : "disabled"}>${deptOpts}</select></div>
+    <div class="field"><label class="field__required">3. Placement level</label>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="placement-btn ${!isCluster ? "is-on" : ""}" data-level="regional" style="flex:1">
+          <span class="placement-btn__icon"><svg viewBox="0 0 24 24">${ICONS.pin}</svg></span>
+          <span class="placement-btn__label">Regional</span></button>
+        <button type="button" class="placement-btn ${isCluster ? "is-on" : ""}" data-level="cluster" style="flex:1">
+          <span class="placement-btn__icon"><svg viewBox="0 0 24 24">${ICONS.layers}</svg></span>
+          <span class="placement-btn__label">Cluster</span></button>
+      </div></div>
+    ${isCluster ? `
+      <div class="field"><label class="field__required">4. Cluster / Zone / City</label>
+        <select data-field="${P("clusterId")}" id="${P("clusterId")}">${clusterOpts}</select></div>
+      <div class="field"><label class="field__required">5. Where does this person work?</label>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="placement-btn ${d[P("clusterLevel")] !== "woreda" ? "is-on" : ""}" data-cluster-level="cluster" style="flex:1">
+            <span class="placement-btn__label">Cluster staff</span></button>
+          <button type="button" class="placement-btn ${d[P("clusterLevel")] === "woreda" ? "is-on" : ""}" data-cluster-level="woreda" style="flex:1">
+            <span class="placement-btn__label">Woreda / City</span></button>
+        </div></div>
+      ${isWoredaStaff ? `
+        <div class="field"><label class="field__required">6. Woreda / City</label>
+          <select data-field="${P("woredaCode")}" id="${P("woredaCode")}" ${woredas.length ? "" : "disabled"}>${woredaOpts}</select></div>
+        <div class="field"><label>7. Office (optional)</label>
+          <select data-field="${P("officeId")}" id="${P("officeId")}">
+            <option value="">— Optional —</option>
+            ${OFFICES.filter(o => o.clusterId === d[P("clusterId")]).map(o => `<option value="${o.id}" ${d[P("officeId")] === o.id ? "selected" : ""}>${escapeHtml(o.code || "??")} &middot; ${escapeHtml(o.name || "Unnamed")}</option>`).join("")}
+          </select></div>
+      ` : ""}
+    ` : ""}
+  `;
+}
+function validatePlacementFields(d, { prefix = "emp" } = {}) {
+  const P = (k) => `${prefix}_${k}`;
+  if (!d[P("sectorId")]) return "Please select a sector.";
+  if (!d[P("departmentId")]) return "Please select a department.";
+  if (d[P("workLevel")] === "cluster") {
+    if (!d[P("clusterId")]) return "Please select a cluster / zone / city.";
+    if (d[P("clusterLevel")] === "woreda" && !d[P("woredaCode")]) return "Please select a woreda / city.";
+  }
+  return null;
+}
+function wirePlacementFields(root, data, { prefix = "emp" } = {}, refresh) {
+  const P = (k) => `${prefix}_${k}`;
+  const secSel = root.querySelector("#" + P("sectorId"));
+  if (secSel) secSel.addEventListener("change", () => { data[P("sectorId")] = secSel.value; data[P("departmentId")] = ""; refresh(); });
+  const deptSel = root.querySelector("#" + P("departmentId"));
+  if (deptSel) deptSel.addEventListener("change", () => { data[P("departmentId")] = deptSel.value; });
+  root.querySelectorAll("[data-level]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      data[P("workLevel")] = btn.dataset.level;
+      if (data[P("workLevel")] === "regional") {
+        data[P("clusterId")] = ""; data[P("clusterLevel")] = "cluster"; data[P("woredaCode")] = ""; data[P("officeId")] = "";
+      } else if (!data[P("clusterLevel")]) data[P("clusterLevel")] = "cluster";
+      refresh();
+    });
+  });
+  const clSel = root.querySelector("#" + P("clusterId"));
+  if (clSel) clSel.addEventListener("change", () => { data[P("clusterId")] = clSel.value; data[P("woredaCode")] = ""; data[P("officeId")] = ""; refresh(); });
+  root.querySelectorAll("[data-cluster-level]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      data[P("clusterLevel")] = btn.dataset.clusterLevel;
+      if (data[P("clusterLevel")] === "cluster") { data[P("woredaCode")] = ""; data[P("officeId")] = ""; }
+      refresh();
+    });
+  });
+  const woSel = root.querySelector("#" + P("woredaCode"));
+  if (woSel) woSel.addEventListener("change", () => { data[P("woredaCode")] = woSel.value; data[P("officeId")] = ""; refresh(); });
+  const ofSel = root.querySelector("#" + P("officeId"));
+  if (ofSel) ofSel.addEventListener("change", () => { data[P("officeId")] = ofSel.value; });
+}
+
+function renderEmploymentFields(d, { prefix = "emp" } = {}) {
+  const P = (k) => `${prefix}_${k}`;
+  return `
+    <div class="field-row">
+      <div class="field"><label>Position title</label>
+        <input data-field="${P("position")}" value="${escapeHtml(d[P("position")] || "")}" placeholder="e.g. Accountant"></div>
+      <div class="field"><label>Hire date</label>
+        <input data-field="${P("hireDate")}" type="date" value="${escapeHtml(d[P("hireDate")] || "")}"></div>
+    </div>
+    <div class="field"><label>Employment type</label>
+      <select data-field="${P("employmentType")}">
+        <option value="permanent" ${d[P("employmentType")] === "permanent" ? "selected" : ""}>Permanent</option>
+        <option value="contract"  ${d[P("employmentType")] === "contract"  ? "selected" : ""}>Contract</option>
+        <option value="temporary" ${d[P("employmentType")] === "temporary" ? "selected" : ""}>Temporary</option>
+        <option value="intern"    ${d[P("employmentType")] === "intern"    ? "selected" : ""}>Intern</option>
+      </select></div>
+    <div style="margin-top:8px;padding-top:20px;border-top:1px solid var(--border-soft)">
+      <div style="font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:14px">Compensation (ETB)</div>
+      <div class="field-row">
+        <div class="field"><label class="field__required">Basic salary</label>
+          <input data-field="${P("basicSalary")}" type="number" step="0.01" min="0" value="${escapeHtml(d[P("basicSalary")] || "")}" placeholder="0.00"></div>
+        <div class="field"><label>Transport allowance</label>
+          <input data-field="${P("transportAllowance")}" type="number" step="0.01" min="0" value="${escapeHtml(d[P("transportAllowance")] || "")}" placeholder="0.00"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Housing allowance</label>
+          <input data-field="${P("housingAllowance")}" type="number" step="0.01" min="0" value="${escapeHtml(d[P("housingAllowance")] || "")}" placeholder="0.00"></div>
+        <div class="field"><label>Position allowance</label>
+          <input data-field="${P("positionAllowance")}" type="number" step="0.01" min="0" value="${escapeHtml(d[P("positionAllowance")] || "")}" placeholder="0.00"></div>
+      </div>
+      <div class="field"><label>Other allowance</label>
+        <input data-field="${P("otherAllowance")}" type="number" step="0.01" min="0" value="${escapeHtml(d[P("otherAllowance")] || "")}" placeholder="0.00"></div>
+    </div>
+  `;
+}
+function validateEmploymentFields(d, { prefix = "emp" } = {}) {
+  const P = (k) => `${prefix}_${k}`;
+  if (!(Number(d[P("basicSalary")]) > 0)) return "Basic salary is required.";
+  return null;
+}
+
+function renderRoleFields(d, { prefix = "emp" } = {}, roleOptions) {
+  const P = (k) => `${prefix}_${k}`;
+  const roleOpts = roleOptions.map(r =>
+    `<option value="${r}" ${d[P("role")] === r ? "selected" : ""}>${escapeHtml(roleLabel(r))}</option>`
+  ).join("");
+  return `
+    <div class="field"><label class="field__required">Role</label>
+      <select data-field="${P("role")}" id="${P("role")}">${roleOpts}</select></div>
+    <div class="field ${d[P("role")] === "finance" ? "" : "hidden"}" id="${P("financeField")}">
+      <label>Finance sub-role</label>
+      <select data-field="${P("financeRole")}">
+        ${FINANCE_SUBROLES.map(f => `<option value="${f.key}" ${d[P("financeRole")] === f.key ? "selected" : ""}>${f.label}</option>`).join("")}
+      </select></div>
+    <div class="field ${d[P("role")] === "hrm" ? "" : "hidden"}" id="${P("hrmField")}">
+      <label>HRM sub-role</label>
+      <select data-field="${P("hrmRole")}">
+        ${HRM_SUBROLES.map(h => `<option value="${h.key}" ${d[P("hrmRole")] === h.key ? "selected" : ""}>${h.label}</option>`).join("")}
+      </select></div>
+  `;
+}
+function validateRoleFields(d, { prefix = "emp" } = {}) {
+  const P = (k) => `${prefix}_${k}`;
+  if (!d[P("role")]) return "Please select a role.";
+  if (d[P("role")] === "finance" && !d[P("financeRole")]) return "Choose a finance sub-role.";
+  if (d[P("role")] === "hrm" && !d[P("hrmRole")]) return "Choose an HRM sub-role.";
+  return null;
+}
+function wireRoleFields(root, data, { prefix = "emp" } = {}) {
+  const P = (k) => `${prefix}_${k}`;
+  const roleSel  = root.querySelector("#" + P("role"));
+  const finField = root.querySelector("#" + P("financeField"));
+  const hrmField = root.querySelector("#" + P("hrmField"));
+  if (!roleSel) return;
+  const update = () => {
+    const r = roleSel.value;
+    if (finField) finField.classList.toggle("hidden", r !== "finance");
+    if (hrmField) hrmField.classList.toggle("hidden", r !== "hrm");
+    data[P("role")] = r;
+  };
+  update();
+  roleSel.addEventListener("change", update);
+}
+
+/* ============================================================
+   CREATE WIZARD — Add Person (Option B: everything)
+   Steps: Personal → Family → Address → Contact → Fingerprint
+          → Placement → Employment → Role → Review
    ============================================================ */
 function openCreateUserWizard() {
   if (!canAddStaff()) { toast("You cannot add staff", "error"); return; }
@@ -2259,11 +2461,15 @@ function openCreateUserWizard() {
 
   openWizard({
     title: "Add Person — Step 1",
-    subtitle: "Creates the person record. Login, role and work area are created later in Step 2 (Assign Role).",
+    subtitle: "Creates the full person record. Login is created separately in Step 2 (Assign Role).",
     finishLabel: "Create Person Record",
-    successMessage: "Person added. Next: click “Assign Role & Work Area” to create their login and assign role.",
+    successMessage: "Person added. Next: click “Assign Role & Work Area” to create their login.",
     size: "xl",
-    initial: { gender:"", maritalStatus:"", addr_country:"ET", addr_region:"", addr_zoneId:"", addr_woredaCode:"" },
+    initial: {
+      gender:"", maritalStatus:"", addr_country:"ET", addr_region:"", addr_zoneId:"", addr_woredaCode:"",
+      emp_workLevel:"regional", emp_clusterLevel:"cluster", emp_role:"employee",
+      emp_hireDate: new Date().toISOString().slice(0,10), emp_employmentType:"permanent"
+    },
     steps: [
       /* ---------- PERSONAL ---------- */
       {
@@ -2336,7 +2542,7 @@ function openCreateUserWizard() {
           if (!st.ok) {
             if (st.reason === "duplicate") return "This National ID is already registered.";
             if (st.reason === "incomplete") return `National ID must be exactly ${NAT_ID_LENGTH} digits.`;
-            return "Please wait — checking National ID for duplicates.";
+            return "Please wait — checking National ID.";
           }
           return null;
         },
@@ -2357,124 +2563,66 @@ function openCreateUserWizard() {
       {
         label: "Family", title: "Family history & emergency contact",
         render: (d) => `
-          <div class="alert alert--info">
-            <svg viewBox="0 0 24 24">${ICONS.family}</svg>
-            <div>Record immediate family members and their addresses. Used for payroll benefits, insurance, and emergency contact.</div>
-          </div>
+          <div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.family}</svg>
+            <div>Record immediate family members and their addresses. Used for payroll benefits, insurance, and emergency contact.</div></div>
 
           <div class="kin-card">
             <div class="kin-card__title"><svg viewBox="0 0 24 24">${ICONS.user}</svg> Father</div>
             <div class="field-row field-row--3">
-              <div class="field"><label>Full name</label>
-                <input data-field="father_name" value="${escapeHtml(d.father_name || "")}" placeholder="Tesfaye Bekele"></div>
-              <div class="field"><label>Phone</label>
-                <div class="phone-group">
-                  <span class="phone-group__cc">+251</span>
-                  <input data-field="father_phone" value="${escapeHtml(d.father_phone || "")}" placeholder="912 345 678" inputmode="numeric">
-                </div></div>
-              <div class="field"><label>Status</label>
-                <select data-field="father_status">
-                  <option value="">—</option>
-                  <option value="alive"   ${d.father_status === "alive"   ? "selected" : ""}>Alive</option>
-                  <option value="deceased"${d.father_status === "deceased"? "selected" : ""}>Deceased</option>
-                </select></div>
+              <div class="field"><label>Full name</label><input data-field="father_name" value="${escapeHtml(d.father_name || "")}" placeholder="Tesfaye Bekele"></div>
+              <div class="field"><label>Phone</label><div class="phone-group"><span class="phone-group__cc">+251</span><input data-field="father_phone" value="${escapeHtml(d.father_phone || "")}" placeholder="912 345 678" inputmode="numeric"></div></div>
+              <div class="field"><label>Status</label><select data-field="father_status"><option value="">—</option><option value="alive" ${d.father_status === "alive" ? "selected" : ""}>Alive</option><option value="deceased" ${d.father_status === "deceased" ? "selected" : ""}>Deceased</option></select></div>
             </div>
             <div class="field-row">
-              <div class="field"><label>Region</label>
-                <select data-field="father_region">
-                  <option value="">—</option>
-                  ${REGIONS.map(r => `<option value="${r.code}" ${d.father_region === r.code ? "selected" : ""}>${escapeHtml(r.code)} — ${escapeHtml(r.en)}</option>`).join("")}
-                </select></div>
-              <div class="field"><label>Woreda / City</label>
-                <input data-field="father_woreda" value="${escapeHtml(d.father_woreda || "")}" placeholder="Woreda / City name"></div>
+              <div class="field"><label>Region</label><select data-field="father_region"><option value="">—</option>${REGIONS.map(r => `<option value="${r.code}" ${d.father_region === r.code ? "selected" : ""}>${escapeHtml(r.code)} — ${escapeHtml(r.en)}</option>`).join("")}</select></div>
+              <div class="field"><label>Woreda / City</label><input data-field="father_woreda" value="${escapeHtml(d.father_woreda || "")}" placeholder="Woreda / City name"></div>
             </div>
             <div class="field-row">
-              <div class="field"><label>Kebele / Ward</label>
-                <input data-field="father_kebele" value="${escapeHtml(d.father_kebele || "")}" placeholder="Kebele"></div>
-              <div class="field"><label>House number</label>
-                <input data-field="father_houseNo" value="${escapeHtml(d.father_houseNo || "")}" placeholder="House #"></div>
+              <div class="field"><label>Kebele / Ward</label><input data-field="father_kebele" value="${escapeHtml(d.father_kebele || "")}" placeholder="Kebele"></div>
+              <div class="field"><label>House number</label><input data-field="father_houseNo" value="${escapeHtml(d.father_houseNo || "")}" placeholder="House #"></div>
             </div>
           </div>
 
           <div class="kin-card">
             <div class="kin-card__title"><svg viewBox="0 0 24 24">${ICONS.user}</svg> Mother</div>
             <div class="field-row field-row--3">
-              <div class="field"><label>Full name</label>
-                <input data-field="mother_name" value="${escapeHtml(d.mother_name || "")}" placeholder="Almaz Kebede"></div>
-              <div class="field"><label>Phone</label>
-                <div class="phone-group">
-                  <span class="phone-group__cc">+251</span>
-                  <input data-field="mother_phone" value="${escapeHtml(d.mother_phone || "")}" placeholder="912 345 678" inputmode="numeric">
-                </div></div>
-              <div class="field"><label>Status</label>
-                <select data-field="mother_status">
-                  <option value="">—</option>
-                  <option value="alive"   ${d.mother_status === "alive"   ? "selected" : ""}>Alive</option>
-                  <option value="deceased"${d.mother_status === "deceased"? "selected" : ""}>Deceased</option>
-                </select></div>
+              <div class="field"><label>Full name</label><input data-field="mother_name" value="${escapeHtml(d.mother_name || "")}" placeholder="Almaz Kebede"></div>
+              <div class="field"><label>Phone</label><div class="phone-group"><span class="phone-group__cc">+251</span><input data-field="mother_phone" value="${escapeHtml(d.mother_phone || "")}" placeholder="912 345 678" inputmode="numeric"></div></div>
+              <div class="field"><label>Status</label><select data-field="mother_status"><option value="">—</option><option value="alive" ${d.mother_status === "alive" ? "selected" : ""}>Alive</option><option value="deceased" ${d.mother_status === "deceased" ? "selected" : ""}>Deceased</option></select></div>
             </div>
             <div class="field-row">
-              <div class="field"><label>Region</label>
-                <select data-field="mother_region">
-                  <option value="">—</option>
-                  ${REGIONS.map(r => `<option value="${r.code}" ${d.mother_region === r.code ? "selected" : ""}>${escapeHtml(r.code)} — ${escapeHtml(r.en)}</option>`).join("")}
-                </select></div>
-              <div class="field"><label>Woreda / City</label>
-                <input data-field="mother_woreda" value="${escapeHtml(d.mother_woreda || "")}" placeholder="Woreda / City name"></div>
+              <div class="field"><label>Region</label><select data-field="mother_region"><option value="">—</option>${REGIONS.map(r => `<option value="${r.code}" ${d.mother_region === r.code ? "selected" : ""}>${escapeHtml(r.code)} — ${escapeHtml(r.en)}</option>`).join("")}</select></div>
+              <div class="field"><label>Woreda / City</label><input data-field="mother_woreda" value="${escapeHtml(d.mother_woreda || "")}" placeholder="Woreda / City name"></div>
             </div>
             <div class="field-row">
-              <div class="field"><label>Kebele / Ward</label>
-                <input data-field="mother_kebele" value="${escapeHtml(d.mother_kebele || "")}" placeholder="Kebele"></div>
-              <div class="field"><label>House number</label>
-                <input data-field="mother_houseNo" value="${escapeHtml(d.mother_houseNo || "")}" placeholder="House #"></div>
+              <div class="field"><label>Kebele / Ward</label><input data-field="mother_kebele" value="${escapeHtml(d.mother_kebele || "")}" placeholder="Kebele"></div>
+              <div class="field"><label>House number</label><input data-field="mother_houseNo" value="${escapeHtml(d.mother_houseNo || "")}" placeholder="House #"></div>
             </div>
           </div>
 
           <div class="kin-card">
             <div class="kin-card__title"><svg viewBox="0 0 24 24">${ICONS.user}</svg> Spouse</div>
             <div class="field-row field-row--3">
-              <div class="field"><label>Full name</label>
-                <input data-field="spouse_name" value="${escapeHtml(d.spouse_name || "")}" placeholder="Hanna Tesfaye"></div>
-              <div class="field"><label>Phone</label>
-                <div class="phone-group">
-                  <span class="phone-group__cc">+251</span>
-                  <input data-field="spouse_phone" value="${escapeHtml(d.spouse_phone || "")}" placeholder="912 345 678" inputmode="numeric">
-                </div></div>
-              <div class="field"><label>Marriage date</label>
-                <input data-field="spouse_marriageDate" type="date" value="${escapeHtml(d.spouse_marriageDate || "")}"></div>
+              <div class="field"><label>Full name</label><input data-field="spouse_name" value="${escapeHtml(d.spouse_name || "")}" placeholder="Hanna Tesfaye"></div>
+              <div class="field"><label>Phone</label><div class="phone-group"><span class="phone-group__cc">+251</span><input data-field="spouse_phone" value="${escapeHtml(d.spouse_phone || "")}" placeholder="912 345 678" inputmode="numeric"></div></div>
+              <div class="field"><label>Marriage date</label><input data-field="spouse_marriageDate" type="date" value="${escapeHtml(d.spouse_marriageDate || "")}"></div>
             </div>
             <div class="field-row">
-              <div class="field"><label>Region</label>
-                <select data-field="spouse_region">
-                  <option value="">—</option>
-                  ${REGIONS.map(r => `<option value="${r.code}" ${d.spouse_region === r.code ? "selected" : ""}>${escapeHtml(r.code)} — ${escapeHtml(r.en)}</option>`).join("")}
-                </select></div>
-              <div class="field"><label>Woreda / City</label>
-                <input data-field="spouse_woreda" value="${escapeHtml(d.spouse_woreda || "")}" placeholder="Woreda / City name"></div>
+              <div class="field"><label>Region</label><select data-field="spouse_region"><option value="">—</option>${REGIONS.map(r => `<option value="${r.code}" ${d.spouse_region === r.code ? "selected" : ""}>${escapeHtml(r.code)} — ${escapeHtml(r.en)}</option>`).join("")}</select></div>
+              <div class="field"><label>Woreda / City</label><input data-field="spouse_woreda" value="${escapeHtml(d.spouse_woreda || "")}" placeholder="Woreda / City name"></div>
             </div>
           </div>
 
           <div class="kin-card">
             <div class="kin-card__title"><svg viewBox="0 0 24 24">${ICONS.alert}</svg> Emergency contact</div>
             <div class="field-row field-row--3">
-              <div class="field"><label class="field__required">Full name</label>
-                <input data-field="emergency_name" value="${escapeHtml(d.emergency_name || "")}" placeholder="Full name"></div>
-              <div class="field"><label class="field__required">Relationship</label>
-                <input data-field="emergency_relation" value="${escapeHtml(d.emergency_relation || "")}" placeholder="Brother, Sister…"></div>
-              <div class="field"><label class="field__required">Phone</label>
-                <div class="phone-group">
-                  <span class="phone-group__cc">+251</span>
-                  <input data-field="emergency_phone" value="${escapeHtml(d.emergency_phone || "")}" placeholder="912 345 678" inputmode="numeric">
-                </div></div>
+              <div class="field"><label class="field__required">Full name</label><input data-field="emergency_name" value="${escapeHtml(d.emergency_name || "")}" placeholder="Full name"></div>
+              <div class="field"><label class="field__required">Relationship</label><input data-field="emergency_relation" value="${escapeHtml(d.emergency_relation || "")}" placeholder="Brother, Sister…"></div>
+              <div class="field"><label class="field__required">Phone</label><div class="phone-group"><span class="phone-group__cc">+251</span><input data-field="emergency_phone" value="${escapeHtml(d.emergency_phone || "")}" placeholder="912 345 678" inputmode="numeric"></div></div>
             </div>
             <div class="field-row">
-              <div class="field"><label>Region</label>
-                <select data-field="emergency_region">
-                  <option value="">—</option>
-                  ${REGIONS.map(r => `<option value="${r.code}" ${d.emergency_region === r.code ? "selected" : ""}>${escapeHtml(r.code)} — ${escapeHtml(r.en)}</option>`).join("")}
-                </select></div>
-              <div class="field"><label>Woreda / City</label>
-                <input data-field="emergency_woreda" value="${escapeHtml(d.emergency_woreda || "")}" placeholder="Woreda / City name"></div>
+              <div class="field"><label>Region</label><select data-field="emergency_region"><option value="">—</option>${REGIONS.map(r => `<option value="${r.code}" ${d.emergency_region === r.code ? "selected" : ""}>${escapeHtml(r.code)} — ${escapeHtml(r.en)}</option>`).join("")}</select></div>
+              <div class="field"><label>Woreda / City</label><input data-field="emergency_woreda" value="${escapeHtml(d.emergency_woreda || "")}" placeholder="Woreda / City name"></div>
             </div>
           </div>
 
@@ -2508,7 +2656,7 @@ function openCreateUserWizard() {
           wireAddressFields(root, data, { prefix: "addr" }, refresh);
         }
       },
-      /* ---------- CONTACT ---------- */
+      /* ---------- CONTACT (phone only) ---------- */
       {
         label: "Contact", title: "Contact",
         render: (d) => `
@@ -2530,8 +2678,6 @@ function openCreateUserWizard() {
               </div>
             </div>
           </div>
-          <div class="field"><label class="field__required">Personal email</label>
-            <input data-field="email" type="email" value="${escapeHtml(d.email || "")}" placeholder="name@example.com"></div>
         `,
         validate: (d) => {
           if (!d.phone) return "Primary phone is required.";
@@ -2543,7 +2689,6 @@ function openCreateUserWizard() {
             if (st.reason === "incomplete") return `Phone number must be exactly ${PHONE_LENGTH} digits.`;
             return "Please wait — checking phone number for duplicates.";
           }
-          if (!d.email || !/^\S+@\S+\.\S+$/.test(d.email)) return "Enter a valid personal email.";
           return null;
         },
         after: (root, data) => {
@@ -2579,21 +2724,17 @@ function openCreateUserWizard() {
                 ${hasCred
                   ? "The fingerprint credential has been registered on this device."
                   : supported
-                    ? "Ask the person to place their finger on the sensor. Uses the device's built-in biometric (Touch ID, Windows Hello, USB reader)."
+                    ? "Ask the person to place their finger on the sensor."
                     : "Fingerprint capture is not available on this device or browser. You can skip this step."}
               </div>
               ${hasCred ? `
-                <div class="fp-capture__badge">
-                  <svg viewBox="0 0 24 24">${ICONS.check}</svg>
-                  Credential captured
-                </div>
+                <div class="fp-capture__badge"><svg viewBox="0 0 24 24">${ICONS.check}</svg> Credential captured</div>
                 <button type="button" class="btn btn--sm" id="fp-reset" style="margin-top:14px">
                   <svg viewBox="0 0 24 24">${ICONS.trash}</svg> Remove &amp; re-scan
                 </button>
               ` : supported ? `
                 <button type="button" class="btn btn--fp" id="fp-scan" style="margin-top:18px">
-                  <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
-                  Scan fingerprint
+                  <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> Scan fingerprint
                 </button>
               ` : `
                 <div class="alert alert--warning" style="margin-top:18px;margin-bottom:0;text-align:left">
@@ -2656,69 +2797,105 @@ function openCreateUserWizard() {
           });
         }
       },
+      /* ---------- PLACEMENT ---------- */
+      {
+        label: "Placement", title: "Sector → Department → Regional / Cluster",
+        render: (d) => renderPlacementFields(d, { prefix: "emp" }),
+        validate: (d) => validatePlacementFields(d, { prefix: "emp" }),
+        after: (root, data, refresh) => wirePlacementFields(root, data, { prefix: "emp" }, refresh)
+      },
+      /* ---------- EMPLOYMENT ---------- */
+      {
+        label: "Employment", title: "Employment & compensation",
+        render: (d) => renderEmploymentFields(d, { prefix: "emp" }),
+        validate: (d) => validateEmploymentFields(d, { prefix: "emp" }),
+        after: () => {}
+      },
+      /* ---------- ROLE ---------- */
+      {
+        label: "Role", title: "Role",
+        render: (d) => renderRoleFields(d, { prefix: "emp" }, assignableRoles()),
+        validate: (d) => validateRoleFields(d, { prefix: "emp" }),
+        after: (root, data) => wireRoleFields(root, data, { prefix: "emp" })
+      },
       /* ---------- REVIEW ---------- */
       {
         label: "Review", title: "Confirm and create person record",
         render: (d) => {
           const hasFp = !!d._fingerprintCredentialId;
-          const zone = (() => {
-            const zones = zonesForRegion(d.addr_region);
-            return zones.find(z => z.id === d.addr_zoneId);
-          })();
+          const zone = zonesForRegion(d.addr_region).find(z => z.id === d.addr_zoneId);
+          const sector = SECTORS.find(s => s.id === d.emp_sectorId);
+          const dep    = DEPARTMENTS.find(x => x.id === d.emp_departmentId);
+          const cl     = d.emp_clusterId ? CLUSTERS.find(c => c.id === d.emp_clusterId) : null;
           return `
-          <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;
-                      padding:16px;background:linear-gradient(135deg,#f8fbff,#fff);
-                      border:1px solid var(--border);border-radius:14px">
-            <div class="user-avatar" style="width:70px;height:70px;font-size:24px">
-              ${d._photo ? `<img src="${d._photo}" alt="">` : escapeHtml(initials([d.firstName, d.lastName].filter(Boolean).join(" ")))}
+            <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;padding:16px;background:linear-gradient(135deg,#f8fbff,#fff);border:1px solid var(--border);border-radius:14px">
+              <div class="user-avatar" style="width:70px;height:70px;font-size:24px">
+                ${d._photo ? `<img src="${d._photo}" alt="">` : escapeHtml(initials([d.firstName, d.lastName].filter(Boolean).join(" ")))}
+              </div>
+              <div style="min-width:0">
+                <div style="font-size:17px;font-weight:800">${escapeHtml([d.firstName, d.middleName, d.lastName].filter(Boolean).join(" "))}</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:2px">${escapeHtml(d.firstNameAm || "")} ${escapeHtml(d.lastNameAm || "")}</div>
+              </div>
             </div>
-            <div style="min-width:0">
-              <div style="font-size:17px;font-weight:800">${escapeHtml([d.firstName, d.middleName, d.lastName].filter(Boolean).join(" "))}</div>
-              <div style="font-size:13px;color:var(--muted);margin-top:2px">${escapeHtml(d.firstNameAm || "")} ${escapeHtml(d.lastNameAm || "")}</div>
+            <div class="review-section">Personal</div>
+            <div class="review">
+              <div class="review__row"><span class="review__k">Gender</span><span class="review__v">${d.gender === "M" ? "Male" : "Female"}</span></div>
+              <div class="review__row"><span class="review__k">Date of birth</span><span class="review__v">${escapeHtml(d.dob || "—")}</span></div>
+              <div class="review__row"><span class="review__k">National ID</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(formatNationalIdDisplay(d.nationalId) || "—")}</span></div>
             </div>
-          </div>
-          <div class="review-section">Personal</div>
-          <div class="review">
-            <div class="review__row"><span class="review__k">Gender</span><span class="review__v">${d.gender === "M" ? "Male" : "Female"}</span></div>
-            <div class="review__row"><span class="review__k">Date of birth</span><span class="review__v">${escapeHtml(d.dob || "—")}</span></div>
-            <div class="review__row"><span class="review__k">National ID</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(formatNationalIdDisplay(d.nationalId) || "—")}</span></div>
-          </div>
-          <div class="review-section">Family</div>
-          <div class="review">
-            ${d.father_name ? `<div class="review__row"><span class="review__k">Father</span><span class="review__v">${escapeHtml(d.father_name)}${d.father_phone ? " · +251 " + escapeHtml(d.father_phone) : ""}</span></div>` : ""}
-            ${d.mother_name ? `<div class="review__row"><span class="review__k">Mother</span><span class="review__v">${escapeHtml(d.mother_name)}${d.mother_phone ? " · +251 " + escapeHtml(d.mother_phone) : ""}</span></div>` : ""}
-            ${d.spouse_name ? `<div class="review__row"><span class="review__k">Spouse</span><span class="review__v">${escapeHtml(d.spouse_name)}${d.spouse_phone ? " · +251 " + escapeHtml(d.spouse_phone) : ""}</span></div>` : ""}
-            ${d.children ? `<div class="review__row"><span class="review__k">Children</span><span class="review__v">${escapeHtml(d.children)}</span></div>` : ""}
-            <div class="review__row"><span class="review__k">Emergency contact</span><span class="review__v">${escapeHtml(d.emergency_name || "—")} (${escapeHtml(d.emergency_relation || "—")}) · +251 ${escapeHtml(d.emergency_phone || "")}</span></div>
-          </div>
-          <div class="review-section">Address</div>
-          <div class="review">
-            <div class="review__row"><span class="review__k">Country</span><span class="review__v">${escapeHtml(d.addr_country || "—")}</span></div>
-            <div class="review__row"><span class="review__k">Region</span><span class="review__v">${escapeHtml(regionLabel(d.addr_region) || "—")}</span></div>
-            <div class="review__row"><span class="review__k">Cluster / Zone / City</span><span class="review__v">${escapeHtml(zone ? zone.code + " — " + zone.name : "—")}</span></div>
-            <div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">${escapeHtml(d.addr_woredaCode || "—")}</span></div>
-            <div class="review__row"><span class="review__k">Sub-city / Kebele</span><span class="review__v">${escapeHtml([d.addr_subCity, d.addr_kebele].filter(Boolean).join(" / ") || "—")}</span></div>
-            <div class="review__row"><span class="review__k">House / Street</span><span class="review__v">${escapeHtml([d.addr_houseNo, d.addr_street].filter(Boolean).join(" / ") || "—")}</span></div>
-            <div class="review__row"><span class="review__k">P.O. Box</span><span class="review__v">${escapeHtml(d.addr_poBox || "—")}</span></div>
-          </div>
-          <div class="review-section">Contact</div>
-          <div class="review">
-            <div class="review__row"><span class="review__k">Phone</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(formatPhoneDisplay(d.phone) || "—")}</span></div>
-            <div class="review__row"><span class="review__k">Alt phone</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(formatPhoneDisplay(d.phoneAlt) || "—")}</span></div>
-            <div class="review__row"><span class="review__k">Personal email</span><span class="review__v">${escapeHtml(d.email || "—")}</span></div>
-            <div class="review__row"><span class="review__k">Fingerprint</span>
-              <span class="review__v">
-                ${hasFp
-                  ? `<span class="fp-mini-badge" style="background:#ecfdf3;color:#067647"><svg viewBox="0 0 24 24">${ICONS.check}</svg> REGISTERED</span>`
-                  : `<span style="color:var(--muted)">— skipped —</span>`}
-              </span>
+            <div class="review-section">Family</div>
+            <div class="review">
+              ${d.father_name ? `<div class="review__row"><span class="review__k">Father</span><span class="review__v">${escapeHtml(d.father_name)}${d.father_phone ? " · +251 " + escapeHtml(d.father_phone) : ""}</span></div>` : ""}
+              ${d.mother_name ? `<div class="review__row"><span class="review__k">Mother</span><span class="review__v">${escapeHtml(d.mother_name)}${d.mother_phone ? " · +251 " + escapeHtml(d.mother_phone) : ""}</span></div>` : ""}
+              ${d.spouse_name ? `<div class="review__row"><span class="review__k">Spouse</span><span class="review__v">${escapeHtml(d.spouse_name)}${d.spouse_phone ? " · +251 " + escapeHtml(d.spouse_phone) : ""}</span></div>` : ""}
+              ${d.children ? `<div class="review__row"><span class="review__k">Children</span><span class="review__v">${escapeHtml(d.children)}</span></div>` : ""}
+              <div class="review__row"><span class="review__k">Emergency contact</span><span class="review__v">${escapeHtml(d.emergency_name || "—")} (${escapeHtml(d.emergency_relation || "—")}) · +251 ${escapeHtml(d.emergency_phone || "")}</span></div>
             </div>
-          </div>
-          <div class="alert alert--info" style="margin-top:16px">
-            <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg>
-            <div>This creates the <strong>person record only</strong> — no login, no role yet.<br><br>
-              <strong>Step 2</strong> — click <strong>Assign Role &amp; Work Area</strong> to create the login (email + password) and assign role, department, zone/woreda and salary.</div>
-          </div>`;
+            <div class="review-section">Address</div>
+            <div class="review">
+              <div class="review__row"><span class="review__k">Country</span><span class="review__v">${escapeHtml(d.addr_country || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Region</span><span class="review__v">${escapeHtml(regionLabel(d.addr_region) || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Cluster / Zone / City</span><span class="review__v">${escapeHtml(zone ? zone.code + " — " + zone.name : "—")}</span></div>
+              <div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">${escapeHtml(d.addr_woredaCode || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Sub-city / Kebele</span><span class="review__v">${escapeHtml([d.addr_subCity, d.addr_kebele].filter(Boolean).join(" / ") || "—")}</span></div>
+              <div class="review__row"><span class="review__k">House / Street</span><span class="review__v">${escapeHtml([d.addr_houseNo, d.addr_street].filter(Boolean).join(" / ") || "—")}</span></div>
+              <div class="review__row"><span class="review__k">P.O. Box</span><span class="review__v">${escapeHtml(d.addr_poBox || "—")}</span></div>
+            </div>
+            <div class="review-section">Contact</div>
+            <div class="review">
+              <div class="review__row"><span class="review__k">Phone</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(formatPhoneDisplay(d.phone) || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Alt phone</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(formatPhoneDisplay(d.phoneAlt) || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Fingerprint</span>
+                <span class="review__v">
+                  ${hasFp
+                    ? `<span class="fp-mini-badge" style="background:#ecfdf3;color:#067647"><svg viewBox="0 0 24 24">${ICONS.check}</svg> REGISTERED</span>`
+                    : `<span style="color:var(--muted)">— skipped —</span>`}
+                </span>
+              </div>
+            </div>
+            <div class="review-section">Placement</div>
+            <div class="review">
+              <div class="review__row"><span class="review__k">Sector</span><span class="review__v">${escapeHtml(sector?.name || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Department</span><span class="review__v">${escapeHtml(dep?.name || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Cluster / Zone</span><span class="review__v">${escapeHtml(cl?.name || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">${escapeHtml(d.emp_woredaCode || "—")}</span></div>
+            </div>
+            <div class="review-section">Employment &amp; pay</div>
+            <div class="review">
+              <div class="review__row"><span class="review__k">Position</span><span class="review__v">${escapeHtml(d.emp_position || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Hire date</span><span class="review__v">${escapeHtml(d.emp_hireDate || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Employment type</span><span class="review__v">${escapeHtml(d.emp_employmentType || "permanent")}</span></div>
+              <div class="review__row"><span class="review__k">Basic salary</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(d.emp_basicSalary) || "0")} ETB</span></div>
+            </div>
+            <div class="review-section">Role</div>
+            <div class="review">
+              <div class="review__row"><span class="review__k">Role</span><span class="review__v"><span class="role-badge role-badge--${d.emp_role}">${escapeHtml(roleLabel(d.emp_role))}</span></span></div>
+            </div>
+            <div class="alert alert--info" style="margin-top:16px">
+              <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg>
+              <div>This creates the <strong>person record with everything</strong> — no login yet.<br><br>
+                <strong>Step 2</strong> — click <strong>Assign Role &amp; Work Area</strong> to create the login. Placement, employment and role will be pre-filled from this record.</div>
+            </div>`;
         }
       }
     ],
@@ -2726,7 +2903,7 @@ function openCreateUserWizard() {
       const natIdNorm = normalizeNationalId(d.nationalId);
       const phoneNorm = normalizePhone(d.phone);
       if (natIdNorm.length !== NAT_ID_LENGTH) throw new Error(`National ID must be exactly ${NAT_ID_LENGTH} digits.`);
-      if (phoneNorm.length !== PHONE_LENGTH)  throw new Error(`Phone number must be exactly ${PHONE_LENGTH} digits after +251.`);
+      if (phoneNorm.length !== PHONE_LENGTH)  throw new Error(`Phone number must be exactly ${PHONE_LENGTH} digits.`);
 
       const dupNat = await findEmployeeByNationalId(natIdNorm);
       if (dupNat) throw new Error(`National ID is already registered.`);
@@ -2736,7 +2913,6 @@ function openCreateUserWizard() {
       const nameEn = [d.firstName, d.middleName, d.lastName].filter(Boolean).map(s => s.trim()).join(" ");
       const nameAm = [d.firstNameAm, d.middleNameAm, d.lastNameAm].filter(Boolean).map(s => s.trim()).join(" ") || null;
       const nameOm = [d.firstNameOm, d.middleNameOm, d.lastNameOm].filter(Boolean).map(s => s.trim()).join(" ") || null;
-
       const phoneDisplay = "+251 " + phoneNorm.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3");
       const phoneAltNorm = normalizePhone(d.phoneAlt || "");
       const phoneAltDisplay = phoneAltNorm.length === PHONE_LENGTH
@@ -2768,27 +2944,12 @@ function openCreateUserWizard() {
       const fingerprintArray = fingerprint ? [fingerprint] : [];
 
       const family = {
-        father: {
-          name: d.father_name || null, phone: d.father_phone || null,
-          status: d.father_status || null, region: d.father_region || null,
-          woreda: d.father_woreda || null, kebele: d.father_kebele || null, houseNo: d.father_houseNo || null
-        },
-        mother: {
-          name: d.mother_name || null, phone: d.mother_phone || null,
-          status: d.mother_status || null, region: d.mother_region || null,
-          woreda: d.mother_woreda || null, kebele: d.mother_kebele || null, houseNo: d.mother_houseNo || null
-        },
-        spouse: {
-          name: d.spouse_name || null, phone: d.spouse_phone || null,
-          marriageDate: d.spouse_marriageDate || null, region: d.spouse_region || null, woreda: d.spouse_woreda || null
-        },
-        children: (d.children || "").trim() || null,
-        emergency: {
-          name: d.emergency_name || null, relation: d.emergency_relation || null,
-          phone: d.emergency_phone || null, region: d.emergency_region || null, woreda: d.emergency_woreda || null
-        }
+        father: { name: d.father_name||null, phone: d.father_phone||null, status: d.father_status||null, region: d.father_region||null, woreda: d.father_woreda||null, kebele: d.father_kebele||null, houseNo: d.father_houseNo||null },
+        mother: { name: d.mother_name||null, phone: d.mother_phone||null, status: d.mother_status||null, region: d.mother_region||null, woreda: d.mother_woreda||null, kebele: d.mother_kebele||null, houseNo: d.mother_houseNo||null },
+        spouse: { name: d.spouse_name||null, phone: d.spouse_phone||null, marriageDate: d.spouse_marriageDate||null, region: d.spouse_region||null, woreda: d.spouse_woreda||null },
+        children: (d.children||"").trim() || null,
+        emergency: { name: d.emergency_name||null, relation: d.emergency_relation||null, phone: d.emergency_phone||null, region: d.emergency_region||null, woreda: d.emergency_woreda||null }
       };
-
       const address = {
         country: d.addr_country || "ET",
         region: d.addr_region || null,
@@ -2801,16 +2962,42 @@ function openCreateUserWizard() {
         poBox: d.addr_poBox || null
       };
 
+      /* Placement/employment/role values from Add Person */
+      const selectedSector = SECTORS.find(s => s.id === d.emp_sectorId);
+      const selDept   = DEPARTMENTS.find(x => x.id === d.emp_departmentId);
+      const selCl     = d.emp_clusterId ? CLUSTERS.find(c => c.id === d.emp_clusterId) : null;
+      const regionCode = selectedSector?.regionCode || selectedSector?.region || S.regionCode || null;
+      const regionNameStr = regionCode ? regionName(regionCode) : null;
+      const isCluster = d.emp_workLevel === "cluster";
+      const isWoredaStaff = isCluster && d.emp_clusterLevel === "woreda";
+      const woredaNameStr = (isWoredaStaff && selCl)
+        ? (normalizeWoredas(selCl.woredas).find(w => w.code === d.emp_woredaCode)?.name || "")
+        : "";
+
       try {
         await setDoc(empRef, {
           empId: null, seq: null, uid: null,
-          role: "unassigned", status: "unassigned",
-          regionCode: null, regionName: null,
-          sectorId: null, sectorCode: null, sectorName: null,
-          departmentId: null, departmentCode: null, departmentName: null,
-          clusterId: null, clusterCode: null, clusterName: null,
-          woredaCode: null, woredaName: null,
-          officeId: null, officeCode: null, officeName: null,
+          role: d.emp_role,
+          status: "pending_login",
+          regionCode, regionName: regionNameStr,
+          sectorId: selectedSector?.id || null, sectorCode: selectedSector?.code || null, sectorName: selectedSector?.name || null,
+          departmentId: selDept?.id || null, departmentCode: selDept?.code || null, departmentName: selDept?.name || null,
+          clusterId: selCl?.id || null, clusterCode: selCl?.code || null, clusterName: selCl?.name || null,
+          woredaCode: isWoredaStaff ? (d.emp_woredaCode || null) : null,
+          woredaName: isWoredaStaff ? woredaNameStr : null,
+          officeId: d.emp_officeId || null,
+          isClusterStaff: isCluster && !isWoredaStaff,
+          isDirector: false,
+          position: (d.emp_position || "").trim() || null,
+          hireDate: d.emp_hireDate || null,
+          employmentType: d.emp_employmentType || "permanent",
+          basicSalary: Number(d.emp_basicSalary) || 0,
+          transportAllowance: Number(d.emp_transportAllowance) || 0,
+          housingAllowance: Number(d.emp_housingAllowance) || 0,
+          positionAllowance: Number(d.emp_positionAllowance) || 0,
+          otherAllowance: Number(d.emp_otherAllowance) || 0,
+          financeRole: d.emp_role === "finance" ? (d.emp_financeRole || null) : null,
+          hrmRole: d.emp_role === "hrm" ? (d.emp_hrmRole || null) : null,
           firstName: d.firstName.trim(),
           middleName: d.middleName?.trim() || null,
           lastName: d.lastName.trim(),
@@ -2826,9 +3013,8 @@ function openCreateUserWizard() {
           gender: d.gender, dob: d.dob,
           maritalStatus: d.maritalStatus || null,
           phone: phoneDisplay, phoneNorm, phoneAlt: phoneAltDisplay,
-          email: (d.email || "").trim(),
-          family,
-          address,
+          email: null,
+          family, address,
           active: false,
           hasLogin: false,
           fingerprints: fingerprintArray,
@@ -2845,7 +3031,7 @@ function openCreateUserWizard() {
         await addDoc(collection(db, "notifications"), {
           type: "person_added",
           title: "New person added (no login yet)",
-          body: `${nameEn} was added. Assign Role & Work Area to create their login.`,
+          body: `${nameEn} was added with placement, employment and role. Assign Role to create their login.`,
           targetEmpId: empRef.id,
           forRoles: ["super_admin","hrm","finance",
                      "regional_admin","regional_hrm","regional_finance",
@@ -2857,15 +3043,13 @@ function openCreateUserWizard() {
           createdBy: S.uid
         });
       } catch (e) {}
-
-      /* NOTE: no auto-open of assign wizard. Admin clicks it explicitly. */
     }
   });
 }
 
 /* ============================================================
-   ASSIGN WIZARD — Step 2
-   Steps: Login → Select Person → (Re-assign if needed) → Placement → Role & Pay → Review
+   ASSIGN ROLE — Step 2 (login only; placement/employment/role autofilled & locked)
+   Steps: Select Person → Login → Placement (locked) → Employment (locked) → Role (locked) → Review
    ============================================================ */
 function openAssignWizard(preselectedUserId = null) {
   if (!canAssignRoles()) { toast("You cannot assign roles", "error"); return; }
@@ -2879,19 +3063,6 @@ function openAssignWizard(preselectedUserId = null) {
     }
   }
 
-  const regionSectors = getRegionSectors(S.regionCode || S.region);
-  const availableClusters = (() => {
-    const lvl = scope();
-    if (lvl === "national") return CLUSTERS;
-    if (lvl === "region") return CLUSTERS.filter(c => c.regionCode === (S.regionCode || S.region));
-    if (lvl === "cluster") return CLUSTERS.filter(c => c.id === S.clusterId);
-    if (lvl === "woreda") return CLUSTERS.filter(c =>
-      normalizeWoredas(c.woredas).some(w => w.code === S.woredaCode)
-    );
-    return [];
-  })();
-
-  const roleOptions = assignableRoles();
   const preselected = preselectedUserId ? USERS.find(u => u.id === preselectedUserId) : null;
 
   function suggestLoginEmail(emp) {
@@ -2902,202 +3073,133 @@ function openAssignWizard(preselectedUserId = null) {
     return base ? `${base}@csmis.gov.et` : "user@csmis.gov.et";
   }
 
-  function sectorOptionsHtml(selectedId) {
-    let html = '<option value="">— Choose a sector —</option>';
-    for (const s of regionSectors) {
-      html += '<option value="' + s.id + '"' + (selectedId === s.id ? " selected" : "") + '>' +
-        escapeHtml(s.code || "??") + ' &middot; ' + escapeHtml(s.name || "Unnamed") + '</option>';
-    }
-    return html;
+  /* ---- locked display blocks ---- */
+  function renderLockedPlacement(emp) {
+    if (!emp) return "";
+    const sector = SECTORS.find(s => s.id === emp.sectorId);
+    const dep    = DEPARTMENTS.find(x => x.id === emp.departmentId);
+    const cl     = CLUSTERS.find(c => c.id === emp.clusterId);
+    const woreda = cl ? normalizeWoredas(cl.woredas).find(w => w.code === emp.woredaCode) : null;
+    return `
+      <div class="alert alert--info">
+        <svg viewBox="0 0 24 24">${ICONS.lock}</svg>
+        <div>Placement was recorded in <strong>Add Person</strong>. To change it, edit the person.</div>
+      </div>
+      <div class="review">
+        <div class="review__row"><span class="review__k">Sector</span><span class="review__v">${escapeHtml(sector?.name || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Department</span><span class="review__v">${escapeHtml(dep?.name || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Cluster / Zone</span><span class="review__v">${escapeHtml(cl?.name || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">${escapeHtml(woreda?.name || emp.woredaName || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Office</span><span class="review__v">${escapeHtml(emp.officeName || "—")}</span></div>
+      </div>`;
   }
-  function departmentOptionsHtml(sectorId, selectedId) {
-    const list = sectorId ? departmentsForSector(sectorId) : [];
-    const placeholder = list.length ? "— Choose a department —" : (sectorId ? "No departments in this sector" : "Select a sector first");
-    let html = '<option value="">' + placeholder + '</option>';
-    for (const d of list) {
-      html += '<option value="' + d.id + '"' + (selectedId === d.id ? " selected" : "") + '>' +
-        escapeHtml(d.code || "??") + ' &middot; ' + escapeHtml(d.name || "Unnamed") + '</option>';
-    }
-    return html;
+  function renderLockedEmployment(emp) {
+    if (!emp) return "";
+    return `
+      <div class="alert alert--info">
+        <svg viewBox="0 0 24 24">${ICONS.lock}</svg>
+        <div>Employment &amp; pay were recorded in <strong>Add Person</strong>. To change them, edit the person.</div>
+      </div>
+      <div class="review">
+        <div class="review__row"><span class="review__k">Position</span><span class="review__v">${escapeHtml(emp.position || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Hire date</span><span class="review__v">${escapeHtml(emp.hireDate || "—")}</span></div>
+        <div class="review__row"><span class="review__k">Employment type</span><span class="review__v">${escapeHtml(emp.employmentType || "permanent")}</span></div>
+        <div class="review__row"><span class="review__k">Basic salary</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(emp.basicSalary) || "0")} ETB</span></div>
+        <div class="review__row"><span class="review__k">Transport</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(emp.transportAllowance) || "0")}</span></div>
+        <div class="review__row"><span class="review__k">Housing</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(emp.housingAllowance) || "0")}</span></div>
+        <div class="review__row"><span class="review__k">Position allowance</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(emp.positionAllowance) || "0")}</span></div>
+        <div class="review__row"><span class="review__k">Other allowance</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(emp.otherAllowance) || "0")}</span></div>
+      </div>`;
   }
-  function clusterOptionsHtml(selectedId) {
-    let html = '<option value="">— Choose a cluster / zone —</option>';
-    for (const c of availableClusters) {
-      html += '<option value="' + c.id + '"' + (selectedId === c.id ? " selected" : "") + '>' +
-        escapeHtml(c.code || "??") + ' &middot; ' + escapeHtml(c.name || "Unnamed") +
-        ' — ' + escapeHtml(regionName(c.regionCode)) + '</option>';
-    }
-    return html;
+  function renderLockedRole(emp) {
+    if (!emp) return "";
+    return `
+      <div class="alert alert--info">
+        <svg viewBox="0 0 24 24">${ICONS.lock}</svg>
+        <div>Role was recorded in <strong>Add Person</strong>. To change it, edit the person.</div>
+      </div>
+      <div class="review">
+        <div class="review__row"><span class="review__k">Role</span>
+          <span class="review__v"><span class="role-badge role-badge--${emp.role || "employee"}">${escapeHtml(roleLabel(emp.role || "employee"))}</span></span></div>
+        ${emp.financeRole ? `<div class="review__row"><span class="review__k">Finance sub-role</span><span class="review__v">${escapeHtml(emp.financeRole)}</span></div>` : ""}
+        ${emp.hrmRole ? `<div class="review__row"><span class="review__k">HRM sub-role</span><span class="review__v">${escapeHtml(emp.hrmRole)}</span></div>` : ""}
+      </div>`;
   }
-  function woredaOptionsHtml(clusterId, selectedCode) {
-    const cl = CLUSTERS.find(c => c.id === clusterId);
-    const woredas = cl ? normalizeWoredas(cl.woredas) : [];
-    const placeholder = woredas.length ? "— Choose a woreda / city —" : (clusterId ? "No woredas in this cluster" : "Select a cluster first");
-    let html = '<option value="">' + placeholder + '</option>';
-    for (const w of woredas) {
-      html += '<option value="' + escapeHtml(w.code) + '"' + (selectedCode === w.code ? " selected" : "") + '>' +
-        escapeHtml(w.code) + ' — ' + escapeHtml(w.name) + '</option>';
-    }
-    return html;
-  }
-
-  const reassignStep = {
-    label: "Re-assign", title: "Confirm re-assignment & clearance",
-    render: (d) => {
-      const u = USERS.find(x => x.id === d.selectedUserId);
-      if (!u) return '<div class="alert alert--error">Please go back and select a user.</div>';
-      const emp = employeesByUid[u.id];
-      const sector  = SECTORS.find(s => s.id === u.sectorId);
-      const dept    = DEPARTMENTS.find(x => x.id === u.departmentId);
-      const cluster = CLUSTERS.find(c => c.id === u.clusterId);
-      const currentEmpId = emp?.empId || u.empId || "—";
-      const photoSrc = d._newPhoto || u.photoURL || emp?.photoURL || null;
-
-      let html = '';
-      html += '<div class="reassign-photo">';
-      html +=   '<div class="reassign-photo__circle" id="reassign-photo-circle">';
-      if (photoSrc) html += '<img id="reassign-photo-preview" src="' + escapeHtml(photoSrc) + '" alt="">';
-      else html += '<span>' + escapeHtml(initials(u.name || u.email)) + '</span>';
-      html +=     '<div class="reassign-photo__badge"><svg viewBox="0 0 24 24">' + ICONS.camera + '</svg></div>';
-      html +=     '<input type="file" id="reassign-photo-input" accept="image/*" style="display:none">';
-      html +=   '</div>';
-      html +=   '<div class="reassign-photo__main">';
-      html +=     '<div class="reassign-photo__title">' + escapeHtml(u.name || u.email || "User") + '</div>';
-      html +=     '<div class="reassign-photo__hint">' + (d._newPhoto ? 'New photo will replace the current one' : 'Current photo · click to update during transfer (optional)') + '</div>';
-      html +=     '<button type="button" class="reassign-photo__btn" id="reassign-photo-btn">';
-      html +=       '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4">' + ICONS.camera + '</svg>';
-      html +=       (d._newPhoto ? 'Change photo' : 'Upload new photo');
-      html +=     '</button>';
-      html +=     (d._newPhoto ? ' <button type="button" class="reassign-photo__btn" id="reassign-photo-clear">Remove</button>' : '');
-      html +=   '</div>';
-      html += '</div>';
-
-      html += '<div class="alert alert--warning"><svg viewBox="0 0 24 24">' + ICONS.alert + '</svg>';
-      html += '<div><strong>This user is already assigned.</strong> Re-assigning will transfer them. Clearance documents are required.</div></div>';
-
-      html += '<div style="font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">Current Assignment</div>';
-      html += '<div class="review" style="margin-bottom:18px">';
-      html += '<div class="review__row"><span class="review__k">Current Employee ID</span>';
-      html += '<span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(currentEmpId) + '</span></div>';
-      if (emp?.nationalId) html += '<div class="review__row"><span class="review__k">National ID</span><span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(formatNationalIdDisplay(emp.nationalId)) + '</span></div>';
-      if (emp?.phone || u.phone) html += '<div class="review__row"><span class="review__k">Phone</span><span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(formatPhoneDisplay(emp?.phone || u.phone)) + '</span></div>';
-      html += '<div class="review__row"><span class="review__k">Current Role</span>';
-      html += '<span class="review__v"><span class="role-badge role-badge--' + (u.role || "unassigned") + '">' + escapeHtml(roleLabel(u.role || "unassigned")) + '</span></span></div>';
-      if (u.regionCode || u.region) html += '<div class="review__row"><span class="review__k">Region</span><span class="review__v">' + escapeHtml(regionLabel(u.regionCode || u.region)) + '</span></div>';
-      if (sector || u.sectorName) html += '<div class="review__row"><span class="review__k">Sector</span><span class="review__v">' + escapeHtml(sector?.name || u.sectorName) + '</span></div>';
-      if (dept || u.departmentName) html += '<div class="review__row"><span class="review__k">Department</span><span class="review__v">' + escapeHtml(dept?.name || u.departmentName) + '</span></div>';
-      if (cluster || u.clusterName) html += '<div class="review__row"><span class="review__k">Cluster / Zone</span><span class="review__v">' + escapeHtml(cluster?.name || u.clusterName) + '</span></div>';
-      if (u.woredaCode) html += '<div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">' + escapeHtml(u.woredaName || u.woredaCode) + '</span></div>';
-      if (u.officeName) html += '<div class="review__row"><span class="review__k">Office</span><span class="review__v">' + escapeHtml(u.officeName) + '</span></div>';
-      const basic = Number(emp?.basicSalary || 0);
-      if (basic) html += '<div class="review__row"><span class="review__k">Basic salary</span><span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(fmtMoney(basic) || "0") + ' ETB</span></div>';
-      html += '</div>';
-
-      const yesOn = d.reassign_confirmed === true;
-      const noOn  = d.reassign_confirmed === false;
-      html += '<div class="field" style="margin-top:20px">';
-      html += '<label class="field__required">Do you want to re-assign this user?</label>';
-      html += '<div style="display:flex;gap:8px">';
-      html += '<button type="button" class="placement-btn' + (yesOn ? ' is-on' : '') + '" data-reassign-confirm="yes" style="flex:1">';
-      html += '<span class="placement-btn__icon"><svg viewBox="0 0 24 24">' + ICONS.check + '</svg></span>';
-      html += '<span class="placement-btn__label">Yes, re-assign</span>';
-      html += '<span class="placement-btn__hint">Proceed with transfer</span>';
-      html += '</button>';
-      html += '<button type="button" class="placement-btn' + (noOn ? ' is-on' : '') + '" data-reassign-confirm="no" style="flex:1">';
-      html += '<span class="placement-btn__icon"><svg viewBox="0 0 24 24">' + ICONS.x + '</svg></span>';
-      html += '<span class="placement-btn__label">No, cancel</span>';
-      html += '<span class="placement-btn__hint">Keep current assignment</span>';
-      html += '</button>';
-      html += '</div></div>';
-
-      if (yesOn) {
-        html += '<div style="margin-top:22px;padding-top:22px;border-top:1px solid var(--border-soft)">';
-        html += '<div style="font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:14px">Clearance & transfer documents</div>';
-        html += '<div class="field-row">';
-        html += '<div class="field"><label class="field__required">Clearance number</label>';
-        html += '<input data-field="reassign_clearanceNumber" value="' + escapeHtml(d.reassign_clearanceNumber || "") + '"></div>';
-        html += '<div class="field"><label class="field__required">Transfer letter number</label>';
-        html += '<input data-field="reassign_letterNumber" value="' + escapeHtml(d.reassign_letterNumber || "") + '"></div>';
-        html += '</div>';
-        html += '<div class="field"><label class="field__required">Transfer letter date</label>';
-        html += '<input data-field="reassign_letterDate" type="date" value="' + escapeHtml(d.reassign_letterDate || "") + '"></div>';
-        html += '<div class="field"><label class="field__required">Upload clearance / transfer letter</label>';
-        html += '<input type="file" id="reassign-file" accept="image/*,application/pdf" style="height:auto;padding:12px 14px;font-size:13px">';
-        html += '<p class="field__hint">PDF, JPG or PNG · max 3 MB</p>';
-        if (d.reassign_clearanceFileData) {
-          html += '<p class="field__hint" style="color:var(--success);font-weight:700">✓ ' + escapeHtml(d.reassign_clearanceFileName || "File uploaded") + '</p>';
-        }
-        html += '</div></div>';
-      }
-      return html;
-    },
-    validate: (d) => {
-      if (d.reassign_confirmed === null || d.reassign_confirmed === undefined) return "Please choose Yes or No.";
-      if (d.reassign_confirmed === false) return "You chose not to re-assign. Click Cancel below.";
-      if (!d.reassign_clearanceNumber || d.reassign_clearanceNumber.trim().length < 2) return "Clearance number is required.";
-      if (!d.reassign_letterNumber || d.reassign_letterNumber.trim().length < 2) return "Transfer letter number is required.";
-      if (!d.reassign_letterDate) return "Transfer letter date is required.";
-      if (!d.reassign_clearanceFileData) return "Please upload the clearance / transfer letter.";
-      return null;
-    },
-    after: (root, data, refresh) => {
-      const circle    = root.querySelector("#reassign-photo-circle");
-      const input     = root.querySelector("#reassign-photo-input");
-      const uploadBtn = root.querySelector("#reassign-photo-btn");
-      const clearBtn  = root.querySelector("#reassign-photo-clear");
-      if (circle && input) {
-        circle.addEventListener("click", () => input.click());
-        uploadBtn?.addEventListener("click", (e) => { e.stopPropagation(); input.click(); });
-      }
-      if (input) {
-        input.addEventListener("change", async () => {
-          const f = input.files?.[0];
-          if (!f) return;
-          if (f.size > 3 * 1024 * 1024) { toast("Photo must be under 3 MB", "error"); return; }
-          try {
-            const dataURL = await fileToDataURL(f);
-            data._newPhoto = dataURL;
-            data._newPhotoName = f.name;
-            refresh();
-          } catch (e) { toast("Could not read image", "error"); }
-        });
-      }
-      if (clearBtn) {
-        clearBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          data._newPhoto = null;
-          data._newPhotoName = "";
-          if (input) input.value = "";
-          refresh();
-        });
-      }
-      root.querySelectorAll("[data-reassign-confirm]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const choice = btn.dataset.reassignConfirm;
-          if (choice === "no") { toast("Re-assignment cancelled", "info"); closeModal(); return; }
-          data.reassign_confirmed = true;
-          refresh();
-        });
-      });
-      const fileInput = root.querySelector("#reassign-file");
-      if (fileInput) {
-        fileInput.addEventListener("change", async () => {
-          const f = fileInput.files?.[0];
-          if (!f) return;
-          if (f.size > 3 * 1024 * 1024) { toast("File must be under 3 MB", "error"); return; }
-          try {
-            const dataURL = await fileToDataURL(f);
-            data.reassign_clearanceFileData = dataURL;
-            data.reassign_clearanceFileName = f.name;
-            refresh();
-          } catch (e) { toast("Could not read file", "error"); }
-        });
-      }
-    }
-  };
 
   const steps = [
-    /* ---------------- LOGIN (creates the account) ---------------- */
+    /* ---------------- SELECT PERSON ---------------- */
+    {
+      label: "Select Person", title: "Select a person (already added)",
+      render: (d) => {
+        const locked = !!preselected;
+        const candidates = visibleUsers()
+          .filter(u => {
+            if (preselected) return u.id === preselected.id;
+            if (!employeesByUid[u.id]) return false;
+            return canAssignTo(u);
+          })
+          .sort((a, b) => String(a.name || a.email || "").localeCompare(String(b.name || b.email || "")));
+
+        let rows = "";
+        for (const u of candidates) {
+          const emp = employeesByUid[u.id];
+          const hay = [u.name, u.email, u.nationalId, emp && emp.empId, emp && emp.nationalId].filter(Boolean).join(" ").toLowerCase();
+          const isOn = d.selectedUserId === u.id;
+          const hasLogin = !!(emp?.uid || u.hasLogin);
+          rows += '<div class="user-pick-item ' + (isOn ? "is-on" : "") + '" data-uid="' + u.id + '" data-search="' + escapeHtml(hay) + '">' +
+            '<div class="admin-avatar">' + (u.photoURL ? '<img src="' + escapeHtml(u.photoURL) + '" alt="">' : escapeHtml(initials(u.name || u.email))) + '</div>' +
+            '<div class="user-pick-item__main">' +
+              '<div class="user-pick-item__name">' +
+                escapeHtml(u.name || u.email || "User") +
+                (hasLogin ? ' <span class="assigned-tag">Has login</span>' : ' <span class="unassigned-tag">No login</span>') +
+              '</div>' +
+              '<div class="user-pick-item__meta">' + escapeHtml(u.email || "—") + ' &middot; ' + escapeHtml(roleLabel(u.role || "unassigned")) + '</div>' +
+            '</div>' +
+            '<div class="user-pick-radio"></div>' +
+          '</div>';
+        }
+        return '<div class="alert alert--info"><svg viewBox="0 0 24 24">' + ICONS.alert + '</svg>' +
+            '<div>Pick a person <strong>who already has a staff record</strong>. If not listed, use <strong>Add Person</strong> first (Step 1).</div></div>' +
+          '<div class="field"><label>Search</label><input id="au-search" placeholder="Search…"></div>' +
+          '<div class="field"><label>' + (locked ? "Selected person" : "Available people (" + candidates.length + ")") + '</label>' +
+            '<div class="wm-list" id="au-list">' +
+              (rows || '<div class="wm-empty">No people with a staff record in your scope. Add a person first.</div>') +
+            '</div>' +
+          '</div>';
+      },
+      validate: d => {
+        if (!d.selectedUserId) return "Please select a user.";
+        const u = USERS.find(x => x.id === d.selectedUserId);
+        if (u && !employeesByUid[u.id]) return "This person has no staff record. Add them first.";
+        return null;
+      },
+      after: (root, data) => {
+        const searchEl = root.querySelector("#au-search");
+        const listEl   = root.querySelector("#au-list");
+        if (searchEl && listEl) searchEl.addEventListener("input", () => {
+          const q = searchEl.value.trim().toLowerCase();
+          listEl.querySelectorAll(".user-pick-item").forEach(el => {
+            el.style.display = (!q || (el.dataset.search || "").includes(q)) ? "flex" : "none";
+          });
+        });
+        if (!preselected && listEl) {
+          listEl.querySelectorAll(".user-pick-item").forEach(el => {
+            el.addEventListener("click", () => {
+              listEl.querySelectorAll(".user-pick-item").forEach(x => x.classList.remove("is-on"));
+              el.classList.add("is-on");
+              data.selectedUserId = el.dataset.uid;
+              const prev = employeesByUid[el.dataset.uid];
+              if (prev && !data.loginEmail) data.loginEmail = suggestLoginEmail(prev);
+            });
+          });
+        }
+        if (preselected) {
+          const emp = employeesByUid[preselected.id];
+          if (emp && !data.loginEmail) data.loginEmail = suggestLoginEmail(emp);
+        }
+      }
+    },
+    /* ---------------- LOGIN ---------------- */
     {
       label: "Login", title: "Create login (this is where the account is made)",
       render: (d) => {
@@ -3149,6 +3251,7 @@ function openAssignWizard(preselectedUserId = null) {
         `;
       },
       validate: d => {
+        if (!d.selectedUserId) return "Please select a person in the previous step.";
         if (!d.loginEmail || !/^\S+@\S+\.\S+$/.test(d.loginEmail)) return "Enter a valid login email.";
         const pw = evaluatePassword(d.password || "");
         if (pw.score < 3) return "Password is too weak. Add uppercase, numbers, or symbols.";
@@ -3191,229 +3294,35 @@ function openAssignWizard(preselectedUserId = null) {
         });
       }
     },
-    /* ---------------- SELECT PERSON ---------------- */
+    /* ---------------- PLACEMENT (LOCKED) ---------------- */
     {
-      label: "Select Person", title: "Select a person (already added)",
+      label: "Placement", title: "Placement (from Add Person)",
       render: (d) => {
-        const locked = !!preselected;
-        const candidates = visibleUsers()
-          .filter(u => {
-            if (preselected) return u.id === preselected.id;
-            if (!employeesByUid[u.id]) return false;
-            return canAssignTo(u);
-          })
-          .sort((a, b) => String(a.name || a.email || "").localeCompare(String(b.name || b.email || "")));
-
-        let rows = "";
-        for (const u of candidates) {
-          const emp = employeesByUid[u.id];
-          const hay = [u.name, u.email, u.nationalId, emp && emp.empId, emp && emp.nationalId].filter(Boolean).join(" ").toLowerCase();
-          const isOn = d.selectedUserId === u.id;
-          const assigned = isUserAlreadyAssigned(u, emp);
-          rows += '<div class="user-pick-item ' + (isOn ? "is-on" : "") + '" data-uid="' + u.id + '" data-search="' + escapeHtml(hay) + '">' +
-            '<div class="admin-avatar">' + (u.photoURL ? '<img src="' + escapeHtml(u.photoURL) + '" alt="">' : escapeHtml(initials(u.name || u.email))) + '</div>' +
-            '<div class="user-pick-item__main">' +
-              '<div class="user-pick-item__name">' +
-                escapeHtml(u.name || u.email || "User") +
-                (assigned ? ' <span class="assigned-tag">Assigned</span>' : ' <span class="unassigned-tag">Unassigned</span>') +
-              '</div>' +
-              '<div class="user-pick-item__meta">' + escapeHtml(u.email || "—") + ' &middot; ' + escapeHtml(roleLabel(u.role || "unassigned")) + '</div>' +
-            '</div>' +
-            '<div class="user-pick-radio"></div>' +
-          '</div>';
-        }
-        return '<div class="alert alert--info"><svg viewBox="0 0 24 24">' + ICONS.alert + '</svg>' +
-            '<div>Pick a person <strong>who already has a staff record</strong>. If not listed, use <strong>Add Person</strong> first (Step 1).</div></div>' +
-          '<div class="field"><label>Search</label><input id="au-search" placeholder="Search…"></div>' +
-          '<div class="field"><label>' + (locked ? "Selected person" : "Available people (" + candidates.length + ")") + '</label>' +
-            '<div class="wm-list" id="au-list">' +
-              (rows || '<div class="wm-empty">No people with a staff record in your scope. Add a person first.</div>') +
-            '</div>' +
-          '</div>';
+        const emp = employeesByUid[d.selectedUserId];
+        return renderLockedPlacement(emp);
       },
-      validate: d => {
-        if (!d.selectedUserId) return "Please select a user.";
-        const u = USERS.find(x => x.id === d.selectedUserId);
-        if (u && !employeesByUid[u.id]) return "This person has no staff record. Add them first.";
-        return null;
-      },
-      after: (root, data) => {
-        const searchEl = root.querySelector("#au-search");
-        const listEl   = root.querySelector("#au-list");
-        if (searchEl && listEl) searchEl.addEventListener("input", () => {
-          const q = searchEl.value.trim().toLowerCase();
-          listEl.querySelectorAll(".user-pick-item").forEach(el => {
-            el.style.display = (!q || (el.dataset.search || "").includes(q)) ? "flex" : "none";
-          });
-        });
-        function setReassignStepFor(userId) {
-          const u = USERS.find(x => x.id === userId);
-          const emp = u ? employeesByUid[u.id] : null;
-          const assigned = u ? isUserAlreadyAssigned(u, emp) : false;
-          const existingIdx = steps.findIndex(s => s.label === "Re-assign");
-          if (assigned && existingIdx === -1) steps.splice(2, 0, reassignStep);
-          else if (!assigned && existingIdx !== -1) steps.splice(existingIdx, 1);
-        }
-        if (!preselected && listEl) {
-          listEl.querySelectorAll(".user-pick-item").forEach(el => {
-            el.addEventListener("click", () => {
-              listEl.querySelectorAll(".user-pick-item").forEach(x => x.classList.remove("is-on"));
-              el.classList.add("is-on");
-              data.selectedUserId = el.dataset.uid;
-              const prev = employeesByUid[el.dataset.uid];
-              if (prev) {
-                data.position = prev.position || "";
-                data.hireDate = prev.hireDate || data.hireDate;
-                data.employmentType = prev.employmentType || "permanent";
-                data.basicSalary = prev.basicSalary || "";
-                data.transportAllowance = prev.transportAllowance || "";
-                data.housingAllowance = prev.housingAllowance || "";
-                data.positionAllowance = prev.positionAllowance || "";
-                data.otherAllowance = prev.otherAllowance || "";
-                if (!data.loginEmail) data.loginEmail = suggestLoginEmail(prev);
-              }
-              setReassignStepFor(el.dataset.uid);
-            });
-          });
-        }
-        if (preselected) {
-          const emp = employeesByUid[preselected.id];
-          if (emp && !data.loginEmail) data.loginEmail = suggestLoginEmail(emp);
-          setReassignStepFor(preselected.id);
-        }
-      }
+      validate: () => null,
+      after: () => {}
     },
-    /* ---------------- PLACEMENT ---------------- */
+    /* ---------------- EMPLOYMENT (LOCKED) ---------------- */
     {
-      label: "Placement", title: "Sector → Department → Regional / Cluster",
+      label: "Employment", title: "Employment & pay (from Add Person)",
       render: (d) => {
-        const selectedSector = regionSectors.find(s => s.id === d.sectorId);
-        const deptList = d.sectorId ? departmentsForSector(d.sectorId) : [];
-        const selectedDept = deptList.find(x => x.id === d.departmentId);
-        const isCluster = d.workLevel === "cluster";
-        const selectedCluster = CLUSTERS.find(c => c.id === d.clusterId);
-        const woredas = selectedCluster ? normalizeWoredas(selectedCluster.woredas) : [];
-        const isWoredaStaff = isCluster && d.clusterLevel === "woreda";
-        const RR = twoDigits(selectedSector ? (selectedSector.regionCode || selectedSector.region || S.regionCode) : S.regionCode);
-        const SS = twoDigits(selectedSector && selectedSector.code);
-        const CC = twoDigits(isCluster && selectedCluster ? selectedCluster.code : "00");
-        const DD = twoDigits(selectedDept && selectedDept.code);
-        const WW = twoDigits(isWoredaStaff ? d.woredaCode : "00");
-
-        let html = '';
-        html += '<div class="alert alert--info"><svg viewBox="0 0 24 24">' + ICONS.alert + '</svg><div>Pick a <strong>Sector</strong>, <strong>Department</strong>, then <strong>Regional</strong> or <strong>Cluster</strong>.</div></div>';
-        html += '<div class="field"><label class="field__required">1. Sector</label><select data-field="sectorId" id="wiz-sector"' + (regionSectors.length ? "" : " disabled") + '>' + sectorOptionsHtml(d.sectorId) + '</select></div>';
-        html += '<div class="field"><label class="field__required">2. Department / Directorate</label><select data-field="departmentId" id="wiz-dept"' + (deptList.length ? "" : " disabled") + '>' + departmentOptionsHtml(d.sectorId, d.departmentId) + '</select></div>';
-        html += '<div class="field"><label class="field__required">3. Placement level</label><div style="display:flex;gap:8px">';
-        html += '<button type="button" class="placement-btn' + (!isCluster ? ' is-on' : '') + '" data-level="regional" style="flex:1"><span class="placement-btn__icon"><svg viewBox="0 0 24 24">' + ICONS.pin + '</svg></span><span class="placement-btn__label">Regional</span></button>';
-        html += '<button type="button" class="placement-btn' + (isCluster ? ' is-on' : '') + '" data-level="cluster" style="flex:1"><span class="placement-btn__icon"><svg viewBox="0 0 24 24">' + ICONS.layers + '</svg></span><span class="placement-btn__label">Cluster</span></button>';
-        html += '</div></div>';
-
-        if (isCluster) {
-          html += '<div class="field"><label class="field__required">4. Cluster / Zone / City</label><select data-field="clusterId" id="wiz-cluster">' + clusterOptionsHtml(d.clusterId) + '</select></div>';
-          html += '<div class="field"><label class="field__required">5. Where does this person work?</label><div style="display:flex;gap:8px">';
-          html += '<button type="button" class="placement-btn' + (d.clusterLevel !== "woreda" ? ' is-on' : '') + '" data-cluster-level="cluster" style="flex:1"><span class="placement-btn__label">Cluster staff</span></button>';
-          html += '<button type="button" class="placement-btn' + (d.clusterLevel === "woreda" ? ' is-on' : '') + '" data-cluster-level="woreda" style="flex:1"><span class="placement-btn__label">Woreda / City</span></button>';
-          html += '</div></div>';
-          if (isWoredaStaff) {
-            html += '<div class="field"><label class="field__required">6. Woreda / City</label><select data-field="woredaCode" id="wiz-woreda"' + (woredas.length ? "" : " disabled") + '>' + woredaOptionsHtml(d.clusterId, d.woredaCode) + '</select></div>';
-            html += '<div class="field"><label>7. Office (optional)</label><select data-field="officeId" id="wiz-office"><option value="">— Optional —</option>' +
-              OFFICES.filter(o => o.clusterId === d.clusterId).map(o => '<option value="' + o.id + '"' + (d.officeId === o.id ? " selected" : "") + '>' + escapeHtml(o.code || "??") + ' &middot; ' + escapeHtml(o.name || "Unnamed") + '</option>').join("") + '</select></div>';
-          }
-        }
-        html += '<div class="review" style="margin-top:16px"><div class="review__row"><span class="review__k">Employee ID preview</span>';
-        html += '<span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(RR) + '-' + escapeHtml(SS) + escapeHtml(CC) + escapeHtml(DD) + escapeHtml(WW) + '-00000001</span></div></div>';
-        return html;
+        const emp = employeesByUid[d.selectedUserId];
+        return renderLockedEmployment(emp);
       },
-      validate: (d) => {
-        if (!d.sectorId)     return "Please select a sector.";
-        if (!d.departmentId) return "Please select a department.";
-        if (d.workLevel === "cluster") {
-          if (!d.clusterId)  return "Please select a cluster / zone / city.";
-          if (d.clusterLevel === "woreda" && !d.woredaCode) return "Please select a woreda / city.";
-        }
-        return null;
-      },
-      after: (root, data, refresh) => {
-        const secSel = root.querySelector("#wiz-sector");
-        if (secSel) secSel.addEventListener("change", () => { data.sectorId = secSel.value; data.departmentId = ""; refresh(); });
-        const deptSel = root.querySelector("#wiz-dept");
-        if (deptSel) deptSel.addEventListener("change", () => { data.departmentId = deptSel.value; });
-        root.querySelectorAll("[data-level]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            data.workLevel = btn.dataset.level;
-            if (data.workLevel === "regional") { data.clusterId = ""; data.clusterLevel = "cluster"; data.woredaCode = ""; data.officeId = ""; }
-            else if (!data.clusterLevel) data.clusterLevel = "cluster";
-            refresh();
-          });
-        });
-        const clSel = root.querySelector("#wiz-cluster");
-        if (clSel) clSel.addEventListener("change", () => { data.clusterId = clSel.value; data.woredaCode = ""; data.officeId = ""; refresh(); });
-        root.querySelectorAll("[data-cluster-level]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            data.clusterLevel = btn.dataset.clusterLevel;
-            if (data.clusterLevel === "cluster") { data.woredaCode = ""; data.officeId = ""; }
-            refresh();
-          });
-        });
-        const woSel = root.querySelector("#wiz-woreda");
-        if (woSel) woSel.addEventListener("change", () => { data.woredaCode = woSel.value; data.officeId = ""; refresh(); });
-        const ofSel = root.querySelector("#wiz-office");
-        if (ofSel) ofSel.addEventListener("change", () => { data.officeId = ofSel.value; });
-      }
+      validate: () => null,
+      after: () => {}
     },
-    /* ---------------- ROLE & PAY ---------------- */
+    /* ---------------- ROLE (LOCKED) ---------------- */
     {
-      label: "Role & Pay", title: "Choose role and compensation",
+      label: "Role", title: "Role (from Add Person)",
       render: (d) => {
-        const roleOpts = roleOptions.map(r => '<option value="' + r + '"' + (d.role === r ? " selected" : "") + '>' + escapeHtml(roleLabel(r)) + '</option>').join("");
-        return '<div class="field"><label class="field__required">Role</label><select data-field="role" id="assign-role-sel">' + roleOpts + '</select></div>' +
-          '<div class="field hidden" id="assign-financeField"><label>Finance sub-role</label><select data-field="financeRole">' + FINANCE_SUBROLES.map(f => '<option value="' + f.key + '">' + f.label + '</option>').join("") + '</select></div>' +
-          '<div class="field hidden" id="assign-hrmField"><label>HRM sub-role</label><select data-field="hrmRole">' + HRM_SUBROLES.map(h => '<option value="' + h.key + '">' + h.label + '</option>').join("") + '</select></div>' +
-          '<div class="field"><label>Position title</label><input data-field="position" value="' + escapeHtml(d.position || "") + '"></div>' +
-          '<div class="field-row">' +
-            '<div class="field"><label>Hire date</label><input data-field="hireDate" type="date" value="' + escapeHtml(d.hireDate || "") + '"></div>' +
-            '<div class="field"><label>Employment type</label><select data-field="employmentType">' +
-              '<option value="permanent"' + (d.employmentType === "permanent" ? " selected" : "") + '>Permanent</option>' +
-              '<option value="contract"' + (d.employmentType === "contract" ? " selected" : "") + '>Contract</option>' +
-              '<option value="temporary"' + (d.employmentType === "temporary" ? " selected" : "") + '>Temporary</option>' +
-              '<option value="intern"' + (d.employmentType === "intern" ? " selected" : "") + '>Intern</option>' +
-            '</select></div>' +
-          '</div>' +
-          '<div style="margin-top:8px;padding-top:20px;border-top:1px solid var(--border-soft)">' +
-            '<div style="font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:14px">Compensation (ETB)</div>' +
-            '<div class="field-row">' +
-              '<div class="field"><label class="field__required">Basic salary</label><input data-field="basicSalary" type="number" step="0.01" min="0" value="' + escapeHtml(d.basicSalary || "") + '" placeholder="0.00"></div>' +
-              '<div class="field"><label>Transport allowance</label><input data-field="transportAllowance" type="number" step="0.01" min="0" value="' + escapeHtml(d.transportAllowance || "") + '"></div>' +
-            '</div>' +
-            '<div class="field-row">' +
-              '<div class="field"><label>Housing allowance</label><input data-field="housingAllowance" type="number" step="0.01" min="0" value="' + escapeHtml(d.housingAllowance || "") + '"></div>' +
-              '<div class="field"><label>Position allowance</label><input data-field="positionAllowance" type="number" step="0.01" min="0" value="' + escapeHtml(d.positionAllowance || "") + '"></div>' +
-            '</div>' +
-            '<div class="field"><label>Other allowance</label><input data-field="otherAllowance" type="number" step="0.01" min="0" value="' + escapeHtml(d.otherAllowance || "") + '"></div>' +
-          '</div>';
+        const emp = employeesByUid[d.selectedUserId];
+        return renderLockedRole(emp);
       },
-      validate: (d) => {
-        if (!d.role) return "Please select a role.";
-        if (d.role === "finance" && !d.financeRole) return "Choose a finance sub-role.";
-        if (d.role === "hrm" && !d.hrmRole) return "Choose an HRM sub-role.";
-        if (!(Number(d.basicSalary) > 0)) return "Basic salary is required.";
-        return null;
-      },
-      after: (root, data) => {
-        const roleSel = root.querySelector("#assign-role-sel");
-        const finField = root.querySelector("#assign-financeField");
-        const hrmField = root.querySelector("#assign-hrmField");
-        if (!roleSel) return;
-        const updateSub = () => {
-          const r = roleSel.value;
-          if (finField) finField.classList.toggle("hidden", r !== "finance");
-          if (hrmField) hrmField.classList.toggle("hidden", r !== "hrm");
-          data.role = r;
-        };
-        updateSub();
-        roleSel.addEventListener("change", updateSub);
-      }
+      validate: () => null,
+      after: () => {}
     },
     /* ---------------- REVIEW ---------------- */
     {
@@ -3421,76 +3330,57 @@ function openAssignWizard(preselectedUserId = null) {
       render: (d) => {
         const u = USERS.find(x => x.id === d.selectedUserId);
         if (!u) return '<div class="alert alert--error">Please go back and select a user.</div>';
-        const selectedSector = SECTORS.find(s => s.id === d.sectorId) || getRegionSectors(S.regionCode).find(s => s.id === d.sectorId);
-        const dept = DEPARTMENTS.find(x => x.id === d.departmentId);
-        const isCluster = d.workLevel === "cluster";
-        const isWoredaStaff = isCluster && d.clusterLevel === "woreda";
-        const cl = isCluster ? CLUSTERS.find(c => c.id === d.clusterId) : null;
-        const woreda = (isWoredaStaff && cl) ? normalizeWoredas(cl.woredas).find(w => w.code === d.woredaCode) : null;
-        const office = (isWoredaStaff && d.officeId) ? OFFICES.find(o => o.id === d.officeId) : null;
-        const basic = Number(d.basicSalary || 0);
-        const totalAllow = Number(d.transportAllowance || 0) + Number(d.housingAllowance || 0) + Number(d.positionAllowance || 0) + Number(d.otherAllowance || 0);
-        const isReassign = isUserAlreadyAssigned(u, employeesByUid[u.id]);
-        const reviewPhoto = d._newPhoto || u.photoURL || employeesByUid[u.id]?.photoURL || null;
         const emp = employeesByUid[u.id];
-        const hasLogin = !!(emp?.uid || u.hasLogin);
-        let html = '';
-        html += '<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:linear-gradient(135deg,#f8fbff,#fff);border:1px solid var(--border);border-radius:14px">' +
-          '<div class="admin-avatar" style="width:60px;height:60px;font-size:20px">' +
-            (reviewPhoto ? '<img src="' + escapeHtml(reviewPhoto) + '" alt="">' : escapeHtml(initials(u.name || u.email))) +
-          '</div>' +
-          '<div style="min-width:0"><div style="font-size:16px;font-weight:800">' + escapeHtml(u.name || u.email || "User") + '</div>' +
-          '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">' + escapeHtml(u.email || "") + '</div></div>' +
-          (isReassign ? '<span class="tag tag--gold" style="margin-left:auto;flex-shrink:0">Transfer</span>' : '') +
-        '</div>';
-        if (isReassign) {
-          html += '<div class="alert alert--warning"><svg viewBox="0 0 24 24">' + ICONS.alert + '</svg><div>This is a <strong>transfer</strong>. Clearance ' + escapeHtml(d.reassign_clearanceNumber || "—") + ', letter ' + escapeHtml(d.reassign_letterNumber || "—") + '. A new Employee ID will be issued.</div></div>';
-        }
-        html += '<div class="review-section">Login' + (hasLogin ? " (existing)" : " (will be created)") + '</div>';
-        html += '<div class="review">';
-        html += '<div class="review__row"><span class="review__k">Login email</span><span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(d.loginEmail || "—") + '</span></div>';
-        html += '<div class="review__row"><span class="review__k">Password</span><span class="review__v">•••••••• (set)</span></div>';
-        html += '</div>';
-        html += '<div class="review-section">Placement</div>';
-        html += '<div class="review">';
-        if (selectedSector) html += '<div class="review__row"><span class="review__k">Sector</span><span class="review__v">' + escapeHtml(selectedSector.name) + '</span></div>';
-        if (dept) html += '<div class="review__row"><span class="review__k">Department</span><span class="review__v">' + escapeHtml(dept.name) + '</span></div>';
-        if (isCluster && cl) html += '<div class="review__row"><span class="review__k">Cluster / Zone</span><span class="review__v">' + escapeHtml(cl.name) + '</span></div>';
-        if (isWoredaStaff && woreda) html += '<div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">' + escapeHtml(woreda.name) + '</span></div>';
-        if (office) html += '<div class="review__row"><span class="review__k">Office</span><span class="review__v">' + escapeHtml(office.name) + '</span></div>';
-        html += '</div>';
-        html += '<div class="review-section">Role & pay</div>';
-        html += '<div class="review">';
-        html += '<div class="review__row"><span class="review__k">Role</span><span class="review__v"><span class="role-badge role-badge--' + d.role + '">' + escapeHtml(roleLabel(d.role)) + '</span></span></div>';
-        html += '<div class="review__row"><span class="review__k">Basic salary</span><span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(fmtMoney(basic) || "0") + ' ETB</span></div>';
-        if (totalAllow) html += '<div class="review__row"><span class="review__k">Allowances</span><span class="review__v" style="font-family:ui-monospace,monospace">' + escapeHtml(fmtMoney(totalAllow)) + ' ETB</span></div>';
-        html += '</div>';
-        return html;
+        if (!emp) return '<div class="alert alert--error">No employee record.</div>';
+        const basic = Number(emp.basicSalary || 0);
+        const totalAllow = Number(emp.transportAllowance || 0) + Number(emp.housingAllowance || 0) + Number(emp.positionAllowance || 0) + Number(emp.otherAllowance || 0);
+        const reviewPhoto = u.photoURL || emp.photoURL || null;
+        const hasLogin = !!(emp.uid || u.hasLogin);
+        return `
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:linear-gradient(135deg,#f8fbff,#fff);border:1px solid var(--border);border-radius:14px">
+            <div class="admin-avatar" style="width:60px;height:60px;font-size:20px">
+              ${reviewPhoto ? `<img src="${escapeHtml(reviewPhoto)}" alt="">` : escapeHtml(initials(u.name || u.email))}
+            </div>
+            <div style="min-width:0"><div style="font-size:16px;font-weight:800">${escapeHtml(u.name || u.email || "User")}</div>
+            <div style="font-size:12.5px;color:var(--muted);margin-top:2px">${escapeHtml(u.email || "")}</div></div>
+            ${hasLogin ? `<span class="tag tag--blue" style="margin-left:auto">Already has login</span>` : ""}
+          </div>
+          <div class="review-section">Login${hasLogin ? " (existing)" : " (will be created)"}</div>
+          <div class="review">
+            <div class="review__row"><span class="review__k">Login email</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(d.loginEmail || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Password</span><span class="review__v">•••••••• (set)</span></div>
+          </div>
+          <div class="review-section">Placement</div>
+          <div class="review">
+            <div class="review__row"><span class="review__k">Sector</span><span class="review__v">${escapeHtml(emp.sectorName || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Department</span><span class="review__v">${escapeHtml(emp.departmentName || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Cluster / Zone</span><span class="review__v">${escapeHtml(emp.clusterName || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">${escapeHtml(emp.woredaName || emp.woredaCode || "—")}</span></div>
+          </div>
+          <div class="review-section">Employment &amp; pay</div>
+          <div class="review">
+            <div class="review__row"><span class="review__k">Position</span><span class="review__v">${escapeHtml(emp.position || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Basic salary</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(basic) || "0")} ETB</span></div>
+            ${totalAllow ? `<div class="review__row"><span class="review__k">Allowances</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(totalAllow))} ETB</span></div>` : ""}
+          </div>
+          <div class="review-section">Role</div>
+          <div class="review">
+            <div class="review__row"><span class="review__k">Role</span><span class="review__v"><span class="role-badge role-badge--${emp.role}">${escapeHtml(roleLabel(emp.role))}</span></span></div>
+          </div>
+        `;
       }
     }
   ];
 
   openWizard({
     title: "Assign Role & Work Area — Step 2",
-    subtitle: "Creates the login, assigns role and work area",
+    subtitle: "Creates the login. Placement, employment and role are pre-filled from Add Person.",
     finishLabel: "Save Assignment",
-    successMessage: "Login created and role assigned.",
+    successMessage: "Login created.",
     size: "xl",
     initial: {
       loginEmail: "", password: "", password2: "",
-      selectedUserId: preselectedUserId || "",
-      sectorId: "", departmentId: "", workLevel: "regional",
-      clusterLevel: "cluster", clusterId: "", woredaCode: "", officeId: "",
-      role: "employee", position: "",
-      hireDate: new Date().toISOString().slice(0, 10),
-      employmentType: "permanent",
-      basicSalary: "", transportAllowance: "",
-      housingAllowance: "", positionAllowance: "", otherAllowance: "",
-      reassign_confirmed: null,
-      reassign_clearanceNumber: "", reassign_letterNumber: "",
-      reassign_letterDate: "", reassign_clearanceFileData: null,
-      reassign_clearanceFileName: "",
-      _newPhoto: null, _newPhotoName: ""
+      selectedUserId: preselectedUserId || ""
     },
     steps,
     onFinish: async (d) => {
@@ -3499,20 +3389,7 @@ function openAssignWizard(preselectedUserId = null) {
       const emp = employeesByUid[u.id];
       if (!emp) throw new Error("This person has no staff record yet. Add them via Add Person (Step 1) first.");
 
-      const selectedSector = SECTORS.find(s => s.id === d.sectorId);
-      if (!selectedSector) throw new Error("Selected sector no longer exists.");
-      const dept = DEPARTMENTS.find(x => x.id === d.departmentId);
-      if (!dept) throw new Error("Selected department no longer exists.");
-      const isCluster = d.workLevel === "cluster";
-      const isWoredaStaff = isCluster && d.clusterLevel === "woreda";
-      const cl = isCluster ? CLUSTERS.find(c => c.id === d.clusterId) : null;
-      if (isCluster && !cl) throw new Error("Selected cluster / zone / city no longer exists.");
-
-      const isReassign = isUserAlreadyAssigned(u, emp);
-      const previousEmpId = emp?.empId || u.empId || null;
-      if (isReassign && d.reassign_confirmed !== true) throw new Error("Re-assignment requires confirmation and clearance.");
-
-      /* 1. Create Firebase Auth user (only if not already created) */
+      /* 1. Create Firebase Auth user */
       let uid = emp.uid || null;
       let justCreatedAuth = false;
       if (!uid) {
@@ -3531,56 +3408,45 @@ function openAssignWizard(preselectedUserId = null) {
           await signOut(secAuth);
           justCreatedAuth = true;
         } catch (err) {
-          if (err.code === "auth/email-already-in-use") {
-            throw new Error("This login email is already in use by another account.");
-          }
+          if (err.code === "auth/email-already-in-use") throw new Error("This login email is already in use by another account.");
           throw err;
         } finally {
           try { await deleteApp(secApp); } catch (e) {}
         }
       }
 
-      /* 2. empId */
-      const regionCode = selectedSector.regionCode || selectedSector.region || S.regionCode;
-      const regionNameStr = regionName(regionCode);
-      const sectorCode = selectedSector.code || "00";
-      const departmentCode = dept.code || "00";
-      const clusterCode = isCluster && cl ? (cl.code || "00") : "00";
-      const woredaCode  = isWoredaStaff ? (d.woredaCode || "00") : "00";
-
-      const { empId, seq } = await generateEmployeeId({ regionCode, sectorCode, clusterCode, departmentCode, woredaCode });
-      const woredaNameStr = isWoredaStaff && cl
-        ? (normalizeWoredas(cl.woredas).find(w => w.code === d.woredaCode)?.name || "") : "";
-      const office = isWoredaStaff && d.officeId ? OFFICES.find(o => o.id === d.officeId) : null;
+      /* 2. Generate empId */
+      const { empId, seq } = await generateEmployeeId({
+        regionCode: emp.regionCode,
+        sectorCode: emp.sectorCode,
+        clusterCode: emp.clusterCode,
+        departmentCode: emp.departmentCode,
+        woredaCode: emp.woredaCode
+      });
 
       /* 3. Write users/{uid} */
       const userDoc = {
         uid,
         email: d.loginEmail.trim(),
         name: emp.nameEn || u.name || "",
-        photoURL: d._newPhoto || emp.photoURL || u.photoURL || null,
-        role: d.role,
-        region: regionCode, regionCode, regionName: regionNameStr,
-        sectorId: selectedSector.id, sectorName: selectedSector.name || null,
-        departmentId: dept.id, departmentName: dept.name || null,
-        clusterId: isCluster && cl ? cl.id : null,
-        clusterName: isCluster && cl ? (cl.name || null) : null,
-        woredaCode: isWoredaStaff ? d.woredaCode : null,
-        woredaName: isWoredaStaff ? woredaNameStr : null,
-        officeId: office ? office.id : null,
-        officeName: office ? (office.name || null) : null,
-        isClusterStaff: isCluster && !isWoredaStaff,
+        photoURL: emp.photoURL || u.photoURL || null,
+        role: emp.role,
+        region: emp.regionCode, regionCode: emp.regionCode, regionName: emp.regionName || null,
+        sectorId: emp.sectorId, sectorName: emp.sectorName || null,
+        departmentId: emp.departmentId, departmentName: emp.departmentName || null,
+        clusterId: emp.clusterId, clusterName: emp.clusterName || null,
+        woredaCode: emp.woredaCode, woredaName: emp.woredaName || null,
+        officeId: emp.officeId || null, officeName: emp.officeName || null,
+        isClusterStaff: emp.isClusterStaff || false,
         empId,
         employeeId: emp.id,
-        isDirector: false,
-        financeRole: d.role === "finance" ? (d.financeRole || null) : null,
-        hrmRole: d.role === "hrm" ? (d.hrmRole || null) : null,
-        position: (d.position || "").trim() || null,
-        phone: emp.phone || u.phone || null,
-        phoneNorm: emp.phoneNorm || u.phoneNorm || null,
-        personalEmail: emp.email || u.personalEmail || null,
-        nationalId: emp.nationalId || u.nationalId || null,
-        nationalIdNorm: emp.nationalIdNorm || u.nationalIdNorm || null,
+        isDirector: emp.isDirector || false,
+        financeRole: emp.financeRole || null,
+        hrmRole: emp.hrmRole || null,
+        position: emp.position || null,
+        phone: emp.phone || null, phoneNorm: emp.phoneNorm || null,
+        personalEmail: null,
+        nationalId: emp.nationalId || null, nationalIdNorm: emp.nationalIdNorm || null,
         hasFingerprint: (emp.fingerprints || []).length > 0,
         active: true,
         createdAt: justCreatedAuth ? serverTimestamp() : (u.createdAt || serverTimestamp()),
@@ -3590,13 +3456,6 @@ function openAssignWizard(preselectedUserId = null) {
         assignedAt: serverTimestamp(),
         assignedBy: S.uid
       };
-      if (isReassign) {
-        userDoc.previousEmpId = previousEmpId;
-        userDoc.lastTransferAt = serverTimestamp();
-        userDoc.lastTransferBy = S.uid;
-        userDoc.lastClearanceNumber = (d.reassign_clearanceNumber || "").trim();
-        userDoc.lastLetterNumber = (d.reassign_letterNumber || "").trim();
-      }
 
       try {
         await setDoc(doc(db, "users", uid), userDoc);
@@ -3605,71 +3464,21 @@ function openAssignWizard(preselectedUserId = null) {
       /* 4. Update employees/{id} */
       const empPatch = {
         uid,
-        role: d.role,
         status: "active",
         active: true,
         hasLogin: true,
         empId, seq,
-        regionCode, regionName: regionNameStr,
-        sectorId: selectedSector.id, sectorCode, sectorName: selectedSector.name || null,
-        departmentId: dept.id, departmentCode, departmentName: dept.name || null,
-        clusterId: isCluster && cl ? cl.id : null,
-        clusterCode, clusterName: isCluster && cl ? (cl.name || null) : null,
-        woredaCode: isWoredaStaff ? d.woredaCode : null,
-        woredaName: isWoredaStaff ? woredaNameStr : null,
-        officeId: office ? office.id : null,
-        officeCode: office ? (office.code || null) : null,
-        officeName: office ? (office.name || null) : null,
-        isClusterStaff: isCluster && !isWoredaStaff,
-        isDirector: false,
-        position: (d.position || "").trim() || null,
-        hireDate: d.hireDate || null,
-        employmentType: d.employmentType || "permanent",
-        basicSalary: Number(d.basicSalary) || 0,
-        transportAllowance: Number(d.transportAllowance) || 0,
-        housingAllowance: Number(d.housingAllowance) || 0,
-        positionAllowance: Number(d.positionAllowance) || 0,
-        otherAllowance: Number(d.otherAllowance) || 0,
         loginEmail: d.loginEmail.trim(),
         updatedAt: serverTimestamp(),
         updatedBy: S.uid
       };
-      if (isReassign && d._newPhoto) empPatch.photoURL = d._newPhoto;
-      if (isReassign) { empPatch.previousEmpId = previousEmpId; empPatch.lastTransferAt = serverTimestamp(); }
-
       await updateDoc(doc(db, "employees", emp.id), empPatch);
-
-      /* 5. Transfer history */
-      if (isReassign) {
-        try {
-          await addDoc(collection(db, "transferHistory"), {
-            userId: uid,
-            employeeId: emp.id,
-            userName: emp.nameEn || "",
-            userEmail: d.loginEmail,
-            previousEmpId,
-            previousRole: u.role || null,
-            previousPhotoURL: u.photoURL || emp.photoURL || null,
-            newRole: d.role,
-            newEmpId: empId,
-            clearanceNumber: (d.reassign_clearanceNumber || "").trim(),
-            letterNumber: (d.reassign_letterNumber || "").trim(),
-            letterDate: d.reassign_letterDate || null,
-            clearanceFileData: d.reassign_clearanceFileData || null,
-            clearanceFileName: d.reassign_clearanceFileName || null,
-            newPhotoURL: d._newPhoto || null,
-            transferredBy: S.uid,
-            transferredByName: S.name,
-            transferredAt: serverTimestamp()
-          });
-        } catch (e) { console.warn("[transferHistory]", e); }
-      }
     }
   });
 }
 
 /* ============================================================
-   EDIT WIZARD
+   EDIT WIZARD — same fields as Add Person (all editable)
    ============================================================ */
 function openEditWizard(userId) {
   const u = USERS.find(x => x.id === userId);
@@ -3682,24 +3491,22 @@ function openEditWizard(userId) {
   const duplicateStatus = { nationalId:{ ok:true, empty:false }, phone:{ ok:true, empty:false } };
 
   const initial = {
-    firstName:   emp?.firstName   || "",
-    middleName:  emp?.middleName  || "",
-    lastName:    emp?.lastName    || "",
+    firstName: emp?.firstName || "",
+    middleName: emp?.middleName || "",
+    lastName: emp?.lastName || "",
     firstNameAm: emp?.firstNameAm || "",
-    middleNameAm:emp?.middleNameAm|| "",
-    lastNameAm:  emp?.lastNameAm  || "",
+    middleNameAm: emp?.middleNameAm || "",
+    lastNameAm: emp?.lastNameAm || "",
     firstNameOm: emp?.firstNameOm || "",
-    middleNameOm:emp?.middleNameOm|| "",
-    lastNameOm:  emp?.lastNameOm  || "",
-    gender:      emp?.gender || "",
-    dob:         emp?.dob || "",
+    middleNameOm: emp?.middleNameOm || "",
+    lastNameOm: emp?.lastNameOm || "",
+    gender: emp?.gender || "",
+    dob: emp?.dob || "",
     maritalStatus: emp?.maritalStatus || "",
-    nationalId:  emp?.nationalId || "",
-    _photo:      emp?.photoURL || u.photoURL || null,
-    phone:    normalizePhone(emp?.phone || u.phone || ""),
+    nationalId: emp?.nationalId || "",
+    _photo: emp?.photoURL || u.photoURL || null,
+    phone: normalizePhone(emp?.phone || u.phone || ""),
     phoneAlt: normalizePhone(emp?.phoneAlt || ""),
-    email:    emp?.email || u.personalEmail || "",
-    country:  emp?.address?.country || "ET",
     addr_country: emp?.address?.country || "ET",
     addr_region: emp?.address?.region || "",
     addr_zoneId: emp?.address?.zoneId || "",
@@ -3710,14 +3517,24 @@ function openEditWizard(userId) {
     addr_street: emp?.address?.street || "",
     addr_poBox: emp?.address?.poBox || "",
     loginEmail: u.email || "",
-    position:  emp?.position || "",
-    hireDate:  emp?.hireDate || "",
-    employmentType: emp?.employmentType || "permanent",
-    basicSalary:        emp?.basicSalary || "",
-    transportAllowance: emp?.transportAllowance || "",
-    housingAllowance:   emp?.housingAllowance || "",
-    positionAllowance:  emp?.positionAllowance || "",
-    otherAllowance:     emp?.otherAllowance || "",
+    emp_workLevel: emp?.clusterId ? "cluster" : "regional",
+    emp_clusterLevel: emp?.woredaCode ? "woreda" : "cluster",
+    emp_sectorId: emp?.sectorId || "",
+    emp_departmentId: emp?.departmentId || "",
+    emp_clusterId: emp?.clusterId || "",
+    emp_woredaCode: emp?.woredaCode || "",
+    emp_officeId: emp?.officeId || "",
+    emp_position: emp?.position || "",
+    emp_hireDate: emp?.hireDate || "",
+    emp_employmentType: emp?.employmentType || "permanent",
+    emp_basicSalary: emp?.basicSalary || "",
+    emp_transportAllowance: emp?.transportAllowance || "",
+    emp_housingAllowance: emp?.housingAllowance || "",
+    emp_positionAllowance: emp?.positionAllowance || "",
+    emp_otherAllowance: emp?.otherAllowance || "",
+    emp_role: emp?.role || "employee",
+    emp_financeRole: emp?.financeRole || "",
+    emp_hrmRole: emp?.hrmRole || "",
     active: u.active !== false,
     _fingerprints: fpList.slice(),
     _removedFingerprintIds: [],
@@ -3860,8 +3677,6 @@ function openEditWizard(userId) {
               </div>
             </div>
           </div>
-          <div class="field"><label class="field__required">Personal email</label>
-            <input data-field="email" type="email" value="${escapeHtml(d.email || "")}"></div>
         `,
         validate: (d) => {
           if (!d.phone) return "Primary phone is required.";
@@ -3873,7 +3688,6 @@ function openEditWizard(userId) {
             if (st.reason === "incomplete") return `Phone number must be exactly ${PHONE_LENGTH} digits.`;
             return "Please wait — checking phone number.";
           }
-          if (!d.email || !/^\S+@\S+\.\S+$/.test(d.email)) return "Enter a valid personal email.";
           return null;
         },
         after: (root, data) => {
@@ -3897,132 +3711,22 @@ function openEditWizard(userId) {
         after: (root, data, refresh) => wireAddressFields(root, data, { prefix: "addr" }, refresh)
       },
       {
+        label: "Placement", title: "Sector → Department → Regional / Cluster",
+        render: (d) => renderPlacementFields(d, { prefix: "emp" }),
+        validate: (d) => validatePlacementFields(d, { prefix: "emp" }),
+        after: (root, data, refresh) => wirePlacementFields(root, data, { prefix: "emp" }, refresh)
+      },
+      {
         label: "Employment", title: "Employment & compensation",
-        render: (d) => `
-          <div class="alert alert--info">
-            <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-            <div>
-              Login email (<strong>${escapeHtml(d.loginEmail)}</strong>) is fixed — it's the account's identity.
-              To change role or work area, use the <strong>Assign / Transfer</strong> action on the main table.
-            </div>
-          </div>
-          <div class="field-row">
-            <div class="field"><label>Position title</label>
-              <input data-field="position" value="${escapeHtml(d.position || "")}" placeholder="e.g. Accountant"></div>
-            <div class="field"><label>Hire date</label>
-              <input data-field="hireDate" type="date" value="${escapeHtml(d.hireDate || "")}"></div>
-          </div>
-          <div class="field-row">
-            <div class="field"><label>Employment type</label>
-              <select data-field="employmentType">
-                <option value="permanent" ${d.employmentType === "permanent" ? "selected" : ""}>Permanent</option>
-                <option value="contract"  ${d.employmentType === "contract"  ? "selected" : ""}>Contract</option>
-                <option value="temporary" ${d.employmentType === "temporary" ? "selected" : ""}>Temporary</option>
-                <option value="intern"    ${d.employmentType === "intern"    ? "selected" : ""}>Intern</option>
-              </select></div>
-            ${!isSelf ? `
-              <div class="field" style="justify-content:flex-end">
-                <label style="display:inline-flex;align-items:center;gap:10px;font-size:13.5px;color:var(--text-soft);font-weight:500;cursor:pointer;user-select:none">
-                  <input type="checkbox" data-field="active" ${d.active ? "checked" : ""} style="width:18px;height:18px;accent-color:var(--primary);flex-shrink:0">
-                  <span>Active (can sign in)</span>
-                </label>
-              </div>` : ""}
-          </div>
-          <div style="margin-top:8px;padding-top:20px;border-top:1px solid var(--border-soft)">
-            <div style="font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:14px">Compensation (ETB)</div>
-            <div class="field-row">
-              <div class="field"><label>Basic salary</label>
-                <input data-field="basicSalary" type="number" step="0.01" min="0" value="${escapeHtml(d.basicSalary || "")}" placeholder="0.00"></div>
-              <div class="field"><label>Transport allowance</label>
-                <input data-field="transportAllowance" type="number" step="0.01" min="0" value="${escapeHtml(d.transportAllowance || "")}" placeholder="0.00"></div>
-            </div>
-            <div class="field-row">
-              <div class="field"><label>Housing allowance</label>
-                <input data-field="housingAllowance" type="number" step="0.01" min="0" value="${escapeHtml(d.housingAllowance || "")}" placeholder="0.00"></div>
-              <div class="field"><label>Position allowance</label>
-                <input data-field="positionAllowance" type="number" step="0.01" min="0" value="${escapeHtml(d.positionAllowance || "")}" placeholder="0.00"></div>
-            </div>
-            <div class="field"><label>Other allowance</label>
-              <input data-field="otherAllowance" type="number" step="0.01" min="0" value="${escapeHtml(d.otherAllowance || "")}" placeholder="0.00"></div>
-          </div>
-        `,
-        validate: () => null,
+        render: (d) => renderEmploymentFields(d, { prefix: "emp" }),
+        validate: (d) => validateEmploymentFields(d, { prefix: "emp" }),
         after: () => {}
       },
       {
-        label: "Fingerprint", title: "Manage fingerprints",
-        render: (d) => {
-          const list = d._fingerprints || [];
-          return `
-            <div class="alert alert--info">
-              <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-              <div>Each device gets its own credential. Removing one disables fingerprint check-in on that device only.</div>
-            </div>
-            ${list.length ? `
-              <div class="fp-list">
-                ${list.map((f, i) => `
-                  <div class="fp-list__item">
-                    <div class="fp-list__icon"><svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg></div>
-                    <div class="fp-list__main">
-                      <div class="fp-list__name">${escapeHtml(f.deviceLabel || "Device " + (i + 1))}</div>
-                      <div class="fp-list__meta">${f.credentialId ? f.credentialId.slice(0, 14) + "…" : "—"}</div>
-                    </div>
-                    <button type="button" class="fp-list__del" data-remove-fp="${i}" title="Remove">
-                      <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
-                    </button>
-                  </div>
-                `).join("")}
-              </div>
-            ` : `
-              <div class="fp-capture">
-                <div class="fp-capture__ring">
-                  <svg class="fp-capture__icon" viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
-                </div>
-                <div class="fp-capture__title">No fingerprints registered</div>
-              </div>
-            `}
-            ${FP_SUPPORTED ? `
-              <button type="button" class="btn btn--fp" id="fp-add" style="width:100%;justify-content:center;margin-top:14px">
-                <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
-                Register this device
-              </button>
-            ` : ""}
-          `;
-        },
-        validate: () => null,
-        after: (root, data, refresh) => {
-          root.querySelectorAll("[data-remove-fp]").forEach(btn => {
-            btn.addEventListener("click", () => {
-              const i = Number(btn.dataset.removeFp);
-              const removed = data._fingerprints.splice(i, 1)[0];
-              if (removed?.credentialId) {
-                data._removedFingerprintIds = data._removedFingerprintIds || [];
-                data._removedFingerprintIds.push(removed.credentialId);
-              }
-              refresh();
-            });
-          });
-          const addBtn = root.querySelector("#fp-add");
-          addBtn?.addEventListener("click", async () => {
-            if (!FP_SUPPORTED) { toast("Fingerprint not supported", "error"); return; }
-            const available = await fpIsAvailable();
-            if (!available) { toast("No biometric available", "error"); return; }
-            addBtn.disabled = true;
-            const oldLabel = addBtn.innerHTML;
-            addBtn.innerHTML = `<span class="spinner" style="width:14px;height:14px;border-width:2px"></span> Waiting…`;
-            try {
-              const natId = normalizeNationalId(data.nationalId || "");
-              const userId = natId || u.uid || u.id;
-              const reg = await fpRegisterForPerson({ userId, userName: u.email || u.id, displayName: u.name || "Employee" });
-              data._fingerprints = [...(data._fingerprints || []), { ...reg, createdAt: Date.now(), registeredBy: S.uid, registeredByName: S.name }];
-              refresh();
-            } catch (err) {
-              addBtn.disabled = false;
-              addBtn.innerHTML = oldLabel;
-              toast(err.name === "NotAllowedError" ? "Cancelled" : (err.message || "Failed"), "error");
-            }
-          });
-        }
+        label: "Role", title: "Role",
+        render: (d) => renderRoleFields(d, { prefix: "emp" }, assignableRoles()),
+        validate: (d) => validateRoleFields(d, { prefix: "emp" }),
+        after: (root, data) => wireRoleFields(root, data, { prefix: "emp" })
       },
       {
         label: "Review", title: "Review the changes",
@@ -4043,15 +3747,12 @@ function openEditWizard(userId) {
               <div class="review__row"><span class="review__k">Date of birth</span><span class="review__v">${escapeHtml(d.dob || "—")}</span></div>
               <div class="review__row"><span class="review__k">National ID</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(formatNationalIdDisplay(d.nationalId) || "—")}</span></div>
               <div class="review__row"><span class="review__k">Phone</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(formatPhoneDisplay(d.phone) || "—")}</span></div>
-              <div class="review__row"><span class="review__k">Personal email</span><span class="review__v">${escapeHtml(d.email || "—")}</span></div>
-              <div class="review__row"><span class="review__k">Position</span><span class="review__v">${escapeHtml(d.position || "—")}</span></div>
-              <div class="review__row"><span class="review__k">Basic salary</span><span class="review__v" style="font-family:ui-monospace,monospace;text-align:right">${escapeHtml(fmtMoney(d.basicSalary) || "0")} ETB</span></div>
+              <div class="review__row"><span class="review__k">Position</span><span class="review__v">${escapeHtml(d.emp_position || "—")}</span></div>
+              <div class="review__row"><span class="review__k">Basic salary</span><span class="review__v" style="font-family:ui-monospace,monospace;text-align:right">${escapeHtml(fmtMoney(d.emp_basicSalary) || "0")} ETB</span></div>
+              <div class="review__row"><span class="review__k">Role</span><span class="review__v"><span class="role-badge role-badge--${d.emp_role}">${escapeHtml(roleLabel(d.emp_role))}</span></span></div>
               ${!isSelf ? `<div class="review__row"><span class="review__k">Active</span><span class="review__v">${d.active ? `<span class="tag tag--green">Active</span>` : `<span class="tag tag--red">Inactive</span>`}</span></div>` : ""}
             </div>
-            <div class="alert alert--info" style="margin-top:16px">
-              <svg viewBox="0 0 24 24">${ICONS.check}</svg>
-              <div>Role and work area are unchanged. Use <strong>Assign / Transfer</strong> to change them.</div>
-            </div>`;
+          `;
         }
       }
     ],
@@ -4092,27 +3793,12 @@ function openEditWizard(userId) {
       const finalFingerprints = (d._fingerprints || []).filter(f => !removedIds.has(f.credentialId));
 
       const family = {
-        father: {
-          name: d.father_name || null, phone: d.father_phone || null,
-          status: d.father_status || null, region: d.father_region || null,
-          woreda: d.father_woreda || null, kebele: d.father_kebele || null, houseNo: d.father_houseNo || null
-        },
-        mother: {
-          name: d.mother_name || null, phone: d.mother_phone || null,
-          status: d.mother_status || null, region: d.mother_region || null,
-          woreda: d.mother_woreda || null, kebele: d.mother_kebele || null, houseNo: d.mother_houseNo || null
-        },
-        spouse: {
-          name: d.spouse_name || null, phone: d.spouse_phone || null,
-          marriageDate: d.spouse_marriageDate || null, region: d.spouse_region || null, woreda: d.spouse_woreda || null
-        },
-        children: (d.children || "").trim() || null,
-        emergency: {
-          name: d.emergency_name || null, relation: d.emergency_relation || null,
-          phone: d.emergency_phone || null, region: d.emergency_region || null, woreda: d.emergency_woreda || null
-        }
+        father: { name: d.father_name||null, phone: d.father_phone||null, status: d.father_status||null, region: d.father_region||null, woreda: d.father_woreda||null, kebele: d.father_kebele||null, houseNo: d.father_houseNo||null },
+        mother: { name: d.mother_name||null, phone: d.mother_phone||null, status: d.mother_status||null, region: d.mother_region||null, woreda: d.mother_woreda||null, kebele: d.mother_kebele||null, houseNo: d.mother_houseNo||null },
+        spouse: { name: d.spouse_name||null, phone: d.spouse_phone||null, marriageDate: d.spouse_marriageDate||null, region: d.spouse_region||null, woreda: d.spouse_woreda||null },
+        children: (d.children||"").trim() || null,
+        emergency: { name: d.emergency_name||null, relation: d.emergency_relation||null, phone: d.emergency_phone||null, region: d.emergency_region||null, woreda: d.emergency_woreda||null }
       };
-
       const address = {
         country: d.addr_country || "ET",
         region: d.addr_region || null,
@@ -4124,6 +3810,15 @@ function openEditWizard(userId) {
         street: d.addr_street || null,
         poBox: d.addr_poBox || null
       };
+
+      const selectedSector = SECTORS.find(s => s.id === d.emp_sectorId);
+      const selDept   = DEPARTMENTS.find(x => x.id === d.emp_departmentId);
+      const selCl     = d.emp_clusterId ? CLUSTERS.find(c => c.id === d.emp_clusterId) : null;
+      const isCluster = d.emp_workLevel === "cluster";
+      const isWoredaStaff = isCluster && d.emp_clusterLevel === "woreda";
+      const woredaNameStr = (isWoredaStaff && selCl)
+        ? (normalizeWoredas(selCl.woredas).find(w => w.code === d.emp_woredaCode)?.name || "")
+        : "";
 
       const empPatch = {
         firstName: d.firstName.trim(),
@@ -4140,16 +3835,25 @@ function openEditWizard(userId) {
         gender: d.gender, dob: d.dob,
         maritalStatus: d.maritalStatus || null,
         phone: phoneDisplay, phoneNorm, phoneAlt: phoneAltDisplay,
-        email: (d.email || "").trim(),
         family, address,
-        position: (d.position || "").trim() || null,
-        hireDate: d.hireDate || null,
-        employmentType: d.employmentType || "permanent",
-        basicSalary: d.basicSalary === "" ? 0 : Number(d.basicSalary || 0),
-        transportAllowance: d.transportAllowance === "" ? 0 : Number(d.transportAllowance || 0),
-        housingAllowance: d.housingAllowance === "" ? 0 : Number(d.housingAllowance || 0),
-        positionAllowance: d.positionAllowance === "" ? 0 : Number(d.positionAllowance || 0),
-        otherAllowance: d.otherAllowance === "" ? 0 : Number(d.otherAllowance || 0),
+        sectorId: selectedSector?.id || null, sectorCode: selectedSector?.code || null, sectorName: selectedSector?.name || null,
+        departmentId: selDept?.id || null, departmentCode: selDept?.code || null, departmentName: selDept?.name || null,
+        clusterId: selCl?.id || null, clusterCode: selCl?.code || null, clusterName: selCl?.name || null,
+        woredaCode: isWoredaStaff ? (d.emp_woredaCode || null) : null,
+        woredaName: isWoredaStaff ? woredaNameStr : null,
+        officeId: d.emp_officeId || null,
+        isClusterStaff: isCluster && !isWoredaStaff,
+        position: (d.emp_position || "").trim() || null,
+        hireDate: d.emp_hireDate || null,
+        employmentType: d.emp_employmentType || "permanent",
+        basicSalary: d.emp_basicSalary === "" ? 0 : Number(d.emp_basicSalary || 0),
+        transportAllowance: d.emp_transportAllowance === "" ? 0 : Number(d.emp_transportAllowance || 0),
+        housingAllowance: d.emp_housingAllowance === "" ? 0 : Number(d.emp_housingAllowance || 0),
+        positionAllowance: d.emp_positionAllowance === "" ? 0 : Number(d.emp_positionAllowance || 0),
+        otherAllowance: d.emp_otherAllowance === "" ? 0 : Number(d.emp_otherAllowance || 0),
+        role: d.emp_role,
+        financeRole: d.emp_role === "finance" ? (d.emp_financeRole || null) : null,
+        hrmRole: d.emp_role === "hrm" ? (d.emp_hrmRole || null) : null,
         fingerprints: finalFingerprints,
         updatedAt: serverTimestamp(),
         updatedBy: S.uid
@@ -4159,8 +3863,8 @@ function openEditWizard(userId) {
       const userPatch = {
         name: nameEn,
         phone: phoneDisplay, phoneNorm,
-        personalEmail: (d.email || "").trim(),
         nationalId: natIdNorm, nationalIdNorm: natIdNorm,
+        role: d.emp_role,
         hasFingerprint: finalFingerprints.length > 0,
         updatedAt: serverTimestamp(),
         updatedBy: S.uid
@@ -4170,8 +3874,8 @@ function openEditWizard(userId) {
 
       try {
         await updateDoc(doc(db, "employees", emp.id), empPatch);
-        if (u.id && u.role && u.role !== "unassigned") {
-          try { await updateDoc(doc(db, "users", u.id), userPatch); } catch (e) {}
+        if (emp.uid) {
+          try { await updateDoc(doc(db, "users", emp.uid), userPatch); } catch (e) {}
         }
       } catch (err) {
         if (natIdNorm !== oldNatNorm) await releaseUnique("nationalId", natIdNorm);
@@ -4288,7 +3992,7 @@ function openViewModal(userId) {
     </div>
     <div class="modal__foot">
       <button class="btn" data-close>Close</button>
-      ${canAssignTo(u) && emp ? `<button class="btn btn--gold" id="view-assign-btn"><svg viewBox="0 0 24 24">${ICONS.userCheck}</svg> ${hasLogin ? "Transfer" : "Assign Role"}</button>` : ""}
+      ${canAssignTo(u) && emp && !hasLogin ? `<button class="btn btn--gold" id="view-assign-btn"><svg viewBox="0 0 24 24">${ICONS.userCheck}</svg> Create Login</button>` : ""}
       ${canManageUser(u) ? `<button class="btn btn--primary" id="view-edit-btn"><svg viewBox="0 0 24 24">${ICONS.edit}</svg> Edit</button>` : ""}
     </div>
   `);
@@ -4343,7 +4047,7 @@ function confirmDelete(userId) {
       if (emp?.nationalIdNorm) await releaseUnique("nationalId", emp.nationalIdNorm);
       if (emp?.phoneNorm)      await releaseUnique("phone", emp.phoneNorm);
       if (emp) await deleteDoc(doc(db, "employees", emp.id));
-      if (u.id && u.role && u.role !== "unassigned") { try { await deleteDoc(doc(db, "users", u.id)); } catch (e) {} }
+      if (emp?.uid) { try { await deleteDoc(doc(db, "users", emp.uid)); } catch (e) {} }
       toast("Person removed", "success");
       closeModal();
     } catch (err) {
@@ -4378,7 +4082,7 @@ function subscribeEmployees() {
       employeesById[d.id] = data;
       if (data.uid) employeesByUid[data.uid] = data;
     });
-    /* Merge employee-only (no login) records into USERS list */
+    /* Include employee-only (no login) records in USERS list */
     const existingIds = new Set(USERS.map(u => u.id));
     snap.forEach(d => {
       const data = { id: d.id, ...d.data() };
@@ -4386,7 +4090,7 @@ function subscribeEmployees() {
         USERS.push({
           id: d.id,
           uid: null,
-          email: data.email || "",
+          email: "",
           name: data.nameEn || data.fullName || "",
           role: data.role || "unassigned",
           active: data.active === true,
@@ -4541,7 +4245,7 @@ onAuthStateChanged(auth, async (user) => {
   subscribeEmployees();
 });
 
-console.log("[users] booted — Oromia has 6 zones + 8 cities in one '04' key; every region tagged zone/city; login lives inside Assign Role.");
+console.log("[users] booted — Option B: Add Person captures everything; Assign Role only creates login. Oromia has 6 zones + 8 cities under one '04' key.");
 </script>
 
 </body>
