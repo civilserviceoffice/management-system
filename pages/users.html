@@ -159,6 +159,7 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .scope-badge--super { background:linear-gradient(135deg, #f0eaff, #fff); border-color:#ddd2fb; color:#5b21b6; }
 .scope-badge--regional { background:linear-gradient(135deg, #fdf5e0, #fff); border-color:#f0dcb0; color:#b8860b; }
 .scope-badge--cluster { background:linear-gradient(135deg, #ecfdf3, #fff); border-color:#abefc6; color:#067647; }
+.scope-badge--office { background:linear-gradient(135deg, #f1f5f9, #fff); border-color:#cbd5e1; color:#334155; }
 .btn { display:inline-flex; align-items:center; justify-content:center; gap:9px;
   height:46px; padding:0 20px; border-radius:13px;
   border:1px solid #d9dee7; background:#fff;
@@ -172,15 +173,6 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .btn--gold { background:linear-gradient(135deg,#d4a017,#e8b84b); border:none; color:#fff;
   box-shadow:0 10px 22px rgba(212,160,23,.22); }
 .btn--gold:hover { background:linear-gradient(135deg,#b8860b,#d4a017); }
-.btn--fp { background:linear-gradient(135deg, #6d28d9, #5b21b6); border:none; color:#fff;
-  box-shadow:0 10px 22px rgba(109,40,217,.28); position:relative; overflow:hidden; }
-.btn--fp:hover { background:linear-gradient(135deg, #5b21b6, #4c1d95); transform:translateY(-1px); }
-.btn--fp::before {
-  content:""; position:absolute; inset:0;
-  background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,.18) 50%, transparent 70%);
-  transform:translateX(-100%); animation:shine 2.6s ease-in-out infinite; pointer-events:none;
-}
-@keyframes shine { 0%,60% { transform:translateX(-100%); } 100% { transform:translateX(100%); } }
 .btn--danger { color:var(--danger); }
 .btn--danger:hover { background:#fef3f2; border-color:#f0a5ab; }
 .btn--sm { height:38px; padding:0 14px; font-size:13px; border-radius:10px; }
@@ -188,6 +180,8 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .btn--icon { width:38px; padding:0; }
 .btn--assign { color:#b8860b; }
 .btn--assign:hover { background:#fdf5e0; border-color:#f0dcb0; }
+.btn--assign:disabled,
+.btn--assign.is-locked { opacity:.5; pointer-events:none; }
 .btn:disabled { opacity:.55; pointer-events:none; }
 .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin-bottom:24px; }
 .stat { position:relative; background:#fff; border:1px solid var(--border);
@@ -271,14 +265,22 @@ table.data tbody tr:hover { background:var(--bg-soft); }
   font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.02em; }
 .role-badge svg { width:13px; height:13px; stroke:currentColor; stroke-width:2.2; fill:none; }
 .role-badge--super_admin        { background:#f0eaff; color:#5b21b6; }
-.role-badge--regional_admin     { background:#fdf5e0; color:#b8860b; }
-.role-badge--admin              { background:#eaf3fc; color:#0b5cab; }
-.role-badge--directorate        { background:#fef3f2; color:#b42318; }
-.role-badge--cluster_directorate{ background:#fff1e8; color:#c2410c; }
-.role-badge--woreda_city        { background:#f0f9ff; color:#0369a1; }
 .role-badge--hrm                { background:#ecfdf3; color:#067647; }
 .role-badge--finance            { background:#fdf5e0; color:#b8860b; }
+.role-badge--regional_admin     { background:#fdf5e0; color:#b8860b; }
+.role-badge--regional_hrm       { background:#ecfdf3; color:#067647; }
+.role-badge--regional_finance   { background:#fdf5e0; color:#b8860b; }
+.role-badge--directorate        { background:#fef3f2; color:#b42318; }
+.role-badge--admin              { background:#eaf3fc; color:#0b5cab; }
+.role-badge--cluster_hrm        { background:#ecfdf3; color:#067647; }
+.role-badge--cluster_finance    { background:#fdf5e0; color:#b8860b; }
+.role-badge--cluster_directorate{ background:#fff1e8; color:#c2410c; }
+.role-badge--woreda_admin       { background:#eaf3fc; color:#0b5cab; }
+.role-badge--woreda_hrm         { background:#ecfdf3; color:#067647; }
+.role-badge--woreda_finance     { background:#fdf5e0; color:#b8860b; }
+.role-badge--woreda_city        { background:#f0f9ff; color:#0369a1; }
 .role-badge--manager            { background:#e0f5f7; color:#0e7490; }
+.role-badge--team_leader        { background:#e0f5f7; color:#0e7490; }
 .role-badge--employee           { background:#f1f5f9; color:#334155; }
 .role-badge--unassigned         { background:#fdf5e0; color:#7a5210; }
 .tag { display:inline-flex; align-items:center; gap:5px;
@@ -495,10 +497,6 @@ body.sidebar-open .overlay { display:block; }
   background:#fff; font-size:12px; font-weight:700; color:var(--text-soft); cursor:pointer;
 }
 .reassign-photo__btn:hover { background:var(--bg-soft); border-color:#b9c7d9; }
-
-/* ============================================================
-   FINGERPRINT (in wizards)
-   ============================================================ */
 .fp-capture {
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   padding:26px 20px 20px; text-align:center;
@@ -543,8 +541,6 @@ body.sidebar-open .overlay { display:block; }
 .fp-capture__badge svg { width:13px; height:13px; stroke:currentColor; stroke-width:2.2; fill:none; }
 .fp-capture.is-success .fp-capture__badge { background:#ecfdf3; color:#067647; }
 .fp-capture.is-error   .fp-capture__badge { background:#fef3f2; color:#b42318; }
-
-/* Fingerprint list (edit wizard) */
 .fp-list { border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .fp-list__item {
   display:flex; align-items:center; gap:12px; padding:12px 14px;
@@ -566,7 +562,6 @@ body.sidebar-open .overlay { display:block; }
 }
 .fp-list__del:hover { background:#fef3f2; }
 .fp-list__del svg { width:15px; height:15px; stroke:currentColor; stroke-width:2.2; fill:none; }
-
 @media (max-width:900px) {
   .app { grid-template-columns:1fr !important; grid-template-areas:"topbar" "main"; }
   .sidebar { position:fixed; top:0; left:0; width:var(--sidebar-w) !important;
@@ -655,7 +650,7 @@ body.sidebar-open .overlay { display:block; }
     <div class="page-head">
       <div>
         <h1 class="page-head__title">Users &amp; Staff</h1>
-        <p class="page-head__sub">Create accounts first, then assign roles &amp; work areas</p>
+        <p class="page-head__sub">Step 1 — Add Person · Step 2 — Assign Role &amp; Work Area</p>
         <div id="scope-badge"></div>
       </div>
       <div class="page-head__actions" id="head-actions"></div>
@@ -672,14 +667,22 @@ body.sidebar-open .overlay { display:block; }
         <option value="">All roles</option>
         <option value="unassigned">Unassigned</option>
         <option value="super_admin">Super Admin</option>
+        <option value="hrm">National HR</option>
+        <option value="finance">National Finance</option>
         <option value="regional_admin">Regional Admin</option>
-        <option value="admin">Cluster Admin</option>
+        <option value="regional_hrm">Regional HR</option>
+        <option value="regional_finance">Regional Finance</option>
         <option value="directorate">Regional Directorate</option>
+        <option value="admin">Cluster Admin</option>
+        <option value="cluster_hrm">Cluster HR</option>
+        <option value="cluster_finance">Cluster Finance</option>
         <option value="cluster_directorate">Cluster Directorate</option>
+        <option value="woreda_admin">Woreda Admin</option>
+        <option value="woreda_hrm">Woreda HR</option>
+        <option value="woreda_finance">Woreda Finance</option>
         <option value="woreda_city">Woreda / City</option>
-        <option value="hrm">HR Manager</option>
-        <option value="finance">Finance Officer</option>
         <option value="manager">Manager</option>
+        <option value="team_leader">Team Leader</option>
         <option value="employee">Employee</option>
       </select>
       <select class="toolbar__filter" id="status-filter">
@@ -745,14 +748,14 @@ const db = getFirestore(app);
    REGIONS
    ============================================================ */
 const REGIONS = [
-  { code: "01", en: "Tigray" }, { code: "02", en: "Afar" },
-  { code: "03", en: "Amhara" }, { code: "04", en: "Oromia" },
-  { code: "05", en: "Somali" }, { code: "06", en: "Benishangul-Gumuz" },
-  { code: "07", en: "South Nations (SNNPR)" }, { code: "08", en: "Gambella" },
-  { code: "09", en: "Harari" }, { code: "10", en: "Sidama" },
-  { code: "11", en: "South West Ethiopia" }, { code: "12", en: "Dire Dawa" },
-  { code: "13", en: "Addis Ababa" }, { code: "14", en: "Central Ethiopia" },
-  { code: "15", en: "South Ethiopia" }
+  { code:"01", en:"Tigray" }, { code:"02", en:"Afar" },
+  { code:"03", en:"Amhara" }, { code:"04", en:"Oromia" },
+  { code:"05", en:"Somali" }, { code:"06", en:"Benishangul-Gumuz" },
+  { code:"07", en:"South Nations (SNNPR)" }, { code:"08", en:"Gambella" },
+  { code:"09", en:"Harari" }, { code:"10", en:"Sidama" },
+  { code:"11", en:"South West Ethiopia" }, { code:"12", en:"Dire Dawa" },
+  { code:"13", en:"Addis Ababa" }, { code:"14", en:"Central Ethiopia" },
+  { code:"15", en:"South Ethiopia" }
 ];
 function regionLabel(code) {
   const r = REGIONS.find(x => x.code === code);
@@ -813,26 +816,62 @@ let filterRole = "";
 let filterStatus = "";
 
 /* ============================================================
-   ROLE CONSTANTS
+   ROLE LABELS + SCOPE MATRIX
    ============================================================ */
 const ROLE_LABELS = {
-  super_admin:         "Super Admin",
-  regional_admin:      "Regional Admin",
-  admin:               "Cluster Admin",
-  directorate:         "Regional Directorate",
-  cluster_directorate: "Cluster Directorate",
-  woreda_city:         "Woreda / City",
-  hrm:                 "HR Manager",
-  finance:             "Finance Officer",
-  manager:             "Manager",
-  employee:            "Employee",
-  unassigned:          "Unassigned"
+  super_admin:"Super Admin",
+  hrm:"National HR",
+  finance:"National Finance",
+  regional_admin:"Regional Admin",
+  regional_hrm:"Regional HR",
+  regional_finance:"Regional Finance",
+  directorate:"Regional Directorate",
+  admin:"Cluster Admin",
+  cluster_hrm:"Cluster HR",
+  cluster_finance:"Cluster Finance",
+  cluster_directorate:"Cluster Directorate",
+  woreda_admin:"Woreda Admin",
+  woreda_hrm:"Woreda HR",
+  woreda_finance:"Woreda Finance",
+  woreda_city:"Woreda / City",
+  manager:"Manager",
+  team_leader:"Team Leader",
+  employee:"Employee",
+  unassigned:"Unassigned"
 };
+
 const ROLE_ORDER = {
-  super_admin:0, regional_admin:1, admin:2, directorate:3,
-  cluster_directorate:4, woreda_city:5, hrm:6, finance:7, manager:8, employee:9, unassigned:10
+  super_admin:0, hrm:1, finance:2,
+  regional_admin:3, regional_hrm:4, regional_finance:5, directorate:6,
+  admin:7, cluster_hrm:8, cluster_finance:9, cluster_directorate:10,
+  woreda_admin:11, woreda_hrm:12, woreda_finance:13, woreda_city:14,
+  manager:15, team_leader:16, employee:17, unassigned:18
 };
+
+/* Every role → scope level */
+const ROLE_SCOPE = {
+  super_admin:"national",
+  hrm:"national",
+  finance:"national",
+  regional_admin:"region",
+  regional_hrm:"region",
+  regional_finance:"region",
+  directorate:"region",
+  admin:"cluster",
+  cluster_hrm:"cluster",
+  cluster_finance:"cluster",
+  cluster_directorate:"cluster",
+  woreda_admin:"woreda",
+  woreda_hrm:"woreda",
+  woreda_finance:"woreda",
+  woreda_city:"woreda",
+  manager:"self",
+  team_leader:"self",
+  employee:"self"
+};
+
 const roleLabel = (r) => ROLE_LABELS[r] || (r || "").replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+const roleScope = (r) => ROLE_SCOPE[r] || "self";
 
 const FINANCE_SUBROLES = [
   { key:"payroll",    label:"Payroll Officer" },
@@ -848,7 +887,7 @@ const HRM_SUBROLES = [
 ];
 
 /* ============================================================
-   FINGERPRINT / WEBAUTHN
+   FINGERPRINT / WEBAUTHN (unchanged)
    ============================================================ */
 const FP_SUPPORTED = !!(window.PublicKeyCredential &&
                         navigator.credentials &&
@@ -945,7 +984,7 @@ const ICONS = {
 };
 
 /* ============================================================
-   NAV
+   NAV — full per-role sidebar
    ============================================================ */
 const NAV = [
   { section:"Overview", items:[
@@ -953,30 +992,52 @@ const NAV = [
     { key:"mywork",    label:"My Work",   href:"mywork.html",    icon:"clipboard", roles:["*"] }
   ]},
   { section:"Organization", items:[
-    { key:"users",       label:"Users & Staff", href:"users.html",       icon:"users",    roles:["super_admin","regional_admin","admin","hrm"] },
-    { key:"departments", label:"Sectors",       href:"departments.html", icon:"layers",   roles:["super_admin","regional_admin","admin","hrm","manager","directorate","cluster_directorate"] }
+    { key:"users", label:"Users & Staff", href:"users.html", icon:"users",
+      roles:["super_admin","hrm","finance",
+             "regional_admin","regional_hrm","regional_finance",
+             "admin","cluster_hrm","cluster_finance",
+             "woreda_admin","woreda_hrm","woreda_finance"] },
+    { key:"departments", label:"Sectors", href:"departments.html", icon:"layers",
+      roles:["super_admin","hrm","finance",
+             "regional_admin","regional_hrm","regional_finance","directorate",
+             "admin","cluster_hrm","cluster_finance","cluster_directorate",
+             "woreda_admin","woreda_hrm","woreda_finance","woreda_city",
+             "manager","team_leader"] }
   ]},
   { section:"Work Plans", items:[
-    { key:"workplans",   label:"Work Plans",   href:"workplans.html",   icon:"fileText", roles:["super_admin","regional_admin","directorate","admin","cluster_directorate","woreda_city"] }
+    { key:"workplans", label:"Work Plans", href:"workplans.html", icon:"fileText",
+      roles:["super_admin","hrm","finance",
+             "regional_admin","regional_hrm","regional_finance","directorate",
+             "admin","cluster_hrm","cluster_finance","cluster_directorate",
+             "woreda_admin","woreda_hrm","woreda_finance","woreda_city",
+             "manager","team_leader","employee"] }
   ]},
   { section:"Human Resources", items:[
-    { key:"recruitment", label:"Recruitment", href:"recruitment.html", icon:"userPlus", roles:["super_admin","regional_admin","hrm","admin"] },
-    { key:"training",    label:"Training",    href:"training.html",    icon:"book",     roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] },
-    { key:"performance", label:"Performance", href:"performance.html", icon:"target",   roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] }
+    { key:"recruitment", label:"Recruitment", href:"recruitment.html", icon:"userPlus",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm"] },
+    { key:"training", label:"Training", href:"training.html", icon:"book",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] },
+    { key:"performance", label:"Performance", href:"performance.html", icon:"target",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] }
   ]},
   { section:"Operations", items:[
-    { key:"attendance",  label:"Attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] },
-    { key:"leave",       label:"Leave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] }
+    { key:"attendance", label:"Attendance", href:"attendance.html", icon:"clock",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] },
+    { key:"leave", label:"Leave", href:"leave.html", icon:"calendar",
+      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] }
   ]},
   { section:"Finance", items:[
-    { key:"payroll",     label:"Payroll",     href:"payroll.html",  icon:"wallet", roles:["super_admin","regional_admin","finance","admin"] },
-    { key:"budget",      label:"Budget",      href:"budget.html",   icon:"chart",  roles:["super_admin","regional_admin","finance"] }
+    { key:"payroll", label:"Payroll", href:"payroll.html", icon:"wallet",
+      roles:["super_admin","finance","regional_admin","regional_finance","admin","cluster_finance","woreda_admin","woreda_finance"] },
+    { key:"budget", label:"Budget", href:"budget.html", icon:"chart",
+      roles:["super_admin","finance","regional_admin","regional_finance","admin","cluster_finance","woreda_admin","woreda_finance"] }
   ]},
   { section:"Administration", items:[
-    { key:"offices",       label:"Offices",       href:"offices.html",       icon:"building", roles:["super_admin","regional_admin","admin"] },
-    { key:"reports",       label:"Reports",       href:"reports.html",       icon:"fileText", roles:["*"] },
-    { key:"notifications", label:"Notifications", href:"notifications.html", icon:"bell",     roles:["*"] },
-    { key:"settings",      label:"Settings",      href:"settings.html",      icon:"settings", roles:["*"] }
+    { key:"offices", label:"Offices", href:"offices.html", icon:"building",
+      roles:["super_admin","regional_admin","admin","woreda_admin"] },
+    { key:"reports", label:"Reports", href:"reports.html", icon:"fileText", roles:["*"] },
+    { key:"notifications", label:"Notifications", href:"notifications.html", icon:"bell", roles:["*"] },
+    { key:"settings", label:"Settings", href:"settings.html", icon:"settings", roles:["*"] }
   ]}
 ];
 
@@ -1074,7 +1135,7 @@ async function generateEmployeeId({ regionCode, sectorCode, clusterCode, departm
 }
 
 /* ============================================================
-   DUPLICATE LOOKUP  (now supports excludeId for edit)
+   DUPLICATE LOOKUP
    ============================================================ */
 async function findEmployeeByNationalId(natId, excludeEmpId = null) {
   const norm = normalizeNationalId(natId);
@@ -1144,55 +1205,143 @@ function evaluatePassword(pw) {
 }
 
 /* ============================================================
-   PERMISSIONS
+   PERMISSIONS — scope-aware
    ============================================================ */
-const isSuper = () => S?.role === "super_admin";
-const isRegionalAdmin = () => S?.role === "regional_admin";
-const isAdmin = () => S?.role === "admin";
-const isHRM = () => S?.role === "hrm";
+const hasRole = (...rs) => rs.includes(S?.role);
+const scope = () => roleScope(S?.role || "employee");
 
-const canAddStaff = () => isSuper() || isRegionalAdmin() || isHRM() || isAdmin();
+const canAddStaff = () => hasRole(
+  "super_admin","hrm","finance",
+  "regional_admin","regional_hrm","regional_finance",
+  "admin","cluster_hrm","cluster_finance",
+  "woreda_admin","woreda_hrm","woreda_finance"
+);
+
+const canAssignRoles = canAddStaff;
+
+/* Base query by scope */
+function scopedUsersQuery() {
+  const base = collection(db, "users");
+  const lvl = scope();
+  if (lvl === "national") return base;
+  if (lvl === "region" && S.regionCode) {
+    return query(base, where("regionCode", "==", S.regionCode));
+  }
+  if (lvl === "cluster" && S.clusterId) {
+    return query(base, where("clusterId", "==", S.clusterId));
+  }
+  if (lvl === "woreda" && S.woredaCode) {
+    return query(base, where("woredaCode", "==", S.woredaCode));
+  }
+  if (lvl === "self") return query(base, where("uid", "==", S.uid));
+  return base;
+}
+function scopedEmployeesQuery() {
+  const base = collection(db, "employees");
+  const lvl = scope();
+  if (lvl === "national") return base;
+  if (lvl === "region" && S.regionCode) {
+    return query(base, where("regionCode", "==", S.regionCode));
+  }
+  if (lvl === "cluster" && S.clusterId) {
+    return query(base, where("clusterId", "==", S.clusterId));
+  }
+  if (lvl === "woreda" && S.woredaCode) {
+    return query(base, where("woredaCode", "==", S.woredaCode));
+  }
+  if (lvl === "self") return query(base, where("uid", "==", S.uid));
+  return base;
+}
+
+function inScope(u) {
+  const lvl = scope();
+  if (lvl === "national") return true;
+  if (lvl === "region")    return (u.regionCode || u.region) === S.regionCode;
+  if (lvl === "cluster")   return u.clusterId === S.clusterId;
+  if (lvl === "woreda")    return u.woredaCode === S.woredaCode;
+  if (lvl === "self")      return u.id === S.uid;
+  return false;
+}
 
 function visibleUsers() {
   if (!S) return [];
-  if (isSuper()) return USERS;
-  if (isRegionalAdmin()) return USERS.filter(u => (u.region || u.regionCode) === S.region);
-  if (isHRM()) return USERS;
-  if (isAdmin()) return USERS.filter(u => u.clusterId === S.clusterId);
-  return USERS.filter(u => u.id === S.uid);
+  return USERS.filter(inScope);
 }
 function canManageUser(target) {
   if (!target) return false;
-  if (isSuper()) return true;
   if (target.id === S.uid) return true;
-  if (target.role === "super_admin") return false;
-  if (target.role === "regional_admin" && !isSuper()) return false;
-  if (isRegionalAdmin()) return (target.region || target.regionCode) === S.region;
-  if (isHRM()) return true;
-  if (isAdmin()) return target.clusterId === S.clusterId;
-  return false;
+  if (target.role === "super_admin" && !hasRole("super_admin")) return false;
+  return inScope(target);
 }
 function canDeleteUser(target) {
   if (!target) return false;
   if (target.id === S.uid) return false;
-  if (target.role === "super_admin") return false;
-  if (isSuper()) return true;
-  if (target.role === "regional_admin" && !isSuper()) return false;
-  if (isRegionalAdmin()) return (target.region || target.regionCode) === S.region;
-  if (isHRM()) return true;
-  if (isAdmin()) return target.clusterId === S.clusterId;
-  return false;
+  if (target.role === "super_admin" && !hasRole("super_admin")) return false;
+  if (!hasRole("super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm")) return false;
+  return inScope(target);
 }
 function canAssignTo(target) {
   if (!target) return false;
-  if (target.role === "super_admin" && !isSuper()) return false;
-  return canManageUser(target);
+  if (target.role === "super_admin" && !hasRole("super_admin")) return false;
+  if (!canAssignRoles()) return false;
+  return inScope(target);
 }
+
+/* What role this signed-in person can hand out — still bounded by scope */
 function assignableRoles() {
-  if (isSuper())         return ["super_admin","regional_admin","admin","directorate","cluster_directorate","woreda_city","hrm","finance","manager","employee"];
-  if (isRegionalAdmin()) return ["admin","directorate","cluster_directorate","woreda_city","hrm","finance","manager","employee"];
-  if (isHRM())           return ["hrm","finance","manager","employee"];
-  if (isAdmin())         return ["cluster_directorate","woreda_city","manager","employee"];
+  const role = S?.role;
+  if (role === "super_admin") {
+    return ["super_admin","hrm","finance",
+            "regional_admin","regional_hrm","regional_finance","directorate",
+            "admin","cluster_hrm","cluster_finance","cluster_directorate",
+            "woreda_admin","woreda_hrm","woreda_finance","woreda_city",
+            "manager","team_leader","employee"];
+  }
+  if (role === "hrm" || role === "finance") {
+    return ["regional_admin","regional_hrm","regional_finance","directorate",
+            "admin","cluster_hrm","cluster_finance","cluster_directorate",
+            "woreda_admin","woreda_hrm","woreda_finance","woreda_city",
+            "manager","team_leader","employee"];
+  }
+  if (role === "regional_admin") {
+    return ["regional_hrm","regional_finance","directorate",
+            "admin","cluster_hrm","cluster_finance","cluster_directorate",
+            "woreda_admin","woreda_hrm","woreda_finance","woreda_city",
+            "manager","team_leader","employee"];
+  }
+  if (role === "regional_hrm") {
+    return ["regional_hrm","regional_finance","directorate",
+            "admin","cluster_hrm","cluster_finance","cluster_directorate",
+            "woreda_admin","woreda_hrm","woreda_finance","woreda_city",
+            "manager","team_leader","employee"];
+  }
+  if (role === "regional_finance") {
+    return ["regional_finance","directorate",
+            "admin","cluster_finance",
+            "woreda_admin","woreda_finance","employee"];
+  }
+  if (role === "admin") {
+    return ["cluster_hrm","cluster_finance","cluster_directorate",
+            "woreda_admin","woreda_hrm","woreda_finance","woreda_city",
+            "manager","team_leader","employee"];
+  }
+  if (role === "cluster_hrm") {
+    return ["cluster_hrm","cluster_finance","cluster_directorate",
+            "woreda_admin","woreda_hrm","woreda_finance","woreda_city",
+            "manager","team_leader","employee"];
+  }
+  if (role === "cluster_finance") {
+    return ["cluster_finance","woreda_finance","employee"];
+  }
+  if (role === "woreda_admin") {
+    return ["woreda_hrm","woreda_finance","woreda_city","manager","team_leader","employee"];
+  }
+  if (role === "woreda_hrm") {
+    return ["woreda_hrm","woreda_finance","woreda_city","manager","team_leader","employee"];
+  }
+  if (role === "woreda_finance") {
+    return ["woreda_finance","employee"];
+  }
   return [];
 }
 
@@ -1220,7 +1369,7 @@ function departmentsForSector(sectorId) {
 }
 
 /* ============================================================
-   RENDER — SHELL
+   RENDER
    ============================================================ */
 function renderSidebar() {
   const nav = document.getElementById("sidebar-nav");
@@ -1253,37 +1402,42 @@ function renderUser() {
 }
 function renderScopeBadge() {
   const el = document.getElementById("scope-badge");
-  if (isSuper()) {
+  const role = S.role;
+  const lvl = scope();
+  if (lvl === "national") {
     el.innerHTML = `<span class="scope-badge scope-badge--super">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Full system access — all regions
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(roleLabel(role))} · All regions
     </span>`;
-  } else if (isRegionalAdmin()) {
+  } else if (lvl === "region") {
     el.innerHTML = `<span class="scope-badge scope-badge--regional">
-      <svg viewBox="0 0 24 24">${ICONS.pin}</svg> Regional Admin · ${escapeHtml(regionLabel(S.region))}
+      <svg viewBox="0 0 24 24">${ICONS.pin}</svg> ${escapeHtml(roleLabel(role))} · ${escapeHtml(regionLabel(S.regionCode))}
     </span>`;
-  } else if (isHRM()) {
-    el.innerHTML = `<span class="scope-badge scope-badge--cluster">
-      <svg viewBox="0 0 24 24">${ICONS.users}</svg> HR Manager — organisation-wide
-    </span>`;
-  } else if (isAdmin()) {
+  } else if (lvl === "cluster") {
     const c = CLUSTERS.find(x => x.id === S.clusterId);
     el.innerHTML = `<span class="scope-badge scope-badge--cluster">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Cluster admin · ${escapeHtml(c?.name || "—")}
+      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> ${escapeHtml(roleLabel(role))} · ${escapeHtml(c?.name || "—")}
+    </span>`;
+  } else if (lvl === "woreda") {
+    el.innerHTML = `<span class="scope-badge scope-badge--office">
+      <svg viewBox="0 0 24 24">${ICONS.building}</svg> ${escapeHtml(roleLabel(role))} · ${escapeHtml(S.woredaName || S.woredaCode || "—")}
     </span>`;
   } else {
-    el.innerHTML = `<span class="scope-badge">
-      <svg viewBox="0 0 24 24">${ICONS.lock}</svg> Read-only
+    el.innerHTML = `<span class="scope-badge scope-badge--office">
+      <svg viewBox="0 0 24 24">${ICONS.user}</svg> Read-only
     </span>`;
   }
 }
 function renderHeadActions() {
   const host = document.getElementById("head-actions");
   const btns = [];
+  /* TWO separate buttons — Add Person and Assign Role are distinct actions */
   if (canAddStaff()) {
-    btns.push(`<button class="btn btn--primary" id="add-staff-btn">
+    btns.push(`<button class="btn btn--primary" id="add-staff-btn" title="Step 1 — create the person account">
       <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg> Add Person
     </button>`);
-    btns.push(`<button class="btn btn--gold" id="assign-btn">
+  }
+  if (canAssignRoles()) {
+    btns.push(`<button class="btn btn--gold" id="assign-btn" title="Step 2 — assign role and work area to an existing person">
       <svg viewBox="0 0 24 24">${ICONS.userCheck}</svg> Assign Role &amp; Work Area
     </button>`);
   }
@@ -1397,7 +1551,7 @@ function renderTable() {
         <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px">No people yet</div>
         <div style="font-size:13.5px;line-height:1.6;max-width:520px;margin:0 auto">
           ${canAddStaff()
-            ? "Click <strong>Add Person</strong> to create the first account."
+            ? "Click <strong>Add Person</strong> to create the first account. Then click <strong>Assign Role</strong> to give them a role and work area."
             : "No users are visible for your role."}
         </div>
       </td></tr>`;
@@ -1428,10 +1582,8 @@ function renderTable() {
     const canEdit = canManageUser(u);
     const canDel  = canDeleteUser(u);
     const canAssign = canAssignTo(u);
-
     const fpList = getFingerprintList(emp);
     const hasFp = fpList.length > 0;
-
     const salary = emp?.basicSalary || emp?.salary || null;
     const salaryDisplay = salary
       ? `<span class="salary-cell">${escapeHtml(fmtMoney(salary))} <span style="color:var(--muted);font-weight:600">ETB</span></span>`
@@ -1504,9 +1656,12 @@ function renderTable() {
               <svg viewBox="0 0 24 24">${ICONS.eye}</svg>
             </button>
             ${canAssign ? `
-              <button class="btn btn--sm btn--icon btn--assign" data-action="assign" data-id="${u.id}" title="${assigned ? "Re-assign role / work area" : "Assign role & work area"}">
+              <button class="btn btn--sm btn--icon btn--assign ${!assigned ? "" : ""}" data-action="assign" data-id="${u.id}" title="${assigned ? "Re-assign / Transfer" : "Assign role & work area"}">
                 <svg viewBox="0 0 24 24">${ICONS.userCheck}</svg>
-              </button>` : ""}
+              </button>` : `
+              <button class="btn btn--sm btn--icon btn--assign is-locked" title="You cannot assign this person's role" disabled>
+                <svg viewBox="0 0 24 24">${ICONS.userCheck}</svg>
+              </button>`}
             ${canEdit ? `
               <button class="btn btn--sm btn--icon" data-action="edit" data-id="${u.id}" title="Edit details">
                 <svg viewBox="0 0 24 24">${ICONS.edit}</svg>
@@ -1525,9 +1680,17 @@ function renderTable() {
       e.stopPropagation();
       const { action, id } = btn.dataset;
       if (action === "view")   openViewModal(id);
-      if (action === "edit")   openEditWizard(id);        // ← now opens wizard
+      if (action === "edit")   openEditWizard(id);
       if (action === "delete") confirmDelete(id);
-      if (action === "assign") openAssignWizard(id);
+      if (action === "assign") {
+        const u = USERS.find(x => x.id === id);
+        if (!u) return;
+        if (!isUserAlreadyAssigned(u, employeesByUid[u.id]) && !employeesByUid[u.id]) {
+          toast("This person has no staff record yet. Add them via Add Person first.", "error");
+          return;
+        }
+        openAssignWizard(id);
+      }
     });
   });
 }
@@ -1664,7 +1827,7 @@ function openWizard({ title, subtitle, finishLabel, steps, initial = {}, onFinis
 }
 
 /* ============================================================
-   LIVE DUPLICATE CHECK  (with excludeEmpId for edit)
+   LIVE DUPLICATE CHECK
    ============================================================ */
 function setupLiveDuplicate(root, inputId, type, label, onStatusChange, excludeEmpId = null) {
   const input = root.querySelector("#" + inputId);
@@ -1706,7 +1869,7 @@ function setupLiveDuplicate(root, inputId, type, label, onStatusChange, excludeE
 }
 
 /* ============================================================
-   STEP: PHOTO UPLOAD (shared between create + edit)
+   STEP: PHOTO UPLOAD
    ============================================================ */
 function renderPhotoField(d, required = true) {
   return `
@@ -1750,7 +1913,7 @@ function wirePhotoField(root, data) {
 }
 
 /* ============================================================
-   CREATE USER WIZARD
+   CREATE USER WIZARD — Add Person ONLY (no role, no auto-assign)
    ============================================================ */
 function openCreateUserWizard() {
   if (!canAddStaff()) { toast("You cannot add staff", "error"); return; }
@@ -1758,10 +1921,10 @@ function openCreateUserWizard() {
   const duplicateStatus = { nationalId:{ ok:false, empty:true }, phone:{ ok:false, empty:true } };
 
   openWizard({
-    title: "Create User Account",
-    subtitle: "Creates the login + basic profile. Role and work area are assigned in the next step.",
-    finishLabel: "Create Account",
-    successMessage: "User created — assign their role and work area next.",
+    title: "Add Person — Step 1",
+    subtitle: "Creates the login + basic employee record. Role is assigned separately as Step 2.",
+    finishLabel: "Create Person",
+    successMessage: "Person added. Next: click “Assign Role & Work Area” to give them a role.",
     size: "lg",
     initial: { gender:"", country:"ET" },
     steps: [
@@ -2135,8 +2298,9 @@ function openCreateUserWizard() {
             </div>
           </div>
           <div class="alert alert--info" style="margin-top:16px">
-            <svg viewBox="0 0 24 24">${ICONS.userCheck}</svg>
-            <div>This creates the <strong>login account</strong> and a basic employee record with role <strong>Unassigned</strong>. You'll then be prompted to assign the role and work area.</div>
+            <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg>
+            <div>This only creates the <strong>login account</strong> and a basic employee record with status <strong>Unassigned</strong>.<br><br>
+              <strong>Step 2</strong> — you or another authorized user clicks <strong>Assign Role &amp; Work Area</strong> to give this person their role, department, cluster/woreda and salary.</div>
           </div>`;
         }
       }
@@ -2162,6 +2326,7 @@ function openCreateUserWizard() {
         ? "+251 " + phoneAltNorm.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3")
         : (d.phoneAlt?.trim() || null);
 
+      /* Create Firebase Auth account */
       const secName = "staffCreator_" + Date.now();
       const secApp = initializeApp(firebaseConfig, secName);
       const secAuth = getAuth(secApp);
@@ -2176,6 +2341,7 @@ function openCreateUserWizard() {
       }
       if (!uid) throw new Error("Could not create login account.");
 
+      /* Reserve uniqueness */
       let natLocked = false, phoneLocked = false;
       try {
         await reserveUnique("nationalId", natIdNorm, natIdNorm, "(pending)", nameEn);
@@ -2202,7 +2368,16 @@ function openCreateUserWizard() {
 
       try {
         await setDoc(empRef, {
+          /* Unassigned placeholders — will be filled by Assign Wizard later */
           empId: null, seq: null,
+          role: "unassigned", status: "unassigned",
+          regionCode: null, regionName: null,
+          sectorId: null, sectorCode: null, sectorName: null,
+          departmentId: null, departmentCode: null, departmentName: null,
+          clusterId: null, clusterCode: null, clusterName: null,
+          woredaCode: null, woredaName: null,
+          officeId: null, officeCode: null, officeName: null,
+          /* Personal */
           firstName: d.firstName.trim(),
           middleName: d.middleName?.trim() || null,
           lastName: d.lastName.trim(),
@@ -2224,7 +2399,6 @@ function openCreateUserWizard() {
           kebele: d.kebele?.trim() || null,
           houseNo: d.houseNo?.trim() || null,
           street: d.street?.trim() || null,
-          status: "unassigned",
           uid,
           active: true,
           fingerprints: fingerprintArray,
@@ -2263,10 +2437,13 @@ function openCreateUserWizard() {
       try {
         await addDoc(collection(db, "notifications"), {
           type: "user_created",
-          title: "New user account created",
-          body: `${nameEn} was created — role and work area pending.`,
+          title: "New person added",
+          body: `${nameEn} was added. Role & work area still pending — assign via "Assign Role & Work Area".`,
           targetUid: uid,
-          forRoles: ["super_admin","regional_admin","hrm","admin"],
+          forRoles: ["super_admin","hrm","finance",
+                     "regional_admin","regional_hrm","regional_finance",
+                     "admin","cluster_hrm","cluster_finance",
+                     "woreda_admin","woreda_hrm","woreda_finance"],
           link: "users.html",
           read: false,
           createdAt: serverTimestamp(),
@@ -2274,13 +2451,13 @@ function openCreateUserWizard() {
         });
       } catch (e) {}
 
-      setTimeout(() => openAssignWizard(uid), 200);
+      /* NOTE: We do NOT auto-open the Assign wizard. The admin does that explicitly. */
     }
   });
 }
 
 /* ============================================================
-   EDIT USER WIZARD  (full, same structure as Create)
+   EDIT USER WIZARD — same as before, no role changes
    ============================================================ */
 function openEditWizard(userId) {
   const u = USERS.find(x => x.id === userId);
@@ -2294,7 +2471,6 @@ function openEditWizard(userId) {
   const duplicateStatus = { nationalId:{ ok:true, empty:false }, phone:{ ok:true, empty:false } };
 
   const initial = {
-    // Personal
     firstName:   emp?.firstName   || "",
     middleName:  emp?.middleName  || "",
     lastName:    emp?.lastName    || "",
@@ -2309,8 +2485,6 @@ function openEditWizard(userId) {
     maritalStatus: emp?.maritalStatus || "",
     nationalId:  emp?.nationalId || "",
     _photo:      emp?.photoURL || u.photoURL || null,
-
-    // Contact
     phone:    normalizePhone(emp?.phone || u.phone || ""),
     phoneAlt: normalizePhone(emp?.phoneAlt || ""),
     email:    emp?.email || u.personalEmail || "",
@@ -2319,11 +2493,7 @@ function openEditWizard(userId) {
     kebele:   emp?.kebele || "",
     houseNo:  emp?.houseNo || "",
     street:   emp?.street || "",
-
-    // Login (read-only)
     loginEmail: u.email || "",
-
-    // Employment
     position:  emp?.position || "",
     hireDate:  emp?.hireDate || "",
     employmentType: emp?.employmentType || "permanent",
@@ -2333,12 +2503,8 @@ function openEditWizard(userId) {
     positionAllowance:  emp?.positionAllowance || "",
     otherAllowance:     emp?.otherAllowance || "",
     active: u.active !== false,
-
-    // Fingerprints — start with what's on the record
     _fingerprints: fpList.slice(),
     _removedFingerprintIds: [],
-
-    // Name fallbacks for initials
     _originalPhoto: emp?.photoURL || u.photoURL || null
   };
 
@@ -2738,18 +2904,15 @@ function openEditWizard(userId) {
       const oldNatNorm = emp.nationalIdNorm || "";
       const oldPhoneNorm = emp.phoneNorm || "";
 
-      /* Check duplicates excluding self */
       if (natIdNorm !== oldNatNorm) {
         const dup = await findEmployeeByNationalId(natIdNorm, emp.id);
         if (dup) throw new Error("National ID is already registered to another person.");
-        // reserve new (release old after success)
         try { await reserveUnique("nationalId", natIdNorm, natIdNorm, emp.empId || emp.id, emp.nameEn || ""); }
         catch (e) { throw e; }
       }
       if (phoneNorm !== oldPhoneNorm) {
         const dup = await findEmployeeByPhone(phoneNorm, emp.id);
         if (dup) {
-          // rollback national ID reservation if we made one
           if (natIdNorm !== oldNatNorm) await releaseUnique("nationalId", natIdNorm);
           throw new Error("Phone number is already registered to another person.");
         }
@@ -2770,7 +2933,6 @@ function openEditWizard(userId) {
         ? "+251 " + phoneAltNorm.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3")
         : (d.phoneAlt?.trim() || null);
 
-      /* Build final fingerprint array — drop any removed ones */
       const removedIds = new Set(d._removedFingerprintIds || []);
       const finalFingerprints = (d._fingerprints || []).filter(f => !removedIds.has(f.credentialId));
 
@@ -2827,13 +2989,11 @@ function openEditWizard(userId) {
         await updateDoc(doc(db, "employees", emp.id), empPatch);
         await updateDoc(doc(db, "users", u.id), userPatch);
       } catch (err) {
-        // Roll back uniqueness reservations on failure
         if (natIdNorm !== oldNatNorm) await releaseUnique("nationalId", natIdNorm);
         if (phoneNorm !== oldPhoneNorm) await releaseUnique("phone", phoneNorm);
         throw err;
       }
 
-      // Release old uniqueness keys (after successful update)
       if (natIdNorm !== oldNatNorm && oldNatNorm) await releaseUnique("nationalId", oldNatNorm);
       if (phoneNorm !== oldPhoneNorm && oldPhoneNorm) await releaseUnique("phone", oldPhoneNorm);
 
@@ -2843,16 +3003,34 @@ function openEditWizard(userId) {
 }
 
 /* ============================================================
-   ASSIGN WIZARD (unchanged) — supports transfer flow
+   ASSIGN WIZARD — Step 2 only
+   Only opens for an existing staff record. If user has no employee doc,
+   the wizard refuses to proceed (the Add Person step must come first).
    ============================================================ */
 function openAssignWizard(preselectedUserId = null) {
-  if (!canAddStaff()) { toast("You cannot assign roles", "error"); return; }
+  if (!canAssignRoles()) { toast("You cannot assign roles", "error"); return; }
 
-  const regionSectors = getRegionSectors(S.region);
-  const availableClusters = isSuper() ? CLUSTERS
-    : isRegionalAdmin() ? CLUSTERS.filter(c => c.regionCode === S.region)
-    : isAdmin() ? CLUSTERS.filter(c => c.id === S.clusterId)
-    : CLUSTERS;
+  /* Guard: if preselected and has no employee record → refuse */
+  if (preselectedUserId) {
+    const u = USERS.find(x => x.id === preselectedUserId);
+    if (!u) { toast("User not found", "error"); return; }
+    if (!employeesByUid[u.id]) {
+      toast("This person has no staff record yet. Use Add Person first.", "error");
+      return;
+    }
+  }
+
+  const regionSectors = getRegionSectors(S.regionCode || S.region);
+  const availableClusters = (() => {
+    const lvl = scope();
+    if (lvl === "national") return CLUSTERS;
+    if (lvl === "region") return CLUSTERS.filter(c => c.regionCode === (S.regionCode || S.region));
+    if (lvl === "cluster") return CLUSTERS.filter(c => c.id === S.clusterId);
+    if (lvl === "woreda") return CLUSTERS.filter(c =>
+      normalizeWoredas(c.woredas).some(w => w.code === S.woredaCode)
+    );
+    return [];
+  })();
 
   const roleOptions = assignableRoles();
   const preselected = preselectedUserId ? USERS.find(u => u.id === preselectedUserId) : null;
@@ -2897,8 +3075,7 @@ function openAssignWizard(preselectedUserId = null) {
   }
 
   const reassignStep = {
-    label: "Re-assign",
-    title: "Confirm re-assignment & clearance",
+    label: "Re-assign", title: "Confirm re-assignment & clearance",
     render: (d) => {
       const u = USERS.find(x => x.id === d.selectedUserId);
       if (!u) return '<div class="alert alert--error">Please go back and select a user.</div>';
@@ -3058,12 +3235,18 @@ function openAssignWizard(preselectedUserId = null) {
 
   const steps = [
     {
-      label: "Select User", title: "Select a user account",
+      label: "Select User", title: "Select a person (already added)",
       render: (d) => {
         const locked = !!preselected;
+        /* Step 2 is for EXISTING staff — filter to those with an employee record */
         const candidates = visibleUsers()
-          .filter(u => preselected ? u.id === preselected.id : canAssignTo(u))
+          .filter(u => {
+            if (preselected) return u.id === preselected.id;
+            if (!employeesByUid[u.id]) return false;
+            return canAssignTo(u);
+          })
           .sort((a, b) => String(a.name || a.email || "").localeCompare(String(b.name || b.email || "")));
+
         let rows = "";
         for (const u of candidates) {
           const emp = employeesByUid[u.id];
@@ -3077,16 +3260,18 @@ function openAssignWizard(preselectedUserId = null) {
                 escapeHtml(u.name || u.email || "User") +
                 (assigned ? ' <span class="assigned-tag">Assigned</span>' : ' <span class="unassigned-tag">Unassigned</span>') +
               '</div>' +
-              '<div class="user-pick-item__meta">' + escapeHtml(u.email || "—") + ' &middot; ' + escapeHtml((u.role || "unassigned").replace("_"," ")) + '</div>' +
+              '<div class="user-pick-item__meta">' + escapeHtml(u.email || "—") + ' &middot; ' + escapeHtml(roleLabel(u.role || "unassigned")) + '</div>' +
             '</div>' +
             '<div class="user-pick-radio"></div>' +
           '</div>';
         }
         return '<div class="alert alert--info"><svg viewBox="0 0 24 24">' + ICONS.alert + '</svg>' +
-            '<div>Pick a person below to assign role and work area.</div></div>' +
+            '<div>Pick a person <strong>who already has an account</strong>. If the person is not listed, use <strong>Add Person</strong> first (Step 1).</div></div>' +
           '<div class="field"><label>Search</label><input id="au-search" placeholder="Search…"></div>' +
-          '<div class="field"><label>' + (locked ? "Selected user" : "Available users (" + candidates.length + ")") + '</label>' +
-            '<div class="wm-list" id="au-list">' + (rows || '<div class="wm-empty">No users available.</div>') + '</div>' +
+          '<div class="field"><label>' + (locked ? "Selected user" : "Available people (" + candidates.length + ")") + '</label>' +
+            '<div class="wm-list" id="au-list">' +
+              (rows || '<div class="wm-empty">No people with a staff record in your scope. Add a person first.</div>') +
+            '</div>' +
           '</div>';
       },
       validate: d => d.selectedUserId ? null : "Please select a user.",
@@ -3141,7 +3326,7 @@ function openAssignWizard(preselectedUserId = null) {
         const selectedCluster = CLUSTERS.find(c => c.id === d.clusterId);
         const woredas = selectedCluster ? normalizeWoredas(selectedCluster.woredas) : [];
         const isWoredaStaff = isCluster && d.clusterLevel === "woreda";
-        const RR = twoDigits(selectedSector ? (selectedSector.regionCode || selectedSector.region || S.region) : S.region);
+        const RR = twoDigits(selectedSector ? (selectedSector.regionCode || selectedSector.region || S.regionCode) : S.regionCode);
         const SS = twoDigits(selectedSector && selectedSector.code);
         const CC = twoDigits(isCluster && selectedCluster ? selectedCluster.code : "00");
         const DD = twoDigits(selectedDept && selectedDept.code);
@@ -3266,7 +3451,7 @@ function openAssignWizard(preselectedUserId = null) {
       render: (d) => {
         const u = USERS.find(x => x.id === d.selectedUserId);
         if (!u) return '<div class="alert alert--error">Please go back and select a user.</div>';
-        const selectedSector = SECTORS.find(s => s.id === d.sectorId) || getRegionSectors(S.region).find(s => s.id === d.sectorId);
+        const selectedSector = SECTORS.find(s => s.id === d.sectorId) || getRegionSectors(S.regionCode).find(s => s.id === d.sectorId);
         const dept = DEPARTMENTS.find(x => x.id === d.departmentId);
         const isCluster = d.workLevel === "cluster";
         const isWoredaStaff = isCluster && d.clusterLevel === "woreda";
@@ -3309,8 +3494,8 @@ function openAssignWizard(preselectedUserId = null) {
   }
 
   openWizard({
-    title: "Assign Role & Work Area",
-    subtitle: "Pick a person, then walk down the organisation tree",
+    title: "Assign Role & Work Area — Step 2",
+    subtitle: "Pick an existing person, then walk down the organisation tree",
     finishLabel: "Save Assignment",
     successMessage: "Role and work area saved.",
     size: "lg",
@@ -3334,6 +3519,7 @@ function openAssignWizard(preselectedUserId = null) {
       const u = USERS.find(x => x.id === d.selectedUserId);
       if (!u) throw new Error("User no longer exists.");
       const emp = employeesByUid[u.id];
+      if (!emp) throw new Error("This person has no staff record yet. Add them via Add Person first.");
       const selectedSector = SECTORS.find(s => s.id === d.sectorId);
       if (!selectedSector) throw new Error("Selected sector no longer exists.");
       const dept = DEPARTMENTS.find(x => x.id === d.departmentId);
@@ -3343,7 +3529,7 @@ function openAssignWizard(preselectedUserId = null) {
       const cl = isCluster ? CLUSTERS.find(c => c.id === d.clusterId) : null;
       if (isCluster && !cl) throw new Error("Selected cluster no longer exists.");
 
-      const regionCode = selectedSector.regionCode || selectedSector.region || S.region;
+      const regionCode = selectedSector.regionCode || selectedSector.region || S.regionCode;
       const regionNameStr = regionName(regionCode);
       const sectorCode = selectedSector.code || "00";
       const departmentCode = dept.code || "00";
@@ -3417,38 +3603,36 @@ function openAssignWizard(preselectedUserId = null) {
       }
       await updateDoc(doc(db, "users", u.id), userPatch);
 
-      if (emp) {
-        const empPatch = {
-          role: d.role,
-          empId, seq,
-          regionCode, regionName: regionNameStr,
-          sectorId: selectedSector.id, sectorCode, sectorName: selectedSector.name || null,
-          departmentId: dept.id, departmentCode, departmentName: dept.name || null,
-          clusterId: isCluster && cl ? cl.id : null,
-          clusterCode, clusterName: isCluster && cl ? (cl.name || null) : null,
-          woredaCode: isWoredaStaff ? d.woredaCode : null,
-          woredaName: isWoredaStaff ? woredaNameStr : null,
-          officeId: office ? office.id : null,
-          officeCode: office ? (office.code || null) : null,
-          officeName: office ? (office.name || null) : null,
-          isClusterStaff: isCluster && !isWoredaStaff,
-          isDirector: false,
-          position: (d.position || "").trim() || null,
-          hireDate: d.hireDate || null,
-          employmentType: d.employmentType || "permanent",
-          status: "active",
-          basicSalary: Number(d.basicSalary) || 0,
-          transportAllowance: Number(d.transportAllowance) || 0,
-          housingAllowance: Number(d.housingAllowance) || 0,
-          positionAllowance: Number(d.positionAllowance) || 0,
-          otherAllowance: Number(d.otherAllowance) || 0,
-          updatedAt: serverTimestamp(),
-          updatedBy: S.uid
-        };
-        if (isReassign && d._newPhoto) empPatch.photoURL = d._newPhoto;
-        if (isReassign) { empPatch.previousEmpId = previousEmpId; empPatch.lastTransferAt = serverTimestamp(); }
-        await updateDoc(doc(db, "employees", emp.id), empPatch);
-      }
+      const empPatch = {
+        role: d.role,
+        empId, seq,
+        regionCode, regionName: regionNameStr,
+        sectorId: selectedSector.id, sectorCode, sectorName: selectedSector.name || null,
+        departmentId: dept.id, departmentCode, departmentName: dept.name || null,
+        clusterId: isCluster && cl ? cl.id : null,
+        clusterCode, clusterName: isCluster && cl ? (cl.name || null) : null,
+        woredaCode: isWoredaStaff ? d.woredaCode : null,
+        woredaName: isWoredaStaff ? woredaNameStr : null,
+        officeId: office ? office.id : null,
+        officeCode: office ? (office.code || null) : null,
+        officeName: office ? (office.name || null) : null,
+        isClusterStaff: isCluster && !isWoredaStaff,
+        isDirector: false,
+        position: (d.position || "").trim() || null,
+        hireDate: d.hireDate || null,
+        employmentType: d.employmentType || "permanent",
+        status: "active",
+        basicSalary: Number(d.basicSalary) || 0,
+        transportAllowance: Number(d.transportAllowance) || 0,
+        housingAllowance: Number(d.housingAllowance) || 0,
+        positionAllowance: Number(d.positionAllowance) || 0,
+        otherAllowance: Number(d.otherAllowance) || 0,
+        updatedAt: serverTimestamp(),
+        updatedBy: S.uid
+      };
+      if (isReassign && d._newPhoto) empPatch.photoURL = d._newPhoto;
+      if (isReassign) { empPatch.previousEmpId = previousEmpId; empPatch.lastTransferAt = serverTimestamp(); }
+      await updateDoc(doc(db, "employees", emp.id), empPatch);
     }
   });
 }
@@ -3472,6 +3656,7 @@ function openViewModal(userId) {
   const sector = SECTORS.find(s => s.id === emp?.sectorId || s.id === u.sectorId);
   const fpList = getFingerprintList(emp);
   const hasFp = fpList.length > 0;
+  const assigned = isUserAlreadyAssigned(u, emp);
 
   openModal(`
     <div class="modal__head">
@@ -3492,6 +3677,7 @@ function openViewModal(userId) {
           <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
             <span class="role-badge role-badge--${u.role || "unassigned"}"><svg viewBox="0 0 24 24">${ICONS.shield}</svg> ${escapeHtml(roleLabel(u.role || "unassigned"))}</span>
             <span class="tag ${u.active === false ? "tag--red" : "tag--green"}">${u.active === false ? "Inactive" : "Active"}</span>
+            <span class="tag ${assigned ? "tag--green" : "tag--gold"}">${assigned ? "Assigned" : "Unassigned"}</span>
             ${hasFp ? `<span class="fp-mini-badge"><svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> ${fpList.length} FP</span>` : ""}
           </div>
         </div>
@@ -3534,11 +3720,11 @@ function openViewModal(userId) {
             `).join("")}
           </div>
         ` : ""}
-      ` : `<div class="alert alert--warning"><svg viewBox="0 0 24 24">${ICONS.alert}</svg><div>This user has no linked employee record.</div></div>`}
+      ` : `<div class="alert alert--warning"><svg viewBox="0 0 24 24">${ICONS.alert}</svg><div>This person has no staff record yet. Use <strong>Add Person</strong> first, then <strong>Assign Role</strong>.</div></div>`}
     </div>
     <div class="modal__foot">
       <button class="btn" data-close>Close</button>
-      ${canAssignTo(u) ? `<button class="btn btn--gold" id="view-assign-btn"><svg viewBox="0 0 24 24">${ICONS.userCheck}</svg> ${isUserAlreadyAssigned(u, emp) ? "Transfer" : "Assign"}</button>` : ""}
+      ${canAssignTo(u) && emp ? `<button class="btn btn--gold" id="view-assign-btn"><svg viewBox="0 0 24 24">${ICONS.userCheck}</svg> ${assigned ? "Transfer" : "Assign Role"}</button>` : ""}
       ${canManageUser(u) ? `<button class="btn btn--primary" id="view-edit-btn"><svg viewBox="0 0 24 24">${ICONS.edit}</svg> Edit</button>` : ""}
     </div>
   `);
@@ -3605,14 +3791,11 @@ function confirmDelete(userId) {
 }
 
 /* ============================================================
-   SUBSCRIPTIONS
+   SUBSCRIPTIONS — scope-aware
    ============================================================ */
 function subscribeUsers() {
   if (unsubUsers) unsubUsers();
-  let q = collection(db, "users");
-  if (isRegionalAdmin() && S.region) q = query(q, where("region", "==", S.region));
-  else if (isAdmin() && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
-  unsubUsers = onSnapshot(q, (snap) => {
+  unsubUsers = onSnapshot(scopedUsersQuery(), (snap) => {
     USERS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     subscribeEmployees();
     render();
@@ -3623,10 +3806,8 @@ function subscribeUsers() {
   });
 }
 function subscribeEmployees() {
-  let q = collection(db, "employees");
-  if (isRegionalAdmin() && S.region) q = query(q, where("regionCode", "==", S.region));
-  else if (isAdmin() && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
-  onSnapshot(q, (snap) => {
+  if (unsubEmployees) unsubEmployees();
+  unsubEmployees = onSnapshot(scopedEmployeesQuery(), (snap) => {
     employeesById = {};
     employeesByUid = {};
     snap.forEach(d => {
@@ -3643,9 +3824,10 @@ function subscribeEmployees() {
 }
 function subscribeClusters() {
   if (unsubClusters) unsubClusters();
+  const lvl = scope();
   let q = collection(db, "clusters");
-  if (isRegionalAdmin() && S.region) q = query(q, where("regionCode", "==", S.region));
-  else if (isAdmin() && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
+  if (lvl === "region" && S.regionCode) q = query(q, where("regionCode", "==", S.regionCode));
+  else if (lvl === "cluster" && S.clusterId) q = query(q, where("__name__", "==", S.clusterId));
   unsubClusters = onSnapshot(q, (snap) => {
     CLUSTERS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     render();
@@ -3653,18 +3835,21 @@ function subscribeClusters() {
 }
 function subscribeOffices() {
   if (unsubOffices) unsubOffices();
+  const lvl = scope();
   let q = collection(db, "offices");
-  if (isRegionalAdmin() && S.region) q = query(q, where("regionCode", "==", S.region));
-  else if (isAdmin() && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
+  if (lvl === "region" && S.regionCode) q = query(q, where("regionCode", "==", S.regionCode));
+  else if (lvl === "cluster" && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
+  else if (lvl === "woreda" && S.woredaCode) q = query(q, where("woredaCode", "==", S.woredaCode));
   unsubOffices = onSnapshot(q, (snap) => {
     OFFICES = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   }, (err) => console.warn("[offices]", err.code, err.message));
 }
 function subscribeDepartments() {
   if (unsubDepartments) unsubDepartments();
+  const lvl = scope();
   let q = collection(db, "departments");
-  if (isRegionalAdmin() && S.region) q = query(q, where("regionCode", "==", S.region));
-  else if (isAdmin() && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
+  if (lvl === "region" && S.regionCode) q = query(q, where("regionCode", "==", S.regionCode));
+  else if (lvl === "cluster" && S.clusterId) q = query(q, where("clusterId", "==", S.clusterId));
   unsubDepartments = onSnapshot(q, (snap) => {
     DEPARTMENTS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     render();
@@ -3737,11 +3922,26 @@ onAuthStateChanged(auth, async (user) => {
     photoURL: userDoc?.photoURL || null,
     region: userDoc?.region || userDoc?.regionCode || "",
     regionCode: userDoc?.regionCode || userDoc?.region || "",
+    regionName: userDoc?.regionName || "",
     clusterId: userDoc?.clusterId || "",
-    officeId: userDoc?.officeId || ""
+    clusterName: userDoc?.clusterName || "",
+    woredaCode: userDoc?.woredaCode || "",
+    woredaName: userDoc?.woredaName || "",
+    officeId: userDoc?.officeId || "",
+    officeName: userDoc?.officeName || "",
+    departmentId: userDoc?.departmentId || "",
+    departmentName: userDoc?.departmentName || "",
+    empId: userDoc?.empId || ""
   };
 
-  if (!["super_admin","regional_admin","admin","hrm"].includes(S.role)) {
+  /* Guard: only roles that can see staff get to stay on users.html */
+  const allowed = new Set([
+    "super_admin","hrm","finance",
+    "regional_admin","regional_hrm","regional_finance",
+    "admin","cluster_hrm","cluster_finance",
+    "woreda_admin","woreda_hrm","woreda_finance"
+  ]);
+  if (!allowed.has(S.role)) {
     window.location.replace("dashboard.html");
     return;
   }
@@ -3757,7 +3957,7 @@ onAuthStateChanged(auth, async (user) => {
   subscribeUsers();
 });
 
-console.log("[users] booted — Edit now uses full multi-step wizard");
+console.log("[users] booted — Add Person and Assign Role are separated; scope-aware for all 18 roles");
 </script>
 
 </body>
