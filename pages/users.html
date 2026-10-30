@@ -875,7 +875,7 @@ function regionName(code) {
 }
 
 /* ============================================================
-   REGION_ZONES — canonical zones & cities per region.
+   REGION_ZONES
    ============================================================ */
 const REGION_ZONES = {
   "01": [
@@ -1139,7 +1139,6 @@ const ROLE_SCOPE = {
   woreda_admin:"woreda", woreda_hrm:"woreda", woreda_finance:"woreda", woreda_city:"woreda",
   manager:"self", team_leader:"self", employee:"self"
 };
-/* roleLabel: i18n lookup, fallback to ROLE_LABELS then prettified key */
 const roleLabel = (r) => {
   if (!r) return t("roles.unassigned");
   const key = "roles." + r;
@@ -1265,7 +1264,7 @@ const ICONS = {
 };
 
 /* ============================================================
-   NAV  — now uses sectionKey / labelKey (i18n)
+   NAV
    ============================================================ */
 const NAV = [
   { sectionKey:"section.overview", items:[
@@ -1304,7 +1303,7 @@ const NAV = [
   ]},
   { sectionKey:"section.operations", items:[
     { key:"attendance", labelKey:"nav.attendance", href:"attendance.html", icon:"clock",
-      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] },
+      roles:["super_admin","hrm","regional_hrm","cluster_hrm","woreda_hrm"] },
     { key:"leave", labelKey:"nav.leave", href:"leave.html", icon:"calendar",
       roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] }
   ]},
@@ -1322,6 +1321,56 @@ const NAV = [
     { key:"settings", labelKey:"nav.settings", href:"settings.html", icon:"settings", roles:["*"] }
   ]}
 ];
+
+/* ============================================================
+   ROLE → NAV ITEM KEYS  (canonical, role-scoped sidebar)
+   ============================================================ */
+const ROLE_NAV = {
+  super_admin: ["*"],
+
+  /* National */
+  hrm:     ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
+  finance: ["dashboard", "users", "payroll", "budget", "reports", "notifications", "settings"],
+
+  /* Regional */
+  regional_admin:   ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "leave", "reports", "notifications", "settings", "offices"],
+  regional_hrm:     ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
+  regional_finance: ["dashboard", "users", "payroll", "budget", "reports", "notifications", "settings"],
+  directorate:      ["dashboard", "departments", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+
+  /* Cluster / Zone */
+  admin:               ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "leave", "reports", "notifications", "settings", "offices"],
+  cluster_hrm:         ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
+  cluster_finance:     ["dashboard", "users", "payroll", "budget", "reports", "notifications", "settings"],
+  cluster_directorate: ["dashboard", "departments", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+
+  /* Woreda */
+  woreda_admin:   ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "leave", "reports", "notifications", "settings"],
+  woreda_hrm:     ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
+  woreda_finance: ["dashboard", "users", "payroll", "budget", "reports", "notifications", "settings"],
+  woreda_city:    ["dashboard", "departments", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+
+  /* Line */
+  manager:     ["dashboard", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+  team_leader: ["dashboard", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+  employee:    ["dashboard", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"]
+};
+
+function hasRoleNavAccess(item, role) {
+  if (!role) return false;
+  const allowed = ROLE_NAV[role];
+  if (!allowed) return false;
+  if (allowed.includes("*")) return true;
+  return allowed.includes(item.key);
+}
+
+/* Only these roles may load this page. Everything else redirects to dashboard. */
+const USERS_PAGE_ROLES = new Set([
+  "super_admin", "hrm", "finance",
+  "regional_admin", "regional_hrm", "regional_finance",
+  "admin", "cluster_hrm", "cluster_finance",
+  "woreda_admin", "woreda_hrm", "woreda_finance"
+]);
 
 /* ============================================================
    HELPERS
@@ -1583,7 +1632,6 @@ function visibleUsers() { if (!S) return []; return USERS.filter(inScope); }
 function canManageUser(target) {
   if (!target) return false;
   if (target.id === S.uid) return true;
-  // Super Admin: only editable by another super_admin
   if (target.role === "super_admin" && !hasRole("super_admin")) return false;
   return inScope(target);
 }
@@ -1592,7 +1640,7 @@ function canDeleteUser(target) {
   if (target.id === S.uid) return false;
   if (target.role === "super_admin") {
     if (!hasRole("super_admin")) return false;
-    if (activeSuperAdminCount() <= 1) return false; // last super admin protection
+    if (activeSuperAdminCount() <= 1) return false;
   }
   if (!hasRole("super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm")) return false;
   return inScope(target);
@@ -1761,13 +1809,13 @@ function buildZoneOptions(selectedRegion, selectedZoneId) {
 }
 
 /* ============================================================
-   RENDER — SIDEBAR (uses t() now)
+   RENDER — SIDEBAR (uses t() + hasRoleNavAccess)
    ============================================================ */
 function renderSidebar() {
   const nav = document.getElementById("sidebar-nav");
   nav.innerHTML = "";
   for (const group of NAV) {
-    const vis = group.items.filter(it => hasAccess(it, S.role));
+    const vis = group.items.filter(it => hasRoleNavAccess(it, S.role));
     if (!vis.length) continue;
     const sec = document.createElement("div");
     sec.className = "sidebar__section";
@@ -2228,7 +2276,7 @@ function openWizard({ title, subtitle, finishLabel, steps, initial = {}, onFinis
 }
 
 /* ============================================================
-   LIVE DUPLICATE CHECK (nationalId / phone / email)
+   LIVE DUPLICATE CHECK
    ============================================================ */
 function setupLiveDuplicate(root, inputId, type, label, onStatusChange, excludeEmpId = null) {
   const input = root.querySelector("#" + inputId);
@@ -2421,7 +2469,6 @@ function wireAddressFields(root, data, { prefix = "addr" } = {}, refresh) {
 
 /* ============================================================
    PLACEMENT / EMPLOYMENT / ROLE — shared renderers
-   (used by Add Person, Assign wizard EDITABLE steps, Transfer, Edit)
    ============================================================ */
 function renderPlacementFields(d, { prefix = "emp" } = {}) {
   const P = (k) => `${prefix}_${k}`;
@@ -3168,10 +3215,7 @@ function openCreateUserWizard() {
 }
 
 /* ============================================================
-   ASSIGN WIZARD — Step 2 (login + EDITABLE placement/employment/role)
-   Saves back to employees/{id}. Steps:
-   1) Select Person  2) Login  3) Placement (editable)
-   4) Employment (editable)  5) Role (editable)  6) Review
+   ASSIGN WIZARD — Step 2
    ============================================================ */
 function openAssignWizard(preselectedUserId = null) {
   if (!canAssignRoles()) { toast("You cannot assign roles", "error"); return; }
@@ -3197,7 +3241,6 @@ function openAssignWizard(preselectedUserId = null) {
 
   const emailStatus = { ok:false, empty:true };
 
-  /* Helper: prefill emp_* data from employee record */
   function prefillFromEmp(emp) {
     if (!emp) return {};
     return {
@@ -3353,142 +3396,142 @@ function openAssignWizard(preselectedUserId = null) {
       },
       validate: d => {
         if (!d.selectedUserId) return "Please select a person in the previous step.";
-               if (!d.loginEmail || !/^\S+@\S+\.\S+$/.test(d.loginEmail)) return "Enter a valid login email.";
-          const u = USERS.find(x => x.id === d.selectedUserId);
-          const emp = u ? (employeesByUid[u.id] || employeesById[u.id]) : null;
-          const hasLogin = !!(emp?.uid || u?.hasLogin);
-          if (!hasLogin) {
-            const pw = evaluatePassword(d.password || "");
-            if (pw.score < 3) return "Password is too weak. Add uppercase, numbers, or symbols.";
-            if (d.password !== d.password2) return "Passwords do not match.";
-          }
-          if (!emailStatus.ok && !emailStatus.empty) {
-            if (emailStatus.reason === "duplicate") return "This login email is already registered to another person.";
-            if (emailStatus.reason === "incomplete") return "Enter a valid email address.";
-            return "Please wait — checking email.";
-          }
-          return null;
-        },
-        after: (root, data) => {
-          const emailIn = root.querySelector("#login-email");
-          const u = USERS.find(x => x.id === data.selectedUserId);
-          const emp = u ? (employeesByUid[u.id] || employeesById[u.id]) : null;
-          const hasLogin = !!(emp?.uid || u?.hasLogin);
-          if (emailIn && !hasLogin) {
-            setupLiveDuplicate(root, "login-email", "email", "email",
-              (type, status) => { emailStatus.ok = status.ok; emailStatus.empty = status.empty; emailStatus.reason = status.reason; },
-              emp?.id || null);
-          } else {
-            emailStatus.ok = true; emailStatus.empty = false;
-          }
-          const pwIn  = root.querySelector("#pw-new");
-          const cfm   = root.querySelector("#pw-confirm");
-          const meter = root.querySelector("#pw-meter");
-          const mTxt  = root.querySelector("#pw-meter-text");
-          function renderMeter() {
-            if (!pwIn) return;
-            const { checks, score, label, klass } = evaluatePassword(pwIn.value);
-            meter.querySelectorAll(".pw-meter__bar").forEach(bar => {
-              const i = Number(bar.dataset.bar);
-              bar.className = "pw-meter__bar";
-              if (i <= score) bar.classList.add("is-on-" + klass);
-            });
-            mTxt.textContent = label;
-            mTxt.className = "pw-meter__text " + klass;
-            root.querySelectorAll(".pw-rule").forEach(rule => {
-              rule.classList.toggle("is-ok", !!checks[rule.dataset.rule]);
-            });
-          }
-          function checkMatch() {
-            if (!cfm) return;
-            const hint = root.querySelector("#pw-match-hint");
-            if (!cfm.value) { hint.textContent = ""; hint.style.color = ""; return; }
-            if (pwIn.value === cfm.value) { hint.textContent = "✓ Passwords match"; hint.style.color = "#067647"; }
-            else { hint.textContent = "✗ Passwords do not match"; hint.style.color = "#dc2626"; }
-          }
-          pwIn?.addEventListener("input", () => { data.password = pwIn.value; renderMeter(); checkMatch(); });
-          cfm?.addEventListener("input", () => { data.password2 = cfm.value; checkMatch(); });
-          root.querySelectorAll(".pw-toggle").forEach(btn => {
-            btn.addEventListener("click", () => {
-              const input = root.querySelector("#" + btn.dataset.toggle);
-              const showing = input.type === "text";
-              input.type = showing ? "password" : "text";
-              btn.innerHTML = `<svg viewBox="0 0 24 24">${showing ? ICONS.eye : ICONS.eyeOff}</svg>`;
-            });
+        if (!d.loginEmail || !/^\S+@\S+\.\S+$/.test(d.loginEmail)) return "Enter a valid login email.";
+        const u = USERS.find(x => x.id === d.selectedUserId);
+        const emp = u ? (employeesByUid[u.id] || employeesById[u.id]) : null;
+        const hasLogin = !!(emp?.uid || u?.hasLogin);
+        if (!hasLogin) {
+          const pw = evaluatePassword(d.password || "");
+          if (pw.score < 3) return "Password is too weak. Add uppercase, numbers, or symbols.";
+          if (d.password !== d.password2) return "Passwords do not match.";
+        }
+        if (!emailStatus.ok && !emailStatus.empty) {
+          if (emailStatus.reason === "duplicate") return "This login email is already registered to another person.";
+          if (emailStatus.reason === "incomplete") return "Enter a valid email address.";
+          return "Please wait — checking email.";
+        }
+        return null;
+      },
+      after: (root, data) => {
+        const emailIn = root.querySelector("#login-email");
+        const u = USERS.find(x => x.id === data.selectedUserId);
+        const emp = u ? (employeesByUid[u.id] || employeesById[u.id]) : null;
+        const hasLogin = !!(emp?.uid || u?.hasLogin);
+        if (emailIn && !hasLogin) {
+          setupLiveDuplicate(root, "login-email", "email", "email",
+            (type, status) => { emailStatus.ok = status.ok; emailStatus.empty = status.empty; emailStatus.reason = status.reason; },
+            emp?.id || null);
+        } else {
+          emailStatus.ok = true; emailStatus.empty = false;
+        }
+        const pwIn  = root.querySelector("#pw-new");
+        const cfm   = root.querySelector("#pw-confirm");
+        const meter = root.querySelector("#pw-meter");
+        const mTxt  = root.querySelector("#pw-meter-text");
+        function renderMeter() {
+          if (!pwIn) return;
+          const { checks, score, label, klass } = evaluatePassword(pwIn.value);
+          meter.querySelectorAll(".pw-meter__bar").forEach(bar => {
+            const i = Number(bar.dataset.bar);
+            bar.className = "pw-meter__bar";
+            if (i <= score) bar.classList.add("is-on-" + klass);
+          });
+          mTxt.textContent = label;
+          mTxt.className = "pw-meter__text " + klass;
+          root.querySelectorAll(".pw-rule").forEach(rule => {
+            rule.classList.toggle("is-ok", !!checks[rule.dataset.rule]);
           });
         }
-      },
-      /* PLACEMENT — EDITABLE */
-      {
-        label: "Placement", title: "Placement (editable)",
-        render: (d) => renderPlacementFields(d, { prefix: "emp" }),
-        validate: (d) => validatePlacementFields(d, { prefix: "emp" }),
-        after: (root, data, refresh) => wirePlacementFields(root, data, { prefix: "emp" }, refresh)
-      },
-      /* EMPLOYMENT — EDITABLE */
-      {
-        label: "Employment", title: "Employment & pay (editable)",
-        render: (d) => renderEmploymentFields(d, { prefix: "emp" }),
-        validate: (d) => validateEmploymentFields(d, { prefix: "emp" }),
-        after: () => {}
-      },
-      /* ROLE — EDITABLE */
-      {
-        label: "Role", title: "Role (editable)",
-        render: (d) => renderRoleFields(d, { prefix: "emp" }, assignableRoles()),
-        validate: (d) => validateRoleFields(d, { prefix: "emp" }),
-        after: (root, data) => wireRoleFields(root, data, { prefix: "emp" })
-      },
-      /* REVIEW */
-      {
-        label: "Review", title: "Review the assignment",
-        render: (d) => {
-          const u = USERS.find(x => x.id === d.selectedUserId);
-          if (!u) return '<div class="alert alert--error">Please go back and select a user.</div>';
-          const emp = employeesByUid[u.id] || employeesById[u.id];
-          if (!emp) return '<div class="alert alert--error">No employee record.</div>';
-          const basic = Number(d.emp_basicSalary || 0);
-          const totalAllow = Number(d.emp_transportAllowance || 0) + Number(d.emp_housingAllowance || 0) + Number(d.emp_positionAllowance || 0) + Number(d.emp_otherAllowance || 0);
-          const reviewPhoto = u.photoURL || emp.photoURL || null;
-          const hasLogin = !!(emp.uid || u.hasLogin);
-          const sector = SECTORS.find(s => s.id === d.emp_sectorId);
-          const dep = DEPARTMENTS.find(x => x.id === d.emp_departmentId);
-          const cl = d.emp_clusterId ? CLUSTERS.find(c => c.id === d.emp_clusterId) : null;
-          return `
-            <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:linear-gradient(135deg,#f8fbff,#fff);border:1px solid var(--border);border-radius:14px">
-              <div class="admin-avatar" style="width:60px;height:60px;font-size:20px">
-                ${reviewPhoto ? `<img src="${escapeHtml(reviewPhoto)}" alt="">` : escapeHtml(initials(u.name || u.email))}
-              </div>
-              <div style="min-width:0"><div style="font-size:16px;font-weight:800">${escapeHtml(u.name || u.email || "User")}</div>
-              <div style="font-size:12.5px;color:var(--muted);margin-top:2px">${escapeHtml(u.email || "")}</div></div>
-              ${hasLogin ? `<span class="tag tag--blue" style="margin-left:auto">Already has login</span>` : ""}
-            </div>
-            <div class="review-section">Login${hasLogin ? " (existing)" : " (will be created)"}</div>
-            <div class="review">
-              <div class="review__row"><span class="review__k">Login email</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(d.loginEmail || "—")}</span></div>
-              ${!hasLogin ? `<div class="review__row"><span class="review__k">Password</span><span class="review__v">•••••••• (set)</span></div>` : ""}
-            </div>
-            <div class="review-section">Placement (updated)</div>
-            <div class="review">
-              <div class="review__row"><span class="review__k">Sector</span><span class="review__v">${escapeHtml(sector?.name || "—")}</span></div>
-              <div class="review__row"><span class="review__k">Department</span><span class="review__v">${escapeHtml(dep?.name || "—")}</span></div>
-              <div class="review__row"><span class="review__k">Cluster / Zone</span><span class="review__v">${escapeHtml(cl?.name || "—")}</span></div>
-              <div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">${escapeHtml(d.emp_woredaCode || "—")}</span></div>
-            </div>
-            <div class="review-section">Employment (updated)</div>
-            <div class="review">
-              <div class="review__row"><span class="review__k">Position</span><span class="review__v">${escapeHtml(d.emp_position || "—")}</span></div>
-              <div class="review__row"><span class="review__k">Basic salary</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(basic) || "0")} ETB</span></div>
-              ${totalAllow ? `<div class="review__row"><span class="review__k">Allowances</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(totalAllow))} ETB</span></div>` : ""}
-            </div>
-            <div class="review-section">Role (updated)</div>
-            <div class="review">
-              <div class="review__row"><span class="review__k">Role</span><span class="review__v"><span class="role-badge role-badge--${d.emp_role}">${escapeHtml(roleLabel(d.emp_role))}</span></span></div>
-            </div>
-          `;
+        function checkMatch() {
+          if (!cfm) return;
+          const hint = root.querySelector("#pw-match-hint");
+          if (!cfm.value) { hint.textContent = ""; hint.style.color = ""; return; }
+          if (pwIn.value === cfm.value) { hint.textContent = "✓ Passwords match"; hint.style.color = "#067647"; }
+          else { hint.textContent = "✗ Passwords do not match"; hint.style.color = "#dc2626"; }
         }
+        pwIn?.addEventListener("input", () => { data.password = pwIn.value; renderMeter(); checkMatch(); });
+        cfm?.addEventListener("input", () => { data.password2 = cfm.value; checkMatch(); });
+        root.querySelectorAll(".pw-toggle").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const input = root.querySelector("#" + btn.dataset.toggle);
+            const showing = input.type === "text";
+            input.type = showing ? "password" : "text";
+            btn.innerHTML = `<svg viewBox="0 0 24 24">${showing ? ICONS.eye : ICONS.eyeOff}</svg>`;
+          });
+        });
       }
-    ];
+    },
+    /* PLACEMENT — EDITABLE */
+    {
+      label: "Placement", title: "Placement (editable)",
+      render: (d) => renderPlacementFields(d, { prefix: "emp" }),
+      validate: (d) => validatePlacementFields(d, { prefix: "emp" }),
+      after: (root, data, refresh) => wirePlacementFields(root, data, { prefix: "emp" }, refresh)
+    },
+    /* EMPLOYMENT — EDITABLE */
+    {
+      label: "Employment", title: "Employment & pay (editable)",
+      render: (d) => renderEmploymentFields(d, { prefix: "emp" }),
+      validate: (d) => validateEmploymentFields(d, { prefix: "emp" }),
+      after: () => {}
+    },
+    /* ROLE — EDITABLE */
+    {
+      label: "Role", title: "Role (editable)",
+      render: (d) => renderRoleFields(d, { prefix: "emp" }, assignableRoles()),
+      validate: (d) => validateRoleFields(d, { prefix: "emp" }),
+      after: (root, data) => wireRoleFields(root, data, { prefix: "emp" })
+    },
+    /* REVIEW */
+    {
+      label: "Review", title: "Review the assignment",
+      render: (d) => {
+        const u = USERS.find(x => x.id === d.selectedUserId);
+        if (!u) return '<div class="alert alert--error">Please go back and select a user.</div>';
+        const emp = employeesByUid[u.id] || employeesById[u.id];
+        if (!emp) return '<div class="alert alert--error">No employee record.</div>';
+        const basic = Number(d.emp_basicSalary || 0);
+        const totalAllow = Number(d.emp_transportAllowance || 0) + Number(d.emp_housingAllowance || 0) + Number(d.emp_positionAllowance || 0) + Number(d.emp_otherAllowance || 0);
+        const reviewPhoto = u.photoURL || emp.photoURL || null;
+        const hasLogin = !!(emp.uid || u.hasLogin);
+        const sector = SECTORS.find(s => s.id === d.emp_sectorId);
+        const dep = DEPARTMENTS.find(x => x.id === d.emp_departmentId);
+        const cl = d.emp_clusterId ? CLUSTERS.find(c => c.id === d.emp_clusterId) : null;
+        return `
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:linear-gradient(135deg,#f8fbff,#fff);border:1px solid var(--border);border-radius:14px">
+            <div class="admin-avatar" style="width:60px;height:60px;font-size:20px">
+              ${reviewPhoto ? `<img src="${escapeHtml(reviewPhoto)}" alt="">` : escapeHtml(initials(u.name || u.email))}
+            </div>
+            <div style="min-width:0"><div style="font-size:16px;font-weight:800">${escapeHtml(u.name || u.email || "User")}</div>
+            <div style="font-size:12.5px;color:var(--muted);margin-top:2px">${escapeHtml(u.email || "")}</div></div>
+            ${hasLogin ? `<span class="tag tag--blue" style="margin-left:auto">Already has login</span>` : ""}
+          </div>
+          <div class="review-section">Login${hasLogin ? " (existing)" : " (will be created)"}</div>
+          <div class="review">
+            <div class="review__row"><span class="review__k">Login email</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(d.loginEmail || "—")}</span></div>
+            ${!hasLogin ? `<div class="review__row"><span class="review__k">Password</span><span class="review__v">•••••••• (set)</span></div>` : ""}
+          </div>
+          <div class="review-section">Placement (updated)</div>
+          <div class="review">
+            <div class="review__row"><span class="review__k">Sector</span><span class="review__v">${escapeHtml(sector?.name || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Department</span><span class="review__v">${escapeHtml(dep?.name || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Cluster / Zone</span><span class="review__v">${escapeHtml(cl?.name || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Woreda / City</span><span class="review__v">${escapeHtml(d.emp_woredaCode || "—")}</span></div>
+          </div>
+          <div class="review-section">Employment (updated)</div>
+          <div class="review">
+            <div class="review__row"><span class="review__k">Position</span><span class="review__v">${escapeHtml(d.emp_position || "—")}</span></div>
+            <div class="review__row"><span class="review__k">Basic salary</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(basic) || "0")} ETB</span></div>
+            ${totalAllow ? `<div class="review__row"><span class="review__k">Allowances</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(fmtMoney(totalAllow))} ETB</span></div>` : ""}
+          </div>
+          <div class="review-section">Role (updated)</div>
+          <div class="review">
+            <div class="review__row"><span class="review__k">Role</span><span class="review__v"><span class="role-badge role-badge--${d.emp_role}">${escapeHtml(roleLabel(d.emp_role))}</span></span></div>
+          </div>
+        `;
+      }
+    }
+  ];
 
   openWizard({
     title: "Assign Role & Work Area — Step 2",
@@ -3509,7 +3552,6 @@ function openAssignWizard(preselectedUserId = null) {
 
       const placementPatch = buildPlacementPatch(d, { prefix: "emp" });
 
-      /* 1. Auth user (only when no login exists yet) */
       let uid = emp.uid || null;
       let justCreatedAuth = false;
       if (!uid) {
@@ -3518,7 +3560,6 @@ function openAssignWizard(preselectedUserId = null) {
         if (pw.score < 3) throw new Error("Password is too weak.");
         if (d.password !== d.password2) throw new Error("Passwords do not match.");
 
-        // Also verify email isn't taken as a live check
         const emailNorm = normalizeEmail(d.loginEmail);
         const existingU = await findUserByEmail(emailNorm);
         if (existingU) throw new Error("This login email is already in use by another account.");
@@ -3542,7 +3583,6 @@ function openAssignWizard(preselectedUserId = null) {
         }
       }
 
-      /* 2. Generate empId if missing */
       let empId = emp.empId, seq = emp.seq;
       if (!empId) {
         const gen = await generateEmployeeId({
@@ -3555,7 +3595,6 @@ function openAssignWizard(preselectedUserId = null) {
         empId = gen.empId; seq = gen.seq;
       }
 
-      /* 3. Reserve email uniqueness */
       let emailLocked = false;
       const emailNorm = normalizeEmail(d.loginEmail);
       if (!emp.loginEmailNorm || emp.loginEmailNorm !== emailNorm) {
@@ -3563,7 +3602,6 @@ function openAssignWizard(preselectedUserId = null) {
         emailLocked = true;
       }
 
-      /* 4. Write users/{uid} */
       const userDoc = {
         uid,
         email: d.loginEmail.trim(),
@@ -3604,7 +3642,6 @@ function openAssignWizard(preselectedUserId = null) {
         throw err;
       }
 
-      /* 5. Update employees/{id} — including placement, employment, role from wizard */
       const empPatch = {
         uid,
         status: "active",
@@ -3634,10 +3671,7 @@ function openAssignWizard(preselectedUserId = null) {
 }
 
 /* ============================================================
-   TRANSFER WIZARD — 4 steps
-   1) Current placement (readonly)  2) New placement
-   3) Reason + effective date        4) Review & confirm
-   Writes transfers/{id} and updates employees + users
+   TRANSFER WIZARD
    ============================================================ */
 function openTransferWizard(userId) {
   const u = USERS.find(x => x.id === userId);
@@ -3669,7 +3703,6 @@ function openTransferWizard(userId) {
     `;
   }
 
-  /* Prefill new placement fields from current employee */
   const initial = {
     effectiveDate: new Date().toISOString().slice(0,10),
     reason: "",
@@ -3791,7 +3824,6 @@ function openTransferWizard(userId) {
         officeId: newPlacement.officeId, officeName: newPlacement.officeName
       };
 
-      /* 1. Write transfers record */
       await setDoc(transferRef, {
         employeeId: emp.id,
         empId: emp.empId || null,
@@ -3808,7 +3840,6 @@ function openTransferWizard(userId) {
         status: "applied"
       });
 
-      /* 2. Update employees/{id} */
       await updateDoc(doc(db, "employees", emp.id), {
         ...newPlacement,
         lastTransferId: transferRef.id,
@@ -3817,7 +3848,6 @@ function openTransferWizard(userId) {
         updatedBy: S.uid
       });
 
-      /* 3. Update users/{uid} if login exists */
       const loginUid = emp.uid || null;
       if (loginUid) {
         try {
@@ -3835,7 +3865,6 @@ function openTransferWizard(userId) {
         } catch (e) { console.warn("[transfer update users]", e); }
       }
 
-      /* 4. Notify */
       try {
         await addDoc(collection(db, "notifications"), {
           type: "employee_transferred",
@@ -3854,7 +3883,7 @@ function openTransferWizard(userId) {
 }
 
 /* ============================================================
-   EDIT WIZARD — same fields as Add Person
+   EDIT WIZARD
    ============================================================ */
 function openEditWizard(userId) {
   const u = USERS.find(x => x.id === userId);
@@ -3911,7 +3940,7 @@ function openEditWizard(userId) {
     emp_financeRole: emp?.financeRole || "",
     emp_hrmRole: emp?.hrmRole || "",
     active: u.active !== false,
-    _fingerprints: fpList.slice(),
+         _fingerprints: fpList.slice(),
     _removedFingerprintIds: [],
     _originalPhoto: emp?.photoURL || u.photoURL || null,
     father_name: emp?.family?.father?.name || "",
@@ -4456,7 +4485,7 @@ function subscribeEmployees() {
       employeesById[d.id] = data;
       if (data.uid) employeesByUid[data.uid] = data;
     });
-    subscribeUsers(); // re-merge
+    subscribeUsers();
     if (S && !S.photoURL) {
       const mine = employeesByUid[S.uid];
       if (mine?.photoURL) { S.photoURL = mine.photoURL; renderUser(); }
@@ -4587,14 +4616,9 @@ onAuthStateChanged(auth, async (user) => {
     empId: userDoc?.empId || ""
   };
 
-  const allowed = new Set([
-    "super_admin","hrm","finance",
-    "regional_admin","regional_hrm","regional_finance",
-    "admin","cluster_hrm","cluster_finance",
-    "woreda_admin","woreda_hrm","woreda_finance",
-    "manager","team_leader","employee"
-  ]);
-  if (!allowed.has(S.role)) {
+  /* Roles that don't have "users" in their ROLE_NAV don't belong on this page. */
+  if (!USERS_PAGE_ROLES.has(S.role)) {
+    console.log("[users] role not permitted on this page, redirecting:", S.role);
     window.location.replace("dashboard.html");
     return;
   }
@@ -4612,7 +4636,7 @@ onAuthStateChanged(auth, async (user) => {
   subscribeEmployees();
 });
 
-console.log("[users] booted — i18n + assign editable + transfer wizard + typed-name delete + email uniqueness + last-super-admin protection.");
+console.log("[users] booted — i18n + assign editable + transfer wizard + typed-name delete + email uniqueness + last-super-admin protection + role-scoped nav.");
 </script>
 
 </body>
