@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Civil Service MIS</title>
+<title>Directorates &amp; Departments — Civil Service MIS</title>
 <link rel="icon" type="image/png" href="../images/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -834,26 +834,26 @@ const myCluster = () => S?.clusterId || null;
 const myDept    = () => S?.departmentId || null;
 const mySector  = () => S?.sectorId || null;
 
-const canCreateSector = () => isSuper() || isRegionalAdmin() || isHRM();
+const canCreateSector = () => isSuper() || isRegionalAdmin();
 const canEditSector = (s) => {
   if (!s) return false;
-  if (isSuper() || isHRM()) return true;
+  if (isSuper()) return true;
   if (isRegionalAdmin()) return regionOf(s) === myRegion();
   return false;
 };
 const canDeleteSector = (s) => canEditSector(s);
-const canCreateRegionalDept = () => isSuper() || isRegionalAdmin() || isHRM();
-const canCreateClusterDept  = () => isSuper() || isRegionalAdmin() || isAdmin() || isHRM();
+const canCreateRegionalDept = () => isSuper() || isRegionalAdmin();
+const canCreateClusterDept  = () => isSuper() || isRegionalAdmin() || isAdmin();
 const canEditDept = (d) => {
   if (!d) return false;
-  if (isSuper() || isHRM()) return true;
+  if (isSuper()) return true;
   if (isRegionalAdmin()) return regionOf(d) === myRegion();
   if (isAdmin()) return d.level === "cluster" && clusterOf(d) === myCluster();
   return false;
 };
 const canDeleteDept = (d) => {
   if (!d) return false;
-  if (isSuper() || isHRM()) return true;
+  if (isSuper()) return true;
   if (isRegionalAdmin()) return regionOf(d) === myRegion();
   return false;
 };
@@ -911,7 +911,7 @@ const NAV = [
     { key:"performance", label:"Performance", href:"performance.html", icon:"target",   roles:["super_admin","regional_admin","hrm","admin","manager","employee","directorate","cluster_directorate","woreda_city"] }
   ]},
   { section:"Operations", items:[
-    { key:"attendance",  label:"Attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] },
+    { key:"attendance",  label:"Attendance",  href:"attendance.html",  icon:"clock",     roles:["super_admin","hrm","regional_hrm","cluster_hrm","woreda_hrm"] },
     { key:"leave",       label:"Leave",       href:"leave.html",       icon:"calendar",  roles:["super_admin","regional_admin","admin","hrm","manager","employee","directorate","cluster_directorate","woreda_city"] }
   ]},
   { section:"Finance", items:[
@@ -925,6 +925,57 @@ const NAV = [
     { key:"settings",      label:"Settings",      href:"settings.html",      icon:"settings", roles:["*"] }
   ]}
 ];
+
+/* ---------- 9b. ROLE → NAV ITEM KEYS (single source of truth) ---------- */
+const ROLE_NAV = {
+  super_admin: ["*"],
+
+  /* National */
+  hrm:     ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
+  finance: ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
+
+  /* Regional */
+  regional_admin:   ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "leave", "reports", "notifications", "settings", "offices"],
+  regional_hrm:     ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
+  regional_finance: ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
+  directorate:      ["dashboard", "departments", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+
+  /* Cluster / Zone */
+  admin:               ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "leave", "reports", "notifications", "settings", "offices"],
+  cluster_hrm:         ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
+  cluster_finance:     ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
+  cluster_directorate: ["dashboard", "departments", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+
+  /* Woreda */
+  woreda_admin:   ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "leave", "reports", "notifications", "settings"],
+  woreda_hrm:     ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
+  woreda_finance: ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
+  woreda_city:    ["dashboard", "departments", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+
+  /* Line */
+  manager:     ["dashboard", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+  team_leader: ["dashboard", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+  employee:    ["dashboard", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"]
+};
+
+function hasRoleNavAccess(item, role) {
+  if (!role) return false;
+  const allowed = ROLE_NAV[role];
+  if (!allowed) return false;
+  if (allowed.includes("*")) return true;
+  return allowed.includes(item.key);
+}
+
+/* Only these roles may load this page. Everything else is redirected. */
+const DEPT_PAGE_ROLES = new Set([
+  "super_admin",
+  "regional_admin",
+  "admin",
+  "directorate",
+  "cluster_directorate",
+  "woreda_admin",
+  "woreda_city"
+]);
 
 /* ---------- 10. Helpers ---------- */
 const escapeHtml = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g,
@@ -1060,7 +1111,7 @@ function renderSidebar() {
   nav.innerHTML = "";
   for (let i = 0; i < NAV.length; i++) {
     const group = NAV[i];
-    const vis = group.items.filter(it => hasAccess(it, S ? S.role : null));
+    const vis = group.items.filter(it => hasRoleNavAccess(it, S ? S.role : null));
     if (!vis.length) continue;
     const sec = document.createElement("div");
     sec.className = "sidebar__section";
@@ -1096,8 +1147,6 @@ function renderScopeBadge() {
     el.innerHTML = '<span class="scope-badge scope-badge--super"><svg viewBox="0 0 24 24">' + ICONS.lock + '</svg> Full system access - all regions</span>';
   } else if (isRegionalAdmin()) {
     el.innerHTML = '<span class="scope-badge scope-badge--regional"><svg viewBox="0 0 24 24">' + ICONS.pin + '</svg> Regional Admin &middot; ' + escapeHtml(civilServiceName(myRegion())) + '</span>';
-  } else if (isHRM()) {
-    el.innerHTML = '<span class="scope-badge scope-badge--cluster"><svg viewBox="0 0 24 24">' + ICONS.users + '</svg> HR Manager - organisation-wide</span>';
   } else if (isAdmin()) {
     const c = CLUSTERS.find(x => x.id === myCluster());
     el.innerHTML = '<span class="scope-badge scope-badge--cluster"><svg viewBox="0 0 24 24">' + ICONS.lock + '</svg> Cluster &middot; ' + escapeHtml(c ? c.name : "-") + '</span>';
@@ -1175,7 +1224,7 @@ function statCard(label, value, cls, iconKey) {
 /* ---------- 13. Visibility ---------- */
 function visibleSectors() {
   if (!S) return [];
-  if (isSuper() || isHRM()) return SECTORS;
+  if (isSuper()) return SECTORS;
   if (isRegionalAdmin()) return SECTORS.filter(s => regionOf(s) === myRegion());
   if (isAdmin()) return SECTORS.filter(s => clusterOf(s) === myCluster());
   if (isDirectorate()) return SECTORS.filter(s => s.id === mySector());
@@ -1183,7 +1232,7 @@ function visibleSectors() {
 }
 function visibleDepts() {
   if (!S) return [];
-  if (isSuper() || isHRM()) return DEPTS;
+  if (isSuper()) return DEPTS;
   if (isRegionalAdmin()) return DEPTS.filter(d => regionOf(d) === myRegion());
   if (isAdmin()) return DEPTS.filter(d => d.level === "cluster" && clusterOf(d) === myCluster());
   if (isDirectorate()) return DEPTS.filter(d => d.id === myDept());
@@ -1191,7 +1240,7 @@ function visibleDepts() {
 }
 function visibleClusters() {
   if (!S) return [];
-  if (isSuper() || isHRM()) return CLUSTERS;
+  if (isSuper()) return CLUSTERS;
   if (isRegionalAdmin()) return CLUSTERS.filter(c => regionOf(c) === myRegion());
   if (isAdmin()) return CLUSTERS.filter(c => c.id === myCluster());
   return [];
@@ -1774,7 +1823,7 @@ function openDepartmentDetails(dirId) {
         '<button class="detail-tab is-active" data-tab="staff">Staff <span class="detail-tab__badge">' + staff.length + '</span></button>' +
         '<button class="detail-tab" data-tab="plans">Work Plans ' + (plans.length ? '<span class="detail-tab__badge">' + plans.length + '</span>' : "") + '</button>' +
       '</div>' +
-      '<div class="detail-panel is-active" data-panel="staff">' +
+       '<div class="detail-panel is-active" data-panel="staff">' +
         '<div style="display:flex;justify-content:flex-end;margin-bottom:12px">' + addStaffBtn + '</div>' +
         staffHtml +
       '</div>' +
@@ -1874,7 +1923,7 @@ function openAssignLeaderWizard(deptId) {
         '<div class="admin-avatar">' + avatar + '</div>' +
         '<div class="user-pick-item__main">' +
           '<div class="user-pick-item__name">' + escapeHtml(fullName(u)) + ' ' + pills.join(" ") + '</div>' +
-                  '<div class="user-pick-item__meta">' + escapeHtml(userPlacementLabel(u)) + '</div>' +
+          '<div class="user-pick-item__meta">' + escapeHtml(userPlacementLabel(u)) + '</div>' +
         '</div>' +
         '<div class="user-pick-radio"></div>' +
       '</div>';
@@ -2151,7 +2200,7 @@ function openSectorForm(existing, opts) {
   if (isEdit && !canEditSector(existing)) { toast("You cannot edit this sector", "error"); return; }
   if (!isEdit && !canCreateSector()) { toast("You cannot create sectors", "error"); return; }
 
-  const regionOptions = (isSuper() || isHRM())
+  const regionOptions = isSuper()
     ? REGIONS.map(r => r.code)
     : [myRegion()].filter(Boolean);
 
@@ -2339,10 +2388,10 @@ function openDeptForm(existing, opts) {
   if (!isEdit && level === "regional" && !canCreateRegionalDept()) { toast("You cannot create regional departments", "error"); return; }
   if (!isEdit && level === "cluster"  && !canCreateClusterDept())  { toast("You cannot create cluster departments", "error"); return; }
 
-  const regionOptions = (isSuper() || isHRM()) ? REGIONS.map(r => r.code) : [myRegion()].filter(Boolean);
+  const regionOptions = isSuper() ? REGIONS.map(r => r.code) : [myRegion()].filter(Boolean);
 
   const clusterOptionsFor = (rc) => {
-    if (isSuper() || isHRM()) return CLUSTERS.filter(c => !rc || regionOf(c) === rc);
+    if (isSuper()) return CLUSTERS.filter(c => !rc || regionOf(c) === rc);
     if (isRegionalAdmin()) return CLUSTERS.filter(c => regionOf(c) === myRegion());
     if (isAdmin()) return CLUSTERS.filter(c => c.id === myCluster());
     return [];
@@ -2859,6 +2908,14 @@ onAuthStateChanged(auth, async (user) => {
     };
     console.log("[boot] scope:", S);
 
+    /* Roles without "departments" in ROLE_NAV don't belong on this page. */
+    if (!DEPT_PAGE_ROLES.has(S.role)) {
+      console.log("[boot] role not permitted on this page, redirecting:", S.role);
+      window.__diag.stage = "redirecting";
+      window.location.replace("dashboard.html");
+      return;
+    }
+
     try {
       window.__diag.stage = "rendering-shell";
       renderSidebar();
@@ -2874,7 +2931,7 @@ onAuthStateChanged(auth, async (user) => {
 
     window.__diag.stage = "booted";
     window.__diag.ready = true;
-    console.log("[boot] done — civil service grouping active");
+    console.log("[boot] done — civil service grouping active, role-scoped nav enforced");
   } catch (err) {
     console.error("[boot] fatal:", err);
     window.__diag.errors.push("boot: " + (err.code || "") + " " + err.message);
@@ -2885,3 +2942,4 @@ onAuthStateChanged(auth, async (user) => {
 
 </body>
 </html>
+       
