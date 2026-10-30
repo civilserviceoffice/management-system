@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Offices &amp; Clusters — Civil Service MIS</title>
+<title>Civil Service MIS</title>
 <link rel="icon" type="image/png" href="../images/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -266,9 +266,26 @@ body.sidebar-collapsed .nav-item__label { display:none; }
 .region-card__crest { width:58px; height:58px; flex-shrink:0; border-radius:16px;
   background:linear-gradient(135deg, var(--primary), var(--secondary));
   color:#fff; display:grid; place-items:center;
-  font-weight:800; font-size:20px; font-family:ui-monospace,monospace; }
+  font-weight:800; font-size:20px; font-family:ui-monospace,monospace;
+  position:relative; overflow:hidden; }
 .region-card__crest--custom { background:linear-gradient(135deg, #6d28d9, #8b5cf6); }
 .region-card__crest--blocked { background:linear-gradient(135deg, #d4a017, #e8b84b); }
+.region-card__crest--clickable { cursor:pointer; transition:.15s; }
+.region-card__crest--clickable:hover { transform:scale(1.04); box-shadow:0 4px 14px rgba(11,92,171,.25); }
+.region-card__crest img {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; border-radius:16px;
+}
+.region-card__crest-badge {
+  position:absolute; right:-2px; bottom:-2px;
+  width:22px; height:22px; border-radius:50%;
+  background:#fff; color:var(--primary);
+  display:grid; place-items:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.22);
+  border:2px solid var(--card-bg);
+  pointer-events:none;
+}
+.region-card__crest-badge svg { width:11px; height:11px; stroke:currentColor; stroke-width:2.5; fill:none; }
 .region-card__identity { flex:1; min-width:0; }
 .region-card__name { font-size:19px; font-weight:800; margin-bottom:4px; }
 .region-card__name-am { font-size:13px; color:var(--muted); margin-bottom:8px;
@@ -831,7 +848,12 @@ const workPlansByDepartment = {};
 function allRegions() {
   const map = new Map();
   REGIONS.forEach(r => map.set(r.code, { ...r, builtin: true }));
-  customRegions.forEach(r => map.set(r.code, { ...r, builtin: false }));
+  const builtinCodes = new Set(REGIONS.map(x => x.code));
+  customRegions.forEach(r => {
+    const existing = map.get(r.code);
+    const isBuiltin = builtinCodes.has(r.code) || !!existing?.builtin;
+    map.set(r.code, { ...(existing || {}), ...r, builtin: isBuiltin });
+  });
   return Array.from(map.values()).sort((a,b) => String(a.code).localeCompare(String(b.code)));
 }
 function dateNumeric(ts) {
@@ -1270,11 +1292,19 @@ function renderRegionCard(r) {
   let cardCls = r.builtin ? "region-card--builtin" : "region-card--custom";
   if (blocked) cardCls = "region-card--blocked";
   const crestCls = blocked ? "region-card__crest--blocked" : (r.builtin ? "" : "region-card__crest--custom");
+  const crestUploadable = isSuper();
+  const crestInner = r.logoURL
+    ? `<img src="${escapeHtml(r.logoURL)}" alt="">`
+    : escapeHtml(r.code);
 
   return `
     <article class="region-card ${cardCls}" data-region="${escapeHtml(r.code)}">
       <div class="region-card__head">
-        <div class="region-card__crest ${crestCls}">${escapeHtml(r.code)}</div>
+        <div class="region-card__crest ${crestCls} ${crestUploadable ? "region-card__crest--clickable" : ""}"
+             ${crestUploadable ? `data-action="upload-region-logo" data-region="${escapeHtml(r.code)}" title="Click to upload logo"` : ""}>
+          ${crestInner}
+          ${crestUploadable ? `<span class="region-card__crest-badge"><svg viewBox="0 0 24 24">${ICONS.camera}</svg></span>` : ""}
+        </div>
         <div class="region-card__identity">
           <div class="region-card__name">${escapeHtml(r.en)}</div>
           ${r.am ? `<div class="region-card__name-am">${escapeHtml(r.am)}</div>` : ""}
@@ -1293,6 +1323,10 @@ function renderRegionCard(r) {
           <button class="btn btn--sm" data-action="view-region" data-region="${escapeHtml(r.code)}">
             <svg viewBox="0 0 24 24">${ICONS.details}</svg> View Details
           </button>
+          ${isSuper() ? `
+            <button class="btn btn--sm" data-action="edit-region" data-region="${escapeHtml(r.code)}">
+              <svg viewBox="0 0 24 24">${ICONS.edit}</svg> Edit
+            </button>` : ""}
           ${isSuper() && !r.builtin ? `
             <button class="btn btn--sm btn--danger" data-action="delete-region" data-region="${escapeHtml(r.code)}">
               <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
@@ -1344,21 +1378,29 @@ function renderBlockedBlock(r) {
 
 function renderRegionalAdminPanel(r, admin) {
   if (!admin) return "";
+  const adminCount = regionalAdminsFor(r.code).length;
   return `
     <div class="region-admin-panel">
       <div class="region-admin-panel__avatar">
         ${admin.photoURL ? `<img src="${escapeHtml(admin.photoURL)}" alt="">` : escapeHtml(initials(admin.name || admin.email))}
       </div>
       <div class="region-admin-panel__main">
-        <div class="region-admin-panel__label">Regional Admin</div>
+        <div class="region-admin-panel__label">Regional Admin${adminCount > 1 ? ` (${adminCount})` : ""}</div>
         <div class="region-admin-panel__name">${escapeHtml(admin.name || admin.email || "—")}</div>
         <div class="region-admin-panel__email">${escapeHtml(admin.email || "")}</div>
       </div>
       ${isSuper() ? `
-        <button class="btn btn--sm btn--xs" data-action="manage-regional-admins" data-region="${escapeHtml(r.code)}">
-          <svg viewBox="0 0 24 24">${ICONS.shield}</svg>
-          Manage (${regionalAdminsFor(r.code).length})
-        </button>` : ""}
+        <button class="btn btn--sm btn--xs" data-action="edit-regional-admin" data-region="${escapeHtml(r.code)}" data-uid="${admin.id}" title="Edit this regional admin">
+          <svg viewBox="0 0 24 24">${ICONS.edit}</svg> Edit
+        </button>
+        <button class="btn btn--sm btn--xs btn--danger" data-action="remove-regional-admin" data-region="${escapeHtml(r.code)}" data-uid="${admin.id}" title="Remove this regional admin">
+          <svg viewBox="0 0 24 24">${ICONS.trash}</svg> Delete
+        </button>
+        ${adminCount > 1 ? `
+          <button class="btn btn--sm btn--xs" data-action="manage-regional-admins" data-region="${escapeHtml(r.code)}">
+            <svg viewBox="0 0 24 24">${ICONS.shield}</svg> All (${adminCount})
+          </button>` : ""}
+      ` : ""}
     </div>`;
 }
 
@@ -1492,8 +1534,12 @@ function wireRegionEvents(host) {
     el.addEventListener("click", () => {
       const { action, region, cid, wid, uid } = el.dataset;
       if (action === "view-region")            openRegionDetailsModal(region);
+      if (action === "edit-region")            openEditRegionModal(region);
       if (action === "delete-region")          deleteRegion(region);
+      if (action === "upload-region-logo")     openRegionLogoUpload(region);
       if (action === "add-regional-admin")     openAddRegionalAdminChooser(region);
+      if (action === "edit-regional-admin")    openEditRegionalAdmin(uid, region);
+      if (action === "remove-regional-admin")  confirmRemoveRegionalAdmin(uid, region);
       if (action === "manage-regional-admins") openRegionalAdminsModal(region);
       if (action === "add-directorate")        openDirectorateModal(region);
       if (action === "add-cluster")            openClusterModal(null, region);
@@ -1678,6 +1724,152 @@ function setupLiveDuplicate(root, inputId, type, label, onStatusChange) {
 }
 
 /* ============================================================
+   REGION LOGO
+   ============================================================ */
+function openRegionLogoUpload(regionCode) {
+  if (!isSuper()) { toast("Only super admins can change region logos", "error"); return; }
+  const r = allRegions().find(x => x.code === regionCode);
+  if (!r) return;
+
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.onchange = async () => {
+    const f = input.files?.[0];
+    if (!f) return;
+    if (f.size > 512 * 1024) { toast("Logo must be under 512 KB", "error"); return; }
+    try {
+      const dataURL = await fileToDataURL(f);
+      await setDoc(doc(db, "regions", regionCode), {
+        code: regionCode,
+        en: r.en || "",
+        am: r.am || "",
+        logoURL: dataURL,
+        updatedAt: serverTimestamp(),
+        updatedBy: S.uid
+      }, { merge: true });
+      toast("Region logo updated", "success");
+    } catch (err) {
+      console.error(err);
+      toast(err.message || "Could not save logo", "error");
+    }
+  };
+  input.click();
+}
+
+/* ============================================================
+   EDIT REGION (name + logo)
+   ============================================================ */
+function openEditRegionModal(regionCode) {
+  if (!isSuper()) { toast("Only super admins can edit regions", "error"); return; }
+  const r = allRegions().find(x => x.code === regionCode);
+  if (!r) return;
+
+  openWizard({
+    title: "Edit Region",
+    subtitle: `Region ${r.code}`,
+    finishLabel: "Save Changes",
+    successMessage: "Region updated",
+    initial: { en: r.en || "", am: r.am || "", logoURL: r.logoURL || null },
+    steps: [{
+      label: "Details", title: "Region details",
+      render: (d) => `
+        <div class="field">
+          <label class="field__required">Region name (English)</label>
+          <input data-field="en" value="${escapeHtml(d.en||"")}">
+        </div>
+        <div class="field">
+          <label>Region name (Amharic)</label>
+          <input data-field="am" value="${escapeHtml(d.am||"")}" style="font-family:'Noto Sans Ethiopic',sans-serif">
+        </div>
+        <div class="field">
+          <label>Region logo</label>
+          <div class="photo-upload" style="margin-bottom:0">
+            <div class="photo-upload__circle ${d.logoURL ? "has-img" : ""}" id="logo-circle">
+              <span id="logo-placeholder" style="${d.logoURL ? "display:none" : ""}">${escapeHtml(r.code)}</span>
+              <img id="logo-preview" src="${d.logoURL ? escapeHtml(d.logoURL) : ""}" alt="" style="${d.logoURL ? "display:block" : "display:none"}">
+              <div class="photo-upload__badge"><svg viewBox="0 0 24 24">${ICONS.camera}</svg></div>
+              <input type="file" id="logo-input" accept="image/*" style="display:none">
+            </div>
+            <div class="photo-upload__hint">Optional · JPG or PNG · max 512 KB</div>
+            ${d.logoURL ? `<button type="button" class="btn btn--sm btn--danger" id="logo-remove" style="margin-top:6px">
+              <svg viewBox="0 0 24 24">${ICONS.trash}</svg> Remove logo
+            </button>` : ""}
+          </div>
+        </div>`,
+      validate: (d) => {
+        if (!d.en || d.en.trim().length < 2) return "Region name (English) is required.";
+        return null;
+      },
+      after: (root, data, refresh) => {
+        const circle      = root.querySelector("#logo-circle");
+        const input       = root.querySelector("#logo-input");
+        const img         = root.querySelector("#logo-preview");
+        const placeholder = root.querySelector("#logo-placeholder");
+        const removeBtn   = root.querySelector("#logo-remove");
+        circle?.addEventListener("click", (e) => {
+          if (e.target === input) return;
+          input?.click();
+        });
+        input?.addEventListener("change", async () => {
+          const f = input.files?.[0];
+          if (!f) return;
+          if (f.size > 512 * 1024) { toast("Logo must be under 512 KB", "error"); return; }
+          try {
+            const dataURL = await fileToDataURL(f);
+            data.logoURL = dataURL;
+            if (img) { img.src = dataURL; img.style.display = "block"; }
+            if (placeholder) placeholder.style.display = "none";
+            circle?.classList.add("has-img");
+            if (!root.querySelector("#logo-remove")) {
+              const btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = "btn btn--sm btn--danger";
+              btn.id = "logo-remove";
+              btn.style.marginTop = "6px";
+              btn.innerHTML = `<svg viewBox="0 0 24 24">${ICONS.trash}</svg> Remove logo`;
+              btn.addEventListener("click", () => {
+                data.logoURL = null;
+                if (img) { img.src = ""; img.style.display = "none"; }
+                if (placeholder) placeholder.style.display = "";
+                circle?.classList.remove("has-img");
+                btn.remove();
+              });
+              circle?.parentElement?.appendChild(btn);
+            }
+          } catch(e) { toast("Could not read image", "error"); }
+        });
+        removeBtn?.addEventListener("click", () => {
+          data.logoURL = null;
+          if (img) { img.src = ""; img.style.display = "none"; }
+          if (placeholder) placeholder.style.display = "";
+          circle?.classList.remove("has-img");
+          removeBtn.remove();
+        });
+      }
+    }],
+    onFinish: async (d) => {
+      await setDoc(doc(db, "regions", regionCode), {
+        code: regionCode,
+        en: d.en.trim(),
+        am: d.am?.trim() || "",
+        logoURL: d.logoURL || null,
+        updatedAt: serverTimestamp(),
+        updatedBy: S.uid
+      }, { merge: true });
+    }
+  });
+}
+
+/* ============================================================
+   EDIT REGIONAL ADMIN — redirects to Users page
+   ============================================================ */
+function openEditRegionalAdmin(uid, regionCode) {
+  if (!isSuper()) { toast("Only super admins can edit regional admins", "error"); return; }
+  window.location.href = `users.html?uid=${encodeURIComponent(uid)}&action=edit`;
+}
+
+/* ============================================================
    REGION DETAILS MODAL
    ============================================================ */
 function openRegionDetailsModal(regionCode) {
@@ -1722,6 +1914,9 @@ function openRegionDetailsModal(regionCode) {
     <div class="modal__foot">
       <div class="spacer"></div>
       <button class="btn" data-close>Close</button>
+      ${isSuper() ? `<button class="btn" id="rd-edit">
+        <svg viewBox="0 0 24 24">${ICONS.edit}</svg> Edit region
+      </button>` : ""}
       ${isSuper() && blocked ? `
         <button class="btn btn--gold" id="rd-add-reg">
           <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg> Add Regional Admin
@@ -1729,6 +1924,10 @@ function openRegionDetailsModal(regionCode) {
     </div>
   `, { size: "lg" });
 
+  document.getElementById("rd-edit")?.addEventListener("click", ()=>{
+    closeModal();
+    setTimeout(()=>openEditRegionModal(r.code), 120);
+  });
   document.getElementById("rd-add-reg")?.addEventListener("click", ()=>{
     closeModal();
     setTimeout(()=>openAddRegionalAdminChooser(r.code), 120);
@@ -1736,7 +1935,7 @@ function openRegionDetailsModal(regionCode) {
 }
 
 /* ============================================================
-   REGIONAL ADMINS
+   REGIONAL ADMINS — list modal (still used by "All (N)" button)
    ============================================================ */
 function openRegionalAdminsModal(regionCode) {
   if (!isSuper()) { toast("Only super admins can manage regional admins", "error"); return; }
@@ -1765,6 +1964,9 @@ function openRegionalAdminsModal(regionCode) {
                   <div class="admin-item__email">${escapeHtml(a.email || "")}</div>
                 </div>
                 <div class="admin-item__actions">
+                  <button class="btn btn--sm btn--xs" data-action="edit-regadmin-list" data-uid="${a.id}">
+                    <svg viewBox="0 0 24 24">${ICONS.edit}</svg> Edit
+                  </button>
                   <button class="btn btn--sm btn--icon btn--danger"
                           data-action="remove-regadmin" data-uid="${a.id}" data-region="${escapeHtml(regionCode)}">
                     <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
@@ -1790,518 +1992,42 @@ function openRegionalAdminsModal(regionCode) {
   document.querySelectorAll("#modal-backdrop [data-action='remove-regadmin']").forEach(btn => {
     btn.addEventListener("click", ()=>confirmRemoveRegionalAdmin(btn.dataset.uid, btn.dataset.region));
   });
+  document.querySelectorAll("#modal-backdrop [data-action='edit-regadmin-list']").forEach(btn => {
+    btn.addEventListener("click", ()=>openEditRegionalAdmin(btn.dataset.uid, regionCode));
+  });
 }
 
+/* ============================================================
+   ADD REGIONAL ADMIN — redirects to Users page
+   ============================================================ */
 function openAddRegionalAdminChooser(regionCode) {
+  const r = allRegions().find(x => x.code === regionCode);
+  if (!r) return;
   if (!isSuper()) { toast("Only super admins can add regional admins", "error"); return; }
-  const r = allRegions().find(x => x.code === regionCode);
-  if (!r) return;
-
-  const existingIds = new Set(regionalAdminsFor(regionCode).map(a => a.id));
-  const candidates = users
-    .filter(u => u.role !== "super_admin")
-    .filter(u => !existingIds.has(u.id))
-    .sort((a,b)=> String(a.name||a.email||"").localeCompare(String(b.name||b.email||"")));
-
-  let selectedId = null;
-
-  openModal(`
-    <div class="modal__head">
-      <div>
-        <div class="modal__title">Add Regional Administrator</div>
-        <div class="modal__sub">${escapeHtml(r.en)} · region ${escapeHtml(r.code)}</div>
-      </div>
-      <button class="modal__close" data-close><svg viewBox="0 0 24 24">${ICONS.x}</svg></button>
-    </div>
-    <div class="modal__body">
-      <div class="alert alert--warning">
-        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-        <div>Adding a Regional Admin will <strong>unblock this region</strong>.</div>
-      </div>
-      <div class="field">
-        <label>Search users</label>
-        <input id="ra-search" placeholder="Search by name, email…">
-      </div>
-      <div class="field">
-        <label>Available users (${candidates.length})</label>
-        <div class="wm-list" id="ra-user-list">
-          ${candidates.length
-            ? candidates.map(u => {
-                const emp = employees.find(e => e.uid === u.id);
-                const hay = [u.name, u.email, u.nationalId, emp?.empId].filter(Boolean).join(" ").toLowerCase();
-                return `
-                  <div class="user-pick-item" data-uid="${u.id}" data-search="${escapeHtml(hay)}">
-                    <div class="admin-avatar">
-                      ${u.photoURL ? `<img src="${escapeHtml(u.photoURL)}" alt="">` : escapeHtml(initials(u.name || u.email))}
-                    </div>
-                    <div class="user-pick-item__main">
-                      <div class="user-pick-item__name">
-                        ${escapeHtml(u.name || u.email || "User")}
-                        ${emp?.empId ? `<span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--muted)">${escapeHtml(emp.empId)}</span>` : ""}
-                      </div>
-                      <div class="user-pick-item__meta">${escapeHtml(u.email || "—")}</div>
-                    </div>
-                    <div class="user-pick-radio"></div>
-                  </div>`;
-              }).join("")
-            : `<div class="wm-empty">No eligible users.</div>`}
-        </div>
-      </div>
-      <div id="ra-selected" class="hidden" style="margin-top:14px"></div>
-      <div id="ra-error" class="alert alert--error" style="display:none;margin-top:14px;margin-bottom:0">
-        <svg viewBox="0 0 24 24">${ICONS.alert}</svg>
-        <div id="ra-error-msg" style="flex:1"></div>
-      </div>
-    </div>
-    <div class="modal__foot">
-      <button class="btn" id="ra-new-btn" style="margin-right:auto">
-        <svg viewBox="0 0 24 24">${ICONS.userPlus}</svg> Create new account
-      </button>
-      <button class="btn" data-close>Cancel</button>
-      <button class="btn btn--gold" id="ra-submit" disabled>
-        <span class="spinner hidden" style="width:14px;height:14px;border-width:2px"></span>
-        <span class="btn-label">Assign as Regional Admin</span>
-      </button>
-    </div>
-  `, { size: "lg" });
-
-  const listEl = document.getElementById("ra-user-list");
-  const searchEl = document.getElementById("ra-search");
-  const selectedEl = document.getElementById("ra-selected");
-  const submitBtn = document.getElementById("ra-submit");
-
-  searchEl.addEventListener("input", ()=>{
-    const q = searchEl.value.trim().toLowerCase();
-    listEl.querySelectorAll(".user-pick-item").forEach(el => {
-      const hay = el.dataset.search || "";
-      el.style.display = (!q || hay.includes(q)) ? "flex" : "none";
-    });
-  });
-
-  listEl.querySelectorAll(".user-pick-item").forEach(el => {
-    el.addEventListener("click", ()=>{
-      const uid = el.dataset.uid;
-      const u = users.find(x => x.id === uid);
-      if (!u) return;
-      listEl.querySelectorAll(".user-pick-item").forEach(x => x.classList.remove("is-on"));
-      el.classList.add("is-on");
-      selectedId = uid;
-      selectedEl.classList.remove("hidden");
-      selectedEl.innerHTML = `
-        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;
-                    background:#fdf5e0;border:1px solid #f0dcb0">
-          <div class="admin-avatar" style="width:48px;height:48px;font-size:15px">
-            ${u.photoURL ? `<img src="${escapeHtml(u.photoURL)}" alt="">` : escapeHtml(initials(u.name||u.email))}
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:800;font-size:14.5px">${escapeHtml(u.name || u.email || "")}</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px">${escapeHtml(u.email || "")}</div>
-          </div>
-        </div>`;
-      submitBtn.disabled = false;
-    });
-  });
-
-  document.getElementById("ra-new-btn").addEventListener("click", ()=>{
-    closeModal();
-    setTimeout(()=>openCreateBrandNewRegionalAdminWizard(regionCode), 120);
-  });
-
-  submitBtn.addEventListener("click", async ()=>{
-    const errBox = document.getElementById("ra-error");
-    const errMsg = document.getElementById("ra-error-msg");
-    const spinner = submitBtn.querySelector(".spinner");
-    const label = submitBtn.querySelector(".btn-label");
-    errBox.style.display = "none";
-    if (!selectedId) { errBox.style.display = "flex"; errMsg.textContent = "Please select a user first."; return; }
-    const u = users.find(x => x.id === selectedId);
-    if (!u) { errBox.style.display = "flex"; errMsg.textContent = "User no longer exists."; return; }
-
-    submitBtn.disabled = true;
-    spinner.classList.remove("hidden");
-    const old = label.textContent;
-    label.textContent = "Assigning…";
-    try {
-      /* CRITICAL: write BOTH region and regionCode so all scoped queries match */
-      await updateDoc(doc(db, "users", selectedId), {
-        role: "regional_admin",
-        region: r.code,
-        regionCode: r.code,
-        regionName: r.en,
-        active: true,
-        updatedAt: serverTimestamp(),
-        updatedBy: S.uid
-      });
-      const emp = employees.find(e => e.uid === selectedId);
-      if (emp) {
-        try {
-          await updateDoc(doc(db, "employees", emp.id), {
-            regionCode: r.code, regionName: r.en,
-            updatedAt: serverTimestamp()
-          });
-        } catch(e) {}
-      }
-      toast(`${u.name || u.email} is now Regional Admin of ${r.en}`, "success");
-      closeModal();
-    } catch (err) {
-      console.error(err);
-      errBox.style.display = "flex";
-      errMsg.innerHTML = `<strong>${escapeHtml(err.code || "error")}</strong><br>${escapeHtml(err.message || "")}`;
-      submitBtn.disabled = false;
-      spinner.classList.add("hidden");
-      label.textContent = old;
-    }
-  });
+  // Regional-admin management now lives on the Users page.
+  window.location.href = `users.html?region=${encodeURIComponent(regionCode)}&action=assign&role=regional_admin`;
 }
 
-function openCreateBrandNewRegionalAdminWizard(regionCode) {
-  const r = allRegions().find(x => x.code === regionCode);
-  if (!r) return;
-  if (!isSuper()) { toast("Only super admins can create regional admins", "error"); return; }
-
-  const duplicateStatus = { nationalId:{ ok:false, empty:true }, phone:{ ok:false, empty:true } };
-
-  openWizard({
-    title: "Create Regional Administrator",
-    subtitle: `${r.en} · region ${r.code}`,
-    finishLabel: "Create Admin",
-    successMessage: "Regional Admin created — they can now sign in.",
-    size: "lg",
-    initial: { gender:"", country:"ET" },
-    steps: [
-      {
-        label: "Personal",
-        title: "Personal details",
-        render: (d2) => `
-          <div class="photo-upload">
-            <div class="photo-upload__circle" id="photo-circle">
-              <span id="photo-initials">?</span>
-              <img id="photo-preview" alt="">
-              <div class="photo-upload__badge"><svg viewBox="0 0 24 24">${ICONS.camera}</svg></div>
-              <input type="file" id="photo-input" accept="image/*" style="display:none">
-            </div>
-            <div class="photo-upload__label">Profile Photo <span class="photo-upload__req">*</span></div>
-            <div class="photo-upload__hint">JPG or PNG · max 3 MB</div>
-          </div>
-          <div class="field-row field-row--3">
-            <div class="field"><label class="field__required">First name</label>
-              <input data-field="firstName" value="${escapeHtml(d2.firstName||"")}"></div>
-            <div class="field"><label>Middle name</label>
-              <input data-field="middleName" value="${escapeHtml(d2.middleName||"")}"></div>
-            <div class="field"><label class="field__required">Last name</label>
-              <input data-field="lastName" value="${escapeHtml(d2.lastName||"")}"></div>
-          </div>
-          <div class="field-row field-row--3">
-            <div class="field"><label class="field__required">የመጀመሪያ ስም</label>
-              <input data-field="firstNameAm" value="${escapeHtml(d2.firstNameAm||"")}" style="font-family:'Noto Sans Ethiopic',sans-serif"></div>
-            <div class="field"><label>የአባት ስም</label>
-              <input data-field="middleNameAm" value="${escapeHtml(d2.middleNameAm||"")}" style="font-family:'Noto Sans Ethiopic',sans-serif"></div>
-            <div class="field"><label class="field__required">የአያት ስም</label>
-              <input data-field="lastNameAm" value="${escapeHtml(d2.lastNameAm||"")}" style="font-family:'Noto Sans Ethiopic',sans-serif"></div>
-          </div>
-          <div class="field-row field-row--3">
-            <div class="field"><label class="field__required">Maqaa jalqabaa</label>
-              <input data-field="firstNameOm" value="${escapeHtml(d2.firstNameOm||"")}"></div>
-            <div class="field"><label>Maqaa abbaa</label>
-              <input data-field="middleNameOm" value="${escapeHtml(d2.middleNameOm||"")}"></div>
-            <div class="field"><label class="field__required">Maqaa akaakayyuu</label>
-              <input data-field="lastNameOm" value="${escapeHtml(d2.lastNameOm||"")}"></div>
-          </div>
-          <div class="field-row">
-            <div class="field"><label class="field__required">Gender</label>
-              <select data-field="gender">
-                <option value="">—</option>
-                <option value="M" ${d2.gender==="M"?"selected":""}>Male</option>
-                <option value="F" ${d2.gender==="F"?"selected":""}>Female</option>
-              </select></div>
-            <div class="field"><label class="field__required">Date of birth</label>
-              <input data-field="dob" type="date" value="${escapeHtml(d2.dob||"")}"></div>
-          </div>
-          <div class="field">
-            <label class="field__required">National ID</label>
-            <input id="nat-id" data-field="nationalId" value="${escapeHtml(d2.nationalId||"")}" autocomplete="off" style="font-family:ui-monospace,monospace">
-          </div>`,
-        validate: (d2)=>{
-          if (!d2._photo) return "Please upload a profile photo.";
-          if (!d2.firstName || d2.firstName.trim().length < 2) return "First name required.";
-          if (!d2.lastName || d2.lastName.trim().length < 2) return "Last name required.";
-          if (!d2.firstNameAm || d2.firstNameAm.trim().length < 2) return "Amharic first name required.";
-          if (!d2.lastNameAm || d2.lastNameAm.trim().length < 2) return "Amharic last name required.";
-          if (!d2.firstNameOm || d2.firstNameOm.trim().length < 2) return "Oromo first name required.";
-          if (!d2.lastNameOm || d2.lastNameOm.trim().length < 2) return "Oromo last name required.";
-          if (!d2.gender) return "Gender required.";
-          if (!d2.dob) return "Date of birth required.";
-          const nid = normalizeNationalId(d2.nationalId||"");
-          if (!nid || nid.length < 5) return "National ID required.";
-          const st = duplicateStatus.nationalId;
-          if (!st.ok) {
-            if (st.reason === "duplicate") return "This National ID is already registered.";
-            return "Please wait — checking National ID.";
-          }
-          return null;
-        },
-        after: (root, data)=>{
-          const circle = root.querySelector("#photo-circle");
-          const input = root.querySelector("#photo-input");
-          const preview = root.querySelector("#photo-preview");
-          const ini = root.querySelector("#photo-initials");
-          const upd = ()=>{
-            const s = [data.firstName, data.lastName].filter(Boolean).join(" ") || "?";
-            ini.textContent = initials(s);
-          };
-          circle.addEventListener("click", ()=>input.click());
-          input.addEventListener("change", async ()=>{
-            const f = input.files?.[0];
-            if (!f) return;
-            if (f.size > 3*1024*1024) { toast("Photo must be under 3 MB", "error"); return; }
-            try {
-              const u = await fileToDataURL(f);
-              data._photo = u;
-              preview.src = u;
-              circle.classList.add("has-img");
-            } catch(e) {}
-          });
-          ["firstName","lastName"].forEach(k=>{
-            const el = root.querySelector(`[data-field="${k}"]`);
-            el?.addEventListener("input", ()=>{ data[k]=el.value; upd(); });
-          });
-          upd();
-          if (data._photo) { preview.src = data._photo; circle.classList.add("has-img"); }
-          setupLiveDuplicate(root, "nat-id", "nationalId", "National ID", (t,s)=>{
-            duplicateStatus[t]=s;
-          });
-        }
-      },
-      {
-        label: "Contact",
-        title: "Contact details",
-        render: (d2) => `
-          <div class="field-row">
-            <div class="field"><label class="field__required">Primary phone</label>
-              <input id="phone-primary" data-field="phone" value="${escapeHtml(d2.phone||"")}"></div>
-            <div class="field"><label>Alternate phone</label>
-              <input data-field="phoneAlt" value="${escapeHtml(d2.phoneAlt||"")}"></div>
-          </div>
-          <div class="field"><label class="field__required">Personal email</label>
-            <input data-field="email" type="email" value="${escapeHtml(d2.email||"")}"></div>`,
-        validate: (d2)=>{
-          if (!d2.phone) return "Phone required.";
-          if (!/^[0-9+\-\s]{7,20}$/.test(d2.phone)) return "Invalid phone.";
-          const st = duplicateStatus.phone;
-          if (!st.ok) return "Please wait — checking phone.";
-          if (!d2.email || !/^\S+@\S+\.\S+$/.test(d2.email)) return "Valid email required.";
-          return null;
-        },
-        after: (root, data)=>{
-          setupLiveDuplicate(root, "phone-primary", "phone", "phone number", (t,s)=>{
-            duplicateStatus[t]=s;
-          });
-        }
-      },
-      {
-        label: "Login",
-        title: "Login credentials",
-        render: (d2) => `
-          <div class="field">
-            <label class="field__required">Login email</label>
-            <input data-field="loginEmail" type="email" value="${escapeHtml(d2.loginEmail || d2.email || "")}" autocomplete="off">
-          </div>
-          <div class="field">
-            <label class="field__required">Password</label>
-            <div class="pw-wrap">
-              <input data-field="password" id="pw-new" type="password" autocomplete="new-password">
-              <button type="button" class="pw-toggle" data-toggle="pw-new">
-                <svg viewBox="0 0 24 24">${ICONS.eye}</svg>
-              </button>
-            </div>
-            <div class="pw-meter" id="pw-meter">
-              <div class="pw-meter__bars">
-                <div class="pw-meter__bar" data-bar="1"></div>
-                <div class="pw-meter__bar" data-bar="2"></div>
-                <div class="pw-meter__bar" data-bar="3"></div>
-                <div class="pw-meter__bar" data-bar="4"></div>
-              </div>
-              <div class="pw-meter__text" id="pw-meter-text">Enter a password</div>
-            </div>
-            <div class="pw-rules" id="pw-rules">
-              <div class="pw-rule" data-rule="length"><span class="pw-rule__dot"></span><span>At least 8 characters</span></div>
-              <div class="pw-rule" data-rule="upper"><span class="pw-rule__dot"></span><span>One uppercase</span></div>
-              <div class="pw-rule" data-rule="lower"><span class="pw-rule__dot"></span><span>One lowercase</span></div>
-              <div class="pw-rule" data-rule="number"><span class="pw-rule__dot"></span><span>One number</span></div>
-              <div class="pw-rule" data-rule="symbol"><span class="pw-rule__dot"></span><span>One symbol</span></div>
-            </div>
-          </div>
-          <div class="field">
-            <label class="field__required">Confirm password</label>
-            <input data-field="password2" id="pw-confirm" type="password">
-            <p class="field__hint" id="pw-match-hint"></p>
-          </div>`,
-        validate: (d2)=>{
-          if (!d2.loginEmail || !/^\S+@\S+\.\S+$/.test(d2.loginEmail)) return "Valid login email required.";
-          if (evaluatePassword(d2.password||"").score < 3) return "Password too weak.";
-          if (d2.password !== d2.password2) return "Passwords do not match.";
-          return null;
-        },
-        after: (root, data)=>{
-          const pwIn = root.querySelector("#pw-new");
-          const cfm = root.querySelector("#pw-confirm");
-          const meter = root.querySelector("#pw-meter");
-          const mTxt = root.querySelector("#pw-meter-text");
-          function renderMeter(){
-            const { checks, score, label, klass } = evaluatePassword(pwIn.value);
-            meter.querySelectorAll(".pw-meter__bar").forEach(bar => {
-              const idx = Number(bar.dataset.bar);
-              bar.className = "pw-meter__bar";
-              if (idx <= score) bar.classList.add("is-on-" + klass);
-            });
-            mTxt.textContent = label;
-            mTxt.className = "pw-meter__text " + klass;
-            root.querySelectorAll(".pw-rule").forEach(rule => {
-              rule.classList.toggle("is-ok", !!checks[rule.dataset.rule]);
-            });
-          }
-          function checkMatch(){
-            const hint = root.querySelector("#pw-match-hint");
-            if (!cfm.value) { hint.textContent = ""; return; }
-            if (pwIn.value === cfm.value) { hint.textContent = "✓ Passwords match"; hint.style.color="#067647"; }
-            else { hint.textContent = "✗ Passwords do not match"; hint.style.color="#dc2626"; }
-          }
-          pwIn.addEventListener("input", ()=>{ data.password=pwIn.value; renderMeter(); checkMatch(); });
-          cfm.addEventListener("input", ()=>{ data.password2=cfm.value; checkMatch(); });
-          root.querySelectorAll(".pw-toggle").forEach(btn=>{
-            btn.addEventListener("click", ()=>{
-              const input = root.querySelector("#"+btn.dataset.toggle);
-              const showing = input.type==="text";
-              input.type = showing?"password":"text";
-              btn.innerHTML = `<svg viewBox="0 0 24 24">${showing ? ICONS.eye : ICONS.eyeOff}</svg>`;
-            });
-          });
-        }
-      },
-      {
-        label: "Review",
-        title: "Confirm and create",
-        render: (d2) => `
-          <div class="review">
-            <div class="review__row"><span class="review__k">Full name</span><span class="review__v">${escapeHtml([d2.firstName, d2.middleName, d2.lastName].filter(Boolean).join(" "))}</span></div>
-            <div class="review__row"><span class="review__k">National ID</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(d2.nationalId||"")}</span></div>
-            <div class="review__row"><span class="review__k">Phone</span><span class="review__v">${escapeHtml(d2.phone||"")}</span></div>
-            <div class="review__row"><span class="review__k">Region</span><span class="review__v">${escapeHtml(r.en)} (${escapeHtml(r.code)})</span></div>
-            <div class="review__row"><span class="review__k">Role</span><span class="review__v">Regional Admin</span></div>
-            <div class="review__row"><span class="review__k">Login email</span><span class="review__v">${escapeHtml(d2.loginEmail)}</span></div>
-          </div>`
-      }
-    ],
-    onFinish: async (data) => {
-      const nameEn = [data.firstName, data.middleName, data.lastName].filter(Boolean).map(s=>s.trim()).join(" ");
-      const nameAm = [data.firstNameAm, data.middleNameAm, data.lastNameAm].filter(Boolean).map(s=>s.trim()).join(" ") || null;
-      const nameOm = [data.firstNameOm, data.middleNameOm, data.lastNameOm].filter(Boolean).map(s=>s.trim()).join(" ") || null;
-      const natIdNorm = normalizeNationalId(data.nationalId);
-      const phoneNorm = normalizePhone(data.phone);
-
-      const dupNat = await findEmployeeByNationalId(data.nationalId);
-      if (dupNat) throw new Error(`National ID is already registered.`);
-      const dupPhone = await findEmployeeByPhone(data.phone);
-      if (dupPhone) throw new Error(`Phone is already registered.`);
-
-      const { empId, seq } = await generateEmployeeId({
-        regionCode: r.code, clusterCode: "00", woredaCode: "00", officeCode: "00"
-      });
-
-      const secName = "regAdminCreator_" + Date.now();
-      const secApp = initializeApp(firebaseConfig, secName);
-      const secAuth = getAuth(secApp);
-      let uid = null;
-      try {
-        const cred = await createUserWithEmailAndPassword(secAuth, data.loginEmail.trim(), data.password);
-        uid = cred.user.uid;
-        try { await updateProfile(cred.user, { displayName: nameEn }); } catch(e) {}
-        await signOut(secAuth);
-      } finally {
-        try { await deleteApp(secApp); } catch(e) {}
-      }
-      if (!uid) throw new Error("Could not create login.");
-
-      let natL=false, phL=false;
-      try {
-        await reserveUnique("nationalId", data.nationalId, natIdNorm, empId, nameEn); natL=true;
-        await reserveUnique("phone", data.phone, phoneNorm, empId, nameEn); phL=true;
-      } catch(e){
-        if (natL) await releaseUnique("nationalId", natIdNorm);
-        if (phL) await releaseUnique("phone", phoneNorm);
-        throw e;
-      }
-
-      const empRef = doc(collection(db, "employees"));
-      try {
-        await setDoc(empRef, {
-          empId, seq,
-          firstName: data.firstName.trim(),
-          middleName: data.middleName?.trim() || null,
-          lastName: data.lastName.trim(),
-          firstNameAm: data.firstNameAm.trim(),
-          middleNameAm: data.middleNameAm?.trim() || null,
-          lastNameAm: data.lastNameAm.trim(),
-          firstNameOm: data.firstNameOm.trim(),
-          middleNameOm: data.middleNameOm?.trim() || null,
-          lastNameOm: data.lastNameOm.trim(),
-          nameEn, nameAm, nameOm, fullName: nameEn,
-          photoURL: data._photo,
-          nationalId: data.nationalId.trim(), nationalIdNorm: natIdNorm,
-          gender: data.gender, dob: data.dob,
-          phone: data.phone.trim(), phoneNorm,
-          phoneAlt: data.phoneAlt?.trim() || null,
-          email: data.email.trim(), loginEmail: data.loginEmail.trim(),
-          country: data.country || "ET",
-          position: "Regional Administrator",
-          hireDate: new Date().toISOString().slice(0,10),
-          employmentType: "permanent", status: "active",
-          regionCode: r.code, regionName: r.en,
-          clusterId: null, clusterCode: null, clusterName: null,
-          woredaCode: null, woredaName: null,
-          officeId: null, officeCode: null, officeName: null,
-          departmentId: null, departmentName: null, departmentCode: null,
-          uid, active: true,
-          createdAt: serverTimestamp(), createdBy: S.uid
-        });
-      } catch(e){
-        await releaseUnique("nationalId", natIdNorm);
-        await releaseUnique("phone", phoneNorm);
-        throw e;
-      }
-
-      /* CRITICAL: write BOTH region and regionCode so all scoped queries match */
-      try {
-        await setDoc(doc(db, "users", uid), {
-          uid,
-          email: data.loginEmail.trim(), name: nameEn,
-          photoURL: data._photo,
-          role: "regional_admin",
-          phone: data.phone.trim(), personalEmail: data.email.trim(),
-          nationalId: data.nationalId.trim(),
-          region: r.code, regionCode: r.code, regionName: r.en,
-          employeeId: empRef.id, empId,
-          active: true,
-          createdAt: serverTimestamp(), createdBy: S.uid
-        });
-      } catch(e){
-        try { await deleteDoc(empRef); } catch(_) {}
-        await releaseUnique("nationalId", natIdNorm);
-        await releaseUnique("phone", phoneNorm);
-        throw e;
-      }
-    }
-  });
-}
-
+/* ============================================================
+   REMOVE REGIONAL ADMIN — downgrade instead of hard-delete
+   ============================================================ */
 async function confirmRemoveRegionalAdmin(uid, regionCode) {
   if (!isSuper()) { toast("Only super admins", "error"); return; }
   const u = users.find(x => x.id === uid);
   if (!u) return;
   const r = allRegions().find(x => x.code === regionCode);
-  if (!confirm(`Remove "${u.name || u.email}" as Regional Admin of "${r?.en}"?`)) return;
+  const willBlock = regionalAdminsFor(regionCode).length <= 1;
+  const warn = willBlock ? "\n\n⚠ This is the LAST admin of this region — the region will be BLOCKED." : "";
+  if (!confirm(`Remove "${u.name || u.email}" as Regional Admin of "${r?.en}"?${warn}\n\nTheir role will be downgraded to "employee".`)) return;
   try {
-    await deleteDoc(doc(db, "users", uid));
+    await updateDoc(doc(db, "users", uid), {
+      role: "employee",
+      region: null, regionCode: null, regionName: null,
+      clusterId: null, clusterName: null,
+      woredaCode: null, woredaName: null,
+      updatedAt: serverTimestamp(),
+      updatedBy: S.uid
+    });
     toast("Regional Admin removed", "success");
     closeModal();
   } catch (err) { toast(err.code + ": " + err.message, "error"); }
@@ -3010,7 +2736,6 @@ function openAddPersonWizard(officeId) {
         throw err;
       }
 
-      /* CRITICAL: write BOTH region and regionCode on the user doc */
       try {
         await setDoc(doc(db, "users", uid), {
           uid,
@@ -3342,7 +3067,6 @@ function openAddAdminChooser(clusterId) {
     const old = label.textContent;
     label.textContent = "Assigning…";
     try {
-      /* CRITICAL: write BOTH region and regionCode */
       await updateDoc(doc(db, "users", selectedId), {
         role:"admin",
         clusterId: c.id,
@@ -3691,7 +3415,6 @@ function openCreateBrandNewAdminWizard(clusterId) {
         throw e;
       }
 
-      /* CRITICAL: write BOTH region and regionCode */
       try {
         await setDoc(doc(db, "users", uid), {
           uid,
@@ -3877,7 +3600,7 @@ async function confirmDeleteCluster(clusterId) {
 }
 
 /* ============================================================
-   SUBSCRIPTIONS — FIXED for Regional Admin
+   SUBSCRIPTIONS
    ============================================================ */
 function rebuildIndexes() {
   Object.keys(clustersByRegion).forEach(k => delete clustersByRegion[k]);
@@ -3991,7 +3714,6 @@ function subscribeEmployees() {
   }, err => console.warn("[employees]", err.code));
 }
 
-/* ⭐ THIS IS THE FIX — filter users by region for Regional Admin ⭐ */
 function subscribeUsers() {
   if (unsubUsers) unsubUsers();
   let q = collection(db, "users");
@@ -4005,7 +3727,6 @@ function subscribeUsers() {
     rebuildIndexes(); render();
   }, err => {
     console.warn("[users]", err.code, err.message);
-    // Non-fatal: page still renders without the users list
   });
 }
 
@@ -4096,7 +3817,7 @@ onAuthStateChanged(auth, async (user)=>{
   subscribeEmployees();
   subscribeUsers();
 
-  console.log("[offices] booted — regional admin scoped");
+  console.log("[offices] booted — regional admin scoped, edit-region, upload logo, users.html redirect for regional admin management");
 });
 </script>
 
