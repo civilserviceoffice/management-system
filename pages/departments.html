@@ -85,6 +85,10 @@ html.theme-dark .scope-badge { background:linear-gradient(135deg,#1a2433,#0f172a
 html.theme-dark .scope-badge--super { background:linear-gradient(135deg,#2a1e4a,#0f172a); border-color:#3d2a5f; color:#c4b5fd; }
 html.theme-dark .scope-badge--regional { background:linear-gradient(135deg,#3a2e15,#0f172a); border-color:#5f4a1e; color:#fcd34d; }
 html.theme-dark .scope-badge--cluster { background:linear-gradient(135deg,#1a3a2a,#0f172a); border-color:#2a5f3d; color:#6ee7b7; }
+html.theme-dark .pill--cs {
+  background:linear-gradient(135deg, #1a2a44, #0f172a);
+  border-color:#1e3a5f; color:#93c5fd;
+}
 html.compact-mode { --pad-main:18px; --topbar-h:60px; }
 html[data-ethiopic="true"] body { font-family:"Noto Sans Ethiopic","Inter",sans-serif; }
 html, body { height:100%; }
@@ -247,6 +251,18 @@ body.sidebar-collapsed .nav-item__label { display:none; }
   font-weight:800; font-size:15px; font-family:ui-monospace,monospace; }
 .region-block__name { font-size:17px; font-weight:800; letter-spacing:-.3px; }
 .region-block__meta { font-size:12.5px; color:var(--muted); margin-top:2px; }
+.region-block__tag {
+  display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px;
+  background:var(--border-soft); color:var(--text-soft);
+  font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em;
+}
+.pill--cs {
+  background:linear-gradient(135deg, #eaf3fc, #fff);
+  border:1px solid #bdd7f2; color:var(--primary-dark);
+  padding:2px 9px; border-radius:999px;
+  font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
+  display:inline-flex; align-items:center;
+}
 .region-block__body { padding:14px 18px 18px; }
 .section-label { font-size:12px; font-weight:800; text-transform:uppercase;
   letter-spacing:.08em; color:var(--muted); margin:14px 4px 10px; display:flex;
@@ -564,7 +580,7 @@ body.sidebar-open .overlay { display:block; }
     <div class="page-head">
       <div>
         <h1 class="page-head__title">Sectors &amp; Directorates</h1>
-        <p class="page-head__sub">Region → Sector → Director → Departments → Team Leaders → Work Plans</p>
+        <p class="page-head__sub">Each region runs a Civil Service. Within it: Sector → Director → Departments → Team Leaders → Work Plans.</p>
         <div id="scope-badge"></div>
       </div>
       <div class="page-head__actions" id="head-actions"></div>
@@ -602,7 +618,7 @@ body.sidebar-open .overlay { display:block; }
     <div class="toolbar">
       <div class="toolbar__search">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="search-input" placeholder="Search sectors, departments, team leaders, directors…">
+        <input id="search-input" placeholder="Search civil services, sectors, departments, team leaders, directors…">
       </div>
       <span class="toolbar__count" id="count-label"></span>
     </div>
@@ -728,6 +744,13 @@ const regionName  = (code) => REGIONS.find(x => x.code === code)?.en || "";
 const regionLabel = (code) => {
   const r = REGIONS.find(x => x.code === code);
   return r ? r.code + " - " + r.en : (code || "-");
+};
+
+/* Each region runs its own Civil Service. */
+const civilServiceName = (code) => {
+  if (!code || code === "__nor__") return "National Civil Service";
+  const n = regionName(code);
+  return n ? n + " Civil Service" : "Civil Service";
 };
 
 /* ---------- 4. Guard ---------- */
@@ -955,7 +978,7 @@ function userPlacementLabel(u) {
     else     bits.push("Sector " + sid);
   }
   const region = regionOf(u);
-  if (region) bits.push("Region " + region);
+  if (region) bits.push(civilServiceName(region));
 
   return bits.join(" · ") || "Unassigned";
 }
@@ -966,6 +989,7 @@ function userSearchBlob(u) {
     fullName(u), u.email || "", u.phone || "",
     u.role || "", roleLabel(u.role || ""), u.position || "",
     deptIdOf(u), sectorIdOf(u), regionOf(u),
+    civilServiceName(regionOf(u)),
     userPlacementLabel(u)
   ].join(" ").toLowerCase();
 }
@@ -1071,7 +1095,7 @@ function renderScopeBadge() {
   if (isSuper()) {
     el.innerHTML = '<span class="scope-badge scope-badge--super"><svg viewBox="0 0 24 24">' + ICONS.lock + '</svg> Full system access - all regions</span>';
   } else if (isRegionalAdmin()) {
-    el.innerHTML = '<span class="scope-badge scope-badge--regional"><svg viewBox="0 0 24 24">' + ICONS.pin + '</svg> Regional Admin &middot; ' + escapeHtml(regionLabel(myRegion())) + '</span>';
+    el.innerHTML = '<span class="scope-badge scope-badge--regional"><svg viewBox="0 0 24 24">' + ICONS.pin + '</svg> Regional Admin &middot; ' + escapeHtml(civilServiceName(myRegion())) + '</span>';
   } else if (isHRM()) {
     el.innerHTML = '<span class="scope-badge scope-badge--cluster"><svg viewBox="0 0 24 24">' + ICONS.users + '</svg> HR Manager - organisation-wide</span>';
   } else if (isAdmin()) {
@@ -1109,7 +1133,12 @@ function renderStats() {
   const sectorsWithDirector = sectorsList.filter(s => !!getSectorDirector(s.id)).length;
   const totalPlans = deptsList.reduce((n,d) => n + (workPlansByDept[d.id] || []).length, 0);
 
+  /* Civil services represented */
+  const civilServiceCodes = new Set(sectorsList.map(s => regionOf(s) || "__nor__"));
+  deptsList.forEach(d => civilServiceCodes.add(regionOf(d) || "__nor__"));
+
   const cards = [
+    statCard("Civil Services", civilServiceCodes.size, "stat--violet", "layers"),
     statCard("Sectors", sectorsList.length, "stat--gold", "layers"),
     statCard("Sector Directors", sectorsWithDirector + "/" + sectorsList.length, "stat--violet", "shield"),
     statCard("Departments", totalDepts, "stat--teal", "org"),
@@ -1178,6 +1207,7 @@ function filteredSectors() {
     const leaders = depts.map(d => getTeamLeaderForDept(d.id)).filter(Boolean);
     const hay = [sec.name, sec.code, sec.description, dir ? fullName(dir) : "",
                  regionName(regionOf(sec)),
+                 civilServiceName(regionOf(sec)),
                  ...depts.map(d => d.name),
                  ...leaders.map(l => fullName(l))].filter(Boolean).join(" ").toLowerCase();
     return hay.indexOf(s) >= 0;
@@ -1190,7 +1220,7 @@ function filteredDepts() {
     const leader = getTeamLeaderForDept(d.id);
     const hay = [d.name, d.code, d.description,
                  leader ? fullName(leader) : "",
-                 regionName(regionOf(d)), d.clusterName]
+                 regionName(regionOf(d)), civilServiceName(regionOf(d)), d.clusterName]
       .filter(Boolean).join(" ").toLowerCase();
     return hay.indexOf(s) >= 0;
   });
@@ -1219,7 +1249,7 @@ function renderTree() {
       errHtml = '<div style="margin-top:16px;font-size:12px;color:#b42318;font-family:ui-monospace,monospace;text-align:left;background:#fff;border:1px solid #fecdca;border-radius:8px;padding:12px 14px">' + lines + '</div>';
     }
     const hint = canCreateSector()
-      ? 'Click <strong>New Sector</strong> to start. Then assign its director, add departments, and finally add team leaders for each department.'
+      ? 'Every region runs its own <strong>Civil Service</strong>. Click <strong>New Sector</strong> to start one. Then assign its director, add departments, and finally add team leaders for each department.'
       : 'Nothing visible for your role.';
     host.innerHTML = '<div class="empty-block" style="padding:60px 24px">' +
       '<div style="font-size:44px;margin-bottom:12px;opacity:.4">&#127963;</div>' +
@@ -1257,7 +1287,7 @@ function renderTree() {
       : "";
     const sectorsHtml = bucket.sectors.length
       ? '<div class="sector-grid">' + bucket.sectors.map(renderSectorCard).join("") + '</div>'
-      : '<div class="empty-block">' + (canAdd ? 'No sectors yet - click <strong>Add Sector</strong> to create one.' : 'No sectors in this region yet.') + '</div>';
+      : '<div class="empty-block">' + (canAdd ? 'No sectors yet - click <strong>Add Sector</strong> to create one.' : 'No sectors in this civil service yet.') + '</div>';
     const clusterHtml = bucket.clusterDirs.length
       ? '<div class="section-label" style="margin-top:24px">Cluster Departments' +
           '<span class="section-label__count">' + bucket.clusterDirs.length + '</span>' +
@@ -1265,16 +1295,32 @@ function renderTree() {
         renderClusterGroups(regionCode, bucket.clusterDirs)
       : "";
 
+    const displayName   = civilServiceName(regionCode);
+    const readyCount    = bucket.sectors.filter(s => sectorReady(s.id)).length;
+    const directorCount = bucket.sectors.filter(s => !!getSectorDirector(s.id)).length;
+    const totalDeptsInRegion = bucket.sectors.reduce(function(n, s){
+      return n + DEPTS.filter(function(d){ return d.sectorId === s.id; }).length;
+    }, 0);
+    const crestText = regionCode === "__nor__" ? "CS" : regionCode;
+
     html += '<div class="region-block">' +
       '<div class="region-block__head">' +
-        '<div class="region-block__crest">' + escapeHtml(regionCode === "__nor__" ? "??" : regionCode) + '</div>' +
+        '<div class="region-block__crest">' + escapeHtml(crestText) + '</div>' +
         '<div style="flex:1;min-width:0">' +
-          '<div class="region-block__name">' + escapeHtml(regionName(regionCode) || "Organisation-wide") + '</div>' +
-          '<div class="region-block__meta">' + bucket.sectors.length + ' sector' + (bucket.sectors.length === 1 ? "" : "s") + ' \u00b7 ' + bucket.clusterDirs.length + ' cluster department' + (bucket.clusterDirs.length === 1 ? "" : "s") + '</div>' +
+          '<div class="region-block__name">' + escapeHtml(displayName) + '</div>' +
+          '<div class="region-block__meta">' +
+            '<span class="pill pill--cs">Civil Service</span> ' +
+            '<span class="region-block__tag">Region ' + escapeHtml(regionCode === "__nor__" ? "—" : regionCode) + '</span> ' +
+            bucket.sectors.length + ' sector' + (bucket.sectors.length === 1 ? "" : "s") +
+            ' · ' + directorCount + '/' + bucket.sectors.length + ' with director' +
+            ' · ' + readyCount + '/' + bucket.sectors.length + ' ready' +
+            ' · ' + totalDeptsInRegion + ' department' + (totalDeptsInRegion === 1 ? "" : "s") +
+            ' · ' + bucket.clusterDirs.length + ' cluster dept' + (bucket.clusterDirs.length === 1 ? "" : "s") +
+          '</div>' +
         '</div>' +
       '</div>' +
       '<div class="region-block__body">' +
-        '<div class="section-label">Sectors' +
+        '<div class="section-label">Sectors under ' + escapeHtml(displayName) +
           '<span style="display:flex;gap:8px;align-items:center">' +
             '<span class="section-label__count">' + bucket.sectors.length + '</span>' + addBtn +
           '</span>' +
@@ -1537,7 +1583,7 @@ function openSectorDetails(sectorId) {
     : '<div style="display:flex;justify-content:center;margin:12px 0 8px">' +
         '<button class="btn btn--primary" id="assign-director-btn"><svg viewBox="0 0 24 24">' + ICONS.shield + '</svg> Add Sector Director</button>' +
       '</div>' +
-      '<div style="text-align:center;font-size:12.5px;color:var(--muted);max-width:480px;margin:0 auto">The sector director will be the head of this sector across the whole region.</div>';
+      '<div style="text-align:center;font-size:12.5px;color:var(--muted);max-width:480px;margin:0 auto">The sector director will be the head of this sector across the whole civil service.</div>';
 
   const deptsHtml = depts.length
     ? depts.map(renderDeptRowWithLeader).join("")
@@ -1551,8 +1597,9 @@ function openSectorDetails(sectorId) {
     '<div class="modal__head">' +
       '<div>' +
         '<div class="modal__title">' + escapeHtml(s.name || "Sector") + '</div>' +
-        '<div class="modal__sub">Code <strong>' + escapeHtml(s.code || "-") + '</strong>' +
-          ' &middot; ' + escapeHtml(regionName(regionOf(s))) +
+        '<div class="modal__sub">' +
+          '<span class="pill pill--cs">' + escapeHtml(civilServiceName(regionOf(s))) + '</span>' +
+          ' &middot; Code <strong>' + escapeHtml(s.code || "-") + '</strong>' +
           ' &middot; ' + depts.length + ' department' + (depts.length === 1 ? "" : "s") +
           ' &middot; ' + deptsWithLeader.length + ' team leader' + (deptsWithLeader.length === 1 ? "" : "s") +
         '</div>' +
@@ -1713,9 +1760,9 @@ function openDepartmentDetails(dirId) {
       '<div>' +
         '<div class="modal__title">' + escapeHtml(d.name || "Department") + '</div>' +
         '<div class="modal__sub">' +
+          '<span class="pill pill--cs">' + escapeHtml(civilServiceName(regionOf(d))) + '</span> ' +
           '<span class="pill pill--' + (d.level === "cluster" ? "cluster" : "regional") + '">' + (d.level === "cluster" ? "Cluster Department" : "Regional Department") + '</span>' +
           ' &middot; code <strong>' + escapeHtml(d.code || "-") + '</strong>' +
-          ' &middot; ' + escapeHtml(regionName(regionOf(d))) +
           (sector ? ' &middot; Sector: ' + escapeHtml(sector.name) : "") +
         '</div>' +
       '</div>' +
@@ -1827,7 +1874,7 @@ function openAssignLeaderWizard(deptId) {
         '<div class="admin-avatar">' + avatar + '</div>' +
         '<div class="user-pick-item__main">' +
           '<div class="user-pick-item__name">' + escapeHtml(fullName(u)) + ' ' + pills.join(" ") + '</div>' +
-          '<div class="user-pick-item__meta">' + escapeHtml(userPlacementLabel(u)) + '</div>' +
+                  '<div class="user-pick-item__meta">' + escapeHtml(userPlacementLabel(u)) + '</div>' +
         '</div>' +
         '<div class="user-pick-radio"></div>' +
       '</div>';
@@ -1837,12 +1884,15 @@ function openAssignLeaderWizard(deptId) {
   openModal(
     '<div class="modal__head">' +
       '<div><div class="modal__title">Assign Team Leader</div>' +
-        '<div class="modal__sub">' + escapeHtml(d.name) + ' &middot; ' + escapeHtml(d.code || "??") + '</div></div>' +
+        '<div class="modal__sub">' +
+          '<span class="pill pill--cs">' + escapeHtml(civilServiceName(regionOf(d))) + '</span> ' +
+          escapeHtml(d.name) + ' &middot; ' + escapeHtml(d.code || "??") +
+        '</div></div>' +
       '<button class="modal__close" data-close aria-label="Close"><svg viewBox="0 0 24 24">' + ICONS.x + '</svg></button>' +
     '</div>' +
     '<div class="modal__body">' +
       '<div class="alert alert--info"><svg viewBox="0 0 24 24">' + ICONS.alert + '</svg>' +
-        '<div>All users are listed — assigned or unassigned. Search by name, email, position, department or sector to narrow the list.</div>' +
+        '<div>All users in the same civil service are listed — assigned or unassigned. Search by name, email, position, department or sector to narrow the list.</div>' +
       '</div>' +
       '<div class="field" style="margin-bottom:12px">' +
         '<label>Search users</label>' +
@@ -1983,12 +2033,15 @@ function openAssignSectorDirectorWizard(sectorId) {
   openModal(
     '<div class="modal__head">' +
       '<div><div class="modal__title">Assign Sector Director</div>' +
-        '<div class="modal__sub">' + escapeHtml(s.name) + ' &middot; ' + escapeHtml(s.code || "??") + '</div></div>' +
+        '<div class="modal__sub">' +
+          '<span class="pill pill--cs">' + escapeHtml(civilServiceName(regionOf(s))) + '</span> ' +
+          escapeHtml(s.name) + ' &middot; ' + escapeHtml(s.code || "??") +
+        '</div></div>' +
       '<button class="modal__close" data-close aria-label="Close"><svg viewBox="0 0 24 24">' + ICONS.x + '</svg></button>' +
     '</div>' +
     '<div class="modal__body">' +
       '<div class="alert alert--info"><svg viewBox="0 0 24 24">' + ICONS.check + '</svg>' +
-        '<div>All users are listed — assigned or unassigned. Use the search box to filter by name, email, position, department or sector.</div>' +
+        '<div>Users in the same civil service are listed. Use the search box to filter by name, email, position, department or sector.</div>' +
       '</div>' +
       '<div class="field" style="margin-bottom:12px">' +
         '<label>Search users</label>' +
@@ -2108,7 +2161,8 @@ function openSectorForm(existing, opts) {
   ).padStart(2, "0");
 
   const regionOpts = regionOptions.map(rc =>
-    '<option value="' + rc + '" ' + (existingRegion === rc ? "selected" : "") + '>' + escapeHtml(regionLabel(rc)) + '</option>'
+    '<option value="' + rc + '" ' + (existingRegion === rc ? "selected" : "") + '>' +
+      escapeHtml(civilServiceName(rc)) + ' (Region ' + escapeHtml(rc) + ')</option>'
   ).join("");
 
   const activeRow = isEdit
@@ -2121,21 +2175,26 @@ function openSectorForm(existing, opts) {
     '<div class="modal__head">' +
       '<div>' +
         '<div class="modal__title">' + (isEdit ? "Edit Sector" : "New Sector") + '</div>' +
-        '<div class="modal__sub">' + (isEdit ? "Update sector details" : "Step 1 - after saving, assign the sector director next.") + '</div>' +
+        '<div class="modal__sub">' +
+          (isEdit
+            ? 'Update sector details'
+            : 'Step 1 — after saving, assign the sector director next. Each sector belongs to a regional Civil Service.') +
+        '</div>' +
       '</div>' +
       '<button class="modal__close" data-close aria-label="Close"><svg viewBox="0 0 24 24">' + ICONS.x + '</svg></button>' +
     '</div>' +
     '<div class="modal__body">' +
       '<div id="sf-error" class="alert alert--error" style="display:none"><svg viewBox="0 0 24 24">' + ICONS.alert + '</svg><div id="sf-error-msg" style="flex:1"></div></div>' +
-      '<div class="field"><label class="field__required">Region</label>' +
+      '<div class="field"><label class="field__required">Civil Service (Region)</label>' +
         '<select id="sf-regionCode" ' + (regionOptions.length === 1 ? "disabled" : "") + '>' + regionOpts + '</select>' +
+        '<p class="field__hint">The sector will appear under this Civil Service.</p>' +
       '</div>' +
       '<div class="field-row">' +
         '<div class="field"><label class="field__required">Sector name</label>' +
           '<input id="sf-name" value="' + escapeHtml(existing ? existing.name : "") + '" placeholder="e.g. Health Sector"></div>' +
         '<div class="field"><label class="field__required">Code (2 digits)</label>' +
           '<input id="sf-code" maxlength="2" value="' + escapeHtml(existing ? existing.code : nextCode) + '" placeholder="01" inputmode="numeric" style="font-family:ui-monospace,monospace;letter-spacing:3px;font-weight:700">' +
-          '<p class="field__hint">Unique inside this region.</p></div>' +
+          '<p class="field__hint">Unique inside this civil service.</p></div>' +
       '</div>' +
       '<div class="field"><label>Description</label>' +
         '<textarea id="sf-description" placeholder="Mandate and responsibilities of this sector…">' + escapeHtml(existing ? existing.description : "") + '</textarea></div>' +
@@ -2165,7 +2224,7 @@ function openSectorForm(existing, opts) {
     const activeEl = document.getElementById("sf-active");
     const active = activeEl ? activeEl.checked : true;
 
-    if (!rc) { errBox.style.display = "flex"; errMsg.textContent = "Please select a region."; return; }
+    if (!rc) { errBox.style.display = "flex"; errMsg.textContent = "Please select a civil service / region."; return; }
     if (!name || name.length < 2) { errBox.style.display = "flex"; errMsg.textContent = "Sector name is required."; return; }
     if (!/^\d{2}$/.test(code)) { errBox.style.display = "flex"; errMsg.textContent = "Code must be exactly 2 digits."; return; }
 
@@ -2175,6 +2234,7 @@ function openSectorForm(existing, opts) {
       description: description || null,
       regionCode: rc, region: rc,
       regionName: regionName(rc),
+      civilServiceName: civilServiceName(rc),
       clusterId: null, clusterName: null,
       active,
       updatedAt: serverTimestamp(),
@@ -2194,7 +2254,7 @@ function openSectorForm(existing, opts) {
         }));
         await pushNotification({
           type: "sector_created", title: "New sector created",
-          body: name + " was created in " + regionName(rc),
+          body: name + " was added to " + civilServiceName(rc),
           sectorId: ref.id, sectorName: name, regionCode: rc,
           forRoles: ["super_admin", "regional_admin", "hrm"],
           link: "departments.html"
@@ -2205,7 +2265,7 @@ function openSectorForm(existing, opts) {
     } catch (err) {
       console.error(err);
       errBox.style.display = "flex";
-      errMsg.textContent = (err.code ? err.code + " - " : "") + (err.message || "Could not save.");
+      errMsg.textContent = (err.code ? err.code + " — " : "") + (err.message || "Could not save.");
       btn.disabled = false; spinner.classList.add("hidden"); label.textContent = old;
     }
   });
@@ -2221,7 +2281,10 @@ function confirmDeleteSector(sectorId) {
   openModal(
     '<div class="modal__head">' +
       '<div><div class="modal__title">Delete sector?</div>' +
-        '<div class="modal__sub">' + escapeHtml(s.name || "Untitled") + '</div></div>' +
+        '<div class="modal__sub">' +
+          '<span class="pill pill--cs">' + escapeHtml(civilServiceName(regionOf(s))) + '</span> ' +
+          escapeHtml(s.name || "Untitled") +
+        '</div></div>' +
       '<button class="modal__close" data-close aria-label="Close"><svg viewBox="0 0 24 24">' + ICONS.x + '</svg></button>' +
     '</div>' +
     '<div class="modal__body">' +
@@ -2292,20 +2355,21 @@ function openDeptForm(existing, opts) {
   ).padStart(2, "0");
 
   const regionOpts = regionOptions.map(rc =>
-    '<option value="' + rc + '" ' + (existingRegion === rc ? "selected" : "") + '>' + escapeHtml(regionLabel(rc)) + '</option>'
+    '<option value="' + rc + '" ' + (existingRegion === rc ? "selected" : "") + '>' +
+      escapeHtml(civilServiceName(rc)) + ' (Region ' + escapeHtml(rc) + ')</option>'
   ).join("");
 
-  const sectorOpts = '<option value="">- Pick a sector -</option>' +
+  const sectorOpts = '<option value="">— Pick a sector —</option>' +
     sectorOptionsFor(existingRegion).map(s =>
       '<option value="' + s.id + '" ' + (preselectedSectorId === s.id ? "selected" : "") + '>' +
-        escapeHtml(s.code || "??") + ' &middot; ' + escapeHtml(s.name) +
+        escapeHtml(s.code || "??") + ' · ' + escapeHtml(s.name) +
       '</option>'
     ).join("");
 
-  const clusterOpts = '<option value="">- Pick a cluster -</option>' +
+  const clusterOpts = '<option value="">— Pick a cluster —</option>' +
     clusterOptionsFor(existingRegion).map(c =>
       '<option value="' + c.id + '" ' + (existingCluster === c.id ? "selected" : "") + '>' +
-        escapeHtml(c.code) + ' &middot; ' + escapeHtml(c.name) +
+        escapeHtml(c.code) + ' · ' + escapeHtml(c.name) +
       '</option>'
     ).join("");
 
@@ -2319,7 +2383,7 @@ function openDeptForm(existing, opts) {
     '<div class="modal__head">' +
       '<div>' +
         '<div class="modal__title">' + (isEdit ? "Edit Department" : "New Department") + '</div>' +
-        '<div class="modal__sub">Step 3 - after saving, assign a team leader so work plans can be created.</div>' +
+        '<div class="modal__sub">Step 3 — after saving, assign a team leader so work plans can be created.</div>' +
       '</div>' +
       '<button class="modal__close" data-close aria-label="Close"><svg viewBox="0 0 24 24">' + ICONS.x + '</svg></button>' +
     '</div>' +
@@ -2330,7 +2394,7 @@ function openDeptForm(existing, opts) {
           '<option value="regional" ' + (level === "regional" ? "selected" : "") + '>Regional Department</option>' +
           '<option value="cluster" ' + (level === "cluster" ? "selected" : "") + '>Cluster Department</option>' +
         '</select></div>' +
-      '<div class="field"><label class="field__required">Region</label>' +
+      '<div class="field"><label class="field__required">Civil Service (Region)</label>' +
         '<select id="df-regionCode" ' + (regionOptions.length === 1 ? "disabled" : "") + '>' + regionOpts + '</select>' +
       '</div>' +
       '<div class="field" id="df-sectorField"><label class="field__required">Sector</label>' +
@@ -2374,9 +2438,9 @@ function openDeptForm(existing, opts) {
     if (!sectorSel) return;
     const rc = regionSel.value;
     const cur = sectorSel.value;
-    sectorSel.innerHTML = '<option value="">- Pick a sector -</option>' +
+    sectorSel.innerHTML = '<option value="">— Pick a sector —</option>' +
       sectorOptionsFor(rc).map(s => '<option value="' + s.id + '" ' + (cur === s.id ? "selected" : "") + '>' +
-        escapeHtml(s.code || "??") + ' &middot; ' + escapeHtml(s.name) +
+        escapeHtml(s.code || "??") + ' · ' + escapeHtml(s.name) +
       '</option>').join("");
   }
   if (regionSel) regionSel.addEventListener("change", refreshSectors);
@@ -2385,9 +2449,9 @@ function openDeptForm(existing, opts) {
     if (!clusterSel) return;
     const rc = regionSel.value;
     const cur = clusterSel.value;
-    clusterSel.innerHTML = '<option value="">- Pick a cluster -</option>' +
+    clusterSel.innerHTML = '<option value="">— Pick a cluster —</option>' +
       clusterOptionsFor(rc).map(c => '<option value="' + c.id + '" ' + (cur === c.id ? "selected" : "") + '>' +
-        escapeHtml(c.code) + ' &middot; ' + escapeHtml(c.name) +
+        escapeHtml(c.code) + ' · ' + escapeHtml(c.name) +
       '</option>').join("");
   }
   if (regionSel) regionSel.addEventListener("change", refreshClusters);
@@ -2410,7 +2474,7 @@ function openDeptForm(existing, opts) {
     const activeEl = document.getElementById("df-active");
     const active = activeEl ? activeEl.checked : true;
 
-    if (!rc) { errBox.style.display = "flex"; errMsg.textContent = "Please select a region."; return; }
+    if (!rc) { errBox.style.display = "flex"; errMsg.textContent = "Please select a civil service / region."; return; }
     if (lvl === "regional" && !sid) { errBox.style.display = "flex"; errMsg.textContent = "Please select a sector."; return; }
     if (lvl === "cluster"  && !cid) { errBox.style.display = "flex"; errMsg.textContent = "Please select a cluster."; return; }
     if (!name || name.length < 2) { errBox.style.display = "flex"; errMsg.textContent = "Name is required."; return; }
@@ -2424,6 +2488,7 @@ function openDeptForm(existing, opts) {
       name, code,
       description: description || null,
       regionCode: rc, region: rc, regionName: regionName(rc),
+      civilServiceName: civilServiceName(rc),
       sectorId: sid || null, sectorName: sector ? sector.name : null, sectorCode: sector ? sector.code : null,
       clusterId: cid || null, clusterName: cluster ? cluster.name : null,
       active,
@@ -2443,7 +2508,7 @@ function openDeptForm(existing, opts) {
         }));
         await pushNotification({
           type: "department_created", title: "New department created",
-          body: name + " was created" + (sector ? " under " + sector.name : "") + " in " + regionName(rc),
+          body: name + " was created" + (sector ? " under " + sector.name : "") + " in " + civilServiceName(rc),
           departmentId: ref.id, departmentName: name, sectorId: sid, regionCode: rc,
           forRoles: ["super_admin", "regional_admin", "hrm"],
           link: "departments.html"
@@ -2454,7 +2519,7 @@ function openDeptForm(existing, opts) {
     } catch (err) {
       console.error(err);
       errBox.style.display = "flex";
-      errMsg.textContent = (err.code ? err.code + " - " : "") + (err.message || "Could not save.");
+      errMsg.textContent = (err.code ? err.code + " — " : "") + (err.message || "Could not save.");
       btn.disabled = false; spinner.classList.add("hidden"); label.textContent = old;
     }
   });
@@ -2471,7 +2536,10 @@ function confirmDeleteDept(dirId) {
   openModal(
     '<div class="modal__head">' +
       '<div><div class="modal__title">Delete department?</div>' +
-        '<div class="modal__sub">' + escapeHtml(d.name || "Untitled") + '</div></div>' +
+        '<div class="modal__sub">' +
+          '<span class="pill pill--cs">' + escapeHtml(civilServiceName(regionOf(d))) + '</span> ' +
+          escapeHtml(d.name || "Untitled") +
+        '</div></div>' +
       '<button class="modal__close" data-close aria-label="Close"><svg viewBox="0 0 24 24">' + ICONS.x + '</svg></button>' +
     '</div>' +
     '<div class="modal__body">' +
@@ -2534,7 +2602,10 @@ function openWorkPlanForm(dirId, planId) {
     '<div class="modal__head">' +
       '<div>' +
         '<div class="modal__title">' + (isEdit ? "Edit Work Plan" : "Add Work Plan") + '</div>' +
-        '<div class="modal__sub">' + escapeHtml(d.name) + ' &middot; Team Leader: ' + escapeHtml(fullName(leader)) + '</div>' +
+        '<div class="modal__sub">' +
+          '<span class="pill pill--cs">' + escapeHtml(civilServiceName(regionOf(d))) + '</span> ' +
+          escapeHtml(d.name) + ' &middot; Team Leader: ' + escapeHtml(fullName(leader)) +
+        '</div>' +
       '</div>' +
       '<button class="modal__close" data-close aria-label="Close"><svg viewBox="0 0 24 24">' + ICONS.x + '</svg></button>' +
     '</div>' +
@@ -2579,6 +2650,7 @@ function openWorkPlanForm(dirId, planId) {
       departmentId: d.id, departmentName: d.name, departmentCode: d.code || null,
       sectorId: d.sectorId || null, sectorName: d.sectorName || null,
       level: d.level, regionCode: regionOf(d), region: regionOf(d),
+      civilServiceName: civilServiceName(regionOf(d)),
       clusterId: clusterOf(d) || null,
       teamLeaderId: leader.id, teamLeaderName: fullName(leader),
       title, period, status, description: description || null,
@@ -2602,7 +2674,7 @@ function openWorkPlanForm(dirId, planId) {
     } catch (err) {
       console.error(err);
       errBox.style.display = "flex";
-      errMsg.textContent = (err.code ? err.code + " - " : "") + (err.message || "Could not save.");
+      errMsg.textContent = (err.code ? err.code + " — " : "") + (err.message || "Could not save.");
       btn.disabled = false; spinner.classList.add("hidden"); label.textContent = old;
     }
   });
@@ -2802,7 +2874,7 @@ onAuthStateChanged(auth, async (user) => {
 
     window.__diag.stage = "booted";
     window.__diag.ready = true;
-    console.log("[boot] done");
+    console.log("[boot] done — civil service grouping active");
   } catch (err) {
     console.error("[boot] fatal:", err);
     window.__diag.errors.push("boot: " + (err.code || "") + " " + err.message);
