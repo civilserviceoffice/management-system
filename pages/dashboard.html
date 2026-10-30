@@ -1038,16 +1038,14 @@ const isAnyAdmin        = () => isSuper() || isRegionalAdmin() || isClusterAdmin
 const isAnyNonSelf      = () => !isEmployee();
 
 /* ============================================================
-   SCOPE CONSTRAINTS — the single source of truth
+   SCOPE CONSTRAINTS
    ============================================================ */
 function scopeConstraints() {
   if (!S) return [];
   const role = S.role;
 
-  // national — all regions
   if (role === "super_admin" || role === "hrm" || role === "finance") return [];
 
-  // regional
   if (role === "regional_admin" || role === "regional_hrm" ||
       role === "regional_finance" || role === "directorate") {
     if (!S.regionCode) return [];
@@ -1059,7 +1057,6 @@ function scopeConstraints() {
     return c;
   }
 
-  // cluster / zone
   if (role === "admin" || role === "cluster_hrm" ||
       role === "cluster_finance" || role === "cluster_directorate") {
     const c = [];
@@ -1072,7 +1069,6 @@ function scopeConstraints() {
     return c;
   }
 
-  // woreda
   if (role === "woreda_admin" || role === "woreda_hrm" ||
       role === "woreda_finance" || role === "woreda_city") {
     const c = [];
@@ -1082,7 +1078,6 @@ function scopeConstraints() {
     return c;
   }
 
-  // manager
   if (role === "manager") {
     if (S.officeId)     return [where("officeId",     "==", S.officeId)];
     if (S.departmentId) return [where("departmentId", "==", S.departmentId)];
@@ -1091,7 +1086,6 @@ function scopeConstraints() {
     return [];
   }
 
-  // team leader
   if (role === "team_leader") {
     if (S.officeId)     return [where("officeId",     "==", S.officeId)];
     if (S.departmentId) return [where("departmentId", "==", S.departmentId)];
@@ -1099,7 +1093,6 @@ function scopeConstraints() {
     return [];
   }
 
-  // employee — self only
   return S.empId ? [where("empId", "==", S.empId)] : [];
 }
 
@@ -1208,7 +1201,7 @@ const ICONS = {
 };
 
 /* ============================================================
-   NAV — every role gets a tailored sidebar
+   NAV
    ============================================================ */
 const NAV = [
   { section:"overview", items:[
@@ -1254,6 +1247,48 @@ const NAV = [
 ];
 
 /* ============================================================
+   ROLE → NAV ITEM KEYS  (canonical, role-scoped sidebar)
+   ============================================================ */
+const ROLE_NAV = {
+  super_admin: ["*"],
+
+  /* National */
+  hrm:     ["dashboard", "users", "leave", "reports", "notifications", "settings"],
+  finance: ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
+
+  /* Regional */
+  regional_admin:   ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "attendance", "leave", "reports", "notifications", "settings", "offices"],
+  regional_hrm:     ["dashboard", "users", "leave", "reports", "notifications", "settings"],
+  regional_finance: ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
+  directorate:      ["dashboard", "departments", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
+
+  /* Cluster / Zone */
+  admin:               ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "attendance", "leave", "reports", "notifications", "settings", "offices"],
+  cluster_hrm:         ["dashboard", "users", "leave", "reports", "notifications", "settings"],
+  cluster_finance:     ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
+  cluster_directorate: ["dashboard", "departments", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
+
+  /* Woreda */
+  woreda_admin:   ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
+  woreda_hrm:     ["dashboard", "users", "leave", "reports", "notifications", "settings"],
+  woreda_finance: ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
+  woreda_city:    ["dashboard", "departments", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
+
+  /* Line */
+  manager:     ["dashboard", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
+  team_leader: ["dashboard", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
+  employee:    ["dashboard", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"]
+};
+
+function hasRoleNavAccess(item, role) {
+  if (!role) return false;
+  const allowed = ROLE_NAV[role];
+  if (!allowed) return false;
+  if (allowed.includes("*")) return true;
+  return allowed.includes(item.key);
+}
+
+/* ============================================================
    HELPERS
    ============================================================ */
 const escapeHtml = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g,
@@ -1276,7 +1311,7 @@ function renderSidebar() {
   const nav = document.getElementById("sidebar-nav");
   nav.innerHTML = "";
   for (const group of NAV) {
-    const vis = group.items.filter(it => hasAccess(it, S.role));
+    const vis = group.items.filter(it => hasRoleNavAccess(it, S.role));
     if (!vis.length) continue;
     const sec = document.createElement("div");
     sec.className = "sidebar__section";
@@ -1405,45 +1440,27 @@ function renderHeadActions() {
   if (role === "super_admin") {
     btns.push({ labelKey:"addOffice",   href:"offices.html",     primary:true });
     btns.push({ labelKey:"usersStaff",  href:"users.html" });
-  } else if (role === "hrm") {
+  } else if (role === "hrm" || role === "regional_hrm" || role === "cluster_hrm" || role === "woreda_hrm") {
     btns.push({ labelKey:"usersStaff",  href:"users.html",       primary:true });
-    btns.push({ labelKey:"reports",     href:"reports.html" });
+    btns.push({ labelKey:"reviewLeave", href:"leave.html" });
   } else if (role === "finance") {
     btns.push({ labelKey:"runPayroll",  href:"payroll.html",     primary:true });
     btns.push({ labelKey:"budget",      href:"budget.html" });
   } else if (role === "regional_admin") {
     btns.push({ labelKey:"addDirectorate", href:"departments.html", primary:true });
     btns.push({ labelKey:"addCluster",     href:"offices.html" });
-  } else if (role === "regional_hrm") {
-    btns.push({ labelKey:"addStaff",    href:"users.html",       primary:true });
-    btns.push({ labelKey:"reviewLeave", href:"leave.html" });
-  } else if (role === "regional_finance") {
+  } else if (role === "regional_finance" || role === "cluster_finance" || role === "woreda_finance") {
     btns.push({ labelKey:"runPayroll",  href:"payroll.html",     primary:true });
     btns.push({ labelKey:"budgets",     href:"budget.html" });
-  } else if (role === "directorate") {
+  } else if (role === "directorate" || role === "cluster_directorate") {
     btns.push({ labelKey:"workPlans",   href:"workplans.html",   primary:true });
     btns.push({ labelKey:"attendance",  href:"attendance.html" });
   } else if (role === "admin") {
     btns.push({ labelKey:"addPerson",   href:"users.html",       primary:true });
     btns.push({ labelKey:"directorates",href:"departments.html" });
-  } else if (role === "cluster_hrm") {
-    btns.push({ labelKey:"addStaff",    href:"users.html",       primary:true });
-    btns.push({ labelKey:"reviewLeave", href:"leave.html" });
-  } else if (role === "cluster_finance") {
-    btns.push({ labelKey:"runPayroll",  href:"payroll.html",     primary:true });
-    btns.push({ labelKey:"budgets",     href:"budget.html" });
-  } else if (role === "cluster_directorate") {
-    btns.push({ labelKey:"workPlans",   href:"workplans.html",   primary:true });
-    btns.push({ labelKey:"attendance",  href:"attendance.html" });
   } else if (role === "woreda_admin") {
     btns.push({ labelKey:"addPerson",   href:"users.html",       primary:true });
     btns.push({ labelKey:"offices",     href:"offices.html" });
-  } else if (role === "woreda_hrm") {
-    btns.push({ labelKey:"addStaff",    href:"users.html",       primary:true });
-    btns.push({ labelKey:"reviewLeave", href:"leave.html" });
-  } else if (role === "woreda_finance") {
-    btns.push({ labelKey:"runPayroll",  href:"payroll.html",     primary:true });
-    btns.push({ labelKey:"budgets",     href:"budget.html" });
   } else if (role === "woreda_city") {
     btns.push({ labelKey:"workPlans",   href:"workplans.html",   primary:true });
     btns.push({ labelKey:"attendance",  href:"attendance.html" });
@@ -1497,11 +1514,10 @@ async function renderStats() {
     ];
   } else if (role === "hrm") {
     cards = [
-      { id:"s-emps",      labelKey:"totalEmployees",   icon:"users",     color:"green" },
-      { id:"s-depts",     labelKey:"directorates",     icon:"org",       color:"teal" },
-      { id:"s-clusters",  labelKey:"clusters",         icon:"cluster",   color:"blue" },
-      { id:"s-offices",   labelKey:"offices",          icon:"building",  color:"pink" },
-      { id:"s-pending",   labelKey:"pendingLeave",     icon:"clock",     color:"red" }
+      { id:"s-emps",    labelKey:"totalEmployees", icon:"users",    color:"green" },
+      { id:"s-onleave", labelKey:"onLeave",        icon:"calendar", color:"gold"  },
+      { id:"s-pending", labelKey:"pendingLeave",   icon:"clock",    color:"red"   },
+      { id:"s-notifs",  labelKey:"notifications",  icon:"bell",     color:"violet"}
     ];
   } else if (role === "finance") {
     cards = [
@@ -1521,22 +1537,21 @@ async function renderStats() {
       { id:"s-plans",     labelKey:"workPlans",        icon:"clipboard", color:"violet" },
       { id:"s-payroll",   labelKey:"payrollThisMonth", icon:"wallet",    color:"red" }
     ];
-  } else if (role === "regional_hrm") {
+  } else if (role === "regional_hrm" || role === "cluster_hrm" || role === "woreda_hrm") {
     cards = [
-      { id:"s-emps",      labelKey:"totalEmployees",   icon:"users",     color:"green" },
-      { id:"s-depts",     labelKey:"directorates",     icon:"org",       color:"teal" },
-      { id:"s-clusters",  labelKey:"clusters",         icon:"cluster",   color:"blue" },
-      { id:"s-offices",   labelKey:"offices",          icon:"building",  color:"pink" },
-      { id:"s-pending",   labelKey:"pendingLeave",     icon:"clock",     color:"red" }
+      { id:"s-emps",    labelKey:"totalEmployees", icon:"users",    color:"green" },
+      { id:"s-onleave", labelKey:"onLeave",        icon:"calendar", color:"gold"  },
+      { id:"s-pending", labelKey:"pendingLeave",   icon:"clock",    color:"red"   },
+      { id:"s-notifs",  labelKey:"notifications",  icon:"bell",     color:"violet"}
     ];
-  } else if (role === "regional_finance") {
+  } else if (role === "regional_finance" || role === "cluster_finance" || role === "woreda_finance") {
     cards = [
       { id:"s-payroll",   labelKey:"payrollThisMonth", icon:"wallet",    color:"gold" },
       { id:"s-headcount", labelKey:"payrollHeadcount", icon:"users",     color:"blue" },
       { id:"s-pending",   labelKey:"pendingPayments",  icon:"clock",     color:"red" },
       { id:"s-budget",    labelKey:"budgetUtilisation",icon:"pieChart",  color:"violet" }
     ];
-  } else if (role === "directorate") {
+  } else if (role === "directorate" || role === "cluster_directorate") {
     cards = [
       { id:"s-dir-staff",  labelKey:"myDirectorateStaff", icon:"users",     color:"blue" },
       { id:"s-dir-plans",  labelKey:"myWorkPlans",        icon:"clipboard", color:"violet" },
@@ -1552,46 +1567,12 @@ async function renderStats() {
       { id:"s-plans",     labelKey:"workPlans",           icon:"clipboard", color:"teal" },
       { id:"s-pending",   labelKey:"pendingLeave",        icon:"clock",     color:"red" }
     ];
-  } else if (role === "cluster_hrm") {
-    cards = [
-      { id:"s-emps",      labelKey:"totalEmployees",   icon:"users",     color:"green" },
-      { id:"s-depts",     labelKey:"directorates",     icon:"org",       color:"teal" },
-      { id:"s-offices",   labelKey:"offices",          icon:"building",  color:"pink" },
-      { id:"s-pending",   labelKey:"pendingLeave",     icon:"clock",     color:"red" }
-    ];
-  } else if (role === "cluster_finance") {
-    cards = [
-      { id:"s-payroll",   labelKey:"payrollThisMonth", icon:"wallet",    color:"gold" },
-      { id:"s-headcount", labelKey:"payrollHeadcount", icon:"users",     color:"blue" },
-      { id:"s-pending",   labelKey:"pendingPayments",  icon:"clock",     color:"red" },
-      { id:"s-budget",    labelKey:"budgetUtilisation",icon:"pieChart",  color:"violet" }
-    ];
-  } else if (role === "cluster_directorate") {
-    cards = [
-      { id:"s-dir-staff",  labelKey:"myDirectorateStaff", icon:"users",     color:"blue" },
-      { id:"s-dir-plans",  labelKey:"myWorkPlans",        icon:"clipboard", color:"violet" },
-      { id:"s-dir-present",labelKey:"presentToday",       icon:"check",     color:"green" },
-      { id:"s-dir-pending",labelKey:"pendingItems",       icon:"clock",     color:"red" }
-    ];
   } else if (role === "woreda_admin") {
     cards = [
       { id:"s-wor-offices", labelKey:"officesInMyWoreda", icon:"building",  color:"blue" },
       { id:"s-wor-staff",   labelKey:"staffInMyWoreda",   icon:"users",     color:"green" },
       { id:"s-plans",       labelKey:"workPlans",         icon:"clipboard", color:"violet" },
       { id:"s-wor-pending", labelKey:"pendingApprovals",  icon:"clock",     color:"red" }
-    ];
-  } else if (role === "woreda_hrm") {
-    cards = [
-      { id:"s-emps",      labelKey:"totalEmployees",   icon:"users",     color:"green" },
-      { id:"s-wor-offices", labelKey:"officesInMyWoreda", icon:"building", color:"blue" },
-      { id:"s-pending",   labelKey:"pendingLeave",     icon:"clock",     color:"red" }
-    ];
-  } else if (role === "woreda_finance") {
-    cards = [
-      { id:"s-payroll",   labelKey:"payrollThisMonth", icon:"wallet",    color:"gold" },
-      { id:"s-headcount", labelKey:"payrollHeadcount", icon:"users",     color:"blue" },
-      { id:"s-pending",   labelKey:"pendingPayments",  icon:"clock",     color:"red" },
-      { id:"s-budget",    labelKey:"budgetUtilisation",icon:"pieChart",  color:"violet" }
     ];
   } else if (role === "woreda_city") {
     cards = [
@@ -1645,14 +1626,17 @@ async function loadStatValues() {
     setStat("s-woredas", w);
     return;
   }
-  if (role === "hrm") {
+
+  if (role === "hrm" || role === "regional_hrm" || role === "cluster_hrm" || role === "woreda_hrm") {
     setStat("s-emps", await scopedCount("employees"));
-    setStat("s-depts", await scopedCount("departments"));
-    setStat("s-clusters", await scopedCount("clusters"));
-    setStat("s-offices", await scopedCount("offices"));
     setStat("s-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
+    if (document.getElementById("s-onleave"))
+      setStat("s-onleave", await countAttendanceForDate(today, ["leave"]));
+    if (document.getElementById("s-notifs"))
+      setStat("s-notifs", await loadUnreadNotifCount());
     return;
   }
+
   if (role === "finance") {
     let amount = 0, headcount = 0, pending = 0;
     try {
@@ -1675,6 +1659,7 @@ async function loadStatValues() {
     setStat("s-budget", alloc ? Math.round((spent/alloc)*100) + "%" : "0%");
     return;
   }
+
   if (role === "regional_admin") {
     setStat("s-depts",  await scopedCount("departments", [where("level","==","regional")]));
     setStat("s-cldept", await scopedCount("departments", [where("level","==","cluster")]));
@@ -1695,15 +1680,7 @@ async function loadStatValues() {
     } catch (e) { setStat("s-payroll","ETB 0"); }
     return;
   }
-  if (role === "regional_hrm" || role === "cluster_hrm" || role === "woreda_hrm") {
-    setStat("s-emps", await scopedCount("employees"));
-    setStat("s-depts", await scopedCount("departments"));
-    setStat("s-clusters", await scopedCount("clusters"));
-    setStat("s-offices", await scopedCount("offices"));
-    if (document.getElementById("s-wor-offices")) setStat("s-wor-offices", await scopedCount("offices"));
-    setStat("s-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
-    return;
-  }
+
   if (role === "regional_finance" || role === "cluster_finance" || role === "woreda_finance") {
     let amount = 0, headcount = 0, pending = 0;
     const extras = [];
@@ -1731,6 +1708,7 @@ async function loadStatValues() {
     setStat("s-budget", alloc ? Math.round((spent/alloc)*100) + "%" : "0%");
     return;
   }
+
   if (role === "directorate" || role === "cluster_directorate") {
     setStat("s-dir-staff", await scopedCount("employees"));
     setStat("s-dir-plans", await scopedCount("workplans"));
@@ -1738,6 +1716,7 @@ async function loadStatValues() {
     setStat("s-dir-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
+
   if (role === "admin") {
     setStat("s-depts",  await scopedCount("departments", [where("level","==","cluster")]));
     setStat("s-offices", await scopedCount("offices"));
@@ -1752,6 +1731,7 @@ async function loadStatValues() {
     setStat("s-woredas", w);
     return;
   }
+
   if (role === "woreda_admin") {
     setStat("s-wor-offices", await scopedCount("offices"));
     setStat("s-wor-staff", await scopedCount("employees"));
@@ -1759,6 +1739,7 @@ async function loadStatValues() {
     setStat("s-wor-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
+
   if (role === "woreda_city") {
     setStat("s-wor-offices", await scopedCount("offices"));
     setStat("s-wor-staff", await scopedCount("employees"));
@@ -1766,6 +1747,7 @@ async function loadStatValues() {
     setStat("s-wor-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
+
   if (role === "manager") {
     setStat("s-myteam", await scopedCount("employees"));
     setStat("s-present", await countAttendanceForDate(today));
@@ -1775,6 +1757,7 @@ async function loadStatValues() {
     ]));
     return;
   }
+
   if (role === "team_leader") {
     setStat("s-tl-team", await scopedCount("employees"));
     setStat("s-tl-plans", await scopedCount("workplans"));
@@ -1782,7 +1765,8 @@ async function loadStatValues() {
     setStat("s-tl-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
-  // employee
+
+  /* employee */
   setStat("s-myattend", await countMyMonthAttendance(S.empId));
   setStat("s-myleave", await scopedCount("leaveRequests"));
   setStat("s-mypending", await scopedCount("leaveRequests", [where("status","==","pending")]));
@@ -1797,6 +1781,49 @@ async function countUsersByRole(role) {
 }
 
 /* ============================================================
+   UNREAD NOTIFICATIONS — filtered to the current role
+   ============================================================ */
+const HR_NOTIF_TYPES = new Set([
+  "leave_request", "leave_approved", "leave_rejected",
+  "employee_added", "employee_updated", "employee_transferred",
+  "team_leader_assigned", "sector_director_assigned", "department_created",
+  "recruitment_opening", "application_received"
+]);
+
+async function loadUnreadNotifCount() {
+  if (!S) return 0;
+  try {
+    const snap = await getDocs(query(
+      collection(db, "notifications"),
+      where("read", "==", false),
+      limit(200)
+    ));
+    let count = 0;
+    const role = S.role;
+    snap.forEach(d => {
+      const n = d.data();
+      if (Array.isArray(n.forRoles) && n.forRoles.length && !n.forRoles.includes(role)) return;
+      if (n.regionCode && S.regionCode && n.regionCode !== S.regionCode) return;
+      if (n.clusterId && S.clusterId && n.clusterId !== S.clusterId) return;
+      if (n.woredaCode && S.woredaCode && n.woredaCode !== S.woredaCode) return;
+      if (isHR() && n.type && !HR_NOTIF_TYPES.has(n.type)) return;
+      count++;
+    });
+    return count;
+  } catch (e) {
+    console.warn("[notif-count]", e.code, e.message);
+    return 0;
+  }
+}
+
+async function updateNotifBadge() {
+  const badge = document.getElementById("notif-badge");
+  if (!badge) return;
+  const n = await loadUnreadNotifCount();
+  badge.classList.toggle("show", n > 0);
+}
+
+/* ============================================================
    HIERARCHY
    ============================================================ */
 async function renderHierarchy() {
@@ -1804,7 +1831,7 @@ async function renderHierarchy() {
   const title = document.getElementById("hierarchy-title");
   const role = S.role;
 
-  if (role !== "super_admin" && role !== "hrm" && role !== "regional_admin") {
+  if (role !== "super_admin" && role !== "regional_admin") {
     sec.style.display = "none"; title.style.display = "none";
     return;
   }
@@ -1917,14 +1944,10 @@ async function renderChartActivityPending() {
 
   const role = S.role;
 
-  const showChart =
-    !(role === "employee") &&
-    !(role === "hrm" && false);   // everyone except employee gets a chart
+  const showChart = !(role === "employee");
   const showActivity = true;
   const showQuick = true;
-  const showSide =
-    role !== "employee" && role !== "hrm" && role !== "regional_hrm" &&
-    role !== "cluster_hrm" && role !== "woreda_hrm";
+  const showSide = !isHR() && role !== "employee";
 
   rowChart.style.display = (showChart || showActivity) ? "" : "none";
   chartCard.style.display = showChart ? "" : "none";
@@ -1954,7 +1977,6 @@ async function renderChart() {
   const tagEl = document.getElementById("chart-tag");
   const role = S.role;
 
-  /* finance roles → payroll chart */
   if (isFinance()) {
     titleEl.textContent = t("monthlyPayroll");
     subEl.textContent = t("last7Months");
@@ -1982,7 +2004,6 @@ async function renderChart() {
     return;
   }
 
-  /* everyone else → attendance chart */
   titleEl.textContent = t("attendanceTrend");
   subEl.textContent = t("last7Days");
   const days = getWeekdayLabels();
@@ -2084,19 +2105,21 @@ async function renderActivity() {
     });
   } catch (e) { console.warn("[activity leave]", e.code); }
 
-  try {
-    const constraints = [...scopeConstraints(), orderBy("createdAt","desc"), limit(3)];
-    const snap = await getDocs(query(collection(db,"workplans"), ...constraints));
-    snap.forEach(d => {
-      const p = d.data();
-      events.push({
-        name: p.title || p.workTypeName || t("workPlans"),
-        action: t("createdBy") + " " + (p.departmentName || p.sectorName || t("directorates")) +
-                " · " + (p.status || "draft"),
-        at: p.createdAt
+  if (!isHR()) {
+    try {
+      const constraints = [...scopeConstraints(), orderBy("createdAt","desc"), limit(3)];
+      const snap = await getDocs(query(collection(db,"workplans"), ...constraints));
+      snap.forEach(d => {
+        const p = d.data();
+        events.push({
+          name: p.title || p.workTypeName || t("workPlans"),
+          action: t("createdBy") + " " + (p.departmentName || p.sectorName || t("directorates")) +
+                  " · " + (p.status || "draft"),
+          at: p.createdAt
+        });
       });
-    });
-  } catch (e) { console.warn("[activity plans]", e.code); }
+    } catch (e) { console.warn("[activity plans]", e.code); }
+  }
 
   const ts = (v) => {
     if (!v) return 0;
@@ -2140,11 +2163,11 @@ async function renderQuickActions() {
     a.push({ labelKey:"directorates", href:"departments.html", icon:"org" });
     a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
     a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
-  } else if (role === "hrm") {
+  } else if (role === "hrm" || role === "regional_hrm" || role === "cluster_hrm" || role === "woreda_hrm") {
     a.push({ labelKey:"usersStaff",   href:"users.html",       icon:"users" });
-    a.push({ labelKey:"recruitment",  href:"recruitment.html", icon:"userPlus" });
     a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
     a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
+    a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
   } else if (role === "finance") {
     a.push({ labelKey:"runPayroll",   href:"payroll.html",     icon:"wallet" });
     a.push({ labelKey:"budgets",      href:"budget.html",      icon:"chart" });
@@ -2157,17 +2180,12 @@ async function renderQuickActions() {
     a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
     a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
     a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
-  } else if (role === "regional_hrm") {
-    a.push({ labelKey:"addStaff",     href:"users.html",       icon:"userPlus" });
-    a.push({ labelKey:"recruitment",  href:"recruitment.html", icon:"users" });
-    a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
-    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
-  } else if (role === "regional_finance") {
+  } else if (role === "regional_finance" || role === "cluster_finance" || role === "woreda_finance") {
     a.push({ labelKey:"runPayroll",   href:"payroll.html",     icon:"wallet" });
     a.push({ labelKey:"budgets",      href:"budget.html",      icon:"chart" });
     a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
     a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
-  } else if (role === "directorate") {
+  } else if (role === "directorate" || role === "cluster_directorate" || role === "woreda_city") {
     a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
     a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
     a.push({ labelKey:"leave",        href:"leave.html",       icon:"calendar" });
@@ -2177,38 +2195,11 @@ async function renderQuickActions() {
     a.push({ labelKey:"addStaff",     href:"users.html",       icon:"userPlus" });
     a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
     a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
-  } else if (role === "cluster_hrm") {
-    a.push({ labelKey:"addStaff",     href:"users.html",       icon:"userPlus" });
-    a.push({ labelKey:"recruitment",  href:"recruitment.html", icon:"users" });
-    a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
-    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
-  } else if (role === "cluster_finance") {
-    a.push({ labelKey:"runPayroll",   href:"payroll.html",     icon:"wallet" });
-    a.push({ labelKey:"budgets",      href:"budget.html",      icon:"chart" });
-    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
-    a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
-  } else if (role === "cluster_directorate") {
-    a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
-    a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
-    a.push({ labelKey:"leave",        href:"leave.html",       icon:"calendar" });
   } else if (role === "woreda_admin") {
     a.push({ labelKey:"addOffice",    href:"offices.html",     icon:"building" });
     a.push({ labelKey:"addStaff",     href:"users.html",       icon:"userPlus" });
     a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
     a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
-  } else if (role === "woreda_hrm") {
-    a.push({ labelKey:"addStaff",     href:"users.html",       icon:"userPlus" });
-    a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
-    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
-  } else if (role === "woreda_finance") {
-    a.push({ labelKey:"runPayroll",   href:"payroll.html",     icon:"wallet" });
-    a.push({ labelKey:"budgets",      href:"budget.html",      icon:"chart" });
-    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
-    a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
-  } else if (role === "woreda_city") {
-    a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
-    a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
-    a.push({ labelKey:"leave",        href:"leave.html",       icon:"calendar" });
   } else if (role === "manager" || role === "team_leader") {
     a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
     a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
@@ -2234,7 +2225,6 @@ async function renderPending() {
   const link = document.getElementById("pending-link");
   const role = S.role;
 
-  /* finance roles get budget breakdown */
   if (isFinance()) {
     title.textContent = t("budgetBreakdown");
     sub.textContent = t("allocatedVsSpent");
@@ -2281,7 +2271,6 @@ async function renderPending() {
     }
   }
 
-  /* HR roles: they manage — no personal pending list, show leave queue */
   if (isHR()) {
     title.textContent = t("pendingLeave");
     sub.textContent = t("awaitingAction");
@@ -2319,7 +2308,6 @@ async function renderPending() {
     return;
   }
 
-  /* everyone else: role-specific title + leave approvals */
   if (role === "manager" || role === "team_leader") title.textContent = t("teamApprovals");
   else if (role === "admin" || role === "cluster_directorate") title.textContent = t("clusterApprovals");
   else if (role === "regional_admin" || role === "directorate") title.textContent = t("regionApprovals");
@@ -2474,12 +2462,10 @@ onAuthStateChanged(auth, async (user) => {
     department: S.departmentName, empId: S.empId, lang: LANG
   });
 
-  /* greeting */
   const greeting = document.getElementById("greeting");
   const first = S.name.split(" ")[0] || "";
   greeting.textContent = t("welcomeBack") + (first ? ", " + first : "");
 
-  /* page title — unique per role */
   const titleEl = document.getElementById("page-title");
   const role = S.role;
   if (role === "super_admin")             titleEl.textContent = t("nationalDashboard");
@@ -2517,6 +2503,7 @@ onAuthStateChanged(auth, async (user) => {
   await renderStats();
   await renderHierarchy();
   await renderChartActivityPending();
+  await updateNotifBadge();
 
   console.log("[dashboard] booted for role:", S.role, "lang:", LANG);
 });
