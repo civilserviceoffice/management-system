@@ -606,7 +606,7 @@ import {
 } from "firebase/firestore";
 
 /* ============================================================
-   I18N
+   I18N — EN / OM / AM (complete dictionaries)
    ============================================================ */
 const I18N = {
   en: {
@@ -1030,7 +1030,10 @@ const isManager         = () => S?.role === "manager";
 const isTeamLeader      = () => S?.role === "team_leader";
 const isEmployee        = () => S?.role === "employee";
 
+/* Attendance is HR-only (plus super_admin) */
 const isHR              = () => isNationalHR() || isRegionalHR() || isClusterHR() || isWoredaHR();
+const canUseAttendance  = () => isHR() || isSuper();
+
 const isFinance         = () => isNationalFinance() || isRegionalFinance() || isClusterFinance() || isWoredaFinance();
 const isDirectorate     = () => isRegionalDirectorate() || isClusterDirectorate() || isWoredaCity();
 
@@ -1112,9 +1115,10 @@ async function scopedCount(collName, extra = []) {
 }
 
 /* ============================================================
-   ATTENDANCE COUNTERS
+   ATTENDANCE COUNTERS — only called when canUseAttendance()
    ============================================================ */
 async function countAttendanceForDate(isoDate, statuses = ["present","late","field"]) {
+  if (!canUseAttendance()) return 0;
   const ym = isoDate.slice(0,7);
   const base = collection(db, "attendance", ym, "records");
   const constraints = [...scopeConstraints()];
@@ -1135,7 +1139,7 @@ async function countAttendanceForDate(isoDate, statuses = ["present","late","fie
   }
 }
 async function countMyMonthAttendance(empId) {
-  if (!empId) return 0;
+  if (!empId || !canUseAttendance()) return 0;
   const ym = new Date().toISOString().slice(0,7);
   const base = collection(db, "attendance", ym, "records");
   try {
@@ -1227,7 +1231,7 @@ const NAV = [
   ]},
   { section:"operations", items:[
     { key:"attendance", labelKey:"attendance", href:"attendance.html", icon:"clock",
-      roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] },
+      roles:["super_admin","hrm","regional_hrm","cluster_hrm","woreda_hrm"] },
     { key:"leave", labelKey:"leave", href:"leave.html", icon:"calendar",
       roles:["super_admin","hrm","regional_admin","regional_hrm","admin","cluster_hrm","woreda_admin","woreda_hrm","manager","team_leader","employee","directorate","cluster_directorate","woreda_city"] }
   ]},
@@ -1247,37 +1251,37 @@ const NAV = [
 ];
 
 /* ============================================================
-   ROLE → NAV ITEM KEYS  (canonical, role-scoped sidebar)
+   ROLE → NAV ITEM KEYS — attendance is HR-only (super_admin = *)
    ============================================================ */
 const ROLE_NAV = {
   super_admin: ["*"],
 
   /* National */
-  hrm:     ["dashboard", "users", "leave", "reports", "notifications", "settings"],
+  hrm:     ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
   finance: ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
 
   /* Regional */
-  regional_admin:   ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "attendance", "leave", "reports", "notifications", "settings", "offices"],
-  regional_hrm:     ["dashboard", "users", "leave", "reports", "notifications", "settings"],
+  regional_admin:   ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "leave", "reports", "notifications", "settings", "offices"],
+  regional_hrm:     ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
   regional_finance: ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
-  directorate:      ["dashboard", "departments", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
+  directorate:      ["dashboard", "departments", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
 
   /* Cluster / Zone */
-  admin:               ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "attendance", "leave", "reports", "notifications", "settings", "offices"],
-  cluster_hrm:         ["dashboard", "users", "leave", "reports", "notifications", "settings"],
+  admin:               ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "leave", "reports", "notifications", "settings", "offices"],
+  cluster_hrm:         ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
   cluster_finance:     ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
-  cluster_directorate: ["dashboard", "departments", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
+  cluster_directorate: ["dashboard", "departments", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
 
   /* Woreda */
-  woreda_admin:   ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
-  woreda_hrm:     ["dashboard", "users", "leave", "reports", "notifications", "settings"],
+  woreda_admin:   ["dashboard", "users", "departments", "workplans", "recruitment", "training", "performance", "leave", "reports", "notifications", "settings"],
+  woreda_hrm:     ["dashboard", "users", "attendance", "leave", "reports", "notifications", "settings"],
   woreda_finance: ["dashboard", "payroll", "budget", "reports", "notifications", "settings"],
-  woreda_city:    ["dashboard", "departments", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
+  woreda_city:    ["dashboard", "departments", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
 
   /* Line */
-  manager:     ["dashboard", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
-  team_leader: ["dashboard", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"],
-  employee:    ["dashboard", "workplans", "training", "performance", "attendance", "leave", "reports", "notifications", "settings"]
+  manager:     ["dashboard", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+  team_leader: ["dashboard", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"],
+  employee:    ["dashboard", "workplans", "training", "performance", "leave", "reports", "notifications", "settings"]
 };
 
 function hasRoleNavAccess(item, role) {
@@ -1294,7 +1298,6 @@ function hasRoleNavAccess(item, role) {
 const escapeHtml = (s) => (s == null ? "" : String(s)).replace(/[&<>"']/g,
   (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 const initials = (n) => (n || "?").split(/\s+/).slice(0,2).map(s => s[0]).join("").toUpperCase();
-const hasAccess = (item, role) => item.roles.includes("*") || item.roles.includes(role);
 const fullName = (e) => e.fullName || [e.firstName, e.lastName].filter(Boolean).join(" ") || e.nameEn || e.email || "Employee";
 const money = (n) => {
   const v = Number(n || 0);
@@ -1340,7 +1343,7 @@ function renderUser() {
 }
 
 /* ============================================================
-   SCOPE BADGE — every role has its own
+   SCOPE BADGE
    ============================================================ */
 function renderScopeBadge() {
   const el = document.getElementById("scope-badge");
@@ -1430,7 +1433,7 @@ function renderBreadcrumb() {
 }
 
 /* ============================================================
-   HEAD ACTIONS — every role gets its own CTA pair
+   HEAD ACTIONS
    ============================================================ */
 function renderHeadActions() {
   const host = document.getElementById("head-actions");
@@ -1440,7 +1443,7 @@ function renderHeadActions() {
   if (role === "super_admin") {
     btns.push({ labelKey:"addOffice",   href:"offices.html",     primary:true });
     btns.push({ labelKey:"usersStaff",  href:"users.html" });
-  } else if (role === "hrm" || role === "regional_hrm" || role === "cluster_hrm" || role === "woreda_hrm") {
+  } else if (isHR()) {
     btns.push({ labelKey:"usersStaff",  href:"users.html",       primary:true });
     btns.push({ labelKey:"reviewLeave", href:"leave.html" });
   } else if (role === "finance") {
@@ -1449,12 +1452,12 @@ function renderHeadActions() {
   } else if (role === "regional_admin") {
     btns.push({ labelKey:"addDirectorate", href:"departments.html", primary:true });
     btns.push({ labelKey:"addCluster",     href:"offices.html" });
-  } else if (role === "regional_finance" || role === "cluster_finance" || role === "woreda_finance") {
+  } else if (isFinance()) {
     btns.push({ labelKey:"runPayroll",  href:"payroll.html",     primary:true });
     btns.push({ labelKey:"budgets",     href:"budget.html" });
   } else if (role === "directorate" || role === "cluster_directorate") {
     btns.push({ labelKey:"workPlans",   href:"workplans.html",   primary:true });
-    btns.push({ labelKey:"attendance",  href:"attendance.html" });
+    btns.push({ labelKey:"reviewLeave", href:"leave.html" });
   } else if (role === "admin") {
     btns.push({ labelKey:"addPerson",   href:"users.html",       primary:true });
     btns.push({ labelKey:"directorates",href:"departments.html" });
@@ -1463,7 +1466,7 @@ function renderHeadActions() {
     btns.push({ labelKey:"offices",     href:"offices.html" });
   } else if (role === "woreda_city") {
     btns.push({ labelKey:"workPlans",   href:"workplans.html",   primary:true });
-    btns.push({ labelKey:"attendance",  href:"attendance.html" });
+    btns.push({ labelKey:"reviewLeave", href:"leave.html" });
   } else if (role === "manager" || role === "team_leader") {
     btns.push({ labelKey:"workPlans",   href:"workplans.html",   primary:true });
     btns.push({ labelKey:"reviewLeave", href:"leave.html" });
@@ -1512,7 +1515,7 @@ async function renderStats() {
       { id:"s-emps",      labelKey:"employees",        icon:"users",     color:"blue" },
       { id:"s-plans",     labelKey:"workPlans",        icon:"clipboard", color:"violet" }
     ];
-  } else if (role === "hrm") {
+  } else if (isHR()) {
     cards = [
       { id:"s-emps",    labelKey:"totalEmployees", icon:"users",    color:"green" },
       { id:"s-onleave", labelKey:"onLeave",        icon:"calendar", color:"gold"  },
@@ -1537,25 +1540,17 @@ async function renderStats() {
       { id:"s-plans",     labelKey:"workPlans",        icon:"clipboard", color:"violet" },
       { id:"s-payroll",   labelKey:"payrollThisMonth", icon:"wallet",    color:"red" }
     ];
-  } else if (role === "regional_hrm" || role === "cluster_hrm" || role === "woreda_hrm") {
-    cards = [
-      { id:"s-emps",    labelKey:"totalEmployees", icon:"users",    color:"green" },
-      { id:"s-onleave", labelKey:"onLeave",        icon:"calendar", color:"gold"  },
-      { id:"s-pending", labelKey:"pendingLeave",   icon:"clock",    color:"red"   },
-      { id:"s-notifs",  labelKey:"notifications",  icon:"bell",     color:"violet"}
-    ];
-  } else if (role === "regional_finance" || role === "cluster_finance" || role === "woreda_finance") {
+  } else if (isFinance()) {
     cards = [
       { id:"s-payroll",   labelKey:"payrollThisMonth", icon:"wallet",    color:"gold" },
       { id:"s-headcount", labelKey:"payrollHeadcount", icon:"users",     color:"blue" },
       { id:"s-pending",   labelKey:"pendingPayments",  icon:"clock",     color:"red" },
       { id:"s-budget",    labelKey:"budgetUtilisation",icon:"pieChart",  color:"violet" }
     ];
-  } else if (role === "directorate" || role === "cluster_directorate") {
+  } else if (role === "directorate" || role === "cluster_directorate" || role === "woreda_city") {
     cards = [
       { id:"s-dir-staff",  labelKey:"myDirectorateStaff", icon:"users",     color:"blue" },
       { id:"s-dir-plans",  labelKey:"myWorkPlans",        icon:"clipboard", color:"violet" },
-      { id:"s-dir-present",labelKey:"presentToday",       icon:"check",     color:"green" },
       { id:"s-dir-pending",labelKey:"pendingItems",       icon:"clock",     color:"red" }
     ];
   } else if (role === "admin") {
@@ -1574,30 +1569,14 @@ async function renderStats() {
       { id:"s-plans",       labelKey:"workPlans",         icon:"clipboard", color:"violet" },
       { id:"s-wor-pending", labelKey:"pendingApprovals",  icon:"clock",     color:"red" }
     ];
-  } else if (role === "woreda_city") {
+  } else if (role === "manager" || role === "team_leader") {
     cards = [
-      { id:"s-wor-offices", labelKey:"officesInMyWoreda", icon:"building",  color:"blue" },
-      { id:"s-wor-staff",   labelKey:"staffInMyWoreda",   icon:"users",     color:"green" },
-      { id:"s-wor-present", labelKey:"presentToday",      icon:"check",     color:"teal" },
-      { id:"s-wor-pending", labelKey:"pendingApprovals",  icon:"clock",     color:"red" }
-    ];
-  } else if (role === "manager") {
-    cards = [
-      { id:"s-myteam",  labelKey:"myTeam",           icon:"users",    color:"blue" },
-      { id:"s-present", labelKey:"presentToday",     icon:"check",    color:"green" },
-      { id:"s-onleave", labelKey:"onLeave",          icon:"calendar", color:"gold" },
-      { id:"s-pending", labelKey:"pendingApprovals", icon:"clock",    color:"red" }
-    ];
-  } else if (role === "team_leader") {
-    cards = [
-      { id:"s-tl-team",    labelKey:"myTeam",           icon:"users",     color:"blue" },
-      { id:"s-tl-plans",   labelKey:"myWorkPlans",      icon:"clipboard", color:"violet" },
-      { id:"s-tl-present", labelKey:"presentToday",     icon:"check",     color:"green" },
-      { id:"s-tl-pending", labelKey:"pendingApprovals", icon:"clock",     color:"red" }
+      { id:"s-myteam",  labelKey:"myTeam",           icon:"users",     color:"blue" },
+      { id:"s-plans",   labelKey:"myWorkPlans",      icon:"clipboard", color:"violet" },
+      { id:"s-pending", labelKey:"pendingApprovals", icon:"clock",     color:"red" }
     ];
   } else {
     cards = [
-      { id:"s-myattend",  labelKey:"myAttendanceMonth", icon:"check",     color:"green" },
       { id:"s-myleave",   labelKey:"myLeaveRequests",   icon:"calendar",  color:"gold" },
       { id:"s-mypending", labelKey:"myPendingRequests", icon:"clock",     color:"red" },
       { id:"s-mydays",    labelKey:"myWorkPlanDays",    icon:"clipboard", color:"violet" }
@@ -1627,7 +1606,7 @@ async function loadStatValues() {
     return;
   }
 
-  if (role === "hrm" || role === "regional_hrm" || role === "cluster_hrm" || role === "woreda_hrm") {
+  if (isHR()) {
     setStat("s-emps", await scopedCount("employees"));
     setStat("s-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     if (document.getElementById("s-onleave"))
@@ -1681,7 +1660,7 @@ async function loadStatValues() {
     return;
   }
 
-  if (role === "regional_finance" || role === "cluster_finance" || role === "woreda_finance") {
+  if (isFinance()) {
     let amount = 0, headcount = 0, pending = 0;
     const extras = [];
     if (role === "regional_finance") extras.push(where("regionCode","==",S.regionCode));
@@ -1709,10 +1688,9 @@ async function loadStatValues() {
     return;
   }
 
-  if (role === "directorate" || role === "cluster_directorate") {
+  if (role === "directorate" || role === "cluster_directorate" || role === "woreda_city") {
     setStat("s-dir-staff", await scopedCount("employees"));
     setStat("s-dir-plans", await scopedCount("workplans"));
-    setStat("s-dir-present", await countAttendanceForDate(today));
     setStat("s-dir-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
@@ -1740,34 +1718,14 @@ async function loadStatValues() {
     return;
   }
 
-  if (role === "woreda_city") {
-    setStat("s-wor-offices", await scopedCount("offices"));
-    setStat("s-wor-staff", await scopedCount("employees"));
-    setStat("s-wor-present", await countAttendanceForDate(today));
-    setStat("s-wor-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
-    return;
-  }
-
-  if (role === "manager") {
+  if (role === "manager" || role === "team_leader") {
     setStat("s-myteam", await scopedCount("employees"));
-    setStat("s-present", await countAttendanceForDate(today));
-    setStat("s-onleave", await countAttendanceForDate(today, ["leave"]));
-    setStat("s-pending", await scopedCount("leaveRequests", [
-      where("managerId","==",S.uid), where("status","==","pending")
-    ]));
-    return;
-  }
-
-  if (role === "team_leader") {
-    setStat("s-tl-team", await scopedCount("employees"));
-    setStat("s-tl-plans", await scopedCount("workplans"));
-    setStat("s-tl-present", await countAttendanceForDate(today));
-    setStat("s-tl-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
+    setStat("s-plans", await scopedCount("workplans"));
+    setStat("s-pending", await scopedCount("leaveRequests", [where("status","==","pending")]));
     return;
   }
 
   /* employee */
-  setStat("s-myattend", await countMyMonthAttendance(S.empId));
   setStat("s-myleave", await scopedCount("leaveRequests"));
   setStat("s-mypending", await scopedCount("leaveRequests", [where("status","==","pending")]));
   setStat("s-mydays", await countMyWorkPlanDays(S.uid));
@@ -1787,7 +1745,8 @@ const HR_NOTIF_TYPES = new Set([
   "leave_request", "leave_approved", "leave_rejected",
   "employee_added", "employee_updated", "employee_transferred",
   "team_leader_assigned", "sector_director_assigned", "department_created",
-  "recruitment_opening", "application_received"
+  "recruitment_opening", "application_received",
+  "attendance_anomaly", "attendance_correction"
 ]);
 
 async function loadUnreadNotifCount() {
@@ -2004,6 +1963,40 @@ async function renderChart() {
     return;
   }
 
+  /* Attendance chart — HR only. Non-HR admins see work-plan activity. */
+  if (!isHR()) {
+    titleEl.textContent = t("myWorkPlans");
+    subEl.textContent = t("last7Days");
+    const days = getWeekdayLabels();
+    const dayList = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate()-i);
+      dayList.push(d.toISOString().slice(0,10));
+    }
+    const byDate = {};
+    dayList.forEach(iso => byDate[iso] = 0);
+    try {
+      const constraints = [...scopeConstraints(), orderBy("createdAt","desc"), limit(100)];
+      const snap = await getDocs(query(collection(db,"workplans"), ...constraints));
+      snap.forEach(d => {
+        const p = d.data();
+        if (!p.createdAt) return;
+        const ts = typeof p.createdAt?.toDate === "function" ? p.createdAt.toDate() : new Date(p.createdAt);
+        if (isNaN(ts)) return;
+        const iso = ts.toISOString().slice(0,10);
+        if (byDate[iso] !== undefined) byDate[iso] = (byDate[iso]||0) + 1;
+      });
+    } catch (e) { console.warn("[chart plans]", e.code); }
+    const labels = dayList.map(iso => {
+      const d = new Date(iso + "T00:00:00");
+      return days[(d.getDay()+6)%7];
+    });
+    const values = dayList.map(iso => byDate[iso]||0);
+    drawChart(chart, labels, values, "");
+    return;
+  }
+
+  /* HR: attendance trend (7 days) */
   titleEl.textContent = t("attendanceTrend");
   subEl.textContent = t("last7Days");
   const days = getWeekdayLabels();
@@ -2066,7 +2059,7 @@ function drawChart(chart, labels, values, unit) {
   }).join("");
   const latest = values[values.length-1];
   tag.className = "tag tag--green";
-  tag.textContent = latest + " " + unit;
+  tag.textContent = unit ? (latest + " " + unit) : String(latest);
 }
 
 async function renderActivity() {
@@ -2163,11 +2156,11 @@ async function renderQuickActions() {
     a.push({ labelKey:"directorates", href:"departments.html", icon:"org" });
     a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
     a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
-  } else if (role === "hrm" || role === "regional_hrm" || role === "cluster_hrm" || role === "woreda_hrm") {
+  } else if (isHR()) {
     a.push({ labelKey:"usersStaff",   href:"users.html",       icon:"users" });
+    a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
     a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
     a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
-    a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
   } else if (role === "finance") {
     a.push({ labelKey:"runPayroll",   href:"payroll.html",     icon:"wallet" });
     a.push({ labelKey:"budgets",      href:"budget.html",      icon:"chart" });
@@ -2180,15 +2173,15 @@ async function renderQuickActions() {
     a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
     a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
     a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
-  } else if (role === "regional_finance" || role === "cluster_finance" || role === "woreda_finance") {
+  } else if (isFinance()) {
     a.push({ labelKey:"runPayroll",   href:"payroll.html",     icon:"wallet" });
     a.push({ labelKey:"budgets",      href:"budget.html",      icon:"chart" });
     a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
     a.push({ labelKey:"settings",     href:"settings.html",    icon:"settings" });
   } else if (role === "directorate" || role === "cluster_directorate" || role === "woreda_city") {
     a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
-    a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
-    a.push({ labelKey:"leave",        href:"leave.html",       icon:"calendar" });
+    a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
   } else if (role === "admin") {
     a.push({ labelKey:"addDirectorate", href:"departments.html", icon:"org" });
     a.push({ labelKey:"addOffice",    href:"offices.html",     icon:"building" });
@@ -2202,12 +2195,12 @@ async function renderQuickActions() {
     a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
   } else if (role === "manager" || role === "team_leader") {
     a.push({ labelKey:"workPlans",    href:"workplans.html",   icon:"clipboard" });
-    a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
     a.push({ labelKey:"reviewLeave",  href:"leave.html",       icon:"calendar" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
   } else {
     a.push({ labelKey:"requestLeave", href:"leave.html",       icon:"calendar" });
     a.push({ labelKey:"myPayslip",    href:"payroll.html",     icon:"dollar" });
-    a.push({ labelKey:"attendance",   href:"attendance.html",  icon:"clock" });
+    a.push({ labelKey:"reports",      href:"reports.html",     icon:"fileText" });
   }
 
   host.innerHTML = a.map(x => `
@@ -2511,3 +2504,4 @@ onAuthStateChanged(auth, async (user) => {
 
 </body>
 </html>
+ 
