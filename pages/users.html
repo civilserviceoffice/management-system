@@ -1579,6 +1579,17 @@ function evaluatePassword(pw) {
 }
 
 /* ============================================================
+   LOGIN EMAIL SUGGESTION (shared by Assign + Edit)
+   ============================================================ */
+function suggestLoginEmail(emp) {
+  if (!emp) return "";
+  const base = (emp.nameEn || [emp.firstName, emp.lastName].filter(Boolean).join(" ") || "user")
+    .toLowerCase().replace(/[^a-z0-9]+/g, ".")
+    .replace(/^\.+|\.+$/g, "");
+  return base ? `${base}@csmis.gov.et` : "user@csmis.gov.et";
+}
+
+/* ============================================================
    PERMISSIONS
    ============================================================ */
 const hasRole = (...rs) => rs.includes(S?.role);
@@ -3231,13 +3242,7 @@ function openAssignWizard(preselectedUserId = null) {
 
   const preselected = preselectedUserId ? USERS.find(u => u.id === preselectedUserId) : null;
 
-  function suggestLoginEmail(emp) {
-    if (!emp) return "";
-    const base = (emp.nameEn || [emp.firstName, emp.lastName].filter(Boolean).join(" ") || "user")
-      .toLowerCase().replace(/[^a-z0-9]+/g, ".")
-      .replace(/^\.+|\.+$/g, "");
-    return base ? `${base}@csmis.gov.et` : "user@csmis.gov.et";
-  }
+  /* NOTE: suggestLoginEmail() is defined at module level now, shared with Edit wizard. */
 
   const emailStatus = { ok:false, empty:true };
 
@@ -3883,9 +3888,11 @@ function openTransferWizard(userId) {
 }
 
 /* ============================================================
-   EDIT WIZARD
+   EDIT WIZARD  (full: personal, family, address, contact,
+                 fingerprint, placement, employment, role,
+                 login, review)
    ============================================================ */
-function openEditWizard(userId) {
+  function openEditWizard(userId) {
   const u = USERS.find(x => x.id === userId);
   if (!u) { toast("User not found", "error"); return; }
   if (!canManageUser(u)) { toast("You cannot edit this user", "error"); return; }
@@ -3893,9 +3900,12 @@ function openEditWizard(userId) {
   const emp = employeesByUid[u.id] || employeesById[u.id];
   const isSelf = u.id === S.uid || u.uid === S.uid;
   const fpList = getFingerprintList(emp);
+  const hasLogin = !!(emp?.uid || u.hasLogin);
   const duplicateStatus = { nationalId:{ ok:true, empty:false }, phone:{ ok:true, empty:false } };
+  const loginEmailStatus = { ok:true, empty:false };
 
   const initial = {
+    /* --- personal --- */
     firstName: emp?.firstName || "",
     middleName: emp?.middleName || "",
     lastName: emp?.lastName || "",
@@ -3910,8 +3920,32 @@ function openEditWizard(userId) {
     maritalStatus: emp?.maritalStatus || "",
     nationalId: emp?.nationalId || "",
     _photo: emp?.photoURL || u.photoURL || null,
+    _originalPhoto: emp?.photoURL || u.photoURL || null,
+
+    /* --- contact --- */
     phone: normalizePhone(emp?.phone || u.phone || ""),
     phoneAlt: normalizePhone(emp?.phoneAlt || ""),
+
+    /* --- family --- */
+    father_name: emp?.family?.father?.name || "",
+    father_phone: emp?.family?.father?.phone || "",
+    father_status: emp?.family?.father?.status || "",
+    father_region: emp?.family?.father?.region || "",
+    father_woreda: emp?.family?.father?.woreda || "",
+    mother_name: emp?.family?.mother?.name || "",
+    mother_phone: emp?.family?.mother?.phone || "",
+    mother_status: emp?.family?.mother?.status || "",
+    mother_region: emp?.family?.mother?.region || "",
+    mother_woreda: emp?.family?.mother?.woreda || "",
+    spouse_name: emp?.family?.spouse?.name || "",
+    spouse_phone: emp?.family?.spouse?.phone || "",
+    spouse_marriageDate: emp?.family?.spouse?.marriageDate || "",
+    children: emp?.family?.children || "",
+    emergency_name: emp?.family?.emergency?.name || "",
+    emergency_relation: emp?.family?.emergency?.relation || "",
+    emergency_phone: emp?.family?.emergency?.phone || "",
+
+    /* --- address --- */
     addr_country: emp?.address?.country || "ET",
     addr_region: emp?.address?.region || "",
     addr_zoneId: emp?.address?.zoneId || "",
@@ -3921,6 +3955,8 @@ function openEditWizard(userId) {
     addr_houseNo: emp?.address?.houseNo || "",
     addr_street: emp?.address?.street || "",
     addr_poBox: emp?.address?.poBox || "",
+
+    /* --- placement --- */
     emp_workLevel: emp?.clusterId ? "cluster" : "regional",
     emp_clusterLevel: emp?.woredaCode ? "woreda" : "cluster",
     emp_sectorId: emp?.sectorId || "",
@@ -3928,6 +3964,8 @@ function openEditWizard(userId) {
     emp_clusterId: emp?.clusterId || "",
     emp_woredaCode: emp?.woredaCode || "",
     emp_officeId: emp?.officeId || "",
+
+    /* --- employment --- */
     emp_position: emp?.position || "",
     emp_hireDate: emp?.hireDate || "",
     emp_employmentType: emp?.employmentType || "permanent",
@@ -3936,23 +3974,26 @@ function openEditWizard(userId) {
     emp_housingAllowance: emp?.housingAllowance || "",
     emp_positionAllowance: emp?.positionAllowance || "",
     emp_otherAllowance: emp?.otherAllowance || "",
+
+    /* --- role --- */
     emp_role: emp?.role || "employee",
     emp_financeRole: emp?.financeRole || "",
     emp_hrmRole: emp?.hrmRole || "",
+
+    /* --- active (kept as-is; no editable input) --- */
     active: u.active !== false,
-         _fingerprints: fpList.slice(),
+
+    /* --- fingerprints --- */
+    _fingerprints: fpList.slice(),
     _removedFingerprintIds: [],
-    _originalPhoto: emp?.photoURL || u.photoURL || null,
-    father_name: emp?.family?.father?.name || "",
-    father_phone: emp?.family?.father?.phone || "",
-    mother_name: emp?.family?.mother?.name || "",
-    mother_phone: emp?.family?.mother?.phone || "",
-    spouse_name: emp?.family?.spouse?.name || "",
-    spouse_phone: emp?.family?.spouse?.phone || "",
-    children: emp?.family?.children || "",
-    emergency_name: emp?.family?.emergency?.name || "",
-    emergency_relation: emp?.family?.emergency?.relation || "",
-    emergency_phone: emp?.family?.emergency?.phone || ""
+    _newFingerprintCredentialId: null,
+    _newFingerprintTransports: null,
+    _newFingerprintRpId: null,
+
+    /* --- login --- */
+    loginEmail: hasLogin ? (emp?.loginEmail || u.email || "") : suggestLoginEmail(emp),
+    password: "",
+    password2: ""
   };
 
   openWizard({
@@ -3963,6 +4004,7 @@ function openEditWizard(userId) {
     size: "xl",
     initial,
     steps: [
+      /* ---------------------------------------------- 1. PERSONAL */
       {
         label: "Personal", title: "Personal details",
         render: (d) => `
@@ -4047,6 +4089,83 @@ function openEditWizard(userId) {
             (type, status) => { duplicateStatus[type] = status; }, emp?.id || null);
         }
       },
+
+      /* ---------------------------------------------- 2. FAMILY */
+      {
+        label: "Family", title: "Family history & emergency contact",
+        render: (d) => `
+          <div class="alert alert--info"><svg viewBox="0 0 24 24">${ICONS.family}</svg>
+            <div>Record immediate family members and their addresses. Used for payroll benefits, insurance, and emergency contact.</div></div>
+
+          <div class="kin-card">
+            <div class="kin-card__title"><svg viewBox="0 0 24 24">${ICONS.user}</svg> Father</div>
+            <div class="field-row field-row--3">
+              <div class="field"><label>Full name</label><input data-field="father_name" value="${escapeHtml(d.father_name || "")}" placeholder="Tesfaye Bekele"></div>
+              <div class="field"><label>Phone</label><div class="phone-group"><span class="phone-group__cc">+251</span><input data-field="father_phone" value="${escapeHtml(d.father_phone || "")}" placeholder="912 345 678" inputmode="numeric"></div></div>
+              <div class="field"><label>Status</label><select data-field="father_status"><option value="">—</option><option value="alive" ${d.father_status === "alive" ? "selected" : ""}>Alive</option><option value="deceased" ${d.father_status === "deceased" ? "selected" : ""}>Deceased</option></select></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Region</label><select data-field="father_region"><option value="">—</option>${REGIONS.map(r => `<option value="${r.code}" ${d.father_region === r.code ? "selected" : ""}>${escapeHtml(r.code)} — ${escapeHtml(r.en)}</option>`).join("")}</select></div>
+              <div class="field"><label>Woreda / City</label><input data-field="father_woreda" value="${escapeHtml(d.father_woreda || "")}" placeholder="Woreda / City name"></div>
+            </div>
+          </div>
+
+          <div class="kin-card">
+            <div class="kin-card__title"><svg viewBox="0 0 24 24">${ICONS.user}</svg> Mother</div>
+            <div class="field-row field-row--3">
+              <div class="field"><label>Full name</label><input data-field="mother_name" value="${escapeHtml(d.mother_name || "")}" placeholder="Almaz Kebede"></div>
+              <div class="field"><label>Phone</label><div class="phone-group"><span class="phone-group__cc">+251</span><input data-field="mother_phone" value="${escapeHtml(d.mother_phone || "")}" placeholder="912 345 678" inputmode="numeric"></div></div>
+              <div class="field"><label>Status</label><select data-field="mother_status"><option value="">—</option><option value="alive" ${d.mother_status === "alive" ? "selected" : ""}>Alive</option><option value="deceased" ${d.mother_status === "deceased" ? "selected" : ""}>Deceased</option></select></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Region</label><select data-field="mother_region"><option value="">—</option>${REGIONS.map(r => `<option value="${r.code}" ${d.mother_region === r.code ? "selected" : ""}>${escapeHtml(r.code)} — ${escapeHtml(r.en)}</option>`).join("")}</select></div>
+              <div class="field"><label>Woreda / City</label><input data-field="mother_woreda" value="${escapeHtml(d.mother_woreda || "")}" placeholder="Woreda / City name"></div>
+            </div>
+          </div>
+
+          <div class="kin-card">
+            <div class="kin-card__title"><svg viewBox="0 0 24 24">${ICONS.user}</svg> Spouse</div>
+            <div class="field-row field-row--3">
+              <div class="field"><label>Full name</label><input data-field="spouse_name" value="${escapeHtml(d.spouse_name || "")}" placeholder="Hanna Tesfaye"></div>
+              <div class="field"><label>Phone</label><div class="phone-group"><span class="phone-group__cc">+251</span><input data-field="spouse_phone" value="${escapeHtml(d.spouse_phone || "")}" placeholder="912 345 678" inputmode="numeric"></div></div>
+              <div class="field"><label>Marriage date</label><input data-field="spouse_marriageDate" type="date" value="${escapeHtml(d.spouse_marriageDate || "")}"></div>
+            </div>
+          </div>
+
+          <div class="kin-card">
+            <div class="kin-card__title"><svg viewBox="0 0 24 24">${ICONS.alert}</svg> Emergency contact</div>
+            <div class="field-row field-row--3">
+              <div class="field"><label class="field__required">Full name</label><input data-field="emergency_name" value="${escapeHtml(d.emergency_name || "")}" placeholder="Full name"></div>
+              <div class="field"><label class="field__required">Relationship</label><input data-field="emergency_relation" value="${escapeHtml(d.emergency_relation || "")}" placeholder="Brother, Sister…"></div>
+              <div class="field"><label class="field__required">Phone</label><div class="phone-group"><span class="phone-group__cc">+251</span><input data-field="emergency_phone" value="${escapeHtml(d.emergency_phone || "")}" placeholder="912 345 678" inputmode="numeric"></div></div>
+            </div>
+          </div>
+
+          <div class="kin-card">
+            <div class="kin-card__title"><svg viewBox="0 0 24 24">${ICONS.users}</svg> Children (comma-separated)</div>
+            <div class="field"><label>Names &amp; ages</label>
+              <textarea data-field="children" placeholder="Sara (8), Dawit (5), …">${escapeHtml(d.children || "")}</textarea>
+            </div>
+          </div>
+        `,
+        validate: (d) => {
+          if (!d.emergency_name || d.emergency_name.trim().length < 2) return "Emergency contact name is required.";
+          if (!d.emergency_relation || d.emergency_relation.trim().length < 2) return "Emergency contact relationship is required.";
+          const ph = normalizePhone(d.emergency_phone || "");
+          if (ph.length !== PHONE_LENGTH) return `Emergency contact phone must be exactly ${PHONE_LENGTH} digits.`;
+          return null;
+        }
+      },
+
+      /* ---------------------------------------------- 3. ADDRESS */
+      {
+        label: "Address", title: "Residential address",
+        render: (d) => renderAddressFields(d, { prefix: "addr" }),
+        validate: () => null,
+        after: (root, data, refresh) => wireAddressFields(root, data, { prefix: "addr" }, refresh)
+      },
+
+      /* ---------------------------------------------- 4. CONTACT */
       {
         label: "Contact", title: "Contact",
         render: (d) => `
@@ -4093,34 +4212,276 @@ function openEditWizard(userId) {
             (type, status) => { duplicateStatus[type] = status; }, emp?.id || null);
         }
       },
+
+      /* ---------------------------------------------- 5. FINGERPRINT */
       {
-        label: "Address", title: "Residential address",
-        render: (d) => renderAddressFields(d, { prefix: "addr" }),
+        label: "Fingerprint", title: "Manage fingerprints",
+        render: (d) => {
+          const removed = new Set(d._removedFingerprintIds || []);
+          const list = (d._fingerprints || []).filter(f => !removed.has(f.credentialId));
+          const hasNew = !!d._newFingerprintCredentialId;
+          return `
+            ${list.length ? `
+              <div class="field" style="margin-bottom:16px">
+                <label>Registered fingerprints (${list.length})</label>
+                <div class="fp-list">
+                  ${list.map((f, i) => `
+                    <div class="fp-list__item">
+                      <div class="fp-list__icon"><svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg></div>
+                      <div class="fp-list__main">
+                        <div class="fp-list__name">${escapeHtml(f.deviceLabel || "Device " + (i + 1))}</div>
+                        <div class="fp-list__meta">${f.credentialId ? escapeHtml(f.credentialId.slice(0, 22)) + "…" : "—"}</div>
+                      </div>
+                      <button type="button" class="fp-list__del" data-remove-fp="${escapeHtml(f.credentialId || "")}" title="Remove fingerprint">
+                        <svg viewBox="0 0 24 24">${ICONS.trash}</svg>
+                      </button>
+                    </div>
+                  `).join("")}
+                </div>
+              </div>
+            ` : `<div class="alert alert--warning"><svg viewBox="0 0 24 24">${ICONS.alert}</svg><div>No fingerprints are registered yet. You can add one below, or skip.</div></div>`}
+
+            <div class="fp-capture ${hasNew ? "is-success" : ""}" id="fp-capture">
+              <div class="fp-capture__ring">
+                <svg class="fp-capture__icon" viewBox="0 0 24 24">${ICONS.fingerprint}</svg>
+              </div>
+              <div class="fp-capture__title">
+                ${hasNew ? "New fingerprint captured" : "Register an additional fingerprint"}
+              </div>
+              <div class="fp-capture__msg">
+                ${hasNew
+                  ? "The new fingerprint will be added when you save."
+                  : FP_SUPPORTED
+                    ? "Ask the person to place their finger on the sensor."
+                    : "Fingerprint capture is not available on this device. You can skip this step."}
+              </div>
+              ${hasNew ? `
+                <div class="fp-capture__badge"><svg viewBox="0 0 24 24">${ICONS.check}</svg> New credential</div>
+                <button type="button" class="btn btn--sm" id="fp-reset" style="margin-top:14px">
+                  <svg viewBox="0 0 24 24">${ICONS.trash}</svg> Remove new scan
+                </button>
+              ` : FP_SUPPORTED ? `
+                <button type="button" class="btn" id="fp-scan" style="margin-top:18px">
+                  <svg viewBox="0 0 24 24">${ICONS.fingerprint}</svg> Scan fingerprint
+                </button>
+              ` : ""}
+            </div>
+          `;
+        },
         validate: () => null,
-        after: (root, data, refresh) => wireAddressFields(root, data, { prefix: "addr" }, refresh)
+        after: (root, data, refresh) => {
+          const scanBtn  = root.querySelector("#fp-scan");
+          const resetBtn = root.querySelector("#fp-reset");
+          const scanEl   = root.querySelector("#fp-capture");
+
+          root.querySelectorAll("[data-remove-fp]").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const cred = btn.dataset.removeFp;
+              if (!cred) return;
+              data._removedFingerprintIds = [ ...(data._removedFingerprintIds || []), cred ];
+              refresh();
+            });
+          });
+
+          scanBtn?.addEventListener("click", async () => {
+            if (!FP_SUPPORTED) { toast("Fingerprint not supported", "error"); return; }
+            const available = await fpIsAvailable();
+            if (!available) { toast("No platform biometric available on this device", "error"); return; }
+            scanEl.classList.remove("is-success", "is-error");
+            scanEl.classList.add("is-scanning");
+            try {
+              const natId = normalizeNationalId(data.nationalId || "");
+              const userId = natId || emp?.id || ("u" + Date.now().toString(36));
+              const userName = emp?.loginEmail || u.email || data.loginEmail || ("user-" + userId);
+              const displayName = [data.firstName, data.lastName].filter(Boolean).join(" ") || userName;
+              const reg = await fpRegisterForPerson({ userId, userName, displayName });
+              data._newFingerprintCredentialId = reg.credentialId;
+              data._newFingerprintTransports   = reg.transports;
+              data._newFingerprintRpId         = reg.rpId;
+              toast("Fingerprint captured", "success");
+              refresh();
+            } catch (err) {
+              scanEl.classList.remove("is-scanning");
+              scanEl.classList.add("is-error");
+              toast(err.name === "NotAllowedError" ? "Scan cancelled" : (err.message || "Scan failed"), "error");
+              setTimeout(refresh, 1400);
+            }
+          });
+
+          resetBtn?.addEventListener("click", () => {
+            data._newFingerprintCredentialId = null;
+            data._newFingerprintTransports   = null;
+            data._newFingerprintRpId         = null;
+            refresh();
+          });
+        }
       },
+
+      /* ---------------------------------------------- 6. PLACEMENT */
       {
         label: "Placement", title: "Sector → Department → Regional / Cluster",
         render: (d) => renderPlacementFields(d, { prefix: "emp" }),
         validate: (d) => validatePlacementFields(d, { prefix: "emp" }),
         after: (root, data, refresh) => wirePlacementFields(root, data, { prefix: "emp" }, refresh)
       },
+
+      /* ---------------------------------------------- 7. EMPLOYMENT */
       {
         label: "Employment", title: "Employment & compensation",
         render: (d) => renderEmploymentFields(d, { prefix: "emp" }),
         validate: (d) => validateEmploymentFields(d, { prefix: "emp" }),
         after: () => {}
       },
+
+      /* ---------------------------------------------- 8. ROLE */
       {
         label: "Role", title: "Role",
         render: (d) => renderRoleFields(d, { prefix: "emp" }, assignableRoles()),
         validate: (d) => validateRoleFields(d, { prefix: "emp" }),
         after: (root, data) => wireRoleFields(root, data, { prefix: "emp" })
       },
+
+      /* ---------------------------------------------- 9. LOGIN */
+      {
+        label: "Login", title: "Login account",
+        render: (d) => {
+          if (hasLogin) {
+            const email = emp?.loginEmail || u.email || "";
+            return `
+              <div class="alert alert--success">
+                <svg viewBox="0 0 24 24">${ICONS.check}</svg>
+                <div>This person already has a login account. To change the login, use <strong>Assign Role &amp; Work Area</strong> from the row.</div>
+              </div>
+              <div class="field">
+                <label>Login email</label>
+                <input value="${escapeHtml(email)}" readonly>
+                <p class="field__hint">Email cannot be changed here once the account exists.</p>
+              </div>
+              <div class="field">
+                <label>Account status</label>
+                <input value="${u.active === false ? "Inactive" : "Active"}" readonly>
+              </div>
+            `;
+          }
+          const suggested = d.loginEmail || suggestLoginEmail(emp);
+          return `
+            <div class="alert alert--info">
+              <svg viewBox="0 0 24 24">${ICONS.key}</svg>
+              <div>This person has <strong>no login yet</strong>. Fill in the fields below and a login will be created when you save.</div>
+            </div>
+            <div class="field" id="email-field">
+              <label class="field__required">Login email</label>
+              <input id="edit-login-email" data-field="loginEmail" type="email"
+                     value="${escapeHtml(suggested)}" autocomplete="off">
+              <p class="field__hint">Becomes the username they sign in with.</p>
+            </div>
+            <div class="field">
+              <label class="field__required">Password</label>
+              <div class="pw-wrap">
+                <input data-field="password" id="edit-pw-new" type="password" placeholder="At least 8 characters" autocomplete="new-password">
+                <button type="button" class="pw-toggle" data-toggle="edit-pw-new">
+                  <svg viewBox="0 0 24 24">${ICONS.eye}</svg>
+                </button>
+              </div>
+              <div class="pw-meter" id="edit-pw-meter">
+                <div class="pw-meter__bars">
+                  <div class="pw-meter__bar" data-bar="1"></div>
+                  <div class="pw-meter__bar" data-bar="2"></div>
+                  <div class="pw-meter__bar" data-bar="3"></div>
+                  <div class="pw-meter__bar" data-bar="4"></div>
+                </div>
+                <div class="pw-meter__text" id="edit-pw-meter-text">Enter a password</div>
+              </div>
+              <div class="pw-rules" id="edit-pw-rules">
+                <div class="pw-rule" data-rule="length"><span class="pw-rule__dot"></span><span>At least 8 characters</span></div>
+                <div class="pw-rule" data-rule="upper"><span class="pw-rule__dot"></span><span>One uppercase letter</span></div>
+                <div class="pw-rule" data-rule="lower"><span class="pw-rule__dot"></span><span>One lowercase letter</span></div>
+                <div class="pw-rule" data-rule="number"><span class="pw-rule__dot"></span><span>One number</span></div>
+                <div class="pw-rule" data-rule="symbol"><span class="pw-rule__dot"></span><span>One special character</span></div>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field__required">Confirm password</label>
+              <input data-field="password2" id="edit-pw-confirm" type="password" placeholder="Repeat the password" autocomplete="new-password">
+              <p class="field__hint" id="edit-pw-match-hint"></p>
+            </div>
+          `;
+        },
+        validate: (d) => {
+          if (hasLogin) return null;
+          if (!d.loginEmail || !/^\S+@\S+\.\S+$/.test(d.loginEmail)) return "Enter a valid login email.";
+          const pw = evaluatePassword(d.password || "");
+          if (pw.score < 3) return "Password is too weak. Add uppercase, numbers, or symbols.";
+          if (d.password !== d.password2) return "Passwords do not match.";
+          if (!loginEmailStatus.ok && !loginEmailStatus.empty) {
+            if (loginEmailStatus.reason === "duplicate") return "This login email is already registered to another person.";
+            if (loginEmailStatus.reason === "incomplete") return "Enter a valid email address.";
+            return "Please wait — checking email.";
+          }
+          return null;
+        },
+        after: (root, data) => {
+          if (hasLogin) return;
+          const emailIn = root.querySelector("#edit-login-email");
+          if (emailIn) {
+            setupLiveDuplicate(root, "edit-login-email", "email", "email",
+              (type, status) => {
+                loginEmailStatus.ok = status.ok;
+                loginEmailStatus.empty = status.empty;
+                loginEmailStatus.reason = status.reason;
+              },
+              emp?.id || null);
+          }
+          const pwIn  = root.querySelector("#edit-pw-new");
+          const cfm   = root.querySelector("#edit-pw-confirm");
+          const meter = root.querySelector("#edit-pw-meter");
+          const mTxt  = root.querySelector("#edit-pw-meter-text");
+
+          function renderMeter() {
+            if (!pwIn) return;
+            const { checks, score, label, klass } = evaluatePassword(pwIn.value);
+            meter.querySelectorAll(".pw-meter__bar").forEach(bar => {
+              const i = Number(bar.dataset.bar);
+              bar.className = "pw-meter__bar";
+              if (i <= score) bar.classList.add("is-on-" + klass);
+            });
+            mTxt.textContent = label;
+            mTxt.className = "pw-meter__text " + klass;
+            root.querySelectorAll(".pw-rule").forEach(rule => {
+              rule.classList.toggle("is-ok", !!checks[rule.dataset.rule]);
+            });
+          }
+          function checkMatch() {
+            if (!cfm) return;
+            const hint = root.querySelector("#edit-pw-match-hint");
+            if (!cfm.value) { hint.textContent = ""; hint.style.color = ""; return; }
+            if (pwIn.value === cfm.value) { hint.textContent = "✓ Passwords match"; hint.style.color = "#067647"; }
+            else { hint.textContent = "✗ Passwords do not match"; hint.style.color = "#dc2626"; }
+          }
+          pwIn?.addEventListener("input", () => { data.password = pwIn.value; renderMeter(); checkMatch(); });
+          cfm?.addEventListener("input",  () => { data.password2 = cfm.value; checkMatch(); });
+          root.querySelectorAll(".pw-toggle").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const input = root.querySelector("#" + btn.dataset.toggle);
+              const showing = input.type === "text";
+              input.type = showing ? "password" : "text";
+              btn.innerHTML = `<svg viewBox="0 0 24 24">${showing ? ICONS.eye : ICONS.eyeOff}</svg>`;
+            });
+          });
+        }
+      },
+
+      /* ---------------------------------------------- 10. REVIEW */
       {
         label: "Review", title: "Review the changes",
         render: (d) => {
           const newName = [d.firstName, d.middleName, d.lastName].filter(Boolean).join(" ");
+          const removed = new Set(d._removedFingerprintIds || []);
+          const kept = (d._fingerprints || []).filter(f => !removed.has(f.credentialId)).length;
+          const fpCount = kept + (d._newFingerprintCredentialId ? 1 : 0);
+          const loginInfo = hasLogin
+            ? `Existing: <code style="font-family:ui-monospace,monospace">${escapeHtml(emp.loginEmail || u.email || "")}</code>`
+            : `Will be created: <code style="font-family:ui-monospace,monospace">${escapeHtml(d.loginEmail || "")}</code>`;
           return `
             <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;padding:16px;background:linear-gradient(135deg,#f8fbff,#fff);border:1px solid var(--border);border-radius:14px">
               <div class="user-avatar" style="width:70px;height:70px;font-size:24px">
@@ -4131,30 +4492,51 @@ function openEditWizard(userId) {
                 <div style="font-size:13px;color:var(--muted);margin-top:2px">${escapeHtml(d.firstNameAm || "")} ${escapeHtml(d.lastNameAm || "")}</div>
               </div>
             </div>
+            <div class="review-section">Personal</div>
             <div class="review">
               <div class="review__row"><span class="review__k">Gender</span><span class="review__v">${d.gender === "M" ? "Male" : "Female"}</span></div>
               <div class="review__row"><span class="review__k">Date of birth</span><span class="review__v">${escapeHtml(d.dob || "—")}</span></div>
               <div class="review__row"><span class="review__k">National ID</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(formatNationalIdDisplay(d.nationalId) || "—")}</span></div>
               <div class="review__row"><span class="review__k">Phone</span><span class="review__v" style="font-family:ui-monospace,monospace">${escapeHtml(formatPhoneDisplay(d.phone) || "—")}</span></div>
+            </div>
+            <div class="review-section">Family</div>
+            <div class="review">
+              ${d.emergency_name
+                ? `<div class="review__row"><span class="review__k">Emergency contact</span><span class="review__v">${escapeHtml(d.emergency_name)} (${escapeHtml(d.emergency_relation || "—")}) · ${escapeHtml(d.emergency_phone || "—")}</span></div>`
+                : `<div class="review__row"><span class="review__k">Emergency contact</span><span class="review__v" style="color:var(--muted)">—</span></div>`}
+            </div>
+            <div class="review-section">Employment</div>
+            <div class="review">
               <div class="review__row"><span class="review__k">Position</span><span class="review__v">${escapeHtml(d.emp_position || "—")}</span></div>
               <div class="review__row"><span class="review__k">Basic salary</span><span class="review__v" style="font-family:ui-monospace,monospace;text-align:right">${escapeHtml(fmtMoney(d.emp_basicSalary) || "0")} ETB</span></div>
               <div class="review__row"><span class="review__k">Role</span><span class="review__v"><span class="role-badge role-badge--${d.emp_role}">${escapeHtml(roleLabel(d.emp_role))}</span></span></div>
+            </div>
+            <div class="review-section">Fingerprint &amp; Login</div>
+            <div class="review">
+              <div class="review__row"><span class="review__k">Fingerprints</span><span class="review__v">${fpCount} registered${d._newFingerprintCredentialId ? " (1 new)" : ""}</span></div>
+              <div class="review__row"><span class="review__k">Login</span><span class="review__v">${loginInfo}</span></div>
               ${!isSelf ? `<div class="review__row"><span class="review__k">Active</span><span class="review__v">${d.active ? `<span class="tag tag--green">Active</span>` : `<span class="tag tag--red">Inactive</span>`}</span></div>` : ""}
             </div>
           `;
         }
       }
     ],
+
+    /* ============================================================
+       onFinish — save family + fingerprints + handle login creation
+       ============================================================ */
     onFinish: async (d) => {
       if (!emp) throw new Error("Employee record not found.");
+
       const natIdNorm = normalizeNationalId(d.nationalId);
       const phoneNorm = normalizePhone(d.phone);
       if (natIdNorm.length !== NAT_ID_LENGTH) throw new Error(`National ID must be exactly ${NAT_ID_LENGTH} digits.`);
       if (phoneNorm.length !== PHONE_LENGTH)  throw new Error(`Phone number must be exactly ${PHONE_LENGTH} digits.`);
 
-      const oldNatNorm = emp.nationalIdNorm || "";
+      const oldNatNorm   = emp.nationalIdNorm || "";
       const oldPhoneNorm = emp.phoneNorm || "";
 
+      /* ---- uniqueness (nat id / phone) ---- */
       if (natIdNorm !== oldNatNorm) {
         const dup = await findEmployeeByNationalId(natIdNorm, emp.id);
         if (dup) throw new Error("National ID is already registered to another person.");
@@ -4169,15 +4551,115 @@ function openEditWizard(userId) {
         await reserveUnique("phone", phoneNorm, phoneNorm, emp.empId || emp.id, emp.nameEn || "");
       }
 
+      /* ---- resolve names & display phone ---- */
       const nameEn = [d.firstName, d.middleName, d.lastName].filter(Boolean).map(s => s.trim()).join(" ");
       const nameAm = [d.firstNameAm, d.middleNameAm, d.lastNameAm].filter(Boolean).map(s => s.trim()).join(" ") || null;
       const nameOm = [d.firstNameOm, d.middleNameOm, d.lastNameOm].filter(Boolean).map(s => s.trim()).join(" ") || null;
       const phoneDisplay = "+251 " + phoneNorm.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3");
+      const altNorm = normalizePhone(d.phoneAlt || "");
+      const phoneAltDisplay = altNorm.length === PHONE_LENGTH
+        ? "+251 " + altNorm.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3")
+        : (d.phoneAlt?.trim() || null);
 
+      /* ---- fingerprints ---- */
       const removedIds = new Set(d._removedFingerprintIds || []);
       const finalFingerprints = (d._fingerprints || []).filter(f => !removedIds.has(f.credentialId));
+      if (d._newFingerprintCredentialId) {
+        finalFingerprints.push({
+          credentialId: d._newFingerprintCredentialId,
+          transports:   d._newFingerprintTransports || [],
+          rpId:         d._newFingerprintRpId || location.hostname,
+          deviceLabel:  navigator.platform || "Enrolment device",
+          createdAt:    Date.now(),
+          registeredBy: S.uid,
+          registeredByName: S.name
+        });
+      }
+
+      /* ---- family ---- */
+      const family = {
+        father: { name: d.father_name||null, phone: d.father_phone||null, status: d.father_status||null, region: d.father_region||null, woreda: d.father_woreda||null },
+        mother: { name: d.mother_name||null, phone: d.mother_phone||null, status: d.mother_status||null, region: d.mother_region||null, woreda: d.mother_woreda||null },
+        spouse: { name: d.spouse_name||null, phone: d.spouse_phone||null, marriageDate: d.spouse_marriageDate||null },
+        children: (d.children || "").trim() || null,
+        emergency: { name: d.emergency_name||null, relation: d.emergency_relation||null, phone: d.emergency_phone||null }
+      };
+
       const placement = buildPlacementPatch(d, { prefix: "emp" });
 
+      /* ---- login creation (if there isn't one yet) ---- */
+      let uid = emp.uid || null;
+      let justCreatedAuth = false;
+      if (!hasLogin) {
+        if (!d.loginEmail || !/^\S+@\S+\.\S+$/.test(d.loginEmail)) throw new Error("Valid login email is required.");
+        const pw = evaluatePassword(d.password || "");
+        if (pw.score < 3) throw new Error("Password is too weak. Add uppercase, numbers, or symbols.");
+        if (d.password !== d.password2) throw new Error("Passwords do not match.");
+
+        const emailNorm = normalizeEmail(d.loginEmail);
+        const existingU = await findUserByEmail(emailNorm);
+        if (existingU) throw new Error("This login email is already in use by another account.");
+        const existingE = await findEmployeeByEmail(emailNorm, emp.id);
+        if (existingE) throw new Error("This login email is already registered to another employee.");
+
+        const secName = "editCreator_" + Date.now();
+        const secApp  = initializeApp(firebaseConfig, secName);
+        const secAuth = getAuth(secApp);
+        try {
+          const cred = await createUserWithEmailAndPassword(secAuth, d.loginEmail.trim(), d.password);
+          uid = cred.user.uid;
+          try { await updateProfile(cred.user, { displayName: nameEn }); } catch (e) {}
+          await signOut(secAuth);
+          justCreatedAuth = true;
+        } catch (err) {
+          if (err.code === "auth/email-already-in-use") throw new Error("This login email is already in use by another account.");
+          throw err;
+        } finally {
+          try { await deleteApp(secApp); } catch (e) {}
+        }
+
+        /* reserve email + write user doc */
+        await reserveUnique("email", emailNorm, emailNorm, emp.empId || emp.id, nameEn);
+        const userDoc = {
+          uid,
+          email: d.loginEmail.trim(),
+          emailNorm,
+          name: nameEn,
+          photoURL: d._photo || emp.photoURL || null,
+          role: d.emp_role,
+          region: placement.regionCode, regionCode: placement.regionCode, regionName: placement.regionName,
+          sectorId: placement.sectorId, sectorName: placement.sectorName,
+          departmentId: placement.departmentId, departmentName: placement.departmentName,
+          clusterId: placement.clusterId, clusterName: placement.clusterName,
+          woredaCode: placement.woredaCode, woredaName: placement.woredaName,
+          officeId: placement.officeId, officeName: placement.officeName,
+          isClusterStaff: placement.isClusterStaff,
+          empId: emp.empId || null,
+          employeeId: emp.id,
+          isDirector: emp.isDirector || false,
+          financeRole: d.emp_role === "finance" ? (d.emp_financeRole || null) : null,
+          hrmRole: d.emp_role === "hrm" ? (d.emp_hrmRole || null) : null,
+          position: (d.emp_position || "").trim() || null,
+          phone: phoneDisplay, phoneNorm,
+          nationalId: natIdNorm, nationalIdNorm: natIdNorm,
+          hasFingerprint: finalFingerprints.length > 0,
+          active: true,
+          createdAt: serverTimestamp(),
+          createdBy: S.uid,
+          updatedAt: serverTimestamp(),
+          updatedBy: S.uid,
+          assignedAt: serverTimestamp(),
+          assignedBy: S.uid
+        };
+        try {
+          await setDoc(doc(db, "users", uid), userDoc);
+        } catch (err) {
+          await releaseUnique("email", emailNorm);
+          throw err;
+        }
+      }
+
+      /* ---- emp patch ---- */
       const empPatch = {
         firstName: d.firstName.trim(),
         middleName: d.middleName?.trim() || null,
@@ -4193,25 +4675,36 @@ function openEditWizard(userId) {
         gender: d.gender, dob: d.dob,
         maritalStatus: d.maritalStatus || null,
         phone: phoneDisplay, phoneNorm,
+        phoneAlt: phoneAltDisplay,
         ...placement,
         position: (d.emp_position || "").trim() || null,
         hireDate: d.emp_hireDate || null,
         employmentType: d.emp_employmentType || "permanent",
-        basicSalary: d.emp_basicSalary === "" ? 0 : Number(d.emp_basicSalary || 0),
-        transportAllowance: d.emp_transportAllowance === "" ? 0 : Number(d.emp_transportAllowance || 0),
-        housingAllowance: d.emp_housingAllowance === "" ? 0 : Number(d.emp_housingAllowance || 0),
+        basicSalary:       d.emp_basicSalary       === "" ? 0 : Number(d.emp_basicSalary       || 0),
+        transportAllowance:d.emp_transportAllowance=== "" ? 0 : Number(d.emp_transportAllowance|| 0),
+        housingAllowance:  d.emp_housingAllowance  === "" ? 0 : Number(d.emp_housingAllowance  || 0),
         positionAllowance: d.emp_positionAllowance === "" ? 0 : Number(d.emp_positionAllowance || 0),
-        otherAllowance: d.emp_otherAllowance === "" ? 0 : Number(d.emp_otherAllowance || 0),
+        otherAllowance:    d.emp_otherAllowance    === "" ? 0 : Number(d.emp_otherAllowance    || 0),
         role: d.emp_role,
         financeRole: d.emp_role === "finance" ? (d.emp_financeRole || null) : null,
-        hrmRole: d.emp_role === "hrm" ? (d.emp_hrmRole || null) : null,
+        hrmRole:     d.emp_role === "hrm"     ? (d.emp_hrmRole     || null) : null,
+        family,
         fingerprints: finalFingerprints,
+        active: justCreatedAuth ? true : (d.active !== false),
         updatedAt: serverTimestamp(),
         updatedBy: S.uid
       };
+      if (justCreatedAuth && uid) {
+        empPatch.uid = uid;
+        empPatch.status = "active";
+        empPatch.hasLogin = true;
+        empPatch.loginEmail = d.loginEmail.trim();
+        empPatch.loginEmailNorm = normalizeEmail(d.loginEmail);
+      }
       if (d._photo && d._photo !== initial._originalPhoto) empPatch.photoURL = d._photo;
 
-      const userPatch = {
+      /* ---- user patch (only if the account already existed) ---- */
+      const userPatch = (uid && !justCreatedAuth) ? {
         name: nameEn,
         phone: phoneDisplay, phoneNorm,
         nationalId: natIdNorm, nationalIdNorm: natIdNorm,
@@ -4220,23 +4713,27 @@ function openEditWizard(userId) {
         ...placement,
         updatedAt: serverTimestamp(),
         updatedBy: S.uid
-      };
-      if (!isSelf) userPatch.active = d.active;
-      if (empPatch.photoURL) userPatch.photoURL = empPatch.photoURL;
+      } : null;
+      if (userPatch) {
+        if (!isSelf) userPatch.active = d.active;
+        if (empPatch.photoURL) userPatch.photoURL = empPatch.photoURL;
+      }
 
+      /* ---- write ---- */
       try {
         await updateDoc(doc(db, "employees", emp.id), empPatch);
-        if (emp.uid) {
-          try { await updateDoc(doc(db, "users", emp.uid), userPatch); } catch (e) {}
+        if (userPatch && uid) {
+          try { await updateDoc(doc(db, "users", uid), userPatch); } catch (e) { console.warn("[edit users]", e); }
         }
       } catch (err) {
-        if (natIdNorm !== oldNatNorm) await releaseUnique("nationalId", natIdNorm);
-        if (phoneNorm !== oldPhoneNorm) await releaseUnique("phone", phoneNorm);
+        if (natIdNorm   !== oldNatNorm)   await releaseUnique("nationalId", natIdNorm);
+        if (phoneNorm   !== oldPhoneNorm) await releaseUnique("phone", phoneNorm);
         throw err;
       }
 
-      if (natIdNorm !== oldNatNorm && oldNatNorm) await releaseUnique("nationalId", oldNatNorm);
-      if (phoneNorm !== oldPhoneNorm && oldPhoneNorm) await releaseUnique("phone", oldPhoneNorm);
+      /* ---- release old uniqueness locks ---- */
+      if (natIdNorm   !== oldNatNorm   && oldNatNorm)   await releaseUnique("nationalId", oldNatNorm);
+      if (phoneNorm   !== oldPhoneNorm && oldPhoneNorm) await releaseUnique("phone", oldPhoneNorm);
     }
   });
 }
@@ -4636,8 +5133,9 @@ onAuthStateChanged(auth, async (user) => {
   subscribeEmployees();
 });
 
-console.log("[users] booted — i18n + assign editable + transfer wizard + typed-name delete + email uniqueness + last-super-admin protection + role-scoped nav.");
+console.log("[users] booted — full Edit wizard (personal, family, address, contact, fingerprint, placement, employment, role, login, review) + shared suggestLoginEmail helper.");
 </script>
 
 </body>
 </html>
+ 
